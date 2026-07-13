@@ -1,0 +1,25 @@
+# Build artifacts
+node_modules/
+dist/
+.astro/
+.cache/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sitemap intermediate
+public/_redirects.bak

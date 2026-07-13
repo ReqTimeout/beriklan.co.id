@@ -1,0 +1,136 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import BlogFilter from '../components/BlogFilter.svelte';
+import Footer from '../components/Footer.svelte';
+import { MessageCircle, ArrowRight, BookOpen } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis";
+---
+
+<Layout title="Blog Digital Marketing — Tips Iklan, Google Ads, Meta & TikTok | Beriklan" description="Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Pelajari Facebook Ads, Google Ads, TikTok Ads, Instagram, YouTube, dan strategi performance marketing lainnya.">
+
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <BookOpen class="w-3.5 h-3.5" />
+                Blog · Belajar Digital Marketing Indonesia
+            </div>
+
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Belajar Digital Marketing<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">dari Pengalaman Nyata.</span>
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Artikel, panduan, dan studi kasus dari tim Beriklan. Tidak ada teori kosong — semuanya berdasarkan data dan pengalaman mengelola campaign lintas industri sejak 2016.
+            </p>
+        </div>
+    </header>
+
+    <!-- ====================== BLOG FILTER ====================== -->
+    <section class="py-16 md:py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <BlogFilter client:only="svelte" />
+        </div>
+    </section>
+
+    <!-- ====================== NEWSLETTER CTA ====================== -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Butuh diskusi langsung?
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-4xl leading-[1.1] tracking-tight mb-6">
+                    Punya pertanyaan spesifik<br/>
+                    <span class="text-accent">yang tidak ada di blog?</span>
+                </h2>
+                <p class="text-white/70 text-base leading-relaxed mb-8">
+                    Sesi konsultasi 15-30 menit gratis via WhatsApp. Tim kami akan berdiskusi langsung dengan Anda.
+                </p>
+                <a href={waLink} target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-7 py-3.5 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Mulai Konsultasi
+                        <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    .hero-grid {
+        background-image: linear-gradient(rgba(15,30,61,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,30,61,.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    .abs-blob {
+        position: absolute; border-radius: 9999px;
+        pointer-events: none; will-change: transform;
+        transform: translateZ(0);
+    }
+    .abs-blob-1 {
+        top: 5rem; right: -8rem;
+        width: 420px; height: 420px;
+        background: rgba(245, 158, 11, 0.10);
+        filter: blur(48px);
+        animation: float-shape 14s ease-in-out infinite;
+    }
+    .abs-blob-2 {
+        bottom: 0; left: -5rem;
+        width: 288px; height: 288px;
+        background: rgba(14, 165, 233, 0.10);
+        filter: blur(40px);
+        animation: float-shape 11s ease-in-out infinite 1.5s;
+    }
+    @keyframes float-shape {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(0, -16px); }
+    }
+
+    .btn-shine-accent { position: relative; overflow: hidden; }
+    .btn-shine-accent::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(15,30,61,0.15) 50%, transparent 75%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    .btn-shine-accent:hover::after { transform: translateX(100%); }
+
+    .abs-radaial-2 {
+        position: absolute; top: -100px; right: -150px;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    @keyframes anim-fade-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .anim-fade-up {
+        animation: anim-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .abs-blob, .anim-fade-up { animation: none; }
+    }
+</style>

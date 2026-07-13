@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://beriklan.co.id/sitemap-index.xml

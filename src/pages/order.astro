@@ -1,0 +1,321 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import OrderWizard from '../components/OrderWizard.svelte';
+import Footer from '../components/Footer.svelte';
+import { MessageCircle, Mail, MapPin, Phone, Clock, Sparkles, ArrowRight } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20ingin%20berdiskusi%20mengenai%20kebutuhan%20digital%20marketing%20untuk%20bisnis%20saya.";
+const phoneLink = "tel:+62811919328";
+const mailLink = "mailto:info@beriklan.co.id?subject=Konsultasi%20Digital%20Marketing";
+---
+
+<Layout title="Inquiry & Order Jasa Digital Marketing — Beriklan" description="Kirim kebutuhan campaign Anda. Hubungi tim Beriklan: WhatsApp 0811-919-328, email info@beriklan.co.id, atau gunakan form wizard di halaman ini.">
+
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Inquiry & Order · WhatsApp atau Email
+            </div>
+
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Pasang Iklan atau Mulai Proyek<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">Digital — Kirim Inquiry Anda.</span>
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Isi form wizard singkat di bawah ini, atau langsung hubungi tim kami melalui WhatsApp, telepon, atau email. Sesi konsultasi awal 15–30 menit — tanpa biaya.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 240ms;">
+                <a href={waLink} target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-6 py-3.5 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Langsung WhatsApp
+                    </span>
+                </a>
+                <a href="#wizard" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Isi Form Wizard
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== CONTACT CARDS ====================== -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <a href={waLink} target="_blank" rel="noopener" class="contact-card group">
+                    <div class="contact-icon bg-green/15 text-green">
+                        <MessageCircle class="w-6 h-6" fill="currentColor" />
+                    </div>
+                    <p class="contact-label">WhatsApp</p>
+                    <p class="contact-value">+62 81-1919-328</p>
+                    <p class="contact-sub">Respon dalam 1 jam (jam kerja)</p>
+                    <span class="contact-arrow">
+                        <ArrowRight class="w-4 h-4" />
+                    </span>
+                </a>
+                <a href={mailLink} class="contact-card group">
+                    <div class="contact-icon bg-blue-50 text-blue-600">
+                        <Mail class="w-6 h-6" />
+                    </div>
+                    <p class="contact-label">Email</p>
+                    <p class="contact-value">info@beriklan.co.id</p>
+                    <p class="contact-sub">Untuk inquiry detail atau proposal</p>
+                    <span class="contact-arrow">
+                        <ArrowRight class="w-4 h-4" />
+                    </span>
+                </a>
+                <a href="https://maps.google.com" target="_blank" rel="noopener" class="contact-card group">
+                    <div class="contact-icon bg-accent/15 text-accent">
+                        <MapPin class="w-6 h-6" />
+                    </div>
+                    <p class="contact-label">Kantor</p>
+                    <p class="contact-value">Bandung, Jawa Barat</p>
+                    <p class="contact-sub">Jl. Arcamanik Endah No.76 — by appointment</p>
+                    <span class="contact-arrow">
+                        <ArrowRight class="w-4 h-4" />
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== WIZARD ====================== -->
+    <section id="wizard" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Form Wizard
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Ceritakan Kebutuhan Anda<br/>
+                    <span class="text-accent">dalam 3 Langkah.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Form singkat yang akan kami teruskan ke WhatsApp tim kami — sehingga Anda tidak perlu mengetik ulang.
+                </p>
+            </div>
+
+            <div class="max-w-2xl mx-auto reveal-lift">
+                <OrderWizard client:only="svelte" />
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUST ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="abs-radaial-1"></div>
+        <div class="stat-orb stat-orb-1"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Tim Ini
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan janji yang berlebihan.<br/>
+                    <span class="text-accent">Komitmen yang dapat Anda verifikasi.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun Meta, Google, dan TikTok tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan bahasa yang mudah dipahami</h3>
+                    <p class="trust-desc-dark">Bukan deretan CPM-CTR-CPC tanpa konteks. Anda mendapat kejelasan: mana yang berjalan optimal, mana yang perlu disesuaikan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat — tidak ada kontrak 6-12 bulan yang lazim diterapkan agency lain.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Pertanyaan yang Sering Muncul
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Sebelum Deal Pertama.
+                </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-3 reveal-stagger">
+                <div class="faq-item bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-soft">
+                    <h3 class="font-display font-bold text-base md:text-lg text-ink mb-2">Apakah sesi konsultasi benar-benar gratis?</h3>
+                    <p class="text-sm md:text-base text-muted leading-relaxed">Ya, sesi konsultasi awal 15-30 menit via WhatsApp atau video call sepenuhnya gratis. Kami ingin memahami kebutuhan Anda terlebih dahulu sebelum membahas paket dan harga.</p>
+                </div>
+                <div class="faq-item bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-soft" style="animation-delay: 80ms;">
+                    <h3 class="font-display font-bold text-base md:text-lg text-ink mb-2">Apakah saya harus commit setelah konsultasi?</h3>
+                    <p class="text-sm md:text-base text-muted leading-relaxed">Tidak ada kewajiban. Setelah konsultasi, kami kirimkan rekomendasi tertulis via email. Anda bebas memutuskan untuk lanjut atau tidak — tanpa tekanan.</p>
+                </div>
+                <div class="faq-item bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-soft" style="animation-delay: 160ms;">
+                    <h3 class="font-display font-bold text-base md:text-lg text-ink mb-2">Berapa lama respon WhatsApp?</h3>
+                    <p class="text-sm md:text-base text-muted leading-relaxed">Pada jam kerja (Senin-Sabtu, 09.00-18.00 WIB), kami merespons dalam 1 jam. Di luar jam kerja, kami balas di pagi hari berikutnya.</p>
+                </div>
+                <div class="faq-item bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-soft" style="animation-delay: 240ms;">
+                    <h3 class="font-display font-bold text-base md:text-lg text-ink mb-2">Bisa meeting langsung di kantor Bandung?</h3>
+                    <p class="text-sm md:text-base text-muted leading-relaxed">Bisa, dengan janji terlebih dahulu. Meeting online via video call adalah opsi yang lebih fleksibel dan efisien bagi banyak klien kami yang berada di luar kota.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    .hero-grid {
+        background-image: linear-gradient(rgba(15,30,61,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,30,61,.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    .abs-blob {
+        position: absolute; border-radius: 9999px;
+        pointer-events: none; will-change: transform;
+        transform: translateZ(0);
+    }
+    .abs-blob-1 {
+        top: 5rem; right: -8rem;
+        width: 420px; height: 420px;
+        background: rgba(245, 158, 11, 0.12);
+        filter: blur(48px);
+        animation: float-shape 14s ease-in-out infinite;
+    }
+    .abs-blob-2 {
+        bottom: 0; left: -5rem;
+        width: 288px; height: 288px;
+        background: rgba(14, 165, 233, 0.10);
+        filter: blur(40px);
+        animation: float-shape 11s ease-in-out infinite 1.5s;
+    }
+    .abs-blob-3 {
+        top: 20%; left: -10rem;
+        width: 360px; height: 360px;
+        background: rgba(16, 185, 129, 0.10);
+        filter: blur(44px);
+        animation: float-shape 13s ease-in-out infinite 0.8s;
+    }
+    @keyframes float-shape {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(0, -16px); }
+    }
+
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.18) 50%, transparent 75%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    .btn-shine:hover::after { transform: translateX(100%); }
+
+    .abs-radaial-1 {
+        position: absolute; top: -200px; left: -200px;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .stat-orb { position: absolute; border-radius: 9999px; pointer-events: none; filter: blur(40px); }
+    .stat-orb-1 { top: 30%; right: -3rem; width: 200px; height: 200px; background: rgba(245,158,11,0.10); animation: float-shape 9s ease-in-out infinite; }
+
+    .contact-card {
+        position: relative;
+        background: white;
+        border: 1px solid #f1f3f8;
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        display: block;
+    }
+    .contact-card:hover {
+        border-color: #f59e0b;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15);
+    }
+    .contact-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .contact-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #5b6478; }
+    .contact-value { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 800; font-size: 1.0625rem; color: #0b1426; margin: 0.25rem 0; }
+    .contact-sub { font-size: 0.75rem; color: #5b6478; }
+    .contact-arrow {
+        position: absolute; top: 1.5rem; right: 1.5rem;
+        opacity: 0; transform: translateX(-4px);
+        transition: all 0.3s ease;
+    }
+    .contact-card:hover .contact-arrow { opacity: 1; transform: translateX(0); color: #f59e0b; }
+
+    .trust-item-dark {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .trust-item-dark:hover {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(245,158,11,0.4);
+        transform: translateY(-4px);
+    }
+    .trust-icon-dark { font-size: 2rem; margin-bottom: 0.75rem; }
+    .trust-title-dark { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 700; font-size: 1.0625rem; color: white; margin-bottom: 0.5rem; }
+    .trust-desc-dark { font-size: 0.875rem; color: rgba(255,255,255,0.65); line-height: 1.65; }
+
+    .faq-item {
+        transition: all 0.3s ease;
+    }
+    .faq-item:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15);
+    }
+
+    @keyframes anim-fade-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .anim-fade-up {
+        animation: anim-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .abs-blob, .stat-orb, .anim-fade-up { animation: none; }
+    }
+</style>

@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": ["../src/worker-entry.js"],
+  "sourceRoot": "./dryrun",
+  "sourcesContent": ["// Minimal Worker entry \u2014 serves static assets from dist/ via ASSETS binding.\n// Any request that doesn't match a Worker route returns the static file.\nexport default {\n  async fetch(request, env, ctx) {\n    const url = new URL(request.url);\n    try {\n      // Try to serve from assets directory\n      return await env.ASSETS.fetch(request);\n    } catch (e) {\n      // Fallback for routes that don't have static files\n      return new Response('Not Found', { status: 404 });\n    }\n  },\n};\n"],
+  "mappings": ";AAEA,IAAO,uBAAQ;AAAA,EACb,MAAM,MAAM,SAAS,KAAK,KAAK;AAC7B,UAAM,MAAM,IAAI,IAAI,QAAQ,GAAG;AAC/B,QAAI;AAEF,aAAO,MAAM,IAAI,OAAO,MAAM,OAAO;AAAA,IACvC,SAAS,GAAG;AAEV,aAAO,IAAI,SAAS,aAAa,EAAE,QAAQ,IAAI,CAAC;AAAA,IAClD;AAAA,EACF;AACF;",
+  "names": []
+}

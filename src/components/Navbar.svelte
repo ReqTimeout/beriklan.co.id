@@ -1,6 +1,6 @@
 <script>
     import { onMount, tick } from "svelte";
-    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles } from 'lucide-svelte';
+    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles, Bot } from 'lucide-svelte';
 
     let isScrolled = false;
     let isMenuOpen = false;
@@ -35,6 +35,7 @@
 
     const navSingles = [
         { label: 'Digital Marketing', href: '/jasa-digital-marketing' },
+        { label: 'AI Customer Service', href: 'https://haloka.id', external: true, icon: Bot, desc: 'Balas chat 24/7 otomatis' },
         { label: 'Blog', href: '/blog' },
     ];
 
@@ -94,12 +95,16 @@
 <div class="topbar fixed top-0 w-full z-[60] bg-gradient-to-r from-primary via-primary-2 to-primary text-white text-xs hidden md:block transition-transform duration-300 {isScrolled ? '-translate-y-full' : 'translate-y-0'}">
     <div class="container mx-auto px-6 flex items-center justify-between h-9">
         <div class="flex items-center gap-2 font-semibold text-white/90">
-            <span class="relative flex h-1.5 w-1.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
-            </span>
-            <span class="hidden sm:inline">Tim online · respon dalam 1 jam pada jam kerja</span>
-            <span class="sm:hidden">Tim online</span>
+            <a href="https://socio.id" target="_blank" rel="noopener nofollow" class="flex items-center gap-1.5 hover:text-accent transition">
+                <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
+                </span>
+                <Sparkles class="w-3 h-3" />
+                <span class="hidden sm:inline">Social Media Booster</span>
+                <span class="sm:hidden">SMB</span>
+                <ArrowRight class="w-3 h-3 opacity-70" />
+            </a>
         </div>
         <div class="flex items-center gap-6 text-white/80">
             <a href="tel:+62811919328" class="flex items-center gap-1.5 hover:text-accent transition">
@@ -185,6 +190,12 @@
 
             <a href="/blog" class="px-4 py-2 text-sm font-semibold text-primary hover:text-ink transition rounded-full hover:bg-white/50" on:click={closeAll}>
                 Blog
+            </a>
+
+            <a href="https://haloka.id" target="_blank" rel="noopener nofollow" class="ml-1 group relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:shadow-pop hover:scale-[1.03] transition-all" on:click={closeAll}>
+                <Bot class="w-3.5 h-3.5" />
+                AI CS
+                <span class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-400 text-ink text-[9px] font-extrabold rounded-full uppercase tracking-wider shadow-md">Baru</span>
             </a>
         </div>
 
@@ -315,13 +326,29 @@
 
                 {#each navSingles as single, i}
                     <li class="reveal-up" style="animation-delay: {80 + (navGroups.length + i) * 50}ms;">
-                        <a href={single.href} class="group-btn" on:click={closeAll}>
-                            <span class="group-num">0{navGroups.length + i + 1}</span>
+                        <a
+                            href={single.href}
+                            target={single.external ? '_blank' : undefined}
+                            rel={single.external ? 'noopener nofollow' : undefined}
+                            class="group-btn"
+                            class:external-link={single.external}
+                            on:click={closeAll}
+                        >
+                            <span class="group-num">{single.external ? '★' : `0${navGroups.length + i + 1}`}</span>
                             <span class="flex-1 text-left">
-                                <span class="group-label">{single.label}</span>
-                                <span class="group-count">Halaman lengkap</span>
+                                <span class="group-label">
+                                    {single.label}
+                                    {#if single.external}
+                                        <span class="popular-pill">External</span>
+                                    {/if}
+                                </span>
+                                <span class="group-count">{single.desc || 'Halaman lengkap'}</span>
                             </span>
-                            <ArrowRight class="w-4 h-4 text-white/60" />
+                            {#if single.icon}
+                                <svelte:component this={single.icon} class="w-4 h-4 text-white/60" />
+                            {:else}
+                                <ArrowRight class="w-4 h-4 text-white/60" />
+                            {/if}
                         </a>
                     </li>
                 {/each}

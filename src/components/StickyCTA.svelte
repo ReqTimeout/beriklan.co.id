@@ -2,9 +2,10 @@
     import { onMount } from 'svelte';
     import { MessageCircle, X, Phone, Mail, ArrowRight } from 'lucide-svelte';
 
-    let visible = false;
-    let isOpen = false;
-    let dismissed = false;
+    let visible = false;       // show after scroll 500
+    let isOpen = false;         // mobile sheet state
+    let panelOpen = true;      // desktop panel state (start open)
+    let dismissed = false;     // permanently hide whole component
     let unread = true;
     let rafId = null;
     let isMobile = false;
@@ -37,17 +38,27 @@
     });
 
     function toggle() {
-        isOpen = !isOpen;
-        if (isOpen) unread = false;
+        if (isMobile) {
+            isOpen = !isOpen;
+        } else {
+            panelOpen = !panelOpen;
+        }
+        if ((isMobile && isOpen) || (!isMobile && panelOpen)) unread = false;
     }
 
     function closeAll() {
         isOpen = false;
     }
 
+    function closePanel() {
+        panelOpen = false;
+        unread = false;
+    }
+
     function dismiss() {
         dismissed = true;
         isOpen = false;
+        panelOpen = false;
     }
 </script>
 
@@ -63,7 +74,7 @@
     {/if}
 
     <div class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-3 pointer-events-none">
-        <!-- Expanded panel — Desktop: auto-open, always visible. Mobile: bottom sheet -->
+        <!-- Expanded panel — Desktop: toggleable. Mobile: bottom sheet -->
         {#if isMobile}
             {#if isOpen}
                 <div class="pointer-events-auto sticky-panel bg-white rounded-3xl shadow-2xl border border-gray-100 w-[calc(100vw-2rem)] overflow-hidden">
@@ -73,9 +84,9 @@
                             type="button"
                             on:click={closeAll}
                             aria-label="Tutup"
-                            class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                            class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
                         >
-                            <X class="w-4 h-4" />
+                            <X class="w-5 h-5" strokeWidth="2.5" />
                         </button>
                         <div class="relative flex items-center gap-3">
                             <div class="relative">
@@ -142,18 +153,18 @@
                     </div>
                 </div>
             {/if}
-        {:else}
-            <!-- Desktop: always-expanded vertical channel panel (high-convert) -->
+        {:else if panelOpen}
+            <!-- Desktop: panel toggleable via X in header & FAB mini launcher -->
             <div class="pointer-events-auto sticky-panel bg-white rounded-2xl shadow-2xl border border-gray-100 w-[280px] overflow-hidden">
                 <div class="relative bg-gradient-to-br from-ink via-primary-2 to-ink px-4 py-4 text-white">
                     <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, rgba(245,158,11,0.25) 0%, transparent 50%);"></div>
                     <button
                         type="button"
-                        on:click={dismiss}
-                        aria-label="Sembunyikan"
-                        class="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                        on:click={closePanel}
+                        aria-label="Sembunyikan panel"
+                        class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
                     >
-                        <X class="w-3.5 h-3.5" />
+                        <X class="w-4 h-4" strokeWidth="2.5" />
                     </button>
                     <div class="relative flex items-center gap-2.5">
                         <div class="relative">
@@ -212,13 +223,13 @@
             </div>
         {/if}
 
-        <!-- Floating launcher — only show on mobile (FAB) or as collapse toggle on desktop -->
+        <!-- Floating launcher — Mobile: open/close sheet. Desktop: re-open panel if hidden -->
         {#if isMobile}
             <button
                 type="button"
                 on:click={toggle}
                 class="pointer-events-auto relative w-14 h-14 rounded-full bg-gradient-to-br from-accent to-orange-500 text-ink shadow-2xl flex items-center justify-center fab-btn group"
-                aria-label="Buka menu kontak"
+                aria-label={isOpen ? 'Tutup menu kontak' : 'Buka menu kontak'}
                 aria-expanded={isOpen}
             >
                 {#if !isOpen && unread}
@@ -235,22 +246,21 @@
                     <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-md">1</span>
                 {/if}
             </button>
-        {:else}
-            <!-- Desktop mini launcher: small circular toggle to re-open if dismissed -->
+        {:else if !panelOpen}
+            <!-- Desktop mini launcher to re-open panel -->
             <button
                 type="button"
                 on:click={toggle}
                 class="pointer-events-auto relative w-12 h-12 rounded-full bg-gradient-to-br from-accent to-orange-500 text-ink shadow-xl flex items-center justify-center fab-btn group"
-                aria-label="Sembunyikan panel kontak"
-                aria-expanded={isOpen}
+                aria-label="Buka panel kontak"
+                aria-expanded={panelOpen}
             >
                 <span class="relative w-5 h-5">
-                    {#if isOpen}
-                        <X class="w-full h-full" />
-                    {:else}
-                        <svg class="w-full h-full" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg>
-                    {/if}
+                    <MessageCircle class="w-full h-full group-hover:scale-110 transition-transform" fill="currentColor" />
                 </span>
+                {#if unread}
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-md">1</span>
+                {/if}
             </button>
         {/if}
     </div>

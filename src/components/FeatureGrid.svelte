@@ -1,7 +1,14 @@
 <script>
-    import { Target, Repeat, MapPin, Database, Users, MessageCircle, Sparkles, TrendingUp, BarChart3, Camera, Video, Music, ShoppingBag, Smartphone, Search, Eye, Heart } from 'lucide-svelte';
+    import { Target, Repeat, MapPin, Database, Users, MessageCircle, Sparkles, TrendingUp, BarChart3, Camera, Video, Music, ShoppingBag, Smartphone, Search, Eye, Heart, Zap, Lock, Layers, Globe, Shield, Code, Server, SparkleIcon, Briefcase, BarChart, TrendingUp as TrendingUp2 } from 'lucide-svelte';
 
-    const iconMap = { Target, Repeat, MapPin, Database, Users, MessageCircle, Sparkles, TrendingUp, BarChart3, Camera, Video, Music, ShoppingBag, Smartphone, Search, Eye, Heart };
+    const iconMap = {
+        Target, Repeat, MapPin, Database, Users, MessageCircle, Sparkles,
+        TrendingUp, BarChart3, Camera, Video, Music, ShoppingBag, Smartphone,
+        Search, Eye, Heart,
+        Zap, Lock, Layers,
+        Globe, Shield, Code, Server,
+        Briefcase, TrendingUp2,
+    };
 
     export let items = [];
 </script>

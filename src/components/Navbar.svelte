@@ -95,16 +95,11 @@
 <div class="topbar fixed top-0 w-full z-[60] bg-gradient-to-r from-primary via-primary-2 to-primary text-white text-xs hidden md:block transition-transform duration-300 {isScrolled ? '-translate-y-full' : 'translate-y-0'}">
     <div class="container mx-auto px-6 flex items-center justify-between h-9">
         <div class="flex items-center gap-2 font-semibold text-white/90">
-            <a href="https://socio.id" target="_blank" rel="noopener nofollow" class="flex items-center gap-1.5 hover:text-accent transition">
-                <span class="relative flex h-1.5 w-1.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
-                </span>
-                <Sparkles class="w-3 h-3" />
-                <span class="hidden sm:inline">Social Media Booster</span>
-                <span class="sm:hidden">SMB</span>
-                <ArrowRight class="w-3 h-3 opacity-70" />
-            </a>
+            <span class="relative flex h-1.5 w-1.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
+            </span>
+            <span>Tim online &middot; respon dalam 1 jam pada jam kerja</span>
         </div>
         <div class="flex items-center gap-6 text-white/80">
             <a href="tel:+62811919328" class="flex items-center gap-1.5 hover:text-accent transition">

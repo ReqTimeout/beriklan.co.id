@@ -127,13 +127,13 @@
     </div>
 {/if}
 
-<!-- FAB launcher -->
-{#if !hideOnScroll || !isMobile}
+<!-- FAB launcher — mobile only (desktop pakai StickyCTA) -->
+{#if (!hideOnScroll || !isMobile) && isMobile}
 <button
     type="button"
     on:click={toggleOpen}
     aria-label={isOpen ? 'Tutup menu chat' : 'Buka menu chat WhatsApp'}
-    class="wa-float group"
+    class="wa-float group md:!hidden"
     class:visible
     class:is-mobile={isMobile}
     class:is-open={isOpen}

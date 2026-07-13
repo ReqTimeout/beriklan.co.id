@@ -1,6 +1,6 @@
 <script>
     import { onMount, tick } from "svelte";
-    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles, Bot } from 'lucide-svelte';
+    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles, Bot, Radio } from 'lucide-svelte';
 
     let isScrolled = false;
     let isMenuOpen = false;
@@ -36,6 +36,7 @@
     const navSingles = [
         { label: 'Digital Marketing', href: '/jasa-digital-marketing' },
         { label: 'AI Customer Service', href: 'https://haloka.id', external: true, icon: Bot, desc: 'Balas chat 24/7 otomatis' },
+        { label: 'View Live', href: '/jasa-view-live', icon: Radio, desc: 'Boost viewers live streaming' },
         { label: 'Blog', href: '/blog' },
     ];
 

@@ -1,0 +1,888 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import PricingCards from '../components/PricingCards.svelte';
+import FaqAccordion from '../components/FaqAccordion.svelte';
+import RelatedServices from '../components/RelatedServices.svelte';
+import FeatureGrid from '../components/FeatureGrid.svelte';
+import StepGrid from '../components/StepGrid.svelte';
+import Footer from '../components/Footer.svelte';
+import { MessageCircle, ArrowRight, Radio, Sparkles, Target, Zap, Users, Shield, Database, Clock, Tv, Cast, TrendingUp, Check, Smartphone, Globe } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20untuk%20live%20streaming.%20Mohon%20info%20paket%20dan%20harga.";
+
+const tiers = [
+    {
+        name: 'Pemanasan',
+        priceLabel: '12.000',
+        duration: '20 viewers / 1 jam live',
+        tagline: 'Cocok untuk live pendek, tes, atau warming up sebelum live utama.',
+        features: [
+            '20 viewers real aktif masuk gradual',
+            'Durasi sampai 1 jam live',
+            'Multi-platform (TikTok, Shopee, YouTube, IG, Twitch)',
+            'Cocok untuk live pendek atau tes',
+            'Tanpa risiko untuk akun Anda',
+        ],
+        priceNote: 'harga per sesi live',
+        disclaimer: 'Viewers masuk dalam 5-15 menit setelah order.',
+    },
+    {
+        name: 'Starter',
+        priceLabel: '25.000',
+        duration: '50 viewers / 1 jam live',
+        tagline: 'Untuk live rutin yang butuh boost awal biar algoritma notice Anda.',
+        features: [
+            '50 viewers real aktif',
+            'Durasi sampai 1 jam live',
+            'Multi-platform (semua channel)',
+            'Cocok untuk seller & streamer pemula',
+            'Star Pick — paket paling sering dipilih',
+        ],
+        priceNote: 'Rp 500/viewer/jam',
+        disclaimer: 'Bonus paket mingguan/bulanan: diskon 10-15%.',
+        highlight: true,
+    },
+    {
+        name: 'Basic',
+        priceLabel: '45.000',
+        duration: '100 viewers / 1 jam live',
+        tagline: 'Sweet spot untuk seller Shopee Live yang mau boost ranking.',
+        features: [
+            '100 viewers real aktif stay selama live',
+            'Durasi sampai 1 jam live',
+            'Multi-platform (semua channel)',
+            'Cocok untuk seller Shopee / TikTok Shop',
+            'Real account, no bot — aman untuk akun',
+        ],
+        priceNote: 'Rp 450/viewer/jam',
+        disclaimer: 'Cocok untuk live mingguan / konsistensi algorithm boost.',
+    },
+    {
+        name: 'Pro',
+        priceLabel: '80.000',
+        duration: '200 viewers / 1 jam live',
+        tagline: 'Untuk yang serius push conversion dan product placement.',
+        features: [
+            '200 viewers real aktif',
+            'Durasi sampai 1 jam live',
+            'Multi-platform semua channel',
+            'Cocok untuk launching produk & event',
+            'Boost organic distribution algorithm',
+        ],
+        priceNote: 'Rp 400/viewer/jam',
+        disclaimer: 'Repeat order diskon khusus.',
+    },
+    {
+        name: 'Bisnis',
+        priceLabel: '115.000',
+        duration: '300 viewers / 1 jam live',
+        tagline: 'Untuk brand dan toko yang live commerce setiap hari.',
+        features: [
+            '300 viewers real aktif',
+            'Durasi sampai 1 jam live',
+            'Multi-platform semua channel',
+            'Cocok untuk brand rutin live commerce',
+            'Support prioritas + dedicated account manager',
+        ],
+        priceNote: 'Rp 383/viewer/jam',
+        disclaimer: 'Cocok untuk paket mingguan dengan jadwal tetap.',
+    },
+    {
+        name: 'Premium',
+        priceLabel: '175.000',
+        duration: '500 viewers / 1 jam live',
+        tagline: 'Untuk event launching besar atau live dengan target viewers tinggi.',
+        features: [
+            '500 viewers real aktif',
+            'Durasi sampai 1 jam live',
+            'Multi-platform semua channel',
+            'Cocok untuk launching / event korporat',
+            'Support 24/7 + flexible reschedule',
+        ],
+        priceNote: 'Rp 350/viewer/jam',
+        disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.',
+    },
+];
+
+const features = [
+    { iconName: 'Sparkles', title: 'Real Account, No Bot', desc: 'Viewer dari kami adalah akun aktif — bukan automation bot. Behavior manusiawi, interaksi natural, no flag dari platform.' },
+    { iconName: 'Users', title: 'Boost Algorithm Organik', desc: 'Platform (TikTok, Shopee, YouTube, IG, Twitch) memprioritaskan live dengan viewers aktif — boost eksposur sampai 3-5x lebih luas dari biasanya.' },
+    { iconName: 'TrendingUp', title: 'Masuk Gradual 5-15 Menit', desc: 'Viewers tidak muncul tiba-tiba. Mereka join gradual sejak menit pertama — bikin live Anda kelihatan organik dan trending di For You / Explore.' },
+    { iconName: 'Shield', title: 'Aman untuk Akun Anda', desc: 'Viewers tidak like/comment spam yang trigger flag platform. Tidak ada aktivitas dari akun Anda — kami handle dari sisi viewer. Sudah dipakai 1.200+ seller tanpa satu pun kena masalah.' },
+    { iconName: 'Smartphone', title: 'Multi-Platform Sekaligus', desc: 'Satu order, lima platform. Live TikTok + Shopee + YouTube + Instagram + Twitch — semua boost viewers bersamaan.' },
+    { iconName: 'Clock', title: 'Start dalam 5 Menit', desc: 'Setelah order dikonfirmasi, viewers mulai masuk. Tidak perlu rekam dulu — kalau live Anda sudah jalan, kami ikut real-time.' },
+];
+
+const steps = [
+    { num: '01', tag: 'HARI H', title: 'Kirim Detail Live', desc: 'Share username/platform/tanggal/jam mulai ke tim kami via WhatsApp. Order dikonfirmasi max 30 menit setelah detail lengkap.' },
+    { num: '02', tag: 'HARI H', title: 'Pembayaran & Persiapan', desc: 'Transfer via QRIS/e-wallet. Invoice langsung dikirim. Untuk paket besar, DP 50% dimungkinkan.' },
+    { num: '03', tag: 'LIVE', title: 'Viewers Bergabung', desc: 'Saat live Anda mulai, viewers kami join gradual dalam 5-15 menit. Tidak tiba-tiba, tidak mencurigakan — terlihat natural.' },
+    { num: '04', tag: 'POST-LIVE', title: 'Evaluasi & Recurrence', desc: 'Setelah live selesai, kami bisa evaluasi performa. Mau jadwal rutin Selasa-Jumat? Kami bisa kasih diskon 10-15% untuk paket berulang.' },
+];
+
+const faqs = [
+    { q: 'Apakah viewer-nya bot atau akun asli?', a: 'Akun asli, no automation. Mereka adalah user aktif platform yang stay sesuai durasi live. Interaksi mereka natural dan manusiawi — tidak ada like/comment spam yang bisa trigger flag.' },
+    { q: 'Apakah aman untuk akun saya?', a: 'Sangat aman. Viewers dari kami tidak berinteraksi aneh dari akun Anda — semua aktivitas berasal dari viewer, bukan akun Anda. Sudah dipakai 1.200+ seller dan streamer tanpa satu pun akun kena masalah.' },
+    { q: 'Berapa lama viewers muncul setelah order?', a: '5-15 menit setelah live Anda mulai. Tidak langsung muncul tiba-tiba — gradual seperti live normal pada umumnya.' },
+    { q: 'Platform apa saja yang didukung?', a: 'TikTok Live, Shopee Live, YouTube Live, Instagram Live, Twitch, Lazada Live. Platform lain yang support live streaming juga bisa — chat dulu saja untuk konfirmasi.' },
+    { q: 'Bisakah order untuk viewer lebih dari 500 atau paket bulanan?', a: 'Bisa. Untuk 500+ viewers atau paket mingguan/bulanan dengan jadwal tetap, kita ngobrol dulu via WA untuk dapat harga terbaik. Recurring schedule (misal: tiap Selasa & Jumat) bisa dapet diskon tambahan 10-15%.' },
+    { q: 'Apa yang terjadi kalau viewers drop sebelum durasi selesai?', a: 'Kalau viewers drop karena force majeure atau platform issue, kami refund pro-rata atau replace viewers di sesi berikutnya. Yang penting komunikasi dulu — kami komunikatif, bukan template bot.' },
+    { q: 'Apakah ada minimum durasi live?', a: 'Order 1 sesi = viewers masuk untuk 1 jam durasi live. Untuk live lebih panjang, bisa dihitung sebagai multiple sesi atau paket khusus.' },
+];
+
+const relatedItems = [
+    { icon: '📱', label: 'Jasa Iklan TikTok', desc: 'Untuk live TikTok yang sudah berjalan dan butuh paid traffic tambahan.', href: '/jasa-iklan-tiktok' },
+    { icon: '🛍️', label: 'Kelola Instagram', desc: 'Manajemen konten Instagram rutin untuk omni-channel marketing.', href: '/jasa-kelola-instagram' },
+    { icon: '🎬', label: 'Jasa Iklan YouTube', desc: 'Untuk YouTube Ads yang menyasar viewers berdedikasi.', href: '/jasa-iklan-youtube' },
+];
+
+const categoryLabels = {
+    'meta': 'Facebook & Instagram',
+    'tiktok': 'TikTok',
+    'google': 'Google Ads',
+    'youtube': 'YouTube',
+    'strategy': 'Strategi',
+    'case-study': 'Studi Kasus',
+};
+---
+
+<Layout title="Jasa View Live Multi-Platform | Boost Viewers Live Streaming — Beriklan" description="Boost viewers live streaming untuk TikTok, Shopee, YouTube, Instagram, Twitch. Real account, no bot, aman untuk akun Anda. Mulai Rp 12.000 untuk 20 viewers.">
+
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <svg class="absolute left-1/2 -translate-x-1/2 top-32 w-40 h-12 opacity-30 hidden lg:block" viewBox="0 0 160 40" aria-hidden="true">
+            <path d="M5,20 Q40,5 80,20 T155,20" stroke="#0f1e3d" stroke-width="1.5" fill="none" stroke-dasharray="3 5"/>
+        </svg>
+
+        <div class="container mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+            <div class="space-y-7 text-center lg:text-left">
+                <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    <Radio class="w-3 h-3" />
+                    <span class="opacity-0 anim-fade-in">Jasa View Live · TikTok, Shopee, YouTube, IG, Twitch</span>
+                </div>
+
+                <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight">
+                    <span class="anim-fade-up">Live Sepi,</span><br/>
+                    <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">Algoritma Tidak Mau Angkat</span><br/>
+                    <span class="anim-fade-up" style="animation-delay: 160ms;">— Kami Solusinya.</span>
+                </h1>
+
+                <p class="hero-sub text-base md:text-lg text-muted leading-relaxed max-w-xl mx-auto lg:mx-0 anim-fade-up" style="animation-delay: 240ms;">
+                    Algorithm TikTok, Shopee Live, YouTube Live — semuanya satu prinsip: live yang ramai naik. Viewer riil dari kami masuk gradual sejak menit pertama, bikin live Anda kelihatan trending — tanpa flag, tanpa bot, tanpa risiko untuk akun Anda.
+                </p>
+
+                <div class="hero-ctas flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2 anim-fade-up" style="animation-delay: 320ms;">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop overflow-hidden btn-shine">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Order Viewers Live
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 group-hover:rotate-12 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink hover:-translate-y-0.5 transition-all">
+                        Lihat Paket & Harga
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </a>
+                </div>
+
+                <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">Mulai Rp 12.000</strong> untuk 20 viewers</span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Real account, <strong class="text-ink">no bot</strong></span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Aman untuk akun Anda</span></div>
+                </div>
+            </div>
+
+            <div class="relative flex justify-center lg:justify-end anim-fade-up" style="animation-delay: 400ms;">
+                <!-- Live streaming preview -->
+                <div class="relative w-full max-w-md mx-auto">
+                    <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-primary-2 to-ink border-4 border-white shadow-2xl aspect-[9/16] max-h-[560px] relative">
+                        <!-- Top bar: TikTok style -->
+                        <div class="absolute top-0 left-0 right-0 p-3 flex items-center gap-2 bg-gradient-to-b from-ink/80 to-transparent z-10">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-accent flex items-center justify-center text-white text-xs font-bold">@</div>
+                            <div class="flex-1">
+                                <p class="text-white text-xs font-bold">@brand_kamu</p>
+                                <p class="text-white/70 text-[10px] flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                    LIVE
+                                </p>
+                            </div>
+                            <div class="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">Live</div>
+                        </div>
+                        <!-- Viewer count -->
+                        <div class="absolute top-12 right-3 z-10 px-2 py-1 bg-white/15 backdrop-blur-md rounded-full text-white text-[10px] font-bold flex items-center gap-1">
+                            <Users class="w-3 h-3" />
+                            <span>500 viewers</span>
+                        </div>
+                        <!-- Chat overlay -->
+                        <div class="absolute bottom-12 left-3 right-3 space-y-1.5 z-10 max-h-32 overflow-hidden">
+                            <div class="flex items-start gap-1.5">
+                                <span class="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold rounded">User1</span>
+                                <span class="text-white text-[11px] drop-shadow">keren banget live nya 🔥</span>
+                            </div>
+                            <div class="flex items-start gap-1.5">
+                                <span class="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold rounded">User2</span>
+                                <span class="text-white text-[11px] drop-shadow">mau dong diskonnya</span>
+                            </div>
+                            <div class="flex items-start gap-1.5">
+                                <span class="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold rounded">User3</span>
+                                <span class="text-white text-[11px] drop-shadow">stok masih ada ga kak?</span>
+                            </div>
+                        </div>
+                        <!-- Bottom CTA -->
+                        <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-ink/90 to-transparent">
+                            <div class="bg-accent text-ink text-center py-2 rounded-full text-xs font-bold">BELI SEKARANG</div>
+                        </div>
+                        <!-- Product overlay -->
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-accent/30 to-pink-500/30 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center">
+                                <div class="text-center">
+                                    <p class="text-white text-[10px] font-bold uppercase tracking-wider">Featured</p>
+                                    <p class="text-white text-base font-bold">Product</p>
+                                    <p class="text-accent text-sm font-extrabold">Rp 99K</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Live badge -->
+                        <div class="absolute top-12 left-3 z-10">
+                            <div class="flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                LIVE NOW
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Cocok untuk semua platform live</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>TikTok Live</span><span class="text-white/30">·</span>
+                    <span>Shopee Live</span><span class="text-white/30">·</span>
+                    <span>YouTube Live</span><span class="text-white/30">·</span>
+                    <span>Instagram Live</span><span class="text-white/30">·</span>
+                    <span>Twitch</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== WHY FACEBOOK ADS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Kenapa View Live Penting
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Live sepi = algoritma mengabaikan Anda.<br/>
+                    <span class="text-accent">Tapi kami tahu cara membalikkannya.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Semua platform live — TikTok, Shopee, YouTube, Instagram, Twitch — punya satu kesamaan: mereka memprioritaskan live dengan viewers aktif. Live dengan 500 viewers naik 5x lebih sering di For You / Explore dibanding live dengan 50 viewers. Kami bantu Anda memulai momentum itu.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="why-card group">
+                    <div class="why-icon">
+                        <Sparkles class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="why-title">Algorithm Boost</h3>
+                    <p class="why-desc">Platform memprioritaskan live dengan viewers aktif. Boost viewers = boost distribusi organik sampai 5x lebih luas dari biasanya.</p>
+                </div>
+                <div class="why-card group" style="animation-delay: 100ms;">
+                    <div class="why-icon">
+                        <Shield class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="why-title">100% Aman</h3>
+                    <p class="why-desc">Viewers dari kami akun riil, bukan bot automation. Tidak ada aktivitas dari akun Anda — sudah dipakai 1.200+ seller tanpa satu pun kena masalah.</p>
+                </div>
+                <div class="why-card group" style="animation-delay: 200ms;">
+                    <div class="why-icon">
+                        <Globe class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="why-title">Multi-Platform</h3>
+                    <p class="why-desc">Satu order = boost di TikTok, Shopee, YouTube, Instagram, Twitch sekaligus. Hemat waktu dan biaya dibanding order terpisah.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FEATURES GRID ====================== -->
+    <section id="fitur" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    6 Keunggulan Layanan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Kenapa layanan kami berbeda<br/>
+                    <span class="text-accent">dari viewer bot pada umumnya.</span>
+                </h2>
+            </div>
+
+            <FeatureGrid items={features} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, rgba(15,30,61,0.05) 1px, transparent 0); background-size: 32px 32px;"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Dari order sampai live naik,<br/>
+                    <span class="text-accent">kurang dari 30 menit.</span>
+                </h2>
+            </div>
+
+            <StepGrid items={steps} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Enam paket, dari pemanasan<br/>
+                    <span class="text-accent">sampai launching akbar.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Semua paket sudah termasuk viewers riil (bukan bot), gradual entry, dan support via WhatsApp. Untuk paket mingguan/bulanan atau viewer 500+, chat dulu untuk harga khusus.
+                </p>
+            </div>
+
+            <PricingCards tiers={tiers} pageSlug="View Live Multi-Platform" highlightIndex={1} columns={3} client:only="svelte" />
+
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Butuh paket recurring atau viewer 500+?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan jadwal live dan objective Anda.</p>
+                            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Chat via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== STATS / TRUST ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="abs-radaial-1"></div>
+        <div class="stat-orb stat-orb-1"></div>
+        <div class="stat-orb stat-orb-2"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Bukti Nyata
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    1.200+ seller &amp; streamer<br/>
+                    <span class="text-accent">sudah pakai layanan ini.</span>
+                </h2>
+                <p class="text-white/60 mt-4 text-base max-w-xl mx-auto">
+                    Bukan janji — hanya hasil yang bisa diverifikasi sendiri di akun Anda.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto reveal-stagger">
+                <div class="stat-card">
+                    <div class="stat-num">1.200+</div>
+                    <div class="stat-label">Seller &amp; Streamer aktif</div>
+                    <div class="stat-bar"><span style="width: 100%"></span></div>
+                    <p class="stat-foot">sepanjang 2024-2026</p>
+                </div>
+                <div class="stat-card" style="animation-delay: 80ms;">
+                    <div class="stat-num">5x</div>
+                    <div class="stat-label">Boost distribusi</div>
+                    <div class="stat-bar"><span style="width: 85%"></span></div>
+                    <p class="stat-foot">rata-rata For You / Explore</p>
+                </div>
+                <div class="stat-card" style="animation-delay: 160ms;">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Akun kena masalah</div>
+                    <div class="stat-bar"><span style="width: 5%"></span></div>
+                    <p class="stat-foot">sepanjang penggunaan</p>
+                </div>
+                <div class="stat-card" style="animation-delay: 240ms;">
+                    <div class="stat-num">15%</div>
+                    <div class="stat-label">Diskon paket recurring</div>
+                    <div class="stat-bar"><span style="width: 100%"></span></div>
+                    <p class="stat-foot">untuk jadwal tetap mingguan</p>
+                </div>
+            </div>
+
+            <div class="mt-14 grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">
+                        <Shield class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="trust-title-dark">Aman untuk akun Anda</h3>
+                    <p class="trust-desc-dark">Viewers dari kami akun riil aktif — no bot, no flag. Tidak ada aktivitas dari akun Anda. 1.200+ seller &amp; streamer tanpa satu pun kena masalah.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">
+                        <Clock class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="trust-title-dark">Masuk gradual 5-15 menit</h3>
+                    <p class="trust-desc-dark">Viewers join gradual sejak menit pertama live. Tidak muncul tiba-tiba — terlihat natural dan trending di For You / Explore page.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">
+                        <TrendingUp class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="trust-title-dark">Tanpa minimum kontrak</h3>
+                    <p class="trust-desc-dark">Order per sesi, bayar per order. Anda bebas order sesuai jadwal live. Untuk paket recurring mingguan/bulanan, diskon 10-15%.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang sudah<br/>
+                    <span class="text-accent">naikkan live-nya lewat kami.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Live TikTok Shop biasanya cuma 30-50 viewers. Setelah pakai layanan ini dari 100 viewers, distribusi naik 4x dan masuk FYP beberapa kali. Closing rate juga naik karena viewers aktif lihat produk lebih lama.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">
+                            <Cast class="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p class="tst-name">Rina Marlina</p>
+                            <p class="tst-role">Seller Skincare · Bandung</p>
+                            <p class="tst-metric">30 → 100 viewers · closing +40%</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Twitch channel saya stuck di 20 viewers untuk berbulan-bulan. Setelah coba paket Bisnis, viewership naik stabil di 300+. Komunitas jadi aktif, donasi masuk, dan partner tertarik kolaborasi karena metrics membaik.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-purple-500 to-indigo-500">
+                            <Tv class="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p class="tst-name">Andika Pratama</p>
+                            <p class="tst-role">Streamer Twitch · Jakarta</p>
+                            <p class="tst-metric">20 → 300 viewers · partnership deal</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Untuk launching produk baru, kami order paket Premium 500 viewers. Live Shopee conversion naik 3x dari biasanya. Real account, no flag dari Shopee. Repeat order setiap launching jadi.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-orange-500 to-amber-500">
+                            <Sparkles class="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p class="tst-name">Dewi Anggraini</p>
+                            <p class="tst-role">Brand Owner Fashion · Surabaya</p>
+                            <p class="tst-metric">Conversion 3x saat launching</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <svg class="absolute -left-12 top-16 w-40 h-40 opacity-40 hidden md:block" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+                <linearGradient id="faqGradLive" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="url(#faqGradLive)" stroke-width="2" stroke-dasharray="4 6"/>
+            <circle cx="50" cy="50" r="28" fill="none" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1.5"/>
+            <text x="50" y="58" text-anchor="middle" font-size="36" font-weight="900" fill="#f59e0b" fill-opacity="0.2">?</text>
+        </svg>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum order, ini yang biasanya ditanya
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum order pertama.</span>
+                </h2>
+            </div>
+
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <RelatedServices items={relatedItems} client:visible />
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+
+        <div class="floating-emoji emoji-1 hidden lg:flex">📡</div>
+        <div class="floating-emoji emoji-2 hidden lg:flex">📺</div>
+        <div class="floating-emoji emoji-3 hidden lg:flex">🎬</div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam pada jam kerja
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Live berikutnya tidak<br/>
+                    <span class="text-accent">perlu sepi.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Ceritakan tanggal live Anda via WhatsApp. Kami kirim rekomendasi paket & timeline. Tanpa komitmen — order hanya saat Anda siap live.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            <MessageCircle class="w-5 h-5" />
+                            Order via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+                <p class="text-white/50 text-xs mt-6">Paket recurring mingguan/bulanan · diskon 10-15%</p>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    .hero-grid {
+        background-image: linear-gradient(rgba(15,30,61,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,30,61,.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    .abs-blob {
+        position: absolute; border-radius: 9999px;
+        pointer-events: none; will-change: transform;
+        transform: translateZ(0);
+    }
+    .abs-blob-1 {
+        top: 5rem; right: -8rem;
+        width: 420px; height: 420px;
+        background: rgba(244, 114, 182, 0.14);
+        filter: blur(48px);
+        animation: float-shape 14s ease-in-out infinite;
+    }
+    .abs-blob-2 {
+        bottom: 0; left: -5rem;
+        width: 288px; height: 288px;
+        background: rgba(245, 158, 11, 0.10);
+        filter: blur(40px);
+        animation: float-shape 11s ease-in-out infinite 1.5s;
+    }
+    .abs-blob-3 {
+        top: 10%; left: -10rem;
+        width: 360px; height: 360px;
+        background: rgba(168, 85, 247, 0.10);
+        filter: blur(44px);
+        animation: float-shape 13s ease-in-out infinite 0.8s;
+    }
+    @keyframes float-shape {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(0, -16px); }
+    }
+
+    .check-icon {
+        width: 18px; height: 18px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        position: relative;
+        flex-shrink: 0;
+    }
+    .check-icon::after {
+        content: '';
+        position: absolute;
+        top: 4px; left: 6px;
+        width: 4px; height: 8px;
+        border-right: 2px solid white;
+        border-bottom: 2px solid white;
+        transform: rotate(45deg);
+    }
+
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.18) 50%, transparent 75%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    .btn-shine:hover::after { transform: translateX(100%); }
+    .btn-shine-accent { position: relative; overflow: hidden; }
+    .btn-shine-accent::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(15,30,61,0.15) 50%, transparent 75%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    .btn-shine-accent:hover::after { transform: translateX(100%); }
+
+    .cta-grid {
+        background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+
+    .abs-radaial-1 {
+        position: absolute; top: -200px; left: -200px;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .abs-radaial-2 {
+        position: absolute; top: -100px; right: -150px;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(244,114,182,0.18) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .stat-orb { position: absolute; border-radius: 9999px; pointer-events: none; filter: blur(40px); }
+    .stat-orb-1 { top: 20%; left: -3rem; width: 220px; height: 220px; background: rgba(244,114,182,0.10); animation: float-shape 9s ease-in-out infinite; }
+    .stat-orb-2 { bottom: 10%; right: -2rem; width: 180px; height: 180px; background: rgba(245,158,11,0.10); animation: float-shape 11s ease-in-out infinite 1s; }
+
+    /* Why cards */
+    .why-card {
+        background: white;
+        border-radius: 1.25rem;
+        padding: 1.75rem;
+        border: 1px solid #f1f3f8;
+        transition: all 0.3s ease;
+    }
+    .why-card:hover {
+        border-color: #f59e0b;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15);
+    }
+    .why-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,146,60,0.18));
+        color: #f59e0b;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    .why-card:hover .why-icon { transform: scale(1.08) rotate(-4deg); }
+    .why-title { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 800; font-size: 1.125rem; color: #0b1426; margin-bottom: 0.5rem; }
+    .why-desc { font-size: 0.9rem; color: #5b6478; line-height: 1.6; }
+
+    /* Stat cards */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(245, 158, 11, 0.18);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .stat-card:hover {
+        border-color: rgba(245, 158, 11, 0.5);
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px -8px rgba(245, 158, 11, 0.25);
+    }
+    .stat-num {
+        font-family: "Plus Jakarta Sans Variable", sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        line-height: 1;
+        background: linear-gradient(135deg, #f472b6 0%, #f59e0b 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label { font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+    .stat-bar {
+        position: relative; height: 4px;
+        background: rgba(255, 255, 255, 0.08); border-radius: 9999px;
+        overflow: hidden; margin-top: 0.875rem;
+    }
+    .stat-bar span {
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, #f472b6, #f59e0b);
+        border-radius: 9999px;
+        transform-origin: left;
+        animation: bar-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+    }
+    @keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .stat-foot { margin-top: 0.5rem; font-size: 0.6875rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; }
+
+    /* Trust items dark */
+    .trust-item-dark {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .trust-item-dark:hover {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(245,158,11,0.4);
+        transform: translateY(-4px);
+    }
+    .trust-icon-dark {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #fbbf24;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 0.75rem;
+        transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .trust-item-dark:hover .trust-icon-dark { transform: scale(1.08) rotate(-4deg); background: rgba(245,158,11,0.18); }
+    .trust-title-dark { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 700; font-size: 1.0625rem; color: white; margin-bottom: 0.5rem; }
+    .trust-desc-dark { font-size: 0.875rem; color: rgba(255,255,255,0.65); line-height: 1.65; }
+
+    /* Testimonial cards */
+    .tst-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem 1.75rem;
+        border: 1px solid #f1f3f8;
+        box-shadow: 0 1px 2px rgba(15,30,61,.04), 0 8px 24px rgba(15,30,61,.06);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .tst-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15); }
+    .tst-quote-mark {
+        position: absolute; top: -20px; right: 20px;
+        font-family: serif; font-size: 6rem; line-height: 1;
+        color: rgba(245,158,11,0.15);
+        pointer-events: none;
+    }
+    .tst-body { font-size: 0.9375rem; color: #5b6478; line-height: 1.7; margin-bottom: 1.5rem; }
+    .tst-author { display: flex; align-items: center; gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid #f1f3f8; }
+    .tst-avatar {
+        width: 2.75rem; height: 2.75rem;
+        border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .tst-name { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 700; font-size: 0.875rem; color: #0b1426; }
+    .tst-role { font-size: 0.75rem; color: #5b6478; margin-top: 0.125rem; }
+    .tst-metric { font-size: 0.75rem; color: #f59e0b; font-weight: 700; margin-top: 0.25rem; }
+
+    .floating-emoji {
+        position: absolute;
+        border-radius: 1rem;
+        align-items: center; justify-content: center;
+        font-size: 1.25rem;
+        backdrop-filter: blur(8px);
+        animation: float-shape 7s ease-in-out infinite;
+    }
+    .emoji-1 {
+        top: 5rem; left: 6rem;
+        width: 56px; height: 56px;
+        background: rgba(244, 114, 182, 0.15);
+        border: 1px solid rgba(244, 114, 182, 0.3);
+        animation-delay: 1s;
+    }
+    .emoji-2 {
+        top: 9rem; right: 7rem;
+        width: 48px; height: 48px;
+        background: rgba(245, 158, 11, 0.18);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        animation-delay: 1.5s;
+    }
+    .emoji-3 {
+        bottom: 7rem; right: 8rem;
+        width: 52px; height: 52px;
+        background: rgba(168, 85, 247, 0.18);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        animation-delay: 3s;
+    }
+
+    @keyframes anim-fade-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .anim-fade-up {
+        animation: anim-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+    }
+    .anim-fade-in { animation: fadeIn 0.6s ease 0.2s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    @media (prefers-reduced-motion: reduce) {
+        .abs-blob, .stat-orb, .anim-fade-up, .anim-fade-in { animation: none; }
+    }
+</style>

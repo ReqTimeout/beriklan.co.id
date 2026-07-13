@@ -6,6 +6,23 @@
     let allPosts = [];
     let loaded = false;
 
+    // Unsplash fallback images by category (per /UNSPLASH-PHOTOS.md)
+    const unsplashByCategory = {
+        meta: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+        google: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
+        tiktok: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+        youtube: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+        strategy: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
+        'case-study': 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80&fm=avif&fit=crop',
+    };
+    const unsplashDefault = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&fm=avif&fit=crop';
+
+    function getImage(post) {
+        if (post.featuredImage) return post.featuredImage;
+        if (post.category && unsplashByCategory[post.category]) return unsplashByCategory[post.category];
+        return unsplashDefault;
+    }
+
     onMount(async () => {
         try {
             const res = await fetch('/data/posts-index.json');
@@ -64,17 +81,8 @@
                 {#each featuredPosts as post}
                     <a href="/blog/{post.slug}" class="featured-card group">
                         <div class="featured-thumb">
-                            {#if post.featuredImage}
-                                <img src={post.featuredImage} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent"></div>
-                            {:else}
-                                <div class="absolute inset-0 bg-gradient-to-br from-primary-2 via-accent to-teal flex items-center justify-center">
-                                    <img src="/logoweb.webp" alt={post.title} class="w-1/3 h-1/3 object-contain opacity-90" loading="lazy" />
-                                </div>
-                                <div class="absolute top-3 right-3 px-2 py-1 bg-white/15 backdrop-blur-sm border border-white/30 text-white text-[10px] font-bold uppercase tracking-wider rounded">
-                                    {post.category || 'Insight'}
-                                </div>
-                            {/if}
+                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent"></div>
                             <span class="absolute top-3 left-3 px-2 py-1 bg-accent text-ink text-[10px] font-bold uppercase tracking-wider rounded">Featured</span>
                         </div>
                         <div class="p-5">
@@ -101,15 +109,9 @@
                     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
                         {#each gridPosts as post}
                             <a href="/blog/{post.slug}" class="grid-card group">
-                                {#if post.featuredImage}
-                                    <div class="grid-thumb">
-                                        <img src={post.featuredImage} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-                                    </div>
-                                {:else}
-                                    <div class="grid-thumb bg-gradient-to-br from-primary-2 via-accent to-teal flex items-center justify-center">
-                                        <img src="/logoweb.webp" alt={post.title} class="w-1/4 h-1/4 object-contain opacity-90" loading="lazy" />
-                                    </div>
-                                {/if}
+                                <div class="grid-thumb">
+                                    <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                                </div>
                         <div class="p-5">
                             <span class="inline-block px-2 py-0.5 bg-soft text-ink text-[10px] font-bold uppercase tracking-wider rounded mb-3">{categories.find(c => c.id === post.category)?.label}</span>
                             <h4 class="font-display font-bold text-base text-ink leading-tight mb-2 group-hover:text-accent transition-colors line-clamp-2">{post.title}</h4>

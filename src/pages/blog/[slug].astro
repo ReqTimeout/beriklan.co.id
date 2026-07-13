@@ -6,6 +6,29 @@ import Footer from '../../components/Footer.svelte';
 import { Calendar, Clock, ArrowRight, ArrowLeft, MessageCircle, BookOpen, Tag } from 'lucide-svelte';
 import posts from '../../data/posts.json';
 
+// AdSense configuration (per post)
+const ADSENSE_CLIENT = 'ca-pub-4438184351486735';
+// IMPORTANT: Replace ad-slot ID with your actual ad unit ID from AdSense dashboard
+const ADSENSE_SLOT_INLINE = '1234567890';
+const ADSENSE_SLOT_AFTER = '9876543210';
+
+// Unsplash photo mapping per category (per UNSPLASH-PHOTOS.md)
+const unsplashByCategory = {
+    meta: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+    google: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
+    tiktok: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+    youtube: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
+    strategy: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
+    'case-study': 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80&fm=avif&fit=crop',
+};
+
+// Pick featured image: post.featuredImage OR category fallback
+function getFeaturedImage(post) {
+    if (post.featuredImage) return post.featuredImage;
+    if (post.category && unsplashByCategory[post.category]) return unsplashByCategory[post.category];
+    return 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&fm=avif&fit=crop';
+}
+
 export function getStaticPaths() {
     return posts.map((post) => ({
         params: { slug: post.slug },
@@ -14,6 +37,7 @@ export function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+const featuredImage = getFeaturedImage(post);
 
 const waLink = `https://wa.me/62811919328?text=${encodeURIComponent(`Halo Beriklan, saya tertarik dengan topik "${post.title}" — mohon info lebih lanjut.`)}`;
 
@@ -122,15 +146,44 @@ const articleSchema = {
 
     <article class="py-14 md:py-20 bg-white">
         <div class="container mx-auto px-6 max-w-6xl">
-            {post.featuredImage && (
+            {featuredImage && (
                 <div class="mb-10 rounded-2xl overflow-hidden border border-gray-100 shadow-soft">
-                    <img src={post.featuredImage} alt={post.title} class="w-full h-auto max-h-[480px] object-cover" loading="eager" />
+                    <img src={featuredImage} alt={post.title} class="w-full h-auto max-h-[480px] object-cover" loading="eager" />
                 </div>
             )}
 
             <div class="grid lg:grid-cols-12 gap-10">
                 <div class="lg:col-span-8">
+                    <!-- AdSense: Inline (in-article) -->
+                    <div class="my-8 p-4 bg-soft/30 rounded-xl border border-gray-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                        <ins class="adsbygoogle"
+                             style="display:block; text-align:center;"
+                             data-ad-layout="in-article"
+                             data-ad-format="fluid"
+                             data-ad-client={ADSENSE_CLIENT}
+                             data-ad-slot={ADSENSE_SLOT_INLINE}></ins>
+                        <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+                                crossorigin="anonymous"></script>
+                        <script is:inline>
+                            (adsbygoogle = window.adsbygoogle || []).push({{}});
+                        </script>
+                    </div>
+
                     <div class="prose prose-lg max-w-none text-ink leading-relaxed" set:html={post.content} />
+
+                    <!-- AdSense: After-article -->
+                    <div class="mt-10 p-4 bg-soft/30 rounded-xl border border-gray-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-format="fluid"
+                             data-ad-client={ADSENSE_CLIENT}
+                             data-ad-slot={ADSENSE_SLOT_AFTER}></ins>
+                        <script is:inline>
+                            (adsbygoogle = window.adsbygoogle || []).push({{}});
+                        </script>
+                    </div>
 
                     {post.tags.length > 0 && (
                         <div class="mt-12 pt-8 border-t border-gray-100">

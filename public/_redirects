@@ -1,6 +1,7 @@
 # Cloudflare Pages redirects — generated from url_classification.csv
-# 301 (permanent) preserves SEO; 410 (gone) for irrelevant construction/lab topics
+# 301 (permanent) preserves SEO; 410 (gone) lines removed (CF _redirects parser doesn't support 410)
 # Format: <source> <destination> <code>
+
 
 /manfaat-menggunakan-jasa-google-ads-untuk-bisnis-anda.html /blog/manfaat-menggunakan-jasa-google-ads-untuk-bisnis-anda/ 301
 /membangun-brand-awareness-dengan-konten-tiktok.html /blog/membangun-brand-awareness-dengan-konten-tiktok/ 301
@@ -56,7 +57,6 @@
 /jasa-pasang-iklan-di-halaman-1-google.html /blog/jasa-pasang-iklan-di-halaman-1-google/ 301
 /jasa-pembuatan-website-murah-surabaya.html /blog/jasa-pembuatan-website-murah-surabaya/ 301
 /jasa-pasang-iklan-facebook-murah-2023.html /blog/jasa-pasang-iklan-facebook-murah/ 301
-/harga-alat-laboratorium-teknik-sipil.html 410
 /jasa-pembuatan-video-iklan-instagram.html /blog/jasa-pembuatan-video-iklan-instagram/ 301
 /jasa-pembuatan-landing-page-malaysia.html /jasa-landing-page/malaysia/ 301
 /jasa-pembuatan-landing-page-sidoarjo.html /jasa-landing-page/sidoarjo/ 301
@@ -132,7 +132,6 @@
 /jasa-iklan-instagram-kuala-lumpur.html /jasa-instagram/kuala-lumpur/ 301
 /jasa-iklan-facebook-bandung-murah.html /blog/jasa-iklan-facebook-bandung/ 301
 /jasa-admin-instagram-kuala-lumpur.html /jasa-instagram/kuala-lumpur/ 301
-/jual-alat-uji-laboratorium-aspal.html 410
 /harga-pasang-iklan-di-google-ads.html /blog/harga-pasang-iklan-di-google-ads/ 301
 /biaya-pasang-iklan-di-google-ads.html /blog/biaya-pasang-iklan-di-google-ads/ 301
 /jasa-iklan-google-ads-murah-2025.html /blog/jasa-iklan-google-ads-murah/ 301
@@ -406,7 +405,6 @@
 /jasa-iklan-youtube-tangerang.html /jasa-youtube/tangerang/ 301
 /jasa-iklan-youtube-pontianak.html /jasa-youtube/pontianak/ 301
 /jasa-iklan-youtube-palembang.html /jasa-youtube/palembang/ 301
-/alat-laboratorium-uji-tanah.html 410
 /beriklan-di-google-ads-2025.html /blog/beriklan-di-google-ads/ 301
 /jasa-iklan-fb-ads-tertarget.html /blog/jasa-iklan-fb-ads-tertarget/ 301
 /pasang-iklan-youtube-lombok.html /jasa-youtube/lombok/ 301
@@ -479,7 +477,6 @@
 /jasa-iklan-youtube-surabaya.html /jasa-youtube/surabaya/ 301
 /jasa-iklan-youtube-sidoarjo.html /jasa-youtube/sidoarjo/ 301
 /jasa-iklan-youtube-malaysia.html /jasa-youtube/malaysia/ 301
-/supplier-alat-teknik-sipil.html 410
 /beriklan-dengan-google-ads.html /blog/beriklan-dengan-google-ads/ 301
 /facebook-dan-instagram-ads.html /blog/facebook-dan-instagram-ads/ 301
 /jasa-video-iklan-instagram.html /blog/jasa-video-iklan-instagram/ 301
@@ -547,7 +544,6 @@
 /jasa-iklan-youtube-bandung.html /jasa-youtube/bandung/ 301
 /jasa-iklan-youtube-jakarta.html /jasa-youtube/jakarta/ 301
 /jasa-iklan-youtube-lampung.html /jasa-youtube/lampung/ 301
-/laboratorium-teknik-sipil.html 410
 /harga-iklan-di-google-ads.html /blog/harga-iklan-di-google-ads/ 301
 /beriklan-di-facebook-2025.html /blog/beriklan-di-facebook/ 301
 /jasa-pembuatan-google-ads.html /blog/jasa-pembuatan-google-ads/ 301
@@ -654,7 +650,6 @@
 /jasa-iklan-youtube-depok.html /jasa-youtube/depok/ 301
 /jasa-iklan-youtube-medan.html /jasa-youtube/medan/ 301
 /jasa-iklan-youtube-batam.html /jasa-youtube/batam/ 301
-/alat-laboratorium-beton.html 410
 /jasa-iklan-youtube-2025.html /blog/jasa-iklan-youtube/ 301
 /beriklan-di-google-2025.html /blog/beriklan-di-google/ 301
 /jasa-google-ads-jakarta.html /jasa-google-ads/jakarta/ 301
@@ -695,7 +690,6 @@
 /jasa-iklan-youtube-bali.html /jasa-youtube/bali/ 301
 /jasa-iklan-youtube-aceh.html /jasa-youtube/aceh/ 301
 /jasa-iklan-youtube-solo.html /jasa-youtube/solo/ 301
-/harga-core-drill-beton.html 410
 /harga-iklan-google-ads.html /blog/harga-iklan-google-ads/ 301
 /promosi-di-google-2025.html /blog/promosi-di-google/ 301
 /beriklan-di-google-ads.html /blog/beriklan-di-google-ads/ 301
@@ -758,8 +752,6 @@
 /cara-iklan-di-tiktok.html /blog/cara-iklan-di-tiktok/ 301
 /iklan-facebook-murah.html /blog/iklan-facebook-murah/ 301
 /apa-itu-facebook-ads.html /blog/apa-itu-facebook-ads/ 301
-/jual-alat-lab-tanah.html 410
-/jual-alat-lab-beton.html 410
 /iklan-google-search.html /blog/iklan-google-search/ 301
 /iklan-instagram-ads.html /blog/iklan-instagram-ads/ 301
 /iklan-video-youtube.html /blog/iklan-video-youtube/ 301
@@ -779,7 +771,6 @@
 /beriklan-di-youtube.html /blog/beriklan-di-youtube/ 301
 /iklan-di-google-ads.html /blog/iklan-di-google-ads/ 301
 /jasa-iklan-facebook.html /blog/jasa-iklan-facebook/ 301
-/harga-coring-beton.html 410
 /jasa-iklan-digital.html /blog/jasa-iklan-digital/ 301
 /iklan-ads-facebook.html /blog/iklan-ads-facebook/ 301
 /iklan-facebook-ads.html /blog/iklan-facebook-ads/ 301
@@ -795,7 +786,6 @@
 /iklan-di-instagram.html /blog/iklan-di-instagram/ 301
 /jasa-ads-instagram.html /blog/jasa-ads-instagram/ 301
 /beriklan-di-tiktok.html /blog/beriklan-di-tiktok/ 301
-/alat-teknik-sipil.html 410
 /jasa-iklan-ig-ads.html /blog/jasa-iklan-ig-ads/ 301
 /jasa-iklan-google.html /blog/jasa-iklan-google/ 301
 /jasa-fb-ads-murah.html /blog/jasa-fb-ads-murah/ 301
@@ -810,8 +800,6 @@
 /jasa-iklan-fb-ads.html /blog/jasa-iklan-fb-ads/ 301
 /promosi-di-tiktok.html /blog/promosi-di-tiktok/ 301
 /jasa-iklan-tiktok.html /blog/jasa-iklan-tiktok/ 301
-/harga-core-drill.html 410
-/core-drill-beton.html 410
 /google-ads-harga.html /blog/google-ads-harga/ 301
 /harga-google-ads.html /blog/harga-google-ads/ 301
 /google-ads-iklan.html /blog/google-ads-iklan/ 301

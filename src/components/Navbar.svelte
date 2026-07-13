@@ -27,8 +27,18 @@
         { label: 'Landing Page + Ads', href: '/jasa-pembuatan-landing-page', desc: 'Bundle Rp 1.999.000' },
     ];
 
+    const buzzerLive = [
+        { label: 'Lihat Semua Platform', href: '/jasa-view-live', desc: 'Perbandingan harga & fitur' },
+        { label: 'TikTok Live', href: '/jasa-view-live/tiktok', desc: 'Boost FYP algorithm' },
+        { label: 'Shopee Live', href: '/jasa-view-live/shopee', desc: 'Boost ranking produk' },
+        { label: 'YouTube Live', href: '/jasa-view-live/youtube', desc: 'Boost watch time' },
+        { label: 'Instagram Live', href: '/jasa-view-live/instagram', desc: 'Boost IG reach' },
+        { label: 'Twitch Live', href: '/jasa-view-live/twitch', desc: 'Boost direktori' },
+    ];
+
     const navGroups = [
         { key: 'paid', label: 'Paid Ads', Icon: Sparkles, items: paidAds, accent: 'from-amber-500 to-orange-500', popular: true },
+        { key: 'buzzer', label: 'Buzzer Live', Icon: Radio, items: buzzerLive, accent: 'from-pink-500 to-cyan-400', popular: true },
         { key: 'organic', label: 'Social Media', Icon: MessageCircle, items: organic, accent: 'from-cyan-500 to-teal-500' },
         { key: 'build', label: 'Website & Landing Page', Icon: ArrowRight, items: build, accent: 'from-violet-500 to-purple-500' },
     ];
@@ -36,7 +46,6 @@
     const navSingles = [
         { label: 'Digital Marketing', href: '/jasa-digital-marketing' },
         { label: 'AI Customer Service', href: 'https://haloka.id', external: true, icon: Bot, desc: 'Balas chat 24/7 otomatis' },
-        { label: 'View Live', href: '/jasa-view-live', icon: Radio, desc: 'Boost viewers live streaming' },
         { label: 'Blog', href: '/blog' },
     ];
 

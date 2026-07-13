@@ -14,11 +14,11 @@ const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20terta
 
 const tiers = [
     { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up sebelum live utama biar algoritma notice Anda sejak awal.', features: ['20 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform (semua channel)', 'Cocok untuk live pendek atau tes', 'Tanpa risiko untuk channel Twitch'], priceNote: 'harga per sesi live', disclaimer: 'Viewers real account, no bot.' },
-    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar FYP algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk streamer & creator baru', 'Real account, no flag dari TikTok'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih seller TikTok.', highlight: true },
+    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar Twitch algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk Twitch creator & streamer', 'Real account, no flag dari Twitch'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih Twitch user.', highlight: true },
     { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam live', tagline: 'Sweet spot untuk seller Twitch yang mau boost ranking & konversi.', features: ['100 viewers riil stay selama live', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk seller Twitch', 'distribusi direktori'], priceNote: 'Rp 450/viewer/jam', disclaimer: 'Cocok untuk live mingguan.' },
     { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam live', tagline: 'Untuk launching produk baru & live event yang butuh distribusi FYP luas.', features: ['200 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching & event', 'Boost organik distribusi direktori'], priceNote: 'Rp 400/viewer/jam', disclaimer: 'Repeat order diskon khusus.' },
-    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam live', tagline: 'Untuk brand dan toko yang live commerce TikTok rutin setiap hari.', features: ['300 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live harian', 'Support prioritas + account manager'], priceNote: 'Rp 383/viewer/jam', disclaimer: 'Cocok untuk paket mingguan.' },
-    { name: 'Premium', priceLabel: '175.000', duration: '500 viewers / 1 jam live', tagline: 'Untuk launching event TikTok besar atau push viral dengan target viewers tinggi.', features: ['500 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching viral', 'Support 24/7 + flexible reschedule'], priceNote: 'Rp 350/viewer/jam', disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.' },
+    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam live', tagline: 'Untuk brand dan toko yang live commerce Twitch rutin setiap hari.', features: ['300 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live harian', 'Support prioritas + account manager'], priceNote: 'Rp 383/viewer/jam', disclaimer: 'Cocok untuk paket mingguan.' },
+    { name: 'Premium', priceLabel: '175.000', duration: '500 viewers / 1 jam live', tagline: 'Untuk launching event Twitch besar atau push viral dengan target viewers tinggi.', features: ['500 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching viral', 'Support 24/7 + flexible reschedule'], priceNote: 'Rp 350/viewer/jam', disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.' },
 ];
 
 const features = [
@@ -54,7 +54,7 @@ const relatedItems = [
 ];
 ---
 
-<Layout title="Jasa View Live Twitch | Boost Viewers Concurrent Viewers — Beriklan" description="Boost viewers live streaming TikTok agar Twitch algorithm notice live Anda. Real account, no bot, aman untuk akun TikTok. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/twitch/">
+<Layout title="Jasa View Live Twitch | Boost Viewers Concurrent Viewers — Beriklan" description="Boost viewers live streaming TikTok agar Twitch algorithm notice live Anda. Real account, no bot, aman untuk akun Twitch. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/twitch/">
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -63,7 +63,7 @@ const relatedItems = [
         <div class="absolute inset-0 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5]"></div>
         <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 48px 48px;"></div>
 
-        <!-- Floating TikTok logo blur (background) -->
+        <!-- Floating Twitch logo blur (background) -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20 blur-3xl" style="background: conic-gradient(from 0deg, #ff0050, #00f2ea, #ff0050); animation: spin 30s linear infinite; border-radius: 50%;"></div>
 
         <!-- Floating music notes animation -->
@@ -89,7 +89,7 @@ const relatedItems = [
                 </h1>
 
                 <p class="hero-sub text-base md:text-lg text-white/80 leading-relaxed max-w-xl mx-auto lg:mx-0 anim-fade-up" style="animation-delay: 240ms;">
-                    Twitch memprioritaskan live dengan viewers aktif. 100+ viewers = 5x lebih besar jangkauan. Viewer riil dari kami join gradual sejak menit pertama — bikin algoritma TikTok notice live Anda, tanpa flag, tanpa bot, tanpa risiko shadow ban.
+                    Twitch memprioritaskan live dengan viewers aktif. 100+ viewers = 5x lebih besar jangkauan. Viewer riil dari kami join gradual sejak menit pertama — bikin algorithm Twitch notice live Anda, tanpa flag, tanpa bot, tanpa risiko shadow ban.
                 </p>
 
                 <div class="hero-ctas flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2 anim-fade-up" style="animation-delay: 320ms;">
@@ -112,10 +112,10 @@ const relatedItems = [
                 </div>
             </div>
 
-            <!-- TikTok live mockup with real TikTok logo + platform-specific animations -->
+            <!-- Twitch live mockup with real TikTok logo + platform-specific animations -->
             <div class="relative flex justify-center lg:justify-end anim-fade-up" style="animation-delay: 400ms;">
                 <div class="relative w-full max-w-md mx-auto">
-                    <!-- Floating TikTok logo big behind -->
+                    <!-- Floating Twitch logo big behind -->
                     <div class="absolute -top-12 -right-12 w-40 h-40 opacity-30 blur-2xl pointer-events-none" style="background: linear-gradient(135deg, #ff0050, #00f2ea); border-radius: 50%; animation: pulse 3s ease-in-out infinite;"></div>
 
                     <!-- Music equalizer bars (TikTok style) -->

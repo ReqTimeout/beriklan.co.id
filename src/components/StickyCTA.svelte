@@ -84,7 +84,7 @@
                             type="button"
                             on:click={closeAll}
                             aria-label="Tutup"
-                            class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
+                            class="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
                         >
                             <X class="w-5 h-5" strokeWidth="2.5" />
                         </button>
@@ -162,7 +162,7 @@
                         type="button"
                         on:click={closePanel}
                         aria-label="Sembunyikan panel"
-                        class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
+                        class="absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition"
                     >
                         <X class="w-4 h-4" strokeWidth="2.5" />
                     </button>

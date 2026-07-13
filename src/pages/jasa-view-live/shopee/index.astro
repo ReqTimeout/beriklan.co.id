@@ -1,0 +1,269 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import Footer from '../../../components/Footer.svelte';
+import { MessageCircle, ArrowRight, Radio, Sparkles, Users, Shield, Clock, TrendingUp, Check, Smartphone, Tv, Video, Heart, ShoppingBag, ShoppingCart, Zap, Star } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20Shopee.%20Mohon%20info%20paket%20dan%20harga.";
+
+const tiers = [
+    { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up Shopee Live sebelum flash sale.', features: ['20 viewers riil', 'Multi-platform', 'Cocok untuk live pendek', 'Tanpa risiko', 'Support WhatsApp'], priceNote: 'per sesi', disclaimer: 'Viewers real account.' },
+    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam', tagline: 'Untuk seller Shopee pemula yang mau boost live pertama.', features: ['50 viewers riil', 'Multi-platform', 'Real account', 'Boost algoritma Shopee', 'Support WhatsApp'], priceNote: 'Rp 500/viewer', highlight: true, disclaimer: 'Paling laris seller Shopee.' },
+    { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam', tagline: 'Sweet spot untuk seller Shopee rutin.', features: ['100 viewers riil', 'Boost FYP Shopee', 'Cocok untuk live harian', 'Multi-platform', 'Tanpa risiko'], priceNote: 'Rp 450/viewer', disclaimer: 'Paling sering dipilih.' },
+    { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam', tagline: 'Untuk launching produk baru di Shopee Live.', features: ['200 viewers riil', 'Boost konversi', 'Cocok untuk flash sale', 'Multi-platform', 'Support prioritas'], priceNote: 'Rp 400/viewer', disclaimer: 'Recurring diskon 10%.' },
+    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam', tagline: 'Untuk brand Shopee rutin setiap hari.', features: ['300 viewers riil', 'Cocok untuk live commerce', 'Multi-platform', 'Support account manager', 'Laporan mingguan'], priceNote: 'Rp 383/viewer', disclaimer: 'Cocok untuk paket mingguan.' },
+    { name: 'Premium', priceLabel: '175.000', duration: '500 viewers / 1 jam', tagline: 'Untuk launching event Shopee besar.', features: ['500 viewers riil', 'Cocok untuk launching', 'Multi-platform', 'Support 24/7', 'Flexible reschedule'], priceNote: 'Rp 350/viewer', disclaimer: 'Untuk >500, custom.' },
+];
+
+const features = [
+    { iconName: 'ShoppingCart', title: 'Boost Live Shopping Shopee', desc: 'Shopee Live algorithm memprioritaskan live dengan viewers aktif. Boost viewers = boost ranking produk di feed & hasil pencarian.' },
+    { iconName: 'Users', title: 'Real Account Shopee', desc: 'Viewers dari kami akun Shopee aktif — bukan bot. Mereka stay, watch, dan berpotensi add to cart.' },
+    { iconName: 'TrendingUp', title: 'Masuk Gradual 5-15 Menit', desc: 'Viewers join gradual sejak menit pertama live. Shopee algorithm notice live Anda sebagai live yang sedang trending.' },
+    { iconName: 'Shield', title: 'Aman untuk Toko Shopee', desc: 'Viewers dari kami tidak add-to-cart spam yang bisa trigger flag Shopee. Tidak ada aktivitas dari akun toko Anda.' },
+    { iconName: 'Sparkles', title: 'Masuk Shopee Live + Lainnya', desc: 'Order untuk Shopee Live, viewers juga bisa stay di platform lain yang sedang live bersamaan.' },
+    { iconName: 'Clock', title: 'Start dalam 5 Menit', desc: 'Live Shopee Anda yang sudah jalan? Kami ikut real-time. Tidak perlu rekam ulang.' },
+];
+
+const steps = [
+    { num: '01', tag: 'HARI H', title: 'Kirim Detail Live Shopee', desc: 'Share username Shopee + tanggal/jam mulai live. Order dikonfirmasi max 30 menit.' },
+    { num: '02', tag: 'HARI H', title: 'Pembayaran', desc: 'Transfer via QRIS/e-wallet. Invoice langsung. DP 50% untuk paket besar.' },
+    { num: '03', tag: 'LIVE', title: 'Viewers Join', desc: 'Saat Shopee Live Anda mulai, viewers join gradual 5-15 menit. Algoritma Shopee notice live Anda.' },
+    { num: '04', tag: 'POST-LIVE', title: 'Evaluasi', desc: 'Setelah live, kami evaluasi performa. Recurring schedule 2-3x seminggu diskon 10-15%.' },
+];
+
+const faqs = [
+    { q: 'Apakah viewers-nya bot atau akun asli Shopee?', a: 'Akun asli Shopee, no automation. Mereka user aktif yang stay sesuai durasi live. Interaksi natural.' },
+    { q: 'Apakah aman untuk toko Shopee saya?', a: 'Sangat aman. Viewers tidak add-to-cart spam. Tidak ada aktivitas dari akun toko. 1.200+ live tanpa satu pun kena masalah.' },
+    { q: 'Berapa lama viewers muncul setelah Shopee Live mulai?', a: '5-15 menit setelah live dimulai. Gradual seperti Shopee Live normal.' },
+    { q: 'Apakah membantu algoritma Shopee Live?', a: 'Ya. Shopee memprioritaskan live dengan viewers aktif. Boost viewers = boost ranking di feed Shopee.' },
+    { q: 'Bisa order untuk viewers lebih dari 500 atau paket harian?', a: 'Bisa. Untuk 500+ viewers atau paket harian/mingguan, chat dulu via WA. Recurring diskon 10-15%.' },
+    { q: 'Apakah viewers stay selama durasi live Shopee?', a: 'Ya. Stay sesuai durasi yang Anda pesan. Tidak ada yang tiba-tiba pergi di tengah live.' },
+    { q: 'Bagaimana jika Shopee memberi flag setelah order?', a: 'Belum pernah terjadi. Viewers dari kami interaksi natural. Tidak ada pattern bot yang Shopee bisa detect.' },
+];
+
+const relatedItems = [
+    { icon: '📱', label: 'Jasa View Live TikTok', desc: 'Untuk live TikTok yang fokus ke FYP algorithm.', href: '/jasa-view-live/tiktok' },
+    { icon: '🎬', label: 'Jasa View Live Instagram', desc: 'Untuk IG Live brand dan creator.', href: '/jasa-view-live/instagram' },
+    { icon: '📡', label: 'Jasa View Live Multi-Platform', desc: 'Satu order, semua platform live.', href: '/jasa-view-live' },
+];
+---
+
+<Layout title="Jasa View Live Shopee | Boost Live Shopping Algorithm — Beriklan" description="Boost viewers live Shopee agar ranking produk naik di feed. Real account Shopee aktif, no bot, aman untuk toko. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/shopee/">
+
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <svg class="absolute left-1/2 -translate-x-1/2 top-32 w-40 h-12 opacity-30 hidden lg:block" viewBox="0 0 160 40" aria-hidden="true"><path d="M5,20 Q40,5 80,20 T155,20" stroke="#0f1e3d" stroke-width="1.5" fill="none" stroke-dasharray="3 5"/></svg>
+        <div class="container mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+            <div class="space-y-7 text-center lg:text-left">
+                <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>
+                    <span class="opacity-0 anim-fade-in">Jasa View Live Shopee · Live Shopping Algorithm</span>
+                </div>
+                <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight">
+                    <span class="anim-fade-up">Live Shopee Sepi,</span><br/>
+                    <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">Produk Tidak Naik di Feed.</span><br/>
+                    <span class="anim-fade-up" style="animation-delay: 160ms;">— Live Shopping Butuh Viewers.</span>
+                </h1>
+                <p class="hero-sub text-base md:text-lg text-muted leading-relaxed max-w-xl mx-auto lg:mx-0 anim-fade-up" style="animation-delay: 240ms;">
+                    Shopee Live algorithm memprioritaskan live dengan viewers aktif. Lebih banyak viewers = lebih tinggi ranking produk di feed Shopee. Viewer riil dari kami join gradual 5-15 menit, tanpa flag, tanpa bot, tanpa risiko untuk toko Shopee Anda.
+                </p>
+                <div class="hero-ctas flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2 anim-fade-up" style="animation-delay: 320ms;">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop overflow-hidden btn-shine">
+                        <span class="relative z-10 flex items-center gap-2">Order Viewers Shopee<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 group-hover:rotate-12 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink hover:-translate-y-0.5 transition-all">Lihat Paket & Harga<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></a>
+                </div>
+                <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">Mulai Rp 12.000</strong> untuk 20 viewers</span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Real account, <strong class="text-ink">no bot</strong></span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Aman untuk toko Shopee</span></div>
+                </div>
+            </div>
+            <div class="relative flex justify-center lg:justify-end anim-fade-up" style="animation-delay: 400ms;">
+                <div class="relative w-full max-w-md mx-auto">
+                    <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 border-4 border-white shadow-2xl aspect-[9/16] max-h-[560px] relative">
+                        <div class="absolute top-0 left-0 right-0 p-3 flex items-center gap-2 bg-gradient-to-b from-black/80 to-transparent z-10">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white text-xs font-bold">S</div>
+                            <div class="flex-1"><p class="text-white text-xs font-bold">@toko_shopee</p><p class="text-white/70 text-[10px] flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>LIVE · 800 watching</p></div>
+                            <div class="px-2 py-1 bg-orange-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">Shopee</div>
+                        </div>
+                        <div class="absolute top-12 right-3 z-10 px-2 py-1 bg-white/15 backdrop-blur-md rounded-full text-white text-[10px] font-bold flex items-center gap-1"><ShoppingBag class="w-3 h-3" /><span>100 viewers</span></div>
+                        <div class="absolute top-12 left-3 z-10"><div class="flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>LIVE NOW</div></div>
+                        <div class="absolute bottom-12 left-3 right-3 space-y-1.5 z-10 max-h-32 overflow-hidden">
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-orange-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user1</span><span class="text-white text-[11px] drop-shadow">keren live nya 🔥</span></div>
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-orange-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user2</span><span class="text-white text-[11px] drop-shadow">stok ready ga kak?</span></div>
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-red-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user3</span><span class="text-white text-[11px] drop-shadow">kak ini diskon berapa?</span></div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none"><div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-orange-500/40 to-red-500/40 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center"><div class="text-center"><p class="text-white text-[10px] font-bold uppercase tracking-wider">Shopee</p><p class="text-white text-base font-bold">Live</p><p class="text-orange-300 text-sm font-extrabold">Rp 99K</p></div></div></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/95 to-transparent"><div class="bg-orange-500 text-white text-center py-2 rounded-full text-xs font-bold flex items-center justify-center gap-1"><ShoppingCart class="w-3 h-3" />BELI SEKARANG</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Optimal untuk Shopee</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold">
+                    <span>Live Shopping</span><span class="text-white/30">·</span><span>Boost Ranking</span><span class="text-white/30">·</span><span>Real-time Chat</span><span class="text-white/30">·</span><span>Add to Cart</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-8 h-px bg-accent"></span>Kenapa View Live Shopee<span class="w-8 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">Shopee Live algorithm satu hal:<br/><span class="text-accent">banyak viewers = ranking naik.</span></h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">Shopee For You Page & ranking produk memprioritaskan live dengan viewers aktif. Live dengan 100+ viewers muncul lebih sering di rekomendasi — conversion naik 3-4x dibanding live sepi.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="why-card group"><div class="why-icon"><ShoppingCart class="w-6 h-6" strokeWidth="2.2" /></div><h3 class="why-title">Boost Live Shopping</h3><p class="why-desc">Shopee Live memprioritaskan live dengan viewers aktif. Boost viewers = boost ranking produk di feed & hasil pencarian.</p></div>
+                <div class="why-card group" style="animation-delay: 100ms;"><div class="why-icon"><Shield class="w-6 h-6" strokeWidth="2.2" /></div><h3 class="why-title">Aman untuk Toko</h3><p class="why-desc">Viewers dari kami akun Shopee aktif. Tidak add-to-cart spam. Tidak ada aktivitas dari akun toko. 1.200+ live tanpa satu pun kena masalah.</p></div>
+                <div class="why-card group" style="animation-delay: 200ms;"><div class="why-icon"><Heart class="w-6 h-6" strokeWidth="2.2" fill="currentColor" /></div><h3 class="why-title">Cocok untuk Live Shopping</h3><p class="why-desc">Viewers aktif lihat produk lebih lama, conversion naik 3-4x dibanding live sepi. Cocok untuk flash sale, launching, dan live rutin.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="fitur" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-8 h-px bg-accent"></span>6 Keunggulan<span class="w-8 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">Kenapa layanan kami berbeda<br/><span class="text-accent">dari viewer bot biasa.</span></h2>
+            </div>
+            <FeatureGrid items={features} client:visible />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, rgba(15,30,61,0.05) 1px, transparent 0); background-size: 32px 32px;"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-6 h-px bg-accent"></span>Cara Kerja<span class="w-6 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">Dari order sampai ranking naik,<br/><span class="text-accent">kurang dari 30 menit.</span></h2>
+            </div>
+            <StepGrid items={steps} client:visible />
+        </div>
+    </section>
+
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-8 h-px bg-accent"></span>Paket & Harga<span class="w-8 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">Enam paket, dari pemanasan<br/><span class="text-accent">sampai launching akbar.</span></h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">Semua paket sudah termasuk viewers riil, gradual entry, dan support via WhatsApp. Untuk paket mingguan/bulanan atau viewer 500+, chat dulu untuk harga khusus.</p>
+            </div>
+            <PricingCards tiers={tiers} pageSlug="View Live Shopee" highlightIndex={1} columns={3} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal"><div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft"><div class="flex items-start gap-3"><div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0"><Check class="w-5 h-5 text-accent" strokeWidth="2.5" /></div><div><p class="font-display font-bold text-base text-ink mb-1">Butuh paket harian atau launching event?</p><p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan jadwal live Shopee dan target konversi Anda.</p><a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">Chat via WhatsApp<ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" /></a></div></div></div></div>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="abs-radaial-1"></div><div class="stat-orb stat-orb-1"></div><div class="stat-orb stat-orb-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-8 h-px bg-accent"></span>Bukti Nyata<span class="w-8 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">Sudah 1.200+ seller Shopee<br/><span class="text-accent">pakai layanan ini.</span></h2>
+            </div>
+            <div class="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto reveal-stagger">
+                <div class="stat-card"><div class="stat-num">3-4x</div><div class="stat-label">Boost conversion</div><div class="stat-bar"><span style="width: 80%"></span></div><p class="stat-foot">live shopping</p></div>
+                <div class="stat-card" style="animation-delay: 80ms;"><div class="stat-num">0</div><div class="stat-label">Toko kena flag</div><div class="stat-bar"><span style="width: 5%"></span></div><p class="stat-foot">sepanjang penggunaan</p></div>
+                <div class="stat-card" style="animation-delay: 160ms;"><div class="stat-num">2x</div><div class="stat-label">Ranking boost</div><div class="stat-bar"><span style="width: 65%"></span></div><p class="stat-foot">rata-rata feed Shopee</p></div>
+                <div class="stat-card" style="animation-delay: 240ms;"><div class="stat-num">15%</div><div class="stat-label">Diskon rutin</div><div class="stat-bar"><span style="width: 100%"></span></div><p class="stat-foot">paket mingguan</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent"><span class="w-8 h-px bg-accent"></span>Sebelum order<span class="w-8 h-px bg-accent"></span></p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">Pertanyaan tentang<br/><span class="text-accent">live Shopee.</span></h2>
+            </div>
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <RelatedServices items={relatedItems} client:visible />
+
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="floating-emoji emoji-1 hidden lg:flex">🛍️</div><div class="floating-emoji emoji-2 hidden lg:flex">📈</div><div class="floating-emoji emoji-3 hidden lg:flex">🎬</div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-orange-400"></span></span>Tim online · respon dalam 1 jam pada jam kerja</div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">Live Shopee berikutnya<br/><span class="text-accent">naik ranking di feed.</span></h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">Ceritakan tanggal live Shopee Anda via WhatsApp. Kami kirim rekomendasi paket & timeline. Tanpa komitmen.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent"><span class="relative z-10 flex items-center gap-2"><MessageCircle class="w-5 h-5" />Order via WhatsApp<ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span></a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">Lihat Paket & Harga</a>
+                </div>
+                <p class="text-white/50 text-xs mt-6">Paket mingguan/bulanan · diskon 10-15%</p>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    .hero-grid { background-image: linear-gradient(rgba(15,30,61,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,30,61,.04) 1px, transparent 1px); background-size: 48px 48px; }
+    .abs-blob { position: absolute; border-radius: 9999px; pointer-events: none; will-change: transform; transform: translateZ(0); }
+    .abs-blob-1 { top: 5rem; right: -8rem; width: 420px; height: 420px; background: rgba(249, 115, 22, 0.14); filter: blur(48px); animation: float-shape 14s ease-in-out infinite; }
+    .abs-blob-2 { bottom: 0; left: -5rem; width: 288px; height: 288px; background: rgba(239, 68, 68, 0.10); filter: blur(40px); animation: float-shape 11s ease-in-out infinite 1.5s; }
+    .abs-blob-3 { top: 10%; left: -10rem; width: 360px; height: 360px; background: rgba(245, 158, 11, 0.10); filter: blur(44px); animation: float-shape 13s ease-in-out infinite 0.8s; }
+    @keyframes float-shape { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -16px); } }
+    .check-icon { width: 18px; height: 18px; border-radius: 9999px; background: linear-gradient(135deg, #f59e0b, #fbbf24); position: relative; flex-shrink: 0; }
+    .check-icon::after { content: ''; position: absolute; top: 4px; left: 6px; width: 4px; height: 8px; border-right: 2px solid white; border-bottom: 2px solid white; transform: rotate(45deg); }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.18) 50%, transparent 75%); transform: translateX(-100%); transition: transform 0.6s ease; }
+    .btn-shine:hover::after { transform: translateX(100%); }
+    .btn-shine-accent { position: relative; overflow: hidden; }
+    .btn-shine-accent::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 25%, rgba(15,30,61,0.15) 50%, transparent 75%); transform: translateX(-100%); transition: transform 0.6s ease; }
+    .btn-shine-accent:hover::after { transform: translateX(100%); }
+    .cta-grid { background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px); background-size: 48px 48px; }
+    .abs-radaial-1 { position: absolute; top: -200px; left: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 60%); pointer-events: none; }
+    .abs-radaial-2 { position: absolute; top: -100px; right: -150px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(249,115,22,0.18) 0%, transparent 60%); pointer-events: none; }
+    .stat-orb { position: absolute; border-radius: 9999px; pointer-events: none; filter: blur(40px); }
+    .stat-orb-1 { top: 20%; left: -3rem; width: 220px; height: 220px; background: rgba(249,115,22,0.10); animation: float-shape 9s ease-in-out infinite; }
+    .stat-orb-2 { bottom: 10%; right: -2rem; width: 180px; height: 180px; background: rgba(245,158,11,0.10); animation: float-shape 11s ease-in-out infinite 1s; }
+    .why-card { background: white; border-radius: 1.25rem; padding: 1.75rem; border: 1px solid #f1f3f8; transition: all 0.3s ease; }
+    .why-card:hover { border-color: #f59e0b; transform: translateY(-4px); box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15); }
+    .why-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(239,68,68,0.18)); color: #f59e0b; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; transition: transform 0.3s ease; }
+    .why-card:hover .why-icon { transform: scale(1.08) rotate(-4deg); }
+    .why-title { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 800; font-size: 1.125rem; color: #0b1426; margin-bottom: 0.5rem; }
+    .why-desc { font-size: 0.9rem; color: #5b6478; line-height: 1.6; }
+    .stat-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(249, 115, 22, 0.18); border-radius: 1rem; padding: 1.5rem; text-align: center; transition: all 0.3s ease; }
+    .stat-card:hover { border-color: rgba(249, 115, 22, 0.5); transform: translateY(-4px); box-shadow: 0 16px 40px -8px rgba(249, 115, 22, 0.25); }
+    .stat-num { font-family: "Plus Jakarta Sans Variable", sans-serif; font-weight: 800; font-size: 2.5rem; line-height: 1; background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.5rem; }
+    .stat-label { font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+    .stat-bar { position: relative; height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; margin-top: 0.875rem; }
+    .stat-bar span { position: absolute; inset: 0; background: linear-gradient(90deg, #f97316, #ef4444); border-radius: 9999px; animation: bar-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both; }
+    @keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .stat-foot { margin-top: 0.5rem; font-size: 0.6875rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; }
+    .floating-emoji { position: absolute; border-radius: 1rem; align-items: center; justify-content: center; font-size: 1.25rem; backdrop-filter: blur(8px); animation: float-shape 7s ease-in-out infinite; }
+    .emoji-1 { top: 5rem; left: 6rem; width: 56px; height: 56px; background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); animation-delay: 1s; }
+    .emoji-2 { top: 9rem; right: 7rem; width: 48px; height: 48px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.3); animation-delay: 1.5s; }
+    .emoji-3 { bottom: 7rem; right: 8rem; width: 52px; height: 52px; background: rgba(168, 85, 247, 0.18); border: 1px solid rgba(168, 85, 247, 0.3); animation-delay: 3s; }
+    @keyframes anim-fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-fade-up { animation: anim-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards; }
+    .anim-fade-in { animation: fadeIn 0.6s ease 0.2s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .abs-blob, .stat-orb, .anim-fade-up, .anim-fade-in { animation: none; } }
+</style>

@@ -68,7 +68,12 @@
                                 <img src={post.featuredImage} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                                 <div class="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent"></div>
                             {:else}
-                                <div class="absolute inset-0 bg-gradient-to-br from-primary-2/30 via-accent/20 to-teal/30"></div>
+                                <div class="absolute inset-0 bg-gradient-to-br from-primary-2 via-accent to-teal flex items-center justify-center">
+                                    <img src="/logoweb.webp" alt={post.title} class="w-1/3 h-1/3 object-contain opacity-90" loading="lazy" />
+                                </div>
+                                <div class="absolute top-3 right-3 px-2 py-1 bg-white/15 backdrop-blur-sm border border-white/30 text-white text-[10px] font-bold uppercase tracking-wider rounded">
+                                    {post.category || 'Insight'}
+                                </div>
                             {/if}
                             <span class="absolute top-3 left-3 px-2 py-1 bg-accent text-ink text-[10px] font-bold uppercase tracking-wider rounded">Featured</span>
                         </div>
@@ -93,14 +98,18 @@
     {#if gridPosts.length > 0}
         <div>
             <h3 class="text-xs font-bold uppercase tracking-wider text-muted mb-4">Artikel Lainnya</h3>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
-                {#each gridPosts as post}
-                    <a href="/blog/{post.slug}" class="grid-card group">
-                        {#if post.featuredImage}
-                            <div class="grid-thumb">
-                                <img src={post.featuredImage} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-                            </div>
-                        {/if}
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                        {#each gridPosts as post}
+                            <a href="/blog/{post.slug}" class="grid-card group">
+                                {#if post.featuredImage}
+                                    <div class="grid-thumb">
+                                        <img src={post.featuredImage} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                                    </div>
+                                {:else}
+                                    <div class="grid-thumb bg-gradient-to-br from-primary-2 via-accent to-teal flex items-center justify-center">
+                                        <img src="/logoweb.webp" alt={post.title} class="w-1/4 h-1/4 object-contain opacity-90" loading="lazy" />
+                                    </div>
+                                {/if}
                         <div class="p-5">
                             <span class="inline-block px-2 py-0.5 bg-soft text-ink text-[10px] font-bold uppercase tracking-wider rounded mb-3">{categories.find(c => c.id === post.category)?.label}</span>
                             <h4 class="font-display font-bold text-base text-ink leading-tight mb-2 group-hover:text-accent transition-colors line-clamp-2">{post.title}</h4>

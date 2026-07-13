@@ -16,8 +16,9 @@
             <button
                 type="button"
                 on:click={() => toggle(i)}
-                class="w-full text-left px-5 md:px-6 py-5 flex items-center justify-between gap-4 group"
+                class="faq-trigger w-full text-left px-5 md:px-6 py-5 flex items-center justify-between gap-4 group cursor-pointer select-none"
                 aria-expanded={openIdx === i}
+                style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
             >
                 <span class="font-display font-bold text-base md:text-lg text-ink group-hover:text-accent transition-colors leading-snug">
                     {item.q}
@@ -30,7 +31,7 @@
             </button>
             {#if openIdx === i}
                 <div transition:slide={{ duration: 250, easing: quintOut }}>
-                    <div class="px-5 md:px-6 pb-5 pt-0 text-muted leading-relaxed text-sm md:text-base border-t border-gray-50">
+                    <div class="px-5 md:px-6 pb-5 pt-0 text-muted leading-relaxed text-sm md:text-base border-t border-gray-50 pointer-events-auto">
                         <p class="pt-4">{item.a}</p>
                     </div>
                 </div>
@@ -40,6 +41,15 @@
 </div>
 
 <style>
+    .faq-trigger {
+        -webkit-tap-highlight-color: rgba(245, 158, 11, 0.15);
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    .faq-trigger:active {
+        background-color: rgba(245, 158, 11, 0.04);
+    }
     @media (prefers-reduced-motion: reduce) {
         :global(.faq-item) { transition: none; }
     }

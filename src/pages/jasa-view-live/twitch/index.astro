@@ -13,11 +13,11 @@ import { MessageCircle, ArrowRight, Radio, Sparkles, Users, Shield, Clock, Trend
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20Tiktok.%20Mohon%20info%20paket%20dan%20harga.";
 
 const tiers = [
-    { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up sebelum live utama biar algoritma notice Anda sejak awal.', features: ['20 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform (TikTok + lain)', 'Cocok untuk live pendek atau tes', 'Tanpa risiko untuk akun TikTok'], priceNote: 'harga per sesi live', disclaimer: 'Viewers real account, no bot.' },
-    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar FYP algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk seller & streamer pemula', 'Real account, no flag dari TikTok'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih seller TikTok.', highlight: true },
-    { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam live', tagline: 'Sweet spot untuk seller Twitch yang mau boost ranking & konversi.', features: ['100 viewers riil stay selama live', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk seller Twitch', 'Boost distribusi FYP algorithm'], priceNote: 'Rp 450/viewer/jam', disclaimer: 'Cocok untuk live mingguan.' },
-    { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam live', tagline: 'Untuk launching produk baru & live event yang butuh distribusi FYP luas.', features: ['200 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching & event', 'Boost organik distribusi FYP'], priceNote: 'Rp 400/viewer/jam', disclaimer: 'Repeat order diskon khusus.' },
-    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam live', tagline: 'Untuk brand dan toko yang live commerce TikTok rutin setiap hari.', features: ['300 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live commerce harian', 'Support prioritas + account manager'], priceNote: 'Rp 383/viewer/jam', disclaimer: 'Cocok untuk paket mingguan.' },
+    { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up sebelum live utama biar algoritma notice Anda sejak awal.', features: ['20 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform (semua channel)', 'Cocok untuk live pendek atau tes', 'Tanpa risiko untuk channel Twitch'], priceNote: 'harga per sesi live', disclaimer: 'Viewers real account, no bot.' },
+    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar FYP algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk streamer & creator baru', 'Real account, no flag dari TikTok'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih seller TikTok.', highlight: true },
+    { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam live', tagline: 'Sweet spot untuk seller Twitch yang mau boost ranking & konversi.', features: ['100 viewers riil stay selama live', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk seller Twitch', 'distribusi direktori'], priceNote: 'Rp 450/viewer/jam', disclaimer: 'Cocok untuk live mingguan.' },
+    { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam live', tagline: 'Untuk launching produk baru & live event yang butuh distribusi FYP luas.', features: ['200 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching & event', 'Boost organik distribusi direktori'], priceNote: 'Rp 400/viewer/jam', disclaimer: 'Repeat order diskon khusus.' },
+    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam live', tagline: 'Untuk brand dan toko yang live commerce TikTok rutin setiap hari.', features: ['300 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live harian', 'Support prioritas + account manager'], priceNote: 'Rp 383/viewer/jam', disclaimer: 'Cocok untuk paket mingguan.' },
     { name: 'Premium', priceLabel: '175.000', duration: '500 viewers / 1 jam live', tagline: 'Untuk launching event TikTok besar atau push viral dengan target viewers tinggi.', features: ['500 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching viral', 'Support 24/7 + flexible reschedule'], priceNote: 'Rp 350/viewer/jam', disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.' },
 ];
 
@@ -33,7 +33,7 @@ const features = [
 const steps = [
     { num: '01', tag: 'HARI H', title: 'Kirim Detail Live Twitch', desc: 'Share username Twitch + tanggal/jam mulai live. Order dikonfirmasi max 30 menit setelah detail lengkap.' },
     { num: '02', tag: 'HARI H', title: 'Pembayaran & Persiapan', desc: 'Transfer via QRIS/e-wallet. Invoice langsung dikirim. DP 50% untuk paket besar tersedia.' },
-    { num: '03', tag: 'LIVE', title: 'Viewers Join ke FYP', desc: 'Saat Twitch Live Anda mulai, viewers join gradual 5-15 menit. Algoritma FYP notice live Anda sebagai trending.' },
+    { num: '03', tag: 'LIVE', title: 'Viewers Join ke FYP', desc: 'Saat Twitch Live Anda mulai, viewers join gradual 5-15 menit. Algoritma Twitch notice live Anda sebagai trending.' },
     { num: '04', tag: 'POST-LIVE', title: 'Evaluasi & Recurring', desc: 'Setelah live selesai, kami evaluasi performa FYP. Mau jadwal rutin 2-3x seminggu? Diskon 10-15% untuk paket berulang.' },
 ];
 
@@ -54,7 +54,7 @@ const relatedItems = [
 ];
 ---
 
-<Layout title="Jasa View Live Twitch | Boost Viewers Concurrent Viewers — Beriklan" description="Boost viewers live streaming TikTok agar FYP algorithm notice live Anda. Real account, no bot, aman untuk akun TikTok. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/twitch/">
+<Layout title="Jasa View Live Twitch | Boost Viewers Concurrent Viewers — Beriklan" description="Boost viewers live streaming TikTok agar Twitch algorithm notice live Anda. Real account, no bot, aman untuk akun TikTok. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/twitch/">
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -89,7 +89,7 @@ const relatedItems = [
                 </h1>
 
                 <p class="hero-sub text-base md:text-lg text-white/80 leading-relaxed max-w-xl mx-auto lg:mx-0 anim-fade-up" style="animation-delay: 240ms;">
-                    TikTok For You Page memprioritaskan live dengan viewers aktif. 100+ viewers = 5x lebih besar jangkauan FYP. Viewer riil dari kami join gradual sejak menit pertama — bikin algoritma TikTok notice live Anda, tanpa flag, tanpa bot, tanpa risiko shadow ban.
+                    Twitch memprioritaskan live dengan viewers aktif. 100+ viewers = 5x lebih besar jangkauan. Viewer riil dari kami join gradual sejak menit pertama — bikin algoritma TikTok notice live Anda, tanpa flag, tanpa bot, tanpa risiko shadow ban.
                 </p>
 
                 <div class="hero-ctas flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2 anim-fade-up" style="animation-delay: 320ms;">
@@ -233,7 +233,7 @@ const relatedItems = [
                     <span class="bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">banyak viewers = muncul di direktori.</span>
                 </h2>
                 <p class="mt-4 text-white/70 max-w-xl mx-auto text-base leading-relaxed">
-                    Twitch merekomendasikan live berdasarkan concurrent viewers. Live dengan 100+ viewers muncul 4x lebih sering di direktori Twitch dibanding live dengan 20 viewers.
+                    Twitch memprioritaskan live dengan viewers aktif. Live dengan 100+ viewers muncul 4x lebih sering di rekomendasi dibanding live dengan 20 viewers.
                 </p>
             </div>
 

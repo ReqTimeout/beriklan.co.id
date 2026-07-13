@@ -86,10 +86,12 @@
                     <button
                         type="button"
                         on:click={toggleOpen}
-                        aria-label="Tutup"
-                        class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition shrink-0"
+                        on:pointerdown|stopPropagation
+                        aria-label="Tutup menu"
+                        title="Tutup"
+                        class="w-11 h-11 -mr-2 rounded-full bg-white/15 hover:bg-white/30 active:bg-white/40 flex items-center justify-center transition shrink-0"
                     >
-                        <X class="w-4 h-4" />
+                        <X class="w-5 h-5" strokeWidth="2.5" />
                     </button>
                 </div>
             </div>
@@ -127,16 +129,15 @@
     </div>
 {/if}
 
-<!-- FAB launcher — mobile only (desktop pakai StickyCTA) -->
-{#if (!hideOnScroll || !isMobile) && isMobile}
+<!-- FAB launcher — mobile only, hide when sheet open to avoid confusion -->
+{#if (!hideOnScroll || !isMobile) && isMobile && !isOpen}
 <button
     type="button"
     on:click={toggleOpen}
-    aria-label={isOpen ? 'Tutup menu chat' : 'Buka menu chat WhatsApp'}
+    aria-label="Buka menu chat WhatsApp"
     class="wa-float group md:!hidden"
     class:visible
     class:is-mobile={isMobile}
-    class:is-open={isOpen}
 >
     {#if labelExpanded && !isOpen}
         <span

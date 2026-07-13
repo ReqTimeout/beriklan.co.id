@@ -190,7 +190,6 @@
             <a href="https://haloka.id" target="_blank" rel="noopener nofollow" class="ml-1 group relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:shadow-pop hover:scale-[1.03] transition-all" on:click={closeAll}>
                 <Bot class="w-3.5 h-3.5" />
                 AI CS
-                <span class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-400 text-ink text-[9px] font-extrabold rounded-full uppercase tracking-wider shadow-md">Baru</span>
             </a>
         </div>
 

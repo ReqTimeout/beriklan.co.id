@@ -1,5 +1,27 @@
 ---
 import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
+
+interface Props {
+    title?: string;
+    description?: string;
+    canonical?: string;
+    ogImage?: string;
+    schema?: 'service' | 'organization' | 'auto';
+    noindex?: boolean;
+}
+
+const {
+    title = 'Beriklan.co.id — Jasa Digital Marketing Indonesia | Sejak 2016',
+    description = 'Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, YouTube, Landing Page. Tim bersertifikasi Meta & Google, berpengalaman mengelola campaign sejak 2016. Sesi konsultasi awal 15 menit.',
+    canonical = 'https://beriklan.co.id/',
+    ogImage = 'https://beriklan.co.id/og-image.png',
+    schema = 'auto',
+    noindex = false,
+} = Astro.props as Props;
+
+// Auto-detect schema: ProfessionalService on all pages (sitewide), Organization always
+const showProfessional = schema === 'service' || schema === 'auto';
+const showOrganization = true;
 ---
 
 <!doctype html>
@@ -7,121 +29,31 @@ import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, YouTube, Landing Page. Tim bersertifikasi Meta & Google, berpengalaman mengelola campaign sejak 2016. Sesi konsultasi awal 15 menit." />
+		<title>{title}</title>
+		<meta name="description" content={description} />
 		<meta name="keywords" content="jasa digital marketing, agency digital marketing indonesia, facebook ads, google ads, tiktok ads, instagram ads, landing page, jasa iklan, agency iklan" />
-		<meta name="robots" content="index, follow" />
+		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 		<meta name="language" content="Indonesian" />
 		<meta name="author" content="Beriklan.co.id" />
-		
-		<link rel="canonical" href="https://beriklan.co.id/" />
-		
+
+		<link rel="canonical" href={canonical} />
+
 		<!-- Open Graph Tags -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://beriklan.co.id/" />
-		<meta property="og:title" content="Beriklan.co.id — Jasa Digital Marketing Indonesia | Sejak 2016" />
-		<meta property="og:description" content="Agency performance marketing Indonesia berbasis Bandung — mengelola campaign Facebook, Google, TikTok, YouTube Ads dan Landing Page sejak 2016." />
-		<meta property="og:image" content="https://beriklan.co.id/og-image.png" />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={ogImage} />
 		<meta property="og:site_name" content="Beriklan.co.id" />
 		<meta property="og:locale" content="id_ID" />
-		
+
 		<!-- Twitter Card Tags -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:url" content="https://beriklan.co.id/" />
-		<meta name="twitter:title" content="Beriklan.co.id — Agency Digital Marketing Indonesia" />
-		<meta name="twitter:description" content="Jasa iklan Facebook, Google, TikTok, YouTube dan Landing Page. Tim berpengalaman sejak 2016. Sesi konsultasi awal gratis." />
-		<meta name="twitter:image" content="https://beriklan.co.id/og-image.png" />
-		
-		<!-- Structured Data: ProfessionalService -->
-		<script type="application/ld+json">
-		{
-		  "@context": "https://schema.org",
-		  "@type": "ProfessionalService",
-		  "name": "Beriklan.co.id",
-		  "description": "Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.",
-		  "url": "https://beriklan.co.id",
-		  "logo": "https://beriklan.co.id/logoweb.webp",
-		  "image": "https://beriklan.co.id/logoweb.webp",
-		  "priceRange": "Rp 2.500.000 - Rp 10.000.000",
-		  "telephone": "+62-22-XXXXXXX",
-		  "address": {
-		    "@type": "PostalAddress",
-		    "addressCountry": "ID",
-		    "addressLocality": "Bandung",
-		    "addressRegion": "Jawa Barat"
-		  },
-		  "areaServed": { "@type": "Country", "name": "Indonesia" },
-		  "openingHours": "Mo-Sa 09:00-18:00",
-		  "knowsAbout": ["Facebook Ads", "Google Ads", "TikTok Ads", "Performance Marketing", "Landing Page", "Conversion Optimization"],
-		}
-		</script>
-		
-		<!-- Organization Schema -->
-		<script type="application/ld+json">
-		{
-		  "@context": "https://schema.org",
-		  "@type": "Organization",
-		  "name": "Beriklan.co.id",
-		  "url": "https://beriklan.co.id",
-		  "logo": "https://beriklan.co.id/logoweb.webp",
-		  "description": "Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.",
-		  "foundingDate": "2016",
-		  "sameAs": [
-		    "https://www.instagram.com/beriklan.co.id",
-		    "https://www.facebook.com/beriklan.co.id"
-		  ]
-		}
-		</script>
-		
-		<!-- FAQ Schema -->
-		<script type="application/ld+json">
-		{
-		  "@context": "https://schema.org",
-		  "@type": "FAQPage",
-		  "mainEntity": [
-		    {
-		      "@type": "Question",
-		      "name": "Berapa minimum budget untuk mulai?",
-		      "acceptedAnswer": {
-		        "@type": "Answer",
-		        "text": "Minimum Rp 500.000/bulan untuk ad spend, plus biaya jasa sesuai paket. Untuk testing awal, cukup untuk lihat data 2-4 minggu."
-		      }
-		    },
-		    {
-		      "@type": "Question",
-		      "name": "Berapa lama sampai hasil keliatan?",
-		      "acceptedAnswer": {
-		        "@type": "Answer",
-		        "text": "Tergantung platform dan industri. Umumnya 2-4 minggu untuk data awal, 1-3 bulan untuk pola yang stabil. Kami optimasi konsisten dari data, bukan janji instan."
-		      }
-		    },
-		    {
-		      "@type": "Question",
-		      "name": "Apa bedanya dengan agency lain?",
-		      "acceptedAnswer": {
-		        "@type": "Answer",
-		        "text": "Tiga hal utama: akses penuh ke dashboard Anda, laporan bahasa yang mudah dipahami bukan jargon, dan tidak ada minimum contract 6-12 bulan."
-		      }
-		    },
-		    {
-		      "@type": "Question",
-		      "name": "Perlu siapkan apa saja?",
-		      "acceptedAnswer": {
-		        "@type": "Answer",
-		        "text": "Business profile singkat + akses ke akun iklan (kalau sudah ada). Kalau belum ada, kami setup dari nol termasuk Meta Pixel dan tracking."
-		      }
-		    },
-		    {
-		      "@type": "Question",
-		      "name": "Bisa custom paket?",
-		      "acceptedAnswer": {
-		        "@type": "Answer",
-		        "text": "Bisa. Kami recommend berdasarkan budget iklan + objective (branding vs conversion). Chat dulu, gratis."
-		      }
-		    }
-		  ]
-		}
-		</script>
-		
+		<meta name="twitter:url" content={canonical} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+
 		<link rel="icon" type="image/webp" href="/favicon.ico" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/logoweb.webp" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -129,10 +61,47 @@ import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
 
 		<link rel="stylesheet" href="/fonts/fonts.css">
 
-		<!-- Google Tag Manager (kosong dulu, isi saat approve deploy) -->
-		<!-- <script>(function(w,d,s,l,i){...})(...,'GTM-XXXX');</script> -->
+		{showProfessional && (
+			<script type="application/ld+json" set:html={JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'ProfessionalService',
+				name: 'Beriklan.co.id',
+				description: 'Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.',
+				url: 'https://beriklan.co.id',
+				logo: 'https://beriklan.co.id/logoweb.webp',
+				image: 'https://beriklan.co.id/logoweb.webp',
+				priceRange: 'Rp 2.500.000 - Rp 10.000.000',
+				telephone: '+62-22-XXXXXXX',
+				address: {
+					'@type': 'PostalAddress',
+					addressCountry: 'ID',
+					addressLocality: 'Bandung',
+					addressRegion: 'Jawa Barat'
+				},
+				areaServed: { '@type': 'Country', 'name': 'Indonesia' },
+				openingHours: 'Mo-Sa 09:00-18:00',
+				knowsAbout: ['Facebook Ads', 'Google Ads', 'TikTok Ads', 'Performance Marketing', 'Landing Page', 'Conversion Optimization'],
+			})}></script>
+		)}
 
-		<title>Beriklan.co.id — Jasa Digital Marketing Indonesia | Sejak 2016</title>
+		{showOrganization && (
+			<script type="application/ld+json" set:html={JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'Organization',
+				name: 'Beriklan.co.id',
+				url: 'https://beriklan.co.id',
+				logo: 'https://beriklan.co.id/logoweb.webp',
+				description: 'Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.',
+				foundingDate: '2016',
+				sameAs: [
+					'https://www.instagram.com/beriklan.co.id',
+					'https://www.facebook.com/beriklan.co.id'
+				]
+			})}></script>
+		)}
+
+		<!-- Google Tag Manager placeholder -->
+		<!-- <script>(function(w,d,s,l,i){...})(...,'GTM-XXXX');</script> -->
 	</head>
 	<body class="font-sans text-primary bg-white antialiased pb-24 lg:pb-0">
 		<slot />

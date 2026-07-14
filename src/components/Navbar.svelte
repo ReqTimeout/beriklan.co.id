@@ -110,17 +110,49 @@
                 <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
             </span>
             <div class="flex items-center gap-3 ml-1">
-                <a href="#" aria-label="Bahasa Indonesia" title="Bahasa Indonesia" class="hover:opacity-80 transition">
-                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(to bottom, #ce1126 50%, #ffffff 50%);"></span>
-                    <span class="ml-1 text-white/90">ID</span>
+                <a href="#" aria-label="Bahasa Indonesia" title="Bahasa Indonesia" class="hover:opacity-80 transition flex items-center gap-1">
+                    <svg viewBox="0 0 18 12" class="w-[18px] h-[12px] rounded-sm overflow-hidden" aria-hidden="true">
+                        <rect width="18" height="6" fill="#ce1126"/>
+                        <rect y="6" width="18" height="6" fill="#ffffff"/>
+                    </svg>
+                    <span class="text-white/90">ID</span>
                 </a>
-                <a href="#" aria-label="English" title="English" class="hover:opacity-80 transition">
-                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(135deg, #012169 25%, #ffffff 25% 30%, #c8102e 30% 35%, #ffffff 35% 65%, #c8102e 65% 70%, #ffffff 70% 75%, #012169 75%);"></span>
-                    <span class="ml-1 text-white/90">EN</span>
+                <a href="#" aria-label="English" title="English" class="hover:opacity-80 transition flex items-center gap-1">
+                    <svg viewBox="0 0 60 30" class="w-[18px] h-[12px] rounded-sm overflow-hidden" aria-hidden="true">
+                        <clipPath id="uk-clip"><rect width="60" height="30"/></clipPath>
+                        <g clip-path="url(#uk-clip)">
+                            <rect width="60" height="30" fill="#012169"/>
+                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6"/>
+                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#c8102e" stroke-width="2"/>
+                            <path d="M30,0 V30 M0,15 H60" stroke="#ffffff" stroke-width="10"/>
+                            <path d="M30,0 V30 M0,15 H60" stroke="#c8102e" stroke-width="6"/>
+                        </g>
+                    </svg>
+                    <span class="text-white/90">EN</span>
                 </a>
-                <a href="#" aria-label="Bahasa Melayu" title="Bahasa Melayu" class="hover:opacity-80 transition">
-                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(to bottom, #cc0001 7%, #ffffff 7% 14%, #cc0001 14% 21%, #ffffff 21% 28%, #cc0001 28% 35%, #ffffff 35% 42%, #cc0001 42% 49%, #ffffff 49% 56%, #cc0001 56% 63%, #ffffff 63% 70%, #cc0001 70% 77%, #ffffff 77% 84%, #cc0001 84% 91%, #ffffff 91%);"></span>
-                    <span class="ml-1 text-white/90">MY</span>
+                <a href="#" aria-label="Bahasa Melayu" title="Bahasa Melayu" class="hover:opacity-80 transition flex items-center gap-1">
+                    <svg viewBox="0 0 24 14" class="w-[18px] h-[12px] rounded-sm overflow-hidden" aria-hidden="true">
+                        <defs>
+                            <clipPath id="my-clip"><rect width="24" height="14"/></clipPath>
+                        </defs>
+                        <g clip-path="url(#my-clip)">
+                            <rect width="24" height="14" fill="#cc0001"/>
+                            <g fill="#ffffff">
+                                <rect y="1" width="24" height="1"/>
+                                <rect y="3" width="24" height="1"/>
+                                <rect y="5" width="24" height="1"/>
+                                <rect y="7" width="24" height="1"/>
+                                <rect y="9" width="24" height="1"/>
+                                <rect y="11" width="24" height="1"/>
+                                <rect y="13" width="24" height="1"/>
+                            </g>
+                            <rect width="11" height="8" fill="#010066"/>
+                            <circle cx="4.5" cy="4" r="2.2" fill="#ffcc00"/>
+                            <circle cx="5.4" cy="4" r="1.9" fill="#010066"/>
+                            <polygon points="8.5,1.2 8.85,2.2 9.9,2.2 9.05,2.8 9.4,3.8 8.5,3.2 7.6,3.8 7.95,2.8 7.1,2.2 8.15,2.2" fill="#ffcc00"/>
+                        </g>
+                    </svg>
+                    <span class="text-white/90">MY</span>
                 </a>
             </div>
         </div>

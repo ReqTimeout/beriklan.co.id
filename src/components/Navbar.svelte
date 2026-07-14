@@ -109,7 +109,20 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
             </span>
-            <span>Tim online &middot; respon dalam 1 jam pada jam kerja</span>
+            <div class="flex items-center gap-3 ml-1">
+                <a href="#" aria-label="Bahasa Indonesia" title="Bahasa Indonesia" class="hover:opacity-80 transition">
+                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(to bottom, #ce1126 50%, #ffffff 50%);"></span>
+                    <span class="ml-1 text-white/90">ID</span>
+                </a>
+                <a href="#" aria-label="English" title="English" class="hover:opacity-80 transition">
+                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(135deg, #012169 25%, #ffffff 25% 30%, #c8102e 30% 35%, #ffffff 35% 65%, #c8102e 65% 70%, #ffffff 70% 75%, #012169 75%);"></span>
+                    <span class="ml-1 text-white/90">EN</span>
+                </a>
+                <a href="#" aria-label="Bahasa Melayu" title="Bahasa Melayu" class="hover:opacity-80 transition">
+                    <span class="inline-block w-[18px] h-[12px] rounded-sm overflow-hidden align-middle" style="background: linear-gradient(to bottom, #cc0001 7%, #ffffff 7% 14%, #cc0001 14% 21%, #ffffff 21% 28%, #cc0001 28% 35%, #ffffff 35% 42%, #cc0001 42% 49%, #ffffff 49% 56%, #cc0001 56% 63%, #ffffff 63% 70%, #cc0001 70% 77%, #ffffff 77% 84%, #cc0001 84% 91%, #ffffff 91%);"></span>
+                    <span class="ml-1 text-white/90">MY</span>
+                </a>
+            </div>
         </div>
         <div class="flex items-center gap-6 text-white/80">
             <a href="tel:+62811919328" class="flex items-center gap-1.5 hover:text-accent transition">

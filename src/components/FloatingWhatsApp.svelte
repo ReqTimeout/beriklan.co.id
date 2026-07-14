@@ -27,11 +27,16 @@
 
         // Auto-hide FAB saat user scroll banyak (mobile only) untuk tidak menutupi konten
         let lastY = 0;
+        let rafId = null;
         const onScroll = () => {
-            if (!isMobile) return;
-            const y = window.scrollY;
-            hideOnScroll = y > lastY + 50 && y > 800;
-            lastY = y;
+            if (!isMobile || rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const y = window.scrollY;
+                const next = y > lastY + 50 && y > 800;
+                if (next !== hideOnScroll) hideOnScroll = next;
+                lastY = y;
+                rafId = null;
+            });
         };
         window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -41,6 +46,7 @@
         return () => {
             clearTimeout(t);
             clearTimeout(collapse);
+            if (rafId) cancelAnimationFrame(rafId);
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('scroll', onScroll);
         };

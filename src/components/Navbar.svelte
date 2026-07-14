@@ -57,7 +57,8 @@
         const handleScroll = () => {
             if (rafId) return;
             rafId = requestAnimationFrame(() => {
-                isScrolled = window.scrollY > 20;
+                const next = window.scrollY > 20;
+                if (next !== isScrolled) isScrolled = next;
                 rafId = null;
             });
         };
@@ -169,7 +170,7 @@
 </div>
 
 <!-- Main nav -->
-<nav class="mynav fixed {isScrolled ? 'md:top-0' : 'md:top-9'} top-0 w-full {isMenuOpen ? 'z-30' : 'z-50'} transition-all duration-300 {isScrolled ? 'bg-white/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(15,30,61,0.08)] py-2 border-b border-gray-100' : 'bg-white/70 md:bg-white/60 backdrop-blur-md py-3 md:py-4'}">
+<nav class="mynav fixed {isScrolled ? 'md:top-0' : 'md:top-9'} top-0 w-full {isMenuOpen ? 'z-30' : 'z-50'} transition-all duration-300 {isScrolled ? 'bg-white shadow-[0_4px_30px_rgba(15,30,61,0.08)] py-2 border-b border-gray-100' : 'bg-white/95 md:bg-white/90 py-3 md:py-4'}">
     <div class="absolute bottom-0 left-0 right-0 h-px overflow-hidden">
         <div class="h-full bg-gradient-to-r from-transparent via-accent/40 to-transparent transition-opacity duration-500 {isScrolled ? 'opacity-100' : 'opacity-0'}"></div>
     </div>

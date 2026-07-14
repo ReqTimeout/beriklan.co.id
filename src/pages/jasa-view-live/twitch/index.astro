@@ -64,7 +64,7 @@ const relatedItems = [
         <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 48px 48px;"></div>
 
         <!-- Floating Twitch logo blur (background) -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20 blur-3xl" style="background: conic-gradient(from 0deg, #ff0050, #00f2ea, #ff0050); animation: spin 30s linear infinite; border-radius: 50%;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20 blur-3xl" style="background: conic-gradient(from 0deg, #ff0050, #00f2ea, #ff0050); animation: spin 30s linear infinite; border-radius: 50%;" will-change: transform; transform: translateZ(0); contain: paint;></div>
 
         <!-- Floating music notes animation -->
         <div class="absolute top-20 left-10 text-purple-500 opacity-20 music-note" style="animation-delay: 0s;">♪</div>
@@ -200,7 +200,7 @@ const relatedItems = [
     </header>
 
     <!-- ====================== TRUST BAR ====================== -->
-    <section class="py-7 bg-black/40 border-y border-white/5 relative overflow-hidden">
+    <section class="py-7 bg-black/40 border-y border-white/5 relative overflow-hidden" cv-auto>
         <div class="container mx-auto px-6">
             <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Optimal untuk Twitch</p>
@@ -218,7 +218,7 @@ const relatedItems = [
     </section>
 
     <!-- ====================== WHY TWITCH ====================== -->
-    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden">
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden" cv-auto>
         <div class="absolute inset-0 opacity-20 pointer-events-none" style="background: radial-gradient(circle at 30% 30%, #9146ff26 0%, transparent 50%), radial-gradient(circle at 70% 70%, #6441a526 0%, transparent 50%);"></div>
 
         <div class="container mx-auto px-6 relative">
@@ -263,7 +263,7 @@ const relatedItems = [
         </div>
     </section>
 
-    <section id="fitur" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+    <section id="fitur" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
         <div class="container mx-auto px-6">
             <div class="text-center max-w-2xl mx-auto mb-12 reveal">
                 <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
@@ -281,7 +281,7 @@ const relatedItems = [
         </div>
     </section>
 
-    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden">
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden" cv-auto>
         <div class="container mx-auto px-6 relative">
             <div class="max-w-2xl mx-auto text-center mb-14 reveal">
                 <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-purple-500">
@@ -299,7 +299,7 @@ const relatedItems = [
         </div>
     </section>
 
-    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
         <div class="abs-blob abs-blob-3"></div>
         <div class="container mx-auto px-6 relative">
             <div class="text-center max-w-2xl mx-auto mb-12 reveal">
@@ -339,7 +339,7 @@ const relatedItems = [
         </div>
     </section>
 
-    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden">
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden" cv-auto>
         <div class="absolute inset-0 opacity-30 pointer-events-none" style="background: radial-gradient(circle at 30% 30%, #9146ff26 0%, transparent 50%), radial-gradient(circle at 70% 70%, #6441a526 0%, transparent 50%);"></div>
 
         <div class="container mx-auto px-6 relative">
@@ -408,7 +408,7 @@ const relatedItems = [
         </div>
     </section>
 
-    <section id="faq" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+    <section id="faq" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
         <div class="container mx-auto px-6 relative">
             <div class="text-center max-w-2xl mx-auto mb-12 reveal">
                 <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
@@ -428,7 +428,7 @@ const relatedItems = [
 
     <RelatedServices items={relatedItems} client:visible />
 
-    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden">
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#0e0e10] via-[#9146ff] to-[#6441a5] text-white relative overflow-hidden" cv-auto>
         <div class="absolute inset-0 pointer-events-none opacity-[0.08]" style="background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px); background-size: 48px 48px;"></div>
         <div class="absolute top-1/4 right-1/4 w-96 h-96 rounded-full pointer-events-none" style="background: radial-gradient(circle, #9146ff26 0%, transparent 60%); filter: blur(60px);"></div>
 
@@ -471,6 +471,9 @@ const relatedItems = [
 <style>
     /* Twitch platform-specific animations */
     .music-note {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
         font-size: 3rem;
         animation: float-y 4s ease-in-out infinite;
     }
@@ -479,6 +482,9 @@ const relatedItems = [
         50% { transform: translateY(-20px) rotate(15deg); }
     }
     .eq-bar {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
         animation: eq-bounce 1.2s ease-in-out infinite;
     }
     @keyframes eq-bounce {
@@ -486,6 +492,9 @@ const relatedItems = [
         50% { transform: scaleY(1.2); }
     }
     .twitch-logo-spin {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
         animation: spin-soft 6s linear infinite;
     }
     @keyframes spin-soft {
@@ -493,6 +502,9 @@ const relatedItems = [
         to { transform: rotate(360deg); }
     }
     .twitch-logo-orbit {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
         animation: orbit 8s linear infinite;
     }
     @keyframes orbit {
@@ -500,6 +512,7 @@ const relatedItems = [
         100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
     }
     .twitch-live-blink {
+        will-change: opacity;
         animation: blink 1.5s ease-in-out infinite;
     }
     @keyframes blink {
@@ -507,6 +520,7 @@ const relatedItems = [
         50% { opacity: 0.7; }
     }
     .twitch-pill-pulse {
+        will-change: box-shadow;
         animation: pulse-glow 2s ease-in-out infinite;
     }
     @keyframes pulse-glow {
@@ -514,6 +528,9 @@ const relatedItems = [
         50% { box-shadow: 0 0 20px 5px rgba(236, 72, 153, 0); }
     }
     .twitch-product-bounce {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
         animation: product-bounce 3s ease-in-out infinite;
     }
     @keyframes product-bounce {
@@ -521,6 +538,7 @@ const relatedItems = [
         50% { transform: scale(1.05) rotate(-3deg); }
     }
     .twitch-cta-glow {
+        will-change: box-shadow;
         position: relative;
         overflow: hidden;
     }

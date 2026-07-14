@@ -23,7 +23,8 @@
         const handleScroll = () => {
             if (rafId) return;
             rafId = requestAnimationFrame(() => {
-                visible = window.scrollY > 500;
+                const next = window.scrollY > 500;
+                if (next !== visible) visible = next;
                 rafId = null;
             });
         };

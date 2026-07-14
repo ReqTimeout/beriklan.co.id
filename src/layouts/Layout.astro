@@ -196,14 +196,27 @@ const showOrganization = true;
         .reveal-right.revealed { opacity: 1; transform: translateX(0); }
         
         .perf-gpu { will-change: transform; transform: translateZ(0); }
-        
+
+        /* GPU compositing for infinite CSS animations — invisible perf hint */
+        .anim-float, .anim-drift, .anim-drift-slow {
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        /* Off-screen sections skip layout/paint — biggest scroll-perf win on long pages */
+        section.cv-auto {
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 800px;
+        }
+
         @keyframes drift {
             0%, 100% { transform: translate(0, 0); }
             50% { transform: translate(8px, -10px); }
         }
         .anim-drift { animation: drift 8s ease-in-out infinite; }
         .anim-drift-slow { animation: drift 14s ease-in-out infinite; }
-        
+
         @keyframes float-shape {
             0%, 100% { transform: translateY(0) rotate(0); }
             50% { transform: translateY(-12px) rotate(3deg); }

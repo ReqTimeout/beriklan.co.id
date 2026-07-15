@@ -40,3 +40,4 @@ web/
 data/bulk_generate_log.json
 url_classification.csv
 web
+web/secrets/

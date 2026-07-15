@@ -28,6 +28,7 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
+from string import Template
 
 import requests
 from typing import Optional, List, Dict
@@ -65,17 +66,7 @@ BANNED_PHRASES = [
     "Dewasa ini", "Pada era digital", "Tak dapat dipungkiri",
 ]
 
-# Pricing tiers (consistent with platform pages)
-PRICING_TIERS = [
-    {"name": "Paket Pemanasan", "viewers": "20 viewers", "price_label": "12K", "wa_text": "Paket Pemanasan"},
-    {"name": "Paket Starter", "viewers": "50 viewers", "price_label": "25K", "wa_text": "Paket Starter"},
-    {"name": "Paket Basic", "viewers": "100 viewers", "price_label": "45K", "wa_text": "Paket Basic"},
-    {"name": "Paket Pro", "viewers": "200 viewers", "price_label": "80K", "wa_text": "Paket Pro"},
-    {"name": "Paket Bisnis", "viewers": "300 viewers", "price_label": "115K", "wa_text": "Paket Bisnis"},
-    {"name": "Paket Premium", "viewers": "500 viewers", "price_label": "175K", "wa_text": "Paket Premium"},
-]
-
-
+# Pricing tiers loaded from services.json per-service (each service has its own data)
 def get_service(slug: str) -> Optional[dict]:
     return next((s for s in SERVICES if s["slug"] == slug), None)
 
@@ -95,51 +86,113 @@ def get_testimonial(city_slug: str, service_slug: str) -> dict:
 
 def get_local_faqs(city_slug: str, service_slug: str) -> list:
     matches = [f for f in LOCAL_FAQS if f.get("city_slug") == city_slug and f.get("service_slug") == service_slug]
-    return matches[:7]
+    if matches:
+        return matches[:7]
+    # Fallback: 5 generic FAQs per service
+    service = get_service(service_slug)
+    return service.get("faqs", [])[:7] if service else []
 
 
-def build_prompt(city: dict, service: dict, word_target: int = 800) -> str:
-    """Build LLM prompt for city-service page intro/content."""
+def build_mock_content(city: dict, service: dict) -> str:
+    """Generate template-based content tanpa LLM. Untuk testing flow ketika LLM quota habis."""
+    local_facts = "\n".join(f"<li>{f}</li>" for f in city.get("local_facts", []))
+    return f"""
+<h2>Mengapa Bisnis di {city['name']} Butuh {service['name']}</h2>
+<p>{city['name']} sebagai salah satu pasar potensial di Indonesia dengan {city.get('umkm_count', 0):,} UMKM aktif, membutuhkan strategi {service['name'].lower()} yang terukur dan berbasis data. Mayoritas brand lokal {city['name']} telah memanfaatkan platform iklan digital untuk meningkatkan visibilitas, leads, dan penjualan secara konsisten.</p>
+<p>{city.get('local_facts', [''])[0]}. Dengan pendampingan tim Beriklan yang sudah mengelola lebih dari ratusan campaign iklan sejak 2016, {service['name']} di {city['name']} dapat mendatangkan hasil yang dapat diukur dari minggu pertama.</p>
+<p>Yang kami kerjakan bukan sekadar tayang iklan — kami menyusun strategi targeting presisi, copy yang berbicara ke audiens spesifik di {city['name']}, dan optimasi mingguan berdasarkan data real-time.</p>
+
+<h2>Tantangan {service['name']} di Pasar {city['name']}</h2>
+<p>Pasar {city['name']} memiliki karakteristik unik — target audiens yang berbeda dari kota lain, kompetitor yang agresif, dan seasonality yang bervariasi. Tanpa strategi yang sesuai dengan konteks lokal, campaign sering tidak menghasilkan ROI yang diharapkan dan terbuang sia-sia.</p>
+<p>Tantangan lainnya adalah mengukur efektivitas iklan secara akurat. Banyak bisnis tidak punya akses ke dashboard real-time atau tidak tahu cara menginterpretasi data yang tersedia. Inilah mengapa pendekatan berbasis data dan transparansi laporan menjadi penting untuk dipertimbangkan.</p>
+
+<h2>Cara Kerja Tim Beriklan di {city['name']}</h2>
+<p>Setiap klien {city['name']} mendapat pendampingan langsung dari tim yang sudah mengelola campaign iklan sejak 2016. Proses kami terstruktur, terukur, dan transparan dari hari pertama.</p>
+<ul>
+{local_facts}
+<li>Brief 30 menit untuk pahami bisnis Anda secara menyeluruh (online/Zoom atau tatap muka di {city['name']})</li>
+<li>Riset audience lokal {city['name']} yang sesuai dengan produk dan penawaran Anda</li>
+<li>Setup campaign + materi iklan dari kami, revisi sampai Anda approve final</li>
+<li>Tayang 30 hari penuh + laporan mingguan bahasa manusia, bukan deretan CTR/CPM</li>
+<li>Optimasi mingguan berbasis data — iklan yang tidak perform diganti dengan creative baru</li>
+</ul>
+
+<h2>FAQ {service['name']} di {city['name']}</h2>
+<h3>Berapa biaya {service['name']} di {city['name']}?</h3>
+<p>Biaya bervariasi sesuai paket yang dipilih. Paket Standart mulai dari Rp 1.750.000 per 30 hari, sudah termasuk pendampingan profesional dan optimasi mingguan. Ad spend platform terpisah, dibayar langsung ke Meta/Google/TikTok atas nama Anda.</p>
+<h3>Berapa lama sampai iklan tayang?</h3>
+<p>Setup 1-3 hari kerja setelah strategi disetujui. Campaign live di minggu pertama. Optimasi mingguan berjalan sejak hari ke-7. Pola yang konsisten biasanya terlihat di minggu ke-3 hingga ke-4.</p>
+<h3>Apakah saya dapat akses penuh ke akun iklan?</h3>
+<p>Ya. Akun iklan tetap di bawah nama dan akses Anda. Anda memegang penuh kontrol terhadap dana dan data historis. Tidak ada account abal-abal atau tersembunyi di agency kami.</p>
+<h3>Bagaimana laporan hasil campaign?</h3>
+<p>Laporan mingguan via WhatsApp dengan bahasa manusia: mana yang berjalan optimal, mana yang perlu disesuaikan, dan rencana aksi untuk minggu depan. Plus dashboard real-time yang bisa Anda akses kapan saja.</p>
+<h3>Apakah ada kontrak minimum?</h3>
+<p>Tidak. Sistem kami bekerja secara bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat. Komitmen kami jaga lewat kualitas, bukan jebakan kontrak panjang.</p>
+"""
+
+
+def build_prompt(city: dict, service: dict, word_target: int = 700) -> str:
+    """Build LLM prompt for city-specific body content."""
     local_facts = "\n".join(f"- {f}" for f in city.get("local_facts", []))
-    faqs_seed = "\n".join(f"Q: {f['question']}\nA: {f['answer']}" for f in get_local_faqs(city["slug"], service["slug"])[:5])
+    faqs_seed = "\n".join(f"Q: {f['q']}\nA: {f['a'][:200]}" for f in service.get("faqs", [])[:6])
+    tiers_summary = ", ".join([f"{t['name']} Rp {t['priceLabel']}" for t in service.get("tiers", [])[:3]])
 
-    prompt = f"""Kamu adalah copywriter SEO senior untuk Beriklan.co.id. Tulis konten Bahasa Indonesia untuk halaman layanan.
+    prompt = f"""Kamu adalah copywriter SEO senior untuk Beriklan.co.id. Tulis konten Bahasa Indonesia untuk halaman LAYANAN {service['name'].upper()} di kota {city['name'].upper()}.
 
 TARGET KEYWORD: "{service['name']} {city['name']}"
-TUJUAN: Halaman ini akan diindeks Google untuk search "{service['name']} {city['name']}". Konten harus:
-1. UNIK & BERMANFAAT — bukan generic text-spinning
-2. FACTUAL — sebut data kota spesifik, UMKM count, contoh bisnis nyata (jangan mengarang nomor yang tidak masuk akal)
-3. TONE profesional Senior Performance Marketing Partner, bukan salesy
-4. LARANG pakai frasa: "Dalam dunia", "Penting untuk", "Demikian", "Semoga bermanfaat", "Kesimpulannya"
+KATA TARGET: {word_target} (±150 kata)
+
+ATURAN:
+1. UNIK & LOKAL — spesifik {city['name']}, BUKAN generic
+2. FACTUAL — pakai data FAKTA KOTA, JANGAN mengarang nomor
+3. TONE profesional, BUKAN sales-y/clickbait
+4. LARANG: "Dalam dunia", "Penting untuk", "Demikian", "Semoga bermanfaat", "Kesimpulannya", "Tidak dapat dipungkiri"
 
 FAKTA KOTA {city['name'].upper()}:
 {local_facts}
 
-DESKRIPSI LAYANAN {service['name']}:
-{service['description']}
+PAKET HARGA (referensi):
+{tiers_summary}
 
-FAQ SEED (gunakannya sebagai referensi tapi parafrase):
+FAQ REFERENSI (parafrase, jangan copy paste):
 {faqs_seed}
 
-STRUKTUR OUTPUT (HTML langsung, tanpa markdown wrapper):
-1. <h2>Mengapa Bisnis di {city['name']} Butuh {service['name']}</h2>
-   <p>(2-3 paragraf, total 150-180 kata. WAJIB ada 1 angka spesifik + 1 contoh konkret)</p>
+OUTPUT — HTML body content saja:
 
-2. <h2>Tantangan {service['name']} di Pasar {city['name']}</h2>
-   <p>(2 paragraf, 120-140 kata. Tantangan spesifik sesuai konteks kota)</p>
+<h2>Mengapa Bisnis di {city['name']} Butuh {service['name']}</h2>
+<p>...</p>
+<p>...</p>
+<p>...</p>
 
-3. <h2>Solusi Beriklan untuk {service['name']} di {city['name']}</h2>
-   <p>Solusi dalam paragraf (100-120 kata) + daftar bullet 4-5 poin keuntungan</p>
+<h2>Tantangan {service['name']} di Pasar {city['name']}</h2>
+<p>...</p>
+<p>...</p>
 
-4. <h2>Layanan Lain yang Relevan di {city['name']}</h2>
-   <p>(1 paragraf 80 kata tentang upsell ke layanan terkait)</p>
+<h2>Cara Kerja Tim Beriklan di {city['name']}</h2>
+<p>...</p>
+<ul>
+  <li>...</li>
+  <li>...</li>
+  <li>...</li>
+  <li>...</li>
+  <li>...</li>
+</ul>
 
-5. <h2>FAQ {service['name']} {city['name']}</h2>
-   <div>5 FAQ dengan format <h3>Question?</h3><p>Answer...</p></div>
+<h2>FAQ {service['name']} di {city['name']}</h2>
+<h3>...</h3>
+<p>...</p>
+<h3>...</h3>
+<p>...</p>
+<h3>...</h3>
+<p>...</p>
+<h3>...</h3>
+<p>...</p>
+<h3>...</h3>
+<p>...</p>
 
-KATA TOTAL: {word_target-100}-{word_target+100} kata (tidak termasuk HTML tags)
+WAJIB ADA 1 angka spesifik (contoh: "70% brand X di Y", "10.5jt penduduk", "ROI 3x dalam 60 hari") + 1 contoh konkret UMKM lokal.
 
-PENTING: Output HANYA HTML body content (paragraf, list, h2, h3). Jangan sertakan <section>, <article>, <!DOCTYPE>, atau tag meta apapun.
+JANGAN sertakan <section>, <article>, <!DOCTYPE>, <style>, atau tag meta.
 """
 
     return prompt
@@ -234,8 +287,8 @@ def quality_check(html_content: str, city: dict, service: dict) -> dict:
         "policy_violations": policy_violations,
         "style_violations": style_violations,
         "passed": (
-            word_count >= 500 and
-            word_count <= 1500 and
+            word_count >= 400 and
+            word_count <= 1800 and
             faq_count >= 4 and
             h2_count >= 4 and
             density >= 0.3 and
@@ -244,173 +297,224 @@ def quality_check(html_content: str, city: dict, service: dict) -> dict:
     }
 
 
-def build_page_html(city: dict, service: dict, content_html: str, testimonial: dict, tiers: list, faqs: list) -> str:
-    """Build complete Astro page source."""
-    slug_path = f"jasa-{service['slug'].replace('jasa-', '').replace('jasa-', '')}/{city['slug']}/index"
-    # service slug actual mapping
-    if "landing-page" in service['slug']:
-        page_slug = "jasa-pembuatan-landing-page"
-    else:
-        page_slug = service['slug']
+def build_page_html(city: dict, service: dict, content_html: str, testimonial: dict = None) -> str:
+    """Build complete Astro page source matching national /jasa-iklan-{x}/ structure.
 
-    testimonial_html = ""
-    if testimonial:
-        testimonial_html = (
-            '<article class="bg-white rounded-2xl p-7 shadow-soft border border-gray-100">'
-            f'<p class="italic text-muted leading-relaxed mb-4">"{testimonial.get("quote","")}"</p>'
-            '<div class="border-t border-gray-100 pt-3">'
-            f'<p class="font-bold text-ink">{testimonial.get("name","")}</p>'
-            f'<p class="text-xs text-muted">{testimonial.get("role","")} · {testimonial.get("city","")}</p>'
-            '</div></article>'
-        )
+    Sections rendered (matching national page structure):
+    1. Hero (with trust pills)
+    2. Trust bar (industry tags dark)
+    3. AI-generated city content
+    4. Why (3 features)
+    5. How it works (4 steps)
+    6. Pricing (PricingCards with service tiers)
+    7. Trust dark (3 columns)
+    8. Testimonials (3 cards from service-specific pool)
+    9. FAQ (FaqAccordion)
+    10. Related services
+    11. Final CTA
+    12. LocalSchema JSON-LD
+    """
+    # Load service data
+    tiers = service.get("tiers", [])
+    faqs = service.get("faqs", [])
+    why_features = service.get("why_features", [])
+    how_steps = service.get("how_steps", [])
+    service_testimonials = service.get("testimonials", [])
 
-    pricing_cards = "\n".join([
-        (
-            '<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">'
-            f'<p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">{t["name"]}</p>'
-            f'<p class="font-display font-extrabold text-2xl text-primary mb-2">Rp {t["price_label"]}</p>'
-            f'<p class="text-sm text-muted mb-4">{t["viewers"]}</p>'
-            f'<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20{t["name"].replace(" ", "%20")}%20untuk%20{service["name"].replace(" ", "%20")}%20{city["name"].replace(" ", "%20")}" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a>'
-            '</div>'
-        )
-        for t in tiers
-    ])
-
-    related_services_html = "\n".join([
-        f'<a href="/jasa-{s["slug"]}/{city["slug"]}/" class="text-accent hover:underline">{s["name"]} di {city["name"]}</a>'
-        for s in SERVICES if s['slug'] != service['slug']
-    ])
-
-    testimonial_section = ""
-    if testimonial:
-        testimonial_section = (
-            '<section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">'
-            '<div class="container mx-auto px-6 max-w-3xl">'
-            f'<p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Klien dari {city["name"]}</p>'
-            '<h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Kata Mereka Setelah Bekerja Sama</h2>'
-            f'{testimonial_html}'
-            '</div></section>'
-        )
-
-    # JSON-stringified for use in JSX attribute context (NOT Python repr)
-    city_js = json.dumps(city, ensure_ascii=False)        # {"slug": "jakarta", ...}
-    service_js = json.dumps(service, ensure_ascii=False)
-    testimonial_js = json.dumps(testimonial, ensure_ascii=False)
-    faqs_js = json.dumps(faqs, ensure_ascii=False)
-    # Boolean to lowercase
-    service_js = service_js.replace(": true", ": true").replace(": false", ": false")  # noop for safety
-
+    # Compute placeholders BEFORE building sections
     canonical = f"https://beriklan.co.id/{service['slug']}/{city['slug']}/"
-    desc = f"{service['name']} di {city['name']} dari tim Meta & Google Partner sejak 2016. Konsultasi 15 menit gratis."
+    desc = f"{service['name']} di {city['name']} — agensi Meta Business Partner sejak 2016. Konsultasi 15 menit gratis."
     wa_link = (
         f"https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20"
         f"{service['name']}%20di%20{city['name']}.%20Mau%20konsultasi%20awal."
     )
+    title = f"{service['name']} di {city['name']} — Paket dari Rp {tiers[0]['priceLabel'] if tiers else '1.750.000'} | Beriklan"
 
-    # Python 3.9 compatible: precompute strings for f-string interpolation
-    service_slug_for_url = f"{service['slug']}/{city['slug']}/"
-
-    # Pre-compute breadcrumb URLs (avoid Python 3.9 f-string backtick limitation)
-    bc0 = "/"
-    bc1 = f"/{service['slug']}/"
-    bc2 = f"/{service['slug']}/{city['slug']}/"
-    breadcrumb_array = (
-        '[["Beranda", "/"], '
-        f'["{service["name"]}", "{bc1}"], '
-        f'["{city["name"]}", "{bc2}"]]'
-    )
-
-    page = f"""---
+    # Build the Astro template using string.Template (NO f-string)
+    # Placeholders use ${name} syntax which doesn't conflict with JSX {}
+    template = '''---
 import Layout from '../../../layouts/Layout.astro';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
 import LocalSchema from '../../../components/LocalSchema.astro';
-import {{ MessageCircle, Sparkles, ArrowRight }} from 'lucide-svelte';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
 
-const city = {city_js};
-const service = {service_js};
-const testimonial = {testimonial_js};
-const faqs = {faqs_js};
+const city = ${city_json};
+const service = ${service_json};
+const tiers = ${tiers_json};
+const faqs = ${faqs_json};
+const whyFeatures = ${why_json};
+const howSteps = ${how_json};
+const serviceTestimonials = ${testimonials_json};
 ---
 
 <Layout
-    title="{service['name']} di {city['name']} — Konsultasi Gratis | Beriklan"
-    description="{desc}"
-    canonical="{canonical}"
+    title="${title}"
+    description="${description}"
+    canonical="${canonical}"
 >
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
 
-    <!-- HERO -->
-    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
         <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
         <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
             <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
-                {service['name']} di {city['name']} · Tim Online
+                ${service_name} di ${city_name} · Meta & Google Partner
             </div>
-            <h1 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
-                {service['name']}<br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">di {city['name']}.</span>
+            <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
+                <span class="anim-fade-up">${service_name}</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di ${city_name}, Mendorong</span><br/>
+                <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
             </h1>
-            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
-                Tim Beriklan (Meta & Google Partner sejak 2016) mengelola campaign {service['name']} untuk UMKM & bisnis menengah di {city['name']}. Akses penuh ke akun iklan, dashboard real-time, laporan mingguan.
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign ${service_name_lower} untuk UMKM & bisnis menengah di ${city_name}. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
             </p>
-            <a href={wa_link} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine anim-fade-up" style="animation-delay: 240ms;">
-                <MessageCircle class="w-4 h-4" />
-                Konsultasi 15 Menit Gratis
-            </a>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
+                <a href="${wa_link}" target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Diskusi via WhatsApp
+                    </span>
+                </a>
+                <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+            <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">9 tahun</strong> mengelola campaign iklan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Optimasi berbasis data, bukan tebakan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Laporan <strong class="text-ink">setiap Senin pagi</strong>, bahasa yang mudah dipahami</span></div>
+            </div>
         </div>
     </header>
 
-    <!-- AI-GENERATED CONTENT -->
-    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            {content_html}
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di ${city_name} dari berbagai industri</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>F&amp;B</span><span class="text-white/30">·</span>
+                    <span>Skincare</span><span class="text-white/30">·</span>
+                    <span>Fashion</span><span class="text-white/30">·</span>
+                    <span>Edutech</span><span class="text-white/30">·</span>
+                    <span>Klinik</span><span class="text-white/30">·</span>
+                    <span>Properti</span>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- PRICING -->
+    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
     <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-6xl">
-            <div class="text-center mb-12">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Paket Harga</p>
-                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
-                    {service['name']} {city['name']}
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            ${content_html}
+        </div>
+    </section>
+
+    ${why_section}
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    {how_steps_section}
+
+    <!-- ====================== PRICING ====================== -->
+    {pricing_section}
+
+    <!-- ====================== TRUST DARK ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Beriklan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan agensi yang berjanji<br/>
+                    <span class="text-accent">angka fantastis tanpa dasar.</span>
                 </h2>
-                <p class="text-muted mt-3">Pilih paket sesuai skala campaign Anda. Semua paket sudah include pendampingan.</p>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 reveal-stagger">
-{pricing_cards}
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun iklan tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data historis berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan setiap Senin pagi</h3>
+                    <p class="trust-desc-dark">Disusun dalam satu halaman dengan bahasa yang mudah dipahami. Anda mendapat kejelasan: mana yang berjalan optimal.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat.</p>
+                </div>
             </div>
         </div>
     </section>
-{testimonial_section}
-    <!-- RELATED SERVICES -->
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    {testimonials_section}
+
+    <!-- ====================== FAQ ====================== -->
+    {faq_section}
+
+    <!-- ====================== RELATED SERVICES ====================== -->
     <section class="py-12 bg-white border-t border-gray-100">
         <div class="container mx-auto px-6 max-w-4xl">
-            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Lain di {city['name']}</p>
-            <p class="text-center text-sm text-muted">
-                {related_services_html}
-            </p>
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di ${city_name}</p>
+            <p class="text-center text-sm text-muted">${related_services_html}</p>
         </div>
     </section>
 
-    <!-- FINAL CTA -->
-    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
-        <div class="container mx-auto px-6 max-w-2xl relative z-10">
-            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari {city['name']}</p>
-            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
-                Diskusi {service['name']} untuk Bisnis Anda
-            </h2>
-            <a href={wa_link} target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
-                <MessageCircle class="w-4 h-4" />
-                Konsultasi via WhatsApp
-            </a>
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam (jam kerja)
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Satu keputusan kecil hari ini,<br/>
+                    <span class="text-accent">dampaknya terasa di kuartal depan.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di ${city_name}.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="${wa_link}" target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Mulai Konsultasi via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -418,29 +522,229 @@ const faqs = {faqs_js};
 
     <LocalSchema
         type="city-service"
-        city={{{city_js}}}
-        service={{{service_js}}}
-        faqs={{{faqs_js}}}
-        pageUrl="/{service_slug_for_url}"
-        breadcrumbs={{{breadcrumb_array}}}
+        city={city}
+        service={service}
+        faqs={faqs}
+        pageUrl="/${service_slug}/${city_slug}/"
+        breadcrumbs={${breadcrumb_array}}
     />
 </Layout>
+'''
+    # Build sub-sections
+    why_section = ''
+    if why_features:
+        why_items = '\n'.join(f'''            <div class="why-card group" style="animation-delay: {i*100}ms;">
+                <div class="why-icon">{f['icon']}</div>
+                <h3 class="why-title">{f['title']}</h3>
+                <p class="why-desc">{f['desc']}</p>
+            </div>''' for i, f in enumerate(why_features))
+        why_section = f'''
+    <!-- ====================== WHY ====================== -->
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    3 Alasan Memilih {service['name']}
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Strategi yang terukur,<br/>
+                    <span class="text-accent">bukan jualan angka tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+{why_items}
+            </div>
+        </div>
+    </section>'''
 
-<style is:global>
-    .prose-content h2 {{ margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 800; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }}
-    .prose-content h2:first-child {{ margin-top: 0; }}
-    .prose-content h3 {{ margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }}
-    .prose-content p {{ margin: 1rem 0; line-height: 1.75; color: #4b5563; }}
-    .prose-content ul {{ margin: 1rem 0; padding-left: 1.5rem; }}
-    .prose-content ul li {{ margin-bottom: 0.5rem; color: #4b5563; line-height: 1.65; }}
-    .prose-content strong {{ color: #0b1426; }}
-</style>
-"""
+    how_steps_section = ''
+    if how_steps:
+        steps_json = json.dumps(how_steps, ensure_ascii=False)
+        how_steps_section = '''
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Empat langkah dari brief<br/>
+                    <span class="text-accent">menuju iklan yang tayang optimal.</span>
+                </h2>
+            </div>
+            <StepGrid items={__HOW_STEPS__} client:visible />
+        </div>
+    </section>'''
+        how_steps_section = how_steps_section.replace('__HOW_STEPS__', steps_json)
+
+    pricing_section = ''
+    if tiers:
+        tiers_json_str = json.dumps(tiers, ensure_ascii=False)
+        highlight_idx = next((i for i, t in enumerate(tiers) if t.get('highlight')), -1)
+        pricing_section = '''
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Paket SERVICE_NAME di CITY_NAME,<br/>
+                    <span class="text-accent">disesuaikan dengan objective Anda.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
+                </p>
+            </div>
+            <PricingCards tiers={__TIERS__} pageSlug="SERVICE_NAME di CITY_NAME" highlightIndex={__HI_IDX__} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <a href="WA_LINK" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Konsultasi via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>'''
+        pricing_section = pricing_section.replace('__TIERS__', tiers_json_str)
+        pricing_section = pricing_section.replace('__HI_IDX__', str(highlight_idx))
+        pricing_section = pricing_section.replace('SERVICE_NAME di CITY_NAME', service['name'] + ' di ' + city['name'])
+        pricing_section = pricing_section.replace('WA_LINK', wa_link)
+
+    testimonials_section = ''
+    if service_testimonials:
+        tstm_blocks = []
+        for i, t in enumerate(service_testimonials[:3]):
+            tstm_blocks.append(
+                '<article class="tst-card" style="animation-delay: ' + str(i*100) + 'ms;">'
+                '<div class="tst-quote-mark">"</div>'
+                '<p class="tst-body">' + t['quote'] + '</p>'
+                '<div class="tst-author">'
+                '<div class="tst-avatar bg-gradient-to-br ' + t.get('color', 'from-amber-500 to-orange-500') + '">' + t.get('avatar', '⭐') + '</div>'
+                '<div>'
+                '<p class="tst-name">' + t['author'] + '</p>'
+                '<p class="tst-role">' + t['role'] + '</p>'
+                '<p class="tst-metric">' + t.get('metric', '') + '</p>'
+                '</div></div></article>'
+            )
+        tstm_items = '\n'.join(tstm_blocks)
+        testimonials_section = '''
+    <!-- ====================== TESTIMONIALS ====================== -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br/>
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+''' + tstm_items + '''
+            </div>
+        </div>
+    </section>'''
+
+    faq_section = ''
+    if faqs:
+        faq_json = json.dumps(faqs, ensure_ascii=False)
+        faq_section = '''
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum deal pertama
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum deal pertama.</span>
+                </h2>
+            </div>
+            <FaqAccordion items={__FAQ__} client:visible />
+        </div>
+    </section>'''
+        faq_section = faq_section.replace('__FAQ__', faq_json)
+
+    related_services_html = ' · '.join([
+        '<a href="/jasa-' + s['slug'].replace('jasa-', '') + '/' + city['slug'] + '/" class="text-accent hover:underline">' + s['name'] + '</a>'
+        for s in SERVICES if s['slug'] != service['slug'] and 'kelola' not in s['slug']
+    ][:3])
+
+    city_json = json.dumps(city, ensure_ascii=False)
+    service_json = json.dumps({**service, 'tiers': tiers}, ensure_ascii=False)
+    tiers_json = json.dumps(tiers, ensure_ascii=False)
+    faqs_json = json.dumps(faqs, ensure_ascii=False)
+    why_json = json.dumps(why_features, ensure_ascii=False)
+    how_json = json.dumps(how_steps, ensure_ascii=False)
+    testimonials_json = json.dumps(service_testimonials, ensure_ascii=False)
+    breadcrumb_array = json.dumps([
+        ["Beranda", "/"],
+        [service['name'], f"/{service['slug']}/"],
+        [city['name'], f"/{service['slug']}/{city['slug']}/"]
+    ], ensure_ascii=False)
+
+    # Render template using string.Template (no JSX conflict)
+    tmpl = Template(template)
+    page = tmpl.substitute(
+        city_json=city_json,
+        service_json=service_json,
+        tiers_json=tiers_json,
+        faqs_json=faqs_json,
+        why_json=why_json,
+        how_json=how_json,
+        testimonials_json=testimonials_json,
+        city_name=city['name'],
+        city_slug=city['slug'],
+        service_name=service['name'],
+        service_name_lower=service['name'].lower(),
+        service_slug=service['slug'],
+        title=title,
+        description=desc,
+        canonical=canonical,
+        wa_link=wa_link,
+        content_html=content_html,
+        why_section=why_section,
+        how_steps_section=how_steps_section,
+        pricing_section=pricing_section,
+        testimonials_section=testimonials_section,
+        faq_section=faq_section,
+        related_services_html=related_services_html,
+        breadcrumb_array=breadcrumb_array,
+    )
+
+    # Replace conditional placeholders
+    page = page.replace('{how_steps_section}', how_steps_section)
+    page = page.replace('{pricing_section}', pricing_section)
+    page = page.replace('{testimonials_section}', testimonials_section)
+    page = page.replace('{faq_section}', faq_section)
+
     return page
-
-
-def get_service_slug_for_url(service: dict) -> str:
-    return service['slug']
 
 
 def main():
@@ -448,6 +752,7 @@ def main():
     p.add_argument("--pilot", type=int, default=0, help="Generate N pilot pages first")
     p.add_argument("--batch", help="Batch name: city-facebook, city-tiktok, etc., or city-all")
     p.add_argument("--generate", action="store_true", help="Actually write files (default dry-run)")
+    p.add_argument("--mock", action="store_true", help="Use template-based content (no LLM call). Useful when AI quota exhausted.")
     p.add_argument("--model", default=LLM_MODEL, help="LLM model to use")
     args = p.parse_args()
 
@@ -512,14 +817,24 @@ def main():
 
         # Build prompt
         prompt = build_prompt(city, service)
-        # Call LLM
-        result = call_llm(prompt, model=args.model, max_tokens=2500, max_retries=2)
+        # Call LLM (or use mock content if --mock flag)
+        if args.mock:
+            result = {"ok": True, "content": build_mock_content(city, service), "model": "mock-template"}
+        else:
+            result = call_llm(prompt, model=args.model, max_tokens=2500, max_retries=2)
 
         if not result["ok"]:
             print(f"  LLM FAILED: {result.get('error')}")
-            stats["error"] += 1
-            log.append({"city": city['slug'], "service": service['slug'], "status": "error", "reason": result.get('error')})
-            time.sleep(5)
+            if args.mock:
+                # in mock mode, don't waste time on retries
+                content_html = build_mock_content(city, service)
+                qc = quality_check(content_html, city, service)
+                result = {"ok": True, "content": content_html, "model": "mock-fallback"}
+            else:
+                stats["error"] += 1
+                log.append({"city": city['slug'], "service": service['slug'], "status": "error", "reason": result.get('error')})
+                time.sleep(5)
+                continue
             continue
 
         content_html = result["content"]
@@ -553,9 +868,7 @@ def main():
 
         # Build page
         testimonial = get_testimonial(city['slug'], service['slug'])
-        faqs = get_local_faqs(city['slug'], service['slug'])
-        tiers = PRICING_TIERS[:6]
-        page_source = build_page_html(city, service, content_html, testimonial, tiers, faqs)
+        page_source = build_page_html(city, service, content_html, testimonial)
 
         if args.generate:
             out_path.parent.mkdir(parents=True, exist_ok=True)

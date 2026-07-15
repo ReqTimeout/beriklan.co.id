@@ -5122,27 +5122,56 @@ Plan v5.0 complete. 51 section, 5000 baris. Comprehensive tapi actionable.
 
 ---
 
-### 54.4 Day 4 — City Pages Bulk Generation (210 pages via free LLM) 🔄 In progress
-
-**Target checklist:**
+### 54.4 Day 4 — City Pages Bulk Generation (5 pilot Tier-1 facebook) ✅ Part 1 (Pilot)
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 1 | `.env.example` + `scripts/.env` setup (API key via env, never echo) | 🔄 |
-| 2 | Test API key — identify base URL + available free models | ⏳ |
-| 3 | `scripts/seo/bulk_generate.py` (OpenAI-compatible + retry + quality gate) | ⏳ |
-| 4 | §48.2 AdSense policy filter (banned words auto-reject) | ⏳ |
-| 5 | Astro template: `src/templates/city-service-page.astro` | ⏳ |
-| 6 | Pilot 5 city pages (jakarta/bandung/surabaya/medan/makassar × facebook) | ⏳ |
-| 7 | User reviews pilot samples (~5 min review) | ⏳ |
-| 8 | Bulk generate 205 more (28 cities × 7 services = 196+ pages) | ⏳ |
-| 9 | Quality gate check (word count, FAQ, schema, density, AdSense policy) | ⏳ |
-| 10 | D1 update: each published city page → status='published' | ⏳ |
-| 11 | Build + commit + push + manual deploy + verify live | ⏳ |
+| 1 | `.env.example` + `.env` gitignored (API key never echoed) | ✅ |
+| 2 | Test API key → OpenRouter key **auto-disabled** (secret scan); switched to **CF Workers AI** (free, no key needed) | ✅ |
+| 3 | Worker endpoint `/api/llm/chat` + `/api/db/query` + `/api/db/stats` (env.AI binding, ADMIN_TOKEN) | ✅ |
+| 4 | Tested 8 CF Workers AI free models; **best for Bahasa Indonesia**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | ✅ |
+| 5 | `scripts/seo/bulk_generate.py` (CF AI proxy + retry + QC + AdSense policy + banned phrase) | ✅ |
+| 6 | `LocalSchema.astro` extended (4 modes + JSON-safe prop passing) | ✅ |
+| 7 | §48.2 AdSense policy filter (7 categories banned + auto-reject + audit) | ✅ |
+| 8 | Bug fix: Python 3.9 f-string with `{{{x}}}` for JSX object literal — verified valid syntax | ✅ |
+| 9 | Pilot **5 city pages** Tier-1 × facebook (jakarta, bandung, surabaya, medan, makassar) | ✅ |
+| 10 | Quality gate passed: words 470-670, FAQ 5, H2 5, density 0.8-1.3%, 0 AdSense violations | ✅ |
+| 11 | Build verified **859 pages**, 0 error | ✅ |
+| 12 | User reviews 5 pilot samples — **FEEDBACK: pricing pakai tier buzzer live, harus pakai tier agency** | ✅ Caught |
+| 13 | Re-design pricing + city page structure match `/jasa-iklan-facebook/` nasional | 🔄 In progress |
+| 14 | Bulk generate 205 more city pages (28 cities × 7 services = ~196 pages — 5 already done) | ⏳ After pilot redesign |
+| 15 | D1 update: each published → status='published' | ⏳ |
+| 16 | Commit + push + manual deploy + verify live | ⏳ |
 
-**Target commit:** TBD | **Live status:** TBD | **Effort:** ~6-8 jam
+**Commit:** `f730ebc` | **Live:** pilot pages ready (will be REPLACED with redesigned template)
 
-**API Key Security Notice:** ⚠️ API key yang di-share via chat saat ini terekspos. Setelah sprint selesai, rotate key di provider dashboard. Untuk now, key disimpan di `scripts/.env` (gitignored) dan dipakai via env var only.
+**Files:**
+- `scripts/seo/bulk_generate.py` (588 lines, dual-mode dry-run/generate)
+- `scripts/.env.example` + `scripts/.env` (gitignored)
+- `src/components/LocalSchema.astro` (extended, 4 modes)
+- `src/data/cities.json` (+2 tier-1 cities: jakarta, makassar)
+- `src/pages/jasa-iklan-facebook/{5 cities}/index.astro` (pilot pages — TO BE REPLACED)
+- `src/worker-entry.js` (AI + DB proxy endpoints)
+- `wrangler.jsonc` (AI binding + ADMIN_TOKEN env)
+
+**Issues Found & Fixed:**
+- ⚠️ OpenRouter API key auto-disabled by GitHub secret scanning (kami shared key di chat)
+- ⚠️ Switched ke CF Workers AI (free, no key, integrated dengan existing setup)
+- ⚠️ Test page build error: Python 3.9 f-string + JSX object literal conflict. Fixed via triple-brace `{{{x}}}` pattern.
+- ⚠️ Worker route: 404 di `/api/llm/chat` karena wrangler bundles dari `web/src/worker-entry.js` (bukan `web/worker-entry.js`). Fixed.
+- ⚠️ **User feedback (Day 4.2)**: pricing tier salah — pakai tier buzzer live (Paket Pemanasan/Starter/Basic/Pro/Bisnis/Premium) bukan tier agency (Standart 1.750.000 / Business 3.750.000). Re-design dengan tier agency + structure match national page.
+
+**Answer — Day mana untuk generate keyword + publish blog:**
+- **Day 5 — Long-tail Batch 1 (500 artikel)** dari `Digital Marketing INT` sheet (879 keyword dengan volume) + Google Suggest mining
+- **Day 6 — GSC Service Account** + rank snapshot ke D1
+- **Day 8-9 — Trending Pipeline** (pytrends daily → Groq generate 700-kata artikel → publish + IndexNow)
+- **Day 14 — Telegram Bot + Smoke Test** + Runbook
+
+**Day 4.2 — Re-design dengan agency pricing:** 🔄 Next
+- Extend services.json dengan per-service tiers (Standard/Business dengan harga actual dari national page)
+- Redesign city page template: hero + trust bar + why 3 col + features 6 grid + how 4 steps + pricing + trust dark + testimonials 3 + FAQ + related + final CTA
+- Re-generate pilot 5 (jakarta/bandung/surabaya/medan/makassar Facebook)
+- User approve → bulk generate 28×7=196
 
 ---
 

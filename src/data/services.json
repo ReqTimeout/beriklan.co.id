@@ -27,7 +27,113 @@
       }
     ],
     "active": true,
-    "order": 1
+    "order": 1,
+    "tiers": [
+      {
+        "name": "Standart",
+        "priceLabel": "1.750.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk bisnis yang ingin mulai rutin tampil di Facebook dengan iklan yang tertarget.",
+        "features": [
+          "Estimasi jangkauan 3.000-9.000 orang per hari",
+          "Penayangan di seluruh placement Facebook",
+          "2 iklan aktif: 10 foto atau 1 video",
+          "Iklan dapat diganti di tengah periode",
+          "Laporan mingguan bahasa yang mudah dipahami",
+          "Akses penuh ke akun iklan Facebook Anda"
+        ],
+        "priceNote": "belum termasuk ad spend Meta",
+        "disclaimer": "Tanpa kontrak panjang. Berhenti kapan saja."
+      },
+      {
+        "name": "Business",
+        "priceLabel": "3.750.000",
+        "duration": "30 hari tayang",
+        "highlight": true,
+        "tagline": "Untuk bisnis yang ingin jangkauan lebih luas dan optimasi lebih agresif.",
+        "features": [
+          "Estimasi jangkauan 4.000-15.000 orang per hari",
+          "Penayangan di seluruh placement Facebook",
+          "3 iklan aktif: 10 foto atau 1 video per iklan",
+          "Iklan dapat diganti kapan saja di tengah periode",
+          "Setup remarketing + lookalike audience",
+          "Laporan mingguan + review bulanan via video call",
+          "Akses penuh ke akun iklan Facebook Anda"
+        ],
+        "priceNote": "belum termasuk ad spend Meta",
+        "disclaimer": "Tanpa kontrak panjang. Berhenti kapan saja."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🎯",
+        "title": "Targeting Akurat",
+        "desc": "Lebih dari 100 kategori minat, perilaku, dan demografi yang dapat dikombinasikan. Kami memilih kombinasi yang paling sesuai dengan karakter audiens Anda."
+      },
+      {
+        "icon": "📊",
+        "title": "Data yang Terbaca",
+        "desc": "Dashboard Meta menampilkan data detail tentang siapa yang melihat, mengklik, dan berkonsultasi — semuanya bisa Anda cek sendiri."
+      },
+      {
+        "icon": "💬",
+        "title": "Chat WhatsApp Langsung",
+        "desc": "Tombol Call-to-Action bawaan Meta mengirim klik langsung ke WhatsApp — mempersempit jarak dari 'tertarik' menjadi 'percakapan'."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "MINGGU 1",
+        "title": "Brief & Riset",
+        "desc": "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda. Kami susun strategi targeting yang sesuai."
+      },
+      {
+        "num": "02",
+        "tag": "MINGGU 1-2",
+        "title": "Setup & Kreatif",
+        "desc": "Kami siapkan akun iklan & Meta Pixel, dan materi iklan (foto, video, copy). Anda approve, kami eksekusi."
+      },
+      {
+        "num": "03",
+        "tag": "MINGGU 2+",
+        "title": "Launch 30 Hari",
+        "desc": "Iklan tayang selama 30 hari penuh di seluruh placement Facebook. Anda menerima laporan setiap Senin pagi."
+      },
+      {
+        "num": "04",
+        "tag": "ONGOING",
+        "title": "Optimasi & Ganti Iklan",
+        "desc": "Kami monitor performa harian. Iklan yang tidak perform diganti. Yang jalan, di-scale-up."
+      }
+    ],
+    "city_intro_template": "",
+    "testimonials": [
+      {
+        "quote": "ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.",
+        "author": "Andini Pratiwi",
+        "role": "Owner · Brand Skincare, Bandung",
+        "metric": "ROAS 1.8x → 4.5x dalam 4 bulan",
+        "avatar": "🧴",
+        "color": "from-amber-500 to-orange-500"
+      },
+      {
+        "quote": "Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.",
+        "author": "Rizky Maulana",
+        "role": "Marketing Manager · Klinik Kecantikan, Jakarta",
+        "metric": "Lead konsisten 3x lipat dari bulan ke-2",
+        "avatar": "💆",
+        "color": "from-pink-500 to-rose-500"
+      },
+      {
+        "quote": "Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.",
+        "author": "Sarah Nathania",
+        "role": "Head of Growth · SaaS B2B, Jakarta",
+        "metric": "Qualified leads +180% di Q3 2025",
+        "avatar": "💼",
+        "color": "from-blue-500 to-indigo-500"
+      }
+    ]
   },
   {
     "slug": "jasa-iklan-instagram",
@@ -57,7 +163,87 @@
       }
     ],
     "active": true,
-    "order": 2
+    "order": 2,
+    "tiers": [
+      {
+        "name": "Standart",
+        "priceLabel": "1.750.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk bisnis dengan produk visual yang ingin tampil rutin di Instagram.",
+        "features": [
+          "Estimasi jangkauan 4.000-12.000 orang per hari",
+          "Tayang di Feed, Stories, dan Reels",
+          "2 iklan aktif: 10 foto atau 3 video",
+          "Iklan dapat diganti di tengah periode",
+          "Laporan mingguan dengan bahasa yang mudah dipahami",
+          "Akses penuh ke akun iklan Instagram Anda"
+        ],
+        "priceNote": "belum termasuk ad spend Meta",
+        "disclaimer": "Tanpa kontrak panjang. Berhenti kapan saja."
+      },
+      {
+        "name": "Business",
+        "priceLabel": "3.750.000",
+        "duration": "30 hari tayang",
+        "highlight": true,
+        "tagline": "Untuk brand yang ingin agresif tampil di discovery dan explore.",
+        "features": [
+          "Estimasi jangkauan 6.000-20.000 orang per hari",
+          "Tayang di Feed, Stories, Reels, dan Explore",
+          "3 iklan aktif: 15 foto atau 5 video per iklan",
+          "Setup influencer-style content collaboration",
+          "Setup lookalike audience dari customer existing",
+          "Laporan mingguan + review bulanan via video call",
+          "Akses penuh ke akun Instagram Business Anda"
+        ],
+        "priceNote": "belum termasuk ad spend Meta",
+        "disclaimer": "Tanpa kontrak panjang."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "📱",
+        "title": "Visual First",
+        "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."
+      },
+      {
+        "icon": "🎨",
+        "title": "Reels Discovery",
+        "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."
+      },
+      {
+        "icon": "💬",
+        "title": "DM & WhatsApp",
+        "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "MINGGU 1",
+        "title": "Content Audit",
+        "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."
+      },
+      {
+        "num": "02",
+        "tag": "MINGGU 1-2",
+        "title": "Creative Production",
+        "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."
+      },
+      {
+        "num": "03",
+        "tag": "MINGGU 2+",
+        "title": "Launch 30 Hari",
+        "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."
+      },
+      {
+        "num": "04",
+        "tag": "ONGOING",
+        "title": "Optimasi Mingguan",
+        "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."
+      }
+    ],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-iklan-tiktok",
@@ -87,7 +273,100 @@
       }
     ],
     "active": true,
-    "order": 3
+    "order": 3,
+    "tiers": [
+      {
+        "name": "Basic",
+        "priceLabel": "1.000.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk bisnis yang ingin mulai mencoba TikTok Ads dengan budget terbatas.",
+        "features": [
+          "Estimasi jangkauan 5.000-15.000 orang per hari",
+          "Tayang di For You Page (FYP)",
+          "1 video Spark Ads aktif",
+          "Spark Ads menggunakan organic post yang sudah perform",
+          "Laporan mingguan dengan KPI utama"
+        ],
+        "priceNote": "belum termasuk ad spend TikTok",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Standart",
+        "priceLabel": "1.600.000",
+        "duration": "30 hari tayang",
+        "highlight": true,
+        "tagline": "Untuk brand yang ingin scaling dengan multiple Spark Ads sekaligus.",
+        "features": [
+          "Estimasi jangkauan 8.000-25.000 orang per hari",
+          "Tayang di FYP + kategori relevan",
+          "3 video Spark Ads aktif simultan",
+          "Setup In-Feed Ads format native",
+          "Optimasi manual setiap minggu"
+        ],
+        "priceNote": "belum termasuk ad spend TikTok",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Business",
+        "priceLabel": "3.750.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk brand yang serius di TikTok dengan pendekatan multi-format.",
+        "features": [
+          "Estimasi jangkauan 15.000-50.000 orang per hari",
+          "Spark Ads + In-Feed + TopView (sesuai brief)",
+          "5-7 video Spark Ads aktif",
+          "Setup KOL/creator collaboration",
+          "Setup retargeting untuk viewer engaged",
+          "Laporan mingguan + review bulanan"
+        ],
+        "priceNote": "belum termasuk ad spend TikTok",
+        "disclaimer": "Tanpa kontrak panjang."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🎬",
+        "title": "Video-First Discovery",
+        "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."
+      },
+      {
+        "icon": "👥",
+        "title": "Audiens Muda Indonesia",
+        "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."
+      },
+      {
+        "icon": "💰",
+        "title": "CPM Lebih Murah",
+        "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "MINGGU 1",
+        "title": "Trend Research",
+        "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."
+      },
+      {
+        "num": "02",
+        "tag": "MINGGU 1-2",
+        "title": "Spark Ads Setup",
+        "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."
+      },
+      {
+        "num": "03",
+        "tag": "MINGGU 2+",
+        "title": "Launch 30 Hari",
+        "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."
+      },
+      {
+        "num": "04",
+        "tag": "ONGOING",
+        "title": "Refresh Creative",
+        "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."
+      }
+    ],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-iklan-google",
@@ -117,7 +396,104 @@
       }
     ],
     "active": true,
-    "order": 4
+    "order": 4,
+    "tiers": [
+      {
+        "name": "Basic",
+        "priceLabel": "1.750.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.",
+        "features": [
+          "10 kata kunci aktif (long-tail)",
+          "10 iklan aktif per keyword",
+          "Tayang di Google Search (halaman 1)",
+          "Targeting lokasi Indonesia atau tertentu",
+          "Iklan dapat diganti di tengah periode",
+          "Laporan mingguan bahasa yang mudah dipahami",
+          "Akses penuh ke akun Google Ads Anda"
+        ],
+        "priceNote": "belum termasuk ad spend Google",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Standart",
+        "priceLabel": "3.750.000",
+        "duration": "30 hari tayang",
+        "highlight": true,
+        "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.",
+        "features": [
+          "15-20 kata kunci aktif",
+          "15 iklan aktif per keyword",
+          "Tayang di Search + Display Network",
+          "A/B testing iklan dan landing page",
+          "Conversion tracking setup",
+          "Laporan mingguan dengan rekomendasi iterasi"
+        ],
+        "priceNote": "belum termasuk ad spend Google",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Business",
+        "priceLabel": "6.000.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.",
+        "features": [
+          "25-30 kata kunci aktif",
+          "20 iklan aktif per keyword",
+          "Tayang di Search + Display + YouTube Ads",
+          "Setup Smart Bidding + Conversion AI",
+          "Analisa kompetitor keyword",
+          "Optimasi bidding strategy",
+          "Laporan mingguan + review bulanan video call"
+        ],
+        "priceNote": "belum termasuk ad spend Google",
+        "disclaimer": "Tanpa kontrak panjang."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🔍",
+        "title": "High Intent Traffic",
+        "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."
+      },
+      {
+        "icon": "📍",
+        "title": "Page 1 in Minutes",
+        "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."
+      },
+      {
+        "icon": "💰",
+        "title": "Pay Per Click",
+        "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "MINGGU 1",
+        "title": "Keyword Research",
+        "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."
+      },
+      {
+        "num": "02",
+        "tag": "MINGGU 1-2",
+        "title": "Setup & Tracking",
+        "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."
+      },
+      {
+        "num": "03",
+        "tag": "MINGGU 2+",
+        "title": "Launch 30 Hari",
+        "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."
+      },
+      {
+        "num": "04",
+        "tag": "ONGOING",
+        "title": "Optimasi Mingguan",
+        "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."
+      }
+    ],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-iklan-youtube",
@@ -147,7 +523,115 @@
       }
     ],
     "active": true,
-    "order": 5
+    "order": 5,
+    "tiers": [
+      {
+        "name": "Basic",
+        "priceLabel": "1.250.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk content creator / UMKM yang ingin lift awareness lewat video pendek.",
+        "features": [
+          "Estimasi 3.000-8.000 views per hari",
+          "Video in-stream 15-30 detik (skip-able)",
+          "Tayang di YouTube + Video Partner Network",
+          "Targeting channel + topic relevan",
+          "Targeting lokasi Indonesia atau tertentu"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Starter",
+        "priceLabel": "2.500.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk brand dengan video content library yang ingin scale distribusi.",
+        "features": [
+          "Estimasi 8.000-20.000 views per hari",
+          "In-stream + In-feed (Discovery)",
+          "3 video aktif sekaligus",
+          "Targeting affinity + in-market audiences",
+          "A/B test thumbnail dan hook 5 detik"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Standart",
+        "priceLabel": "3.750.000",
+        "duration": "30 hari tayang",
+        "highlight": true,
+        "tagline": "Untuk advertiser serius dengan strategi multi-format.",
+        "features": [
+          "Estimasi 15.000-50.000 views per hari",
+          "In-stream + Bumper + Shorts",
+          "5-7 video aktif simultan",
+          "Targeting by topic + interest + life event",
+          "Setup retargeting untuk viewer 50%+ completion"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Business",
+        "priceLabel": "4.750.000",
+        "duration": "30 hari tayang",
+        "tagline": "Untuk brand besar dengan video content dan target high-intent.",
+        "features": [
+          "Estimasi 50.000-150.000 views per hari",
+          "Multi-format full (in-stream + bumper + shorts + masthead)",
+          "10+ video aktif simultan",
+          "Custom audience builder + similar audiences",
+          "Brand lift survey + view-through conversion tracking",
+          "Laporan mingguan + review bulanan"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🎬",
+        "title": "Visual Storytelling",
+        "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."
+      },
+      {
+        "icon": "🎯",
+        "title": "Affinity Targeting",
+        "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."
+      },
+      {
+        "icon": "📊",
+        "title": "Brand Lift Measurement",
+        "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "MINGGU 1",
+        "title": "Video Audit",
+        "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."
+      },
+      {
+        "num": "02",
+        "tag": "MINGGU 1-2",
+        "title": "Setup Targeting",
+        "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."
+      },
+      {
+        "num": "03",
+        "tag": "MINGGU 2+",
+        "title": "Launch 30 Hari",
+        "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."
+      },
+      {
+        "num": "04",
+        "tag": "ONGOING",
+        "title": "Refresh & Optimize",
+        "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."
+      }
+    ],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-kelola-instagram",
@@ -177,7 +661,11 @@
       }
     ],
     "active": true,
-    "order": 6
+    "order": 6,
+    "tiers": [],
+    "why_features": [],
+    "how_steps": [],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-kelola-tiktok",
@@ -207,7 +695,11 @@
       }
     ],
     "active": true,
-    "order": 7
+    "order": 7,
+    "tiers": [],
+    "why_features": [],
+    "how_steps": [],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-pembuatan-website",
@@ -237,7 +729,11 @@
       }
     ],
     "active": true,
-    "order": 8
+    "order": 8,
+    "tiers": [],
+    "why_features": [],
+    "how_steps": [],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-pembuatan-landing-page",
@@ -267,7 +763,102 @@
       }
     ],
     "active": true,
-    "order": 9
+    "order": 9,
+    "tiers": [
+      {
+        "name": "Landing Page + Google Ads",
+        "priceLabel": "1.999.000",
+        "duration": "7-10 hari kerja",
+        "tagline": "Single landing page + setup Google Ads siap tayang.",
+        "features": [
+          "1 halaman landing page conversion-ready",
+          "Copywriting persuasif (proven frameworks)",
+          "Design responsive mobile + desktop",
+          "Integrasi Meta Pixel + GA4 + GTM",
+          "1x putar revisi included",
+          "Setup Google Ads siap launch"
+        ],
+        "priceNote": "",
+        "disclaimer": "Sekali bayar."
+      },
+      {
+        "name": "Funnel Multi-Page",
+        "priceLabel": "4.500.000",
+        "duration": "14-21 hari kerja",
+        "highlight": true,
+        "tagline": "Multi-page funnel untuk nurture prospek hingga konversi.",
+        "features": [
+          "3-5 halaman funnel (landing + thank you + upsell)",
+          "Wireframe + design semua halaman",
+          "Copywriting per halaman dengan logic",
+          "A/B testing infrastructure",
+          "Heatmap + analytics setup",
+          "2x revisi included"
+        ],
+        "priceNote": "",
+        "disclaimer": "Sekali bayar."
+      },
+      {
+        "name": "Custom Web App",
+        "priceLabel": "Konsultasi",
+        "duration": "21-60 hari kerja",
+        "tagline": "Custom web app / e-commerce untuk requirement spesifik.",
+        "features": [
+          "Architecture planning",
+          "Custom UI/UX design",
+          "Backend development",
+          "Payment gateway integration (jika e-commerce)",
+          "Full testing + QA",
+          "3x revisi included"
+        ],
+        "priceNote": "Quotation per project",
+        "disclaimer": "Term-based."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🎨",
+        "title": "Design-First",
+        "desc": "BUKAN template. Setiap landing page didesain khusus sesuai brand dan pesan Anda."
+      },
+      {
+        "icon": "📱",
+        "title": "Mobile-Optimized",
+        "desc": "75%+ traffic Indonesia dari mobile. Landing page di-optimized untuk mobile experience."
+      },
+      {
+        "icon": "⚡",
+        "title": "Fast Loading",
+        "desc": "Loading time < 3 detik. Setiap detik keterlambatan = 7% konversi hilang."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "HARI 1-2",
+        "title": "Brief & Research",
+        "desc": "Diskusi objective, target audience, dan unique selling proposition Anda."
+      },
+      {
+        "num": "02",
+        "tag": "HARI 3-5",
+        "title": "Wireframe & Copy",
+        "desc": "Layout dirancang, copy disusun. Anda melihat mockup sebelum design final."
+      },
+      {
+        "num": "03",
+        "tag": "HARI 6-9",
+        "title": "Design & Build",
+        "desc": "Visual high-fidelity + integrasi tracking pixel + payment form."
+      },
+      {
+        "num": "04",
+        "tag": "HARI 10+",
+        "title": "Launch & Optimize",
+        "desc": "Go-live, monitoring, training tim Anda untuk manage sendiri."
+      }
+    ],
+    "city_intro_template": ""
   },
   {
     "slug": "jasa-digital-marketing",
@@ -297,6 +888,98 @@
       }
     ],
     "active": true,
-    "order": 10
+    "order": 10,
+    "tiers": [
+      {
+        "name": "Starter",
+        "priceLabel": "Konsultasi",
+        "duration": "1 sesi 60 menit",
+        "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.",
+        "features": [
+          "1 sesi konsultasi via Zoom 60 menit",
+          "Audit channel existing (ads + organic)",
+          "Rekomendasi 3 channel prioritas",
+          "Estimasi budget dan ROI projection",
+          "Ringkasan strategi tertulis 5-7 halaman"
+        ],
+        "priceNote": "",
+        "disclaimer": "Sekali bayar, tidak ada kontrak."
+      },
+      {
+        "name": "Growth",
+        "priceLabel": "5.500.000",
+        "duration": "30 hari",
+        "highlight": true,
+        "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.",
+        "features": [
+          "Manajemen 2 platform iklan",
+          "Setup organic content 12 post + 30 story/bulan",
+          "Weekly performance report",
+          "A/B testing mingguan",
+          "Monthly strategy review"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      },
+      {
+        "name": "Scale",
+        "priceLabel": "9.500.000",
+        "duration": "30 hari",
+        "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.",
+        "features": [
+          "Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)",
+          "Full content production 20 post + 60 story + 8 video/bulan",
+          "Dedicated account manager",
+          "Custom landing page bulanan",
+          "Bi-weekly strategy review"
+        ],
+        "priceNote": "belum termasuk ad spend",
+        "disclaimer": "Tanpa kontrak panjang."
+      }
+    ],
+    "why_features": [
+      {
+        "icon": "🎯",
+        "title": "Multi-Channel",
+        "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."
+      },
+      {
+        "icon": "📊",
+        "title": "Data Integration",
+        "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."
+      },
+      {
+        "icon": "⚡",
+        "title": "Fast Iteration",
+        "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."
+      }
+    ],
+    "how_steps": [
+      {
+        "num": "01",
+        "tag": "WEEK 1",
+        "title": "Audit & Strategy",
+        "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."
+      },
+      {
+        "num": "02",
+        "tag": "WEEK 2",
+        "title": "Setup Multi-Channel",
+        "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."
+      },
+      {
+        "num": "03",
+        "tag": "WEEK 3+",
+        "title": "30 Hari Pertama",
+        "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."
+      },
+      {
+        "num": "04",
+        "tag": "MONTHLY",
+        "title": "Review & Pivot",
+        "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."
+      }
+    ],
+    "city_intro_template": ""
   }
 ]

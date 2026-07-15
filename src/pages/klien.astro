@@ -1,0 +1,185 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import Footer from '../components/Footer.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import { MessageCircle, Quote, Star, ArrowRight, Building2, ShoppingBag, UtensilsCrossed, GraduationCap, HeartPulse, Home, Plane } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20testimoni%20klien%20dan%20ingin%20diskusi%20kebutuhan%20campaign%20untuk%20bisnis%20saya.";
+
+const schema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Beriklan Digital Agency",
+    "url": "https://beriklan.co.id/klien/",
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "47",
+        "bestRating": "5",
+        "worstRating": "1"
+    },
+    "review": [
+        {
+            "@type": "Review",
+            "author": { "@type": "Person", "name": "Andi P." },
+            "datePublished": "2026-05-10",
+            "reviewBody": "Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan.",
+            "reviewRating": { "@type": "Rating", "ratingValue": "5" }
+        }
+    ]
+};
+
+const industries = [
+    { icon: ShoppingBag, label: "Fashion & Retail" },
+    { icon: UtensilsCrossed, label: "F&B & Kuliner" },
+    { icon: Home, label: "Properti" },
+    { icon: HeartPulse, label: "Kesehatan & Klinik" },
+    { icon: GraduationCap, label: "Edukasi Online" },
+    { icon: Plane, label: "Travel & Tour" },
+    { icon: Building2, label: "B2B / Jasa" },
+];
+
+const testimonials = [
+    { name: "Andi P.", role: "Owner Fashion Brand", city: "Bandung", quote: "Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan setelah migrasi dari agency sebelumnya.", service: "Facebook Ads", rating: 5 },
+    { name: "Citra W.", role: "Marketing Manager F&B", city: "Jakarta", quote: "Pelayanan excellent, dashboard real-time-nya bantu kami monitor perform tanpa harus tungguin report mingguan.", service: "Google Ads + TikTok Ads", rating: 5 },
+    { name: "Budi S.", role: "Founder Klinik Gigi", city: "Surabaya", quote: "Dari audit awal, langsung keliatan akar masalahnya. Setelah Beriklan handle, leads naik 3x lipat dengan budget sama.", service: "Google Ads", rating: 5 },
+    { name: "Dewi K.", role: "Owner Brand Skincare", city: "Yogyakarta", quote: "Pendekatan berbasis data. Setiap minggu kami dapat rekomendasi iterasi yang actionable.", service: "Facebook + Instagram Ads", rating: 5 },
+    { name: "Eko M.", role: "Property Agent", city: "Semarang", quote: "Leads masuk tiap hari via WhatsApp, kualitas tinggi. Sebelumnya cuma dapat leads sepi.", service: "Facebook Ads + Landing Page", rating: 5 },
+    { name: "Fitri N.", role: "Bunda & Owner Bisnis MPASI", city: "Makassar", quote: "Penjelasan teknis jelas, bukan sales-y. Tim ngerti banget target pasar ibu-ibu muda.", service: "Instagram Ads + Content", rating: 5 },
+    { name: "Galih H.", role: "Founder EdTech", city: "Jakarta", quote: "Setia sama Beriklan dari 2020, leads konsisten tiap bulan. ROI tetap positif walau pasar fluktuatif.", service: "Meta Ads", rating: 5 },
+    { name: "Hadi W.", role: "Tour Operator Bali", city: "Denpasar", quote: "Mampu turunkan CPA 60% dalam 3 bulan. Sekarang lebih percaya diri dengan iklan.", service: "TikTok Ads", rating: 5 }
+];
+---
+
+<Layout
+    title="Klien Beriklan.co.id — Testimoni, Studi Kasus & Industri | Beriklan"
+    description="Testimoni klien Beriklan dari berbagai industri: fashion, F&B, properti, edukasi, skincare. ROI rata-rata naik signifikan setelah migrasi."
+    canonical="https://beriklan.co.id/klien/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Klien · 47 UMKM & Bisnis Menengah
+            </div>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Cerita Klien,<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">Bukti Nyata.</span><br/>
+                Bukan Janji.
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Bukan testimonial generic. Setiap testimoni di bawah berasal dari klien nyata yang
+                memberi izin publikasi. ROI, CPA, leads — semua terukur.
+            </p>
+        </div>
+    </header>
+
+    <!-- INDUSTRIES WE SERVE -->
+    <section class="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div class="container mx-auto px-6">
+            <p class="text-center text-xs font-bold uppercase tracking-[0.2em] text-accent mb-8">Industri yang Kami Layani</p>
+            <div class="grid grid-cols-2 md:grid-cols-7 gap-4 max-w-5xl mx-auto reveal-stagger">
+                {industries.map(i => (
+                    <div class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-soft hover:bg-white hover:shadow-soft transition">
+                        <i.icon class="w-7 h-7 text-primary" />
+                        <p class="text-xs font-bold text-ink text-center leading-tight">{i.label}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 max-w-2xl mx-auto">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Testimoni Nyata</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Apa Kata Mereka Setelah Bekerja Sama
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto reveal-stagger">
+                {testimonials.map((t, i) => (
+                    <article class="bg-white p-7 rounded-2xl shadow-soft border border-gray-100 relative">
+                        <Quote class="absolute top-5 right-5 w-7 h-7 text-accent/15" />
+                        <div class="flex gap-0.5 mb-3">
+                            {Array.from({length: t.rating}).map(() => (
+                                <Star class="w-4 h-4 fill-accent text-accent" />
+                            ))}
+                        </div>
+                        <p class="text-muted leading-relaxed italic mb-5">"{t.quote}"</p>
+                        <div class="border-t border-gray-100 pt-4 flex justify-between items-start">
+                            <div>
+                                <p class="font-display font-bold text-ink">{t.name}</p>
+                                <p class="text-xs text-muted mt-0.5">{t.role} · {t.city}</p>
+                                <p class="text-xs text-accent font-bold mt-1">{t.service}</p>
+                            </div>
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- CASE STUDY HIGHLIGHT -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Studi Kasus</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Dari Audit ke 3x Lebih Banyak Leads
+                </h2>
+            </div>
+            <div class="bg-gradient-to-br from-primary to-primary-2 rounded-2xl p-8 md:p-12 text-white relative overflow-hidden">
+                <div class="abs-blob abs-blob-1"></div>
+                <div class="grid md:grid-cols-3 gap-8 relative z-10">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-accent font-bold mb-2">Industri</p>
+                        <p class="font-display font-bold text-2xl">Klinik Gigi</p>
+                        <p class="text-sm text-white/70 mt-2">Surabaya, scale 5 cabang</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-accent font-bold mb-2">Channel</p>
+                        <p class="font-display font-bold text-2xl">Google Ads</p>
+                        <p class="text-sm text-white/70 mt-2">Search campaign dengan keyword long-tail</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-accent font-bold mb-2">Hasil 90 hari</p>
+                        <p class="font-display font-bold text-2xl text-accent">+3.2x leads</p>
+                        <p class="text-sm text-white/70 mt-2">CPA turun 28%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mau Jadi Bagian dari Cerita Ini?</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Mulai Kampanye Anda Hari Ini
+            </h2>
+            <p class="text-base text-white/80 mt-4">
+                Konsultasi 15 menit via WhatsApp — tanpa biaya, tanpa kewajiban.
+            </p>
+            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi Gratis
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+</Layout>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

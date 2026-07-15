@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import Footer from '../components/Footer.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+
+const lastUpdated = "14 Juli 2026";
+---
+
+<Layout
+    title="Disclaimer — Beriklan.co.id"
+    description="Disclaimer layanan Beriklan.co.id: bukan saran finansial, hasil kampanye tergantung banyak faktor, tidak ada garansi nominal."
+    canonical="https://beriklan.co.id/disclaimer/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <article class="pt-28 md:pt-44 pb-20 bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="bg-white rounded-2xl p-8 md:p-12 shadow-soft border border-gray-100 prose-content">
+
+                <header class="mb-10 pb-8 border-b border-gray-100">
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Legal</p>
+                    <h1 class="font-display font-extrabold text-3xl md:text-4xl text-ink mb-3">Disclaimer</h1>
+                    <p class="text-sm text-muted">Terakhir diperbarui: <strong>{lastUpdated}</strong></p>
+                </header>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">1. Bukan Saran Finansial</h2>
+                    <p>
+                        Konten di <strong>beriklan.co.id</strong> — termasuk artikel blog, studi kasus,
+                        testimoni, dan materi lainnya — bersifat <strong>edukatif dan informasional</strong>,
+                        bukan saran finansial profesional. Keputusan investasi bisnis, alokasi budget
+                        iklan, dan strategi marketing adalah tanggung jawab Anda sendiri. Konsultasikan
+                        dengan konsultan atau penasihat bisnis terpercaya sebelum mengambil keputusan
+                        berdasarkan informasi dari website ini.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">2. Tidak Ada Garansi Hasil</h2>
+                    <p>
+                        Beriklan tidak menjamin jumlah prospek, leads, konversi, atau revenue tertentu
+                        dari campaign iklan. Hasil bergantung pada banyak faktor:
+                    </p>
+                    <ul>
+                        <li>Niche industri dan kompetitor</li>
+                        <li>Kualitas produk / layanan / harga</li>
+                        <li>Kualitas landing page dan website</li>
+                        <li>Target audience dan targeting</li>
+                        <li>Kondisi pasar dan musim</li>
+                        <li>Budget iklan vs ekspektasi pasar</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">3. Testimoni & Studi Kasus</h2>
+                    <p>
+                        Testimoni dan studi kasus yang ditampilkan di website ini berasal dari klien
+                        nyata yang telah memberikan izin publikasi. Nama dan angka sudah disederhanakan
+                        untuk melindungi privasi klien. Setiap testimoni mencerminkan pengalaman
+                        individual — bukan jaminan hasil yang sama untuk Anda.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">4. Perubahan Platform</h2>
+                    <p>
+                        Platform iklan (Meta, Google, TikTok, YouTube) dapat mengubah algoritma,
+                        fitur, dan kebijakan mereka sewaktu-waktu tanpa pemberitahuan. Kami tidak
+                        bertanggung jawab atas perubahan tersebut yang dapat memengaruhi performa
+                        campaign Anda.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">5. Tautan Eksternal</h2>
+                    <p>
+                        Website ini mungkin mengandung tautan ke website pihak ketiga. Kami tidak
+                        bertanggung jawab atas konten, kebijakan privasi, atau praktik pihak ketiga
+                        tersebut.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">6. Penggunaan Konten</h2>
+                    <p>
+                        Artikel dan materi di blog Beriklan dapat disitasi dengan mencantumkan
+                        sumber dan tautan kembali ke artikel asli. Reproduction komersial tanpa
+                        izin tertulis tidak diperkenankan.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">7. YMYL Compliance</h2>
+                    <p>
+                        Beberapa topik (budget iklan, ROAS, financial) dapat dianggap YMYL
+                        (Your Money Your Life) dalam panduan Google Quality Rater. Kami
+                        menambahkan disclaimer ini sebagai mitigasi. Untuk keputusan finansial
+                        signifikan, selalu konsultasikan dengan profesional berlisensi.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">8. Kontak</h2>
+                    <div class="bg-soft p-5 rounded-xl">
+                        <p class="mb-1"><strong>Pertanyaan tentang disclaimer ini:</strong></p>
+                        <p>Email: <a href="mailto:legal@beriklan.co.id" class="text-accent hover:underline">legal@beriklan.co.id</a></p>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </article>
+
+    <Footer client:only="svelte" />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2rem; }
+    .prose-content ul { list-style: disc; padding-left: 1.5rem; margin: 1rem 0; }
+    .prose-content ul li { margin-bottom: 0.5rem; line-height: 1.65; color: #4b5563; }
+    .prose-content p { line-height: 1.75; color: #4b5563; margin: 1rem 0; }
+    .prose-content strong { color: #0b1426; }
+    .prose-content a { color: #f59e0b; }
+</style>

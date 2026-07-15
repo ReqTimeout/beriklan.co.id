@@ -1,0 +1,145 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import Footer from '../components/Footer.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+
+const lastUpdated = "14 Juli 2026";
+---
+
+<Layout
+    title="Syarat & Ketentuan Layanan — Beriklan.co.id"
+    description="Syarat & ketentuan jasa iklan digital Beriklan.co.id. Berlaku untuk klien profesional, UMKM, dan korporasi. Hubungi legal@beriklan.co.id untuk pertanyaan."
+    canonical="https://beriklan.co.id/terms-of-service/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <article class="pt-28 md:pt-44 pb-20 bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="bg-white rounded-2xl p-8 md:p-12 shadow-soft border border-gray-100 prose-content">
+
+                <header class="mb-10 pb-8 border-b border-gray-100">
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Legal</p>
+                    <h1 class="font-display font-extrabold text-3xl md:text-4xl text-ink mb-3">Syarat & Ketentuan Layanan</h1>
+                    <p class="text-sm text-muted">Terakhir diperbarui: <strong>{lastUpdated}</strong></p>
+                </header>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">1. Penerimaan Syarat</h2>
+                    <p>
+                        Dengan menggunakan layanan Beriklan.co.id ("Beriklan"), Anda menyetujui
+                        syarat & ketentuan ini. Jika tidak setuju, mohon untuk tidak menggunakan
+                        layanan kami.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">2. Layanan</h2>
+                    <p>Beriklan menyediakan:</p>
+                    <ul>
+                        <li>Jasa pengelolaan iklan digital: Meta Ads, Google Ads, TikTok Ads, YouTube Ads.</li>
+                        <li>Jasa kelola konten organik: Instagram, TikTok.</li>
+                        <li>Jasa pembuatan website & landing page.</li>
+                        <li>Konsultasi strategi digital marketing.</li>
+                    </ul>
+                    <p>Layanan spesifik, deliverable, dan harga disepakati dalam <strong>perjanjian kerja sama</strong> terpisah.</p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">3. Tanggung Jawab Klien</h2>
+                    <ul>
+                        <li>Memberikan akses penuh ke akun iklan (Meta Business, Google Ads, TikTok Ads, YouTube)</li>
+                        <li>Menyetujui strategi sebelum eksekusi</li>
+                        <li>Membayar fee sesuai jadwal yang disepakati</li>
+                        <li>Memberikan materi creative atau approve materi dari kami</li>
+                        <li>Tidak menggunakan akun iklan untuk hal di luar scope kerja sama</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">4. Pembayaran & Fee</h2>
+                    <ul>
+                        <li>Fee manajemen terpisah dari budget iklan (yang dibelanjakan di platform iklan).</li>
+                        <li>Tagihan fee bulanan, jatuh tempo tanggal 5 setiap bulan via transfer bank.</li>
+                        <li>Budget iklan ditransfer langsung ke akun iklan klien (atau via metode lain yang disepakati).</li>
+                        <li>Keterlambatan pembayaran > 14 hari: kampanye dapat dipause tanpa pemberitahuan terlebih dahulu.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">5. Garansi & Disclaimer Hasil</h2>
+                    <p>
+                        <strong>Tidak ada garansi nominal</strong> untuk hasil (jumlah leads, conversion, revenue)
+                        karena tergantung banyak faktor di luar kendali kami: niche, kualitas produk,
+                        harga, landing page, dan kondisi pasar. Yang kami jamin adalah:
+                    </p>
+                    <ul>
+                        <li>Setup campaign sesuai best practice platform</li>
+                        <li>Laporan mingguan yang transparan</li>
+                        <li>Iterasi mingguan berdasarkan data</li>
+                        <li>Akses penuh ke dashboard untuk monitoring sendiri</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">6. Kontrak & Pemutusan</h2>
+                    <ul>
+                        <li>Minimum kontrak: <strong>3 bulan</strong> untuk iklan, <strong>1 bulan</strong> untuk organic/website.</li>
+                        <li>Pemutusan kontrak: pemberitahuan 30 hari sebelum akhir periode.</li>
+                        <li>Pemutusan sebelum masa minimum kontrak: fee untuk sisa periode tetap berlaku.</li>
+                        <li>Setelah kontrak berakhir: kami akan serahkan penuh aset (akun iklan, landing page source, creative).</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">7. Hak Kekayaan Intelektual</h2>
+                    <ul>
+                        <li>Creative, copy, dan strategi yang kami produksi untuk Anda adalah milik Anda setelah pembayaran lunas.</li>
+                        <li>Framework, metodologi, dan tools internal Beriklan tetap menjadi milik Beriklan.</li>
+                        <li>Studi kasus dan hasil campaign dapat kami gunakan untuk portfolio Beriklan dengan persetujuan tertulis Anda.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">8. Batasan Tanggung Jawab</h2>
+                    <p>
+                        Total kewajiban Beriklan kepada Anda dalam hal apa pun tidak akan melebihi
+                        jumlah fee yang dibayarkan dalam 3 bulan terakhir. Kami tidak bertanggung jawab
+                        atas kerugian tidak langsung, konsekuensial, atau kerusakan reputasi.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">9. Hukum yang Berlaku</h2>
+                    <p>
+                        Syarat & ketentuan ini diatur oleh hukum Republik Indonesia. Segala sengketa
+                        akan diselesaikan secara musyawarah, dan jika gagal, melalui Pengadilan Negeri
+                        Bandung.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">10. Kontak Hukum</h2>
+                    <div class="bg-soft p-5 rounded-xl">
+                        <p class="mb-1"><strong>Legal · Beriklan Digital Agency</strong></p>
+                        <p class="mb-1">Jl. Arcamanik Endah No.76, Bandung 40195, Jawa Barat</p>
+                        <p>Email: <a href="mailto:legal@beriklan.co.id" class="text-accent hover:underline">legal@beriklan.co.id</a></p>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </article>
+
+    <Footer client:only="svelte" />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2rem; }
+    .prose-content ul { list-style: disc; padding-left: 1.5rem; margin: 1rem 0; }
+    .prose-content ul li { margin-bottom: 0.5rem; line-height: 1.65; color: #4b5563; }
+    .prose-content p { line-height: 1.75; color: #4b5563; margin: 1rem 0; }
+    .prose-content strong { color: #0b1426; }
+    .prose-content a { color: #f59e0b; }
+</style>

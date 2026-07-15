@@ -1,0 +1,228 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import Footer from '../components/Footer.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import { MessageCircle, Search, Pencil, Rocket, Check, ArrowRight } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20metodologi%20kalian.%20Mau%20konsultasi%20awal.";
+
+const schema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Metodologi Beriklan — Cara Kerja Performance Marketing",
+    "description": "3 fase kerja Beriklan: Diagnosa, Strategi, Eksekusi. Dari audit awal sampai campaign go-live dengan laporan mingguan.",
+    "step": [
+        {
+            "@type": "HowToStep",
+            "position": 1,
+            "name": "Diagnosa — Audit Campaign & Bisnis",
+            "text": "Konsultasi awal 15-30 menit. Kami audit akun iklan, pixel tracking, landing page, dan sales funnel Anda. Identifikasi akar masalah + potensi."
+        },
+        {
+            "@type": "HowToStep",
+            "position": 2,
+            "name": "Strategi — Rencanakan Campaign",
+            "text": "Riset audience, kompetitor, keyword. Tentukan objective, budget allocation, channel mix, dan timeline. Disajikan sebagai dokumen strategi yang bisa Anda setujui."
+        },
+        {
+            "@type": "HowToStep",
+            "position": 3,
+            "name": "Eksekusi — Launch & Optimize",
+            "text": "Setup campaign, creative, landing page. Launch 1-3 hari. Optimasi mingguan berdasarkan data. Laporan via WhatsApp + dashboard real-time."
+        }
+    ]
+};
+---
+
+<Layout
+    title="Metodologi Beriklan — 3 Fase Kerja Performance Marketing | Beriklan"
+    description="Cara kerja Beriklan: Diagnosa → Strategi → Eksekusi. Audit awal gratis, strategi terukur, eksekusi dengan laporan mingguan yang bisa dipertanggungjawabkan."
+    canonical="https://beriklan.co.id/metodologi/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                Metodologi · 3 Fase · Sejak 2016
+            </div>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Cara Kerja yang <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">Terukur,</span><br/>
+                Bukan Coba-Coba.
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed anim-fade-up" style="animation-delay: 120ms;">
+                Tiga fase yang sudah teruji sejak 2016 — dari audit awal sampai campaign terukur
+                dengan laporan yang bisa dipertanggungjawabkan.
+            </p>
+        </div>
+    </header>
+
+    <!-- TIMELINE METODOLOGI -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-5xl">
+
+            <!-- FASE 1 -->
+            <div class="grid md:grid-cols-12 gap-8 mb-16 reveal-stagger">
+                <div class="md:col-span-3 flex md:flex-col items-start gap-4 md:gap-2">
+                    <span class="phase-num">01</span>
+                    <div>
+                        <p class="phase-label">Minggu 1</p>
+                        <p class="phase-icon-label"><Search class="w-4 h-4" /> Diagnosa</p>
+                    </div>
+                </div>
+                <div class="md:col-span-9 bg-white rounded-2xl p-8 shadow-soft border border-gray-100">
+                    <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-4">Diagnosa · Audit & Identifikasi</h2>
+                    <p class="text-muted leading-relaxed mb-5">
+                        Sebelum merumuskan strategi, kami audit dulu. Konsultasi awal 15-30 menit via
+                        WhatsApp atau Zoom untuk pahami bisnis Anda. Lalu kami kirim audit tertulis
+                        yang mencakup:
+                    </p>
+                    <ul class="space-y-2 mb-5">
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Audit akun iklan sebelumnya (kalau ada) — apa yang berjalan, apa yang mati</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Audit pixel tracking & konversi</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Audit landing page — apakah konversi atau bounce</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Analisa kompetitor & market positioning</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Estimasi budget & ROI projection realistic</span></li>
+                    </ul>
+                    <p class="text-sm text-muted"><strong>Deliverable:</strong> Dokumen audit + rekomendasi strategi + estimasi budget.</p>
+                </div>
+            </div>
+
+            <!-- FASE 2 -->
+            <div class="grid md:grid-cols-12 gap-8 mb-16 reveal-stagger">
+                <div class="md:col-span-3 flex md:flex-col items-start gap-4 md:gap-2">
+                    <span class="phase-num">02</span>
+                    <div>
+                        <p class="phase-label">Minggu 1-2</p>
+                        <p class="phase-icon-label"><Pencil class="w-4 h-4" /> Strategi</p>
+                    </div>
+                </div>
+                <div class="md:col-span-9 bg-white rounded-2xl p-8 shadow-soft border border-gray-100">
+                    <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-4">Strategi · Rencanakan Campaign</h2>
+                    <p class="text-muted leading-relaxed mb-5">
+                        Setelah audit, kami susun strategi yang terukur. Anda setujui dulu sebelum
+                        eksekusi — tidak ada hidden decision.
+                    </p>
+                    <ul class="space-y-2 mb-5">
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Riset audience — demographics, interests, behaviors, lookalike</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Channel mix — Meta, Google, TikTok, YouTube sesuai objective</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Budget allocation — harian vs total, scale-up plan</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Creative brief — format, messaging, hook, CTA</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" /><span>Tracking plan — pixel, event, conversion API</span></li>
+                    </ul>
+                    <p class="text-sm text-muted"><strong>Deliverable:</strong> Dokumen strategi yang bisa Anda review + setujui.</p>
+                </div>
+            </div>
+
+            <!-- FASE 3 -->
+            <div class="grid md:grid-cols-12 gap-8 mb-16 reveal-stagger">
+                <div class="md:col-span-3 flex md:flex-col items-start gap-4 md:gap-2">
+                    <span class="phase-num">03</span>
+                    <div>
+                        <p class="phase-label">Minggu 2+</p>
+                        <p class="phase-icon-label"><Rocket class="w-4 h-4" /> Eksekusi</p>
+                    </div>
+                </div>
+                <div class="md:col-span-9 bg-gradient-to-br from-primary to-primary-2 text-white rounded-2xl p-8 shadow-pop">
+                    <h2 class="font-display font-extrabold text-2xl md:text-3xl text-white mb-4">Eksekusi · Launch & Optimize</h2>
+                    <p class="text-white/80 leading-relaxed mb-5">
+                        Campaign go-live. Anda mendapat akses penuh ke semua akun iklan — bukan
+                        disembunyikan seperti agency abal-abal. Kami handle optimasi mingguan
+                        berdasarkan data real-time.
+                    </p>
+                    <ul class="space-y-2 mb-5">
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" /><span>Setup campaign + creative + landing page (parallel)</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" /><span>Launch dalam 1-3 hari setelah strategi disetujui</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" /><span>A/B testing mingguan — creative, audience, copy</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" /><span>Optimasi budget — scale up yang perform, pause yang mati</span></li>
+                        <li class="flex gap-3"><Check class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" /><span>Laporan mingguan via WhatsApp + dashboard real-time 24/7</span></li>
+                    </ul>
+                    <p class="text-sm text-white/70"><strong>Deliverable:</strong> Campaign live + laporan mingguan + iterasi terukur.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- DELIVERABLES SUMMARY -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Yang Anda Dapat</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-4xl text-ink">
+                    Total 7 Deliverable
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                {[
+                    {t: "Dokumen Audit", d: "Analisa kondisi akun + rekomendasi tertulis"},
+                    {t: "Strategi Campaign", d: "Channel mix + budget + audience + creative brief"},
+                    {t: "Setup Akun & Pixel", d: "Ads platform configuration + tracking pixel"},
+                    {t: "Creative Production", d: "Copywriting + design brief (opsional production)"},
+                    {t: "Landing Page", d: "Single page conversion-ready (opsional)"},
+                    {t: "Laporan Mingguan", d: "Performa + rekomendasi iterasi via WhatsApp"},
+                    {t: "Dashboard Real-time", d: "Anda monitor sendiri via akses akun iklan"}
+                ].map(d => (
+                    <div class="flex items-start gap-3 p-4 bg-soft rounded-xl">
+                        <Check class="w-5 h-5 text-green flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p class="font-bold text-ink">{d.t}</p>
+                            <p class="text-sm text-muted">{d.d}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari Fase 1 (Gratis)</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Mau Tahu Akar Masalah Campaign Anda?
+            </h2>
+            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi 15 Menit · Gratis
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+</Layout>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+<style>
+    .phase-num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 4rem;
+        line-height: 1;
+        background: linear-gradient(135deg, #0f1e3d, #f59e0b);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .phase-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #6b7280;
+    }
+    .phase-icon-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        color: #f59e0b;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+</style>

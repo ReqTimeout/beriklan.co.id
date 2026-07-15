@@ -11,10 +11,11 @@
     ];
 
     const company = [
-        { label: 'Tentang Kami', href: '/tentang' },
-        { label: 'Studi Kasus', href: '/studi-kasus' },
+        { label: 'Tentang Kami', href: '/tentang-kami' },
+        { label: 'Klien', href: '/klien' },
+        { label: 'Metodologi', href: '/metodologi' },
+        { label: 'Press & Media', href: '/press' },
         { label: 'Blog', href: '/blog' },
-        { label: 'Kamus Marketing', href: '/belajar' },
         { label: 'Kontak', href: '/kontak' },
     ];
 </script>
@@ -97,9 +98,10 @@
         <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/50">
             <p>&copy; {year} Beriklan.co.id. All rights reserved.</p>
             <div class="flex gap-6">
-                <a href="/privacy" class="hover:text-accent transition">Privacy Policy</a>
-                <a href="/terms" class="hover:text-accent transition">Terms of Service</a>
-                <a href="/sitemap" class="hover:text-accent transition">Sitemap</a>
+                <a href="/privacy-policy" class="hover:text-accent transition">Privacy Policy</a>
+                <a href="/terms-of-service" class="hover:text-accent transition">Terms of Service</a>
+                <a href="/disclaimer" class="hover:text-accent transition">Disclaimer</a>
+                <a href="/sitemap-index.xml" class="hover:text-accent transition">Sitemap</a>
             </div>
         </div>
     </div>

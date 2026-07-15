@@ -1,5 +1,6 @@
 ---
 import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
+import CookieConsent from '../components/CookieConsent.astro';
 
 interface Props {
     title?: string;
@@ -106,6 +107,7 @@ const showOrganization = true;
 	<body class="font-sans text-primary bg-white antialiased pb-24 lg:pb-0">
 		<slot />
 	<FloatingWhatsApp client:only="svelte" />
+	<CookieConsent />
 
 	<!-- Scroll-triggered reveal system -->
 	<script is:inline>

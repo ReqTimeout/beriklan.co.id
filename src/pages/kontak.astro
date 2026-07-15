@@ -1,0 +1,245 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import Footer from '../components/Footer.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import { MessageCircle, Phone, Mail, MapPin, Clock } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20ingin%20berkonsultasi%20mengenai%20campaign%20digital%20marketing.";
+const phoneLink = "tel:+62811919328";
+const mailLink = "mailto:info@beriklan.co.id?subject=Konsultasi%20Digital%20Marketing";
+const mapsLink = "https://maps.google.com/?q=Jl.+Arcamanik+Endah+No.76+Bandung+40195";
+
+const schema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://beriklan.co.id/kontak/#business",
+    "name": "Beriklan Digital Agency",
+    "image": "https://beriklan.co.id/logoweb.webp",
+    "url": "https://beriklan.co.id/kontak/",
+    "telephone": "+62-81-1919-328",
+    "email": "info@beriklan.co.id",
+    "priceRange": "Rp 12.000 - Rp 175.000",
+    "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Jl. Arcamanik Endah No.76",
+        "addressLocality": "Bandung",
+        "addressRegion": "Jawa Barat",
+        "postalCode": "40195",
+        "addressCountry": "ID"
+    },
+    "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -6.9175,
+        "longitude": 107.6191
+    },
+    "openingHoursSpecification": [
+        {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "18:00"
+        },
+        {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "10:00",
+            "closes": "14:00"
+        }
+    ],
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+62-81-1919-328",
+        "contactType": "customer service",
+        "areaServed": ["ID", "MY", "SG"],
+        "availableLanguage": ["Indonesian", "English", "Malay"]
+    }
+};
+---
+
+<Layout
+    title="Kontak Beriklan.co.id — WhatsApp, Telepon, Email & Alamat | Beriklan"
+    description="Hubungi tim Beriklan via WhatsApp +62 81-1919-328, email info@beriklan.co.id, atau datang ke Jl. Arcamanik Endah No.76 Bandung. Respon dalam 1 jam (jam kerja)."
+    canonical="https://beriklan.co.id/kontak/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green"></span>
+                </span>
+                Tim Online · Respon dalam 1 Jam
+            </div>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Hubungi Tim<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">Beriklan Sekarang.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed anim-fade-up" style="animation-delay: 120ms;">
+                Pilih channel favorit Anda — WhatsApp, telepon, email, atau datang langsung ke kantor.
+                Semua ditanggapi oleh tim profesional, bukan bot.
+            </p>
+        </div>
+    </header>
+
+    <!-- CONTACT CARDS -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <a href={waLink} target="_blank" rel="noopener" class="contact-card group">
+                    <div class="contact-icon bg-green/15 text-green">
+                        <MessageCircle class="w-6 h-6" fill="currentColor" />
+                    </div>
+                    <p class="contact-label">WhatsApp</p>
+                    <p class="contact-value">+62 81-1919-328</p>
+                    <p class="contact-sub">Respon 1 jam · jam kerja</p>
+                </a>
+                <a href={phoneLink} class="contact-card group">
+                    <div class="contact-icon bg-blue-50 text-blue-600">
+                        <Phone class="w-6 h-6" />
+                    </div>
+                    <p class="contact-label">Telepon</p>
+                    <p class="contact-value">081-1919-328</p>
+                    <p class="contact-sub">Senin–Jumat 09.00–18.00 WIB</p>
+                </a>
+                <a href={mailLink} class="contact-card group">
+                    <div class="contact-icon bg-amber-50 text-amber-600">
+                        <Mail class="w-6 h-6" />
+                    </div>
+                    <p class="contact-label">Email</p>
+                    <p class="contact-value">info@beriklan.co.id</p>
+                    <p class="contact-sub">Respon 24 jam · max</p>
+                </a>
+                <a href={mapsLink} target="_blank" rel="noopener" class="contact-card group">
+                    <div class="contact-icon bg-accent/15 text-accent">
+                        <MapPin class="w-6 h-6" />
+                    </div>
+                    <p class="contact-label">Kantor</p>
+                    <p class="contact-value">Jl. Arcamanik Endah No.76</p>
+                    <p class="contact-sub">Bandung 40195 · Indonesia</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAP + ALAMAT + JAM KERJA -->
+    <section class="py-16 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white rounded-2xl overflow-hidden shadow-soft border border-gray-100 aspect-video">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.9!2d107.6191!3d-6.9175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e!2sArcamanik+Endah+No.76!5e0!3m2!1sen!2sid"
+                        width="100%"
+                        height="100%"
+                        style="border:0"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Lokasi Kantor Beriklan di Bandung"
+                    ></iframe>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Kantor Pusat</p>
+                    <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-4">
+                        Bandung HQ — Jemursari
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <MapPin class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p class="font-bold text-ink">Alamat</p>
+                                <p class="text-muted">Jl. Arcamanik Endah No.76, Bandung 40195, Jawa Barat, Indonesia</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <Clock class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p class="font-bold text-ink">Jam Operasional</p>
+                                <p class="text-muted">Senin–Jumat: 09.00–18.00 WIB</p>
+                                <p class="text-muted">Sabtu: 10.00–14.00 WIB</p>
+                                <p class="text-muted text-sm">Minggu & hari libur: tutup (respon WhatsApp tertunda)</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <MessageCircle class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p class="font-bold text-ink">WhatsApp Fast Response</p>
+                                <p class="text-muted">Untuk inquiry kilat — balas dalam 1 jam (jam kerja)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Konsultasi 15 Menit · Tanpa Biaya</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Langsung Chat WhatsApp Sekarang
+            </h2>
+            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Chat WhatsApp · +62 81-1919-328
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+</Layout>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+<style>
+    .contact-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 1.25rem;
+        border: 1px solid #f3f4f6;
+        transition: all 0.25s;
+        position: relative;
+    }
+    .contact-card:hover {
+        transform: translateY(-3px);
+        border-color: #f59e0b;
+        box-shadow: 0 12px 32px rgba(15,30,61,0.10);
+    }
+    .contact-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+    }
+    .contact-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #6b7280;
+        margin: 0;
+    }
+    .contact-value {
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #0b1426;
+        margin: 0;
+    }
+    .contact-sub {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin: 0;
+    }
+</style>

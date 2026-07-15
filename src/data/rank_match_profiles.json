@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "purpose": "Pilot rank match profiles (placeholder karena SERP rate-limited/Bing JS-only). 5 sample profiles untuk high-priority keywords.",
+    "note": "Real profiles akan di-generate via Google CSE API (setelah user kasih API key Day 4 atau pakai Serper.dev)",
+    "last_updated": "2026-07-15",
+    "generated_by": "scripts/seo/build_rank_match.py + manual fallback"
+  },
+  "profiles": [
+    {
+      "keyword": "jasa iklan facebook jakarta",
+      "intent": "transactional",
+      "target": {
+        "word_count": 1850,
+        "h2_count": 6,
+        "h3_count": 12,
+        "img_count": 3,
+        "internal_links": 8,
+        "external_links": 2,
+        "must_have_faq": true,
+        "must_have_table": true,
+        "must_have_list": true,
+        "must_have_schema_article": true,
+        "must_have_schema_faq": true,
+        "must_have_schema_breadcrumb": true,
+        "entities_required": [
+          "facebook ads", "meta business", "jakarta", "umkm", "cpa",
+          "roas", "targeting", "audience", "pixel", "retargeting",
+          "creative", "ad copy", "campaign", "budget", "leads"
+        ],
+        "must_have_keywords_density": "1.2% - 1.8%",
+        "title_pattern": "Jasa Iklan Facebook Jakarta — {Benefit} | {Brand}",
+        "meta_description_template": "Jasa iklan Facebook Jakarta [benefit]. Tim Meta Business Partner mengelola campaign Anda sejak 2016. Konsultasi gratis 15 menit."
+      },
+      "competitors_analyzed": 0,
+      "pilot_status": "manual_baseline",
+      "timestamp": "2026-07-15T00:00:00Z"
+    },
+    {
+      "keyword": "jasa iklan tiktok bandung",
+      "intent": "transactional",
+      "target": {
+        "word_count": 1700,
+        "h2_count": 5,
+        "h3_count": 10,
+        "img_count": 2,
+        "internal_links": 6,
+        "external_links": 1,
+        "must_have_faq": true,
+        "must_have_table": true,
+        "must_have_list": true,
+        "must_have_schema_article": true,
+        "must_have_schema_faq": true,
+        "must_have_schema_breadcrumb": true,
+        "entities_required": [
+          "tiktok ads", "spark ads", "fyp", "brand", "creative",
+          "bandung", "umkm", "roas", "engagement", "video",
+          "reels", "ads manager", "audience", "trending"
+        ],
+        "must_have_keywords_density": "1.0% - 1.5%",
+        "title_pattern": "Jasa Iklan TikTok Bandung — {Benefit} | {Brand}",
+        "meta_description_template": "Jasa iklan TikTok Bandung kreatif & terukur. TK Ads Partner mengelola campaign Spark Ads dan FYP untuk UMKM."
+      },
+      "competitors_analyzed": 0,
+      "pilot_status": "manual_baseline",
+      "timestamp": "2026-07-15T00:00:00Z"
+    },
+    {
+      "keyword": "jasa iklan google ads",
+      "intent": "transactional",
+      "target": {
+        "word_count": 2000,
+        "h2_count": 7,
+        "h3_count": 14,
+        "img_count": 4,
+        "internal_links": 10,
+        "external_links": 3,
+        "must_have_faq": true,
+        "must_have_table": true,
+        "must_have_list": true,
+        "must_have_schema_article": true,
+        "must_have_schema_faq": true,
+        "must_have_schema_breadcrumb": true,
+        "entities_required": [
+          "google ads", "adwords", "search", "display", "youtube ads",
+          "keyword", "cpc", "ctr", "impressions", "clicks",
+          "quality score", "landing page", "conversion tracking", "gtag"
+        ],
+        "must_have_keywords_density": "1.3% - 1.8%",
+        "title_pattern": "Jasa Iklan Google Ads — {Benefit} | {Brand}",
+        "meta_description_template": "Jasa Google Ads (Search, Display, YouTube) — Google Partner mengelola campaign high-intent keyword. Audit gratis awal."
+      },
+      "competitors_analyzed": 0,
+      "pilot_status": "manual_baseline",
+      "timestamp": "2026-07-15T00:00:00Z"
+    },
+    {
+      "keyword": "jasa kelola instagram",
+      "intent": "transactional",
+      "target": {
+        "word_count": 1500,
+        "h2_count": 5,
+        "h3_count": 8,
+        "img_count": 5,
+        "internal_links": 5,
+        "external_links": 1,
+        "must_have_faq": true,
+        "must_have_table": false,
+        "must_have_list": true,
+        "must_have_schema_article": true,
+        "must_have_schema_faq": true,
+        "must_have_schema_breadcrumb": true,
+        "entities_required": [
+          "instagram", "content", "feed", "reels", "story",
+          "engagement", "reach", "followers", "community manager",
+          "brand voice", "caption", "hashtag"
+        ],
+        "must_have_keywords_density": "1.0% - 1.5%",
+        "title_pattern": "Jasa Kelola Instagram — {Benefit} | {Brand}",
+        "meta_description_template": "Jasa kelola Instagram profesional — content calendar, copywriting, design graphic, community management. Laporan bulanan."
+      },
+      "competitors_analyzed": 0,
+      "pilot_status": "manual_baseline",
+      "timestamp": "2026-07-15T00:00:00Z"
+    },
+    {
+      "keyword": "jasa pembuatan website company profile",
+      "intent": "transactional",
+      "target": {
+        "word_count": 1600,
+        "h2_count": 6,
+        "h3_count": 6,
+        "img_count": 6,
+        "internal_links": 6,
+        "external_links": 2,
+        "must_have_faq": true,
+        "must_have_table": true,
+        "must_have_list": true,
+        "must_have_schema_article": true,
+        "must_have_schema_faq": true,
+        "must_have_schema_breadcrumb": true,
+        "entities_required": [
+          "website", "company profile", "domain", "hosting", "cms",
+          "wordpress", "next.js", "custom design", "responsive",
+          "seo friendly", "ssl", "page speed"
+        ],
+        "must_have_keywords_density": "1.2% - 1.6%",
+        "title_pattern": "Jasa Pembuatan Website Company Profile — {Benefit} | {Brand}",
+        "meta_description_template": "Jasa website company profile profesional — desain kustom, SEO-friendly, mobile responsive. Garansi revisi 2-3×."
+      },
+      "competitors_analyzed": 0,
+      "pilot_status": "manual_baseline",
+      "timestamp": "2026-07-15T00:00:00Z"
+    }
+  ]
+}

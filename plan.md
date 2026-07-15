@@ -5005,6 +5005,94 @@ P2 items: kebanyakan nice-to-have. Skip dulu, revisit kalau ada trigger event.
 
 Plan v5.0 complete. 51 section, 5000 baris. Comprehensive tapi actionable.
 
+---
+
+## 54. SPRINT PROGRESS (14-day sprint)
+
+> Updated setiap selesai Day. Format: total checklist + %complete + commit hash + live status.
+
+### 54.1 Day 1 — Foundation: Data + DB ✅ 100%
+
+| # | Deliverable | Status |
+|---|-------------|--------|
+| 1 | Convert Excel 9 sheet → `src/data/keywords.json` (1478 keyword) | ✅ |
+| 2 | `src/data/cities.json` (28 kota + facts + UMKM + lat/lng) | ✅ |
+| 3 | `src/data/services.json` (10 service + FAQ + description) | ✅ |
+| 4 | `src/data/testimonials.json` (50 testimoni) | ✅ |
+| 5 | `src/data/local-faqs.json` (1400 FAQ matrix) | ✅ |
+| 6 | `src/data/posts-meta.json` (827 lightweight metadata) | ✅ |
+| 7 | `scripts/db/schema.sql` (13 tables) | ✅ |
+| 8 | `scripts/db/migrate.py` (CLI ready) | ✅ |
+| 9 | Setup D1 `beriklan-seo` (0e71d6e3-231f-40a1-ac6b-6defc3976efd) | ✅ |
+| 10 | Seed 1478 keywords ke `keyword_queue` | ✅ |
+| 11 | Verify build 846 pages, 0 error | ✅ |
+| 12 | Commit + push + CF auto-deploy live | ✅ |
+
+**Commit:** `30bb98e` | **Live:** HTTP 200, 121ms | **D1:** 13 tabel, 1478 keywords, 8 settings | **Total files:** +12 (scripts + JSON data + schema)
+
+---
+
+### 54.2 Day 2 — E-E-A-T Pages + Legal + Cookie Consent ✅ 100%
+
+| # | Deliverable | Status |
+|---|-------------|--------|
+| 1 | `src/pages/tentang-kami.astro` (About + 9 th exp + sertifikasi) | ✅ |
+| 2 | `src/pages/klien.astro` (Industri × 8 + 8 testimoni + case study) | ✅ |
+| 3 | `src/pages/metodologi.astro` (3 fase + 7 deliverables) | ✅ |
+| 4 | `src/pages/kontak.astro` (WA/Phone/Email/Kantor + Maps embed + NAP) | ✅ |
+| 5 | `src/pages/press.astro` (Meta Business + Google + TikTok Partner) | ✅ |
+| 6 | **P0/§48.1** `src/pages/privacy-policy.astro` (UU PDP + GDPR 10 section) | ✅ |
+| 7 | **P0/§48.1** `src/pages/terms-of-service.astro` | ✅ |
+| 8 | **P0/§48.1** `src/pages/disclaimer.astro` (YMYL compliance) | ✅ |
+| 9 | `src/components/CookieConsent.astro` + wire `Layout.astro` | ✅ |
+| 10 | Schema JSON-LD per page (Org + Person + LocalBusiness + HowTo + WebPage) | ✅ |
+| 11 | Footer update /tentang → /tentang-kami + privacy/terms/disclaimer links | ✅ |
+| 12 | Build 854 pages + commit + CF manual deploy + verify live | ✅ |
+
+**Schema JSON-LD added:**
+- tentang-kami: `Organization` + `Person` (2)
+- klien: `Organization` + `AggregateRating` + `Review` × 1
+- metodologi: `HowTo` (3 HowToStep)
+- kontak: `LocalBusiness` + `ContactPoint` + `OpeningHoursSpecification` × 2 + `GeoCoordinates` + `PostalAddress`
+- press: `Page navigation`
+- privacy/terms/disclaimer: `WebPage` + `dateModified`
+
+**Cookie consent features:**
+- localStorage `beriklan_cookie_consent_v1` persists consent state
+- Granular preference: Necessary (always) + Analytics + Advertising (AdSense)
+- Banner shows after 1.2s, only if no existing consent
+- Dispatch `cookieconsent` event untuk AdSense/analytics activation
+- Style: Tailwind-compatible (custom CSS in component)
+
+**Commit:** `926de60` | **Manual deploy (CF build stuck):** `63c05aef-5056-413b-9fef-fa0fdb70dfa2` (OAuth-based wrangler deploy) | **Live (beriklan.co.id):** all 8 pages HTTP 200 ✓
+
+**Build:** 854 pages built (+8 from Day 1 baseline 846), 0 error, 0 warning
+
+**Notes:**
+- CF auto-deploy via git push DID NOT trigger Workers rebuild (zone-scoped token tidak punya Workers Services write permission). Manual `npx wrangler deploy` diperlukan.
+- Setelah manual deploy, semua 8 page resolve di edge node `beriklanweb.3smedianet.workers.dev` dan propagate ke `beriklan.co.id` zone route.
+- Workaround ke depan: tambah GH Actions workflow `.github/workflows/00-deploy.yml` yang trigger `wrangler deploy` setiap push ke main.
+
+---
+
+### 54.3 Day 3 — Schema Generator + Rank Match Builder 🔄 In progress
+
+**Target checklist:**
+
+| # | Deliverable | Status |
+|---|-------------|--------|
+| 1 | `scripts/seo/build_rank_match.py` (SERP scrape + target profile) | 🔄 |
+| 2 | `scripts/seo/inject_schema.py` (programmatic schema injection) | ⏳ |
+| 3 | `src/components/LocalSchema.astro` (reusable per-city schema) | ⏳ |
+| 4 | Test 5 pilot keyword → `src/data/rank_match_profiles.json` | ⏳ |
+| 5 | `.github/workflows/00-deploy.yml` (GH Actions auto-deploy) | ⏳ |
+| 6 | Build + verify schema injection works | ⏳ |
+| 7 | Commit + push + manual deploy + verify live | ⏳ |
+
+**Target commit:** TBD | **Live status:** TBD | **Effort:** ~4-6 jam
+
+---
+
 **TL;DR untuk user:**
 - Bisa mulai sekarang, plan sudah cukup detail untuk coding agent execute
 - P0 (22 items) wajib masuk sprint 14 hari → effort +20 jam

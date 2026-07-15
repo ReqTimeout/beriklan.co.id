@@ -1,0 +1,205 @@
+---
+/**
+ * LocalSchema.astro - Reusable LocalBusiness + Service + FAQPage schema component
+ *
+ * Usage:
+ *   <LocalSchema
+ *     type="city-service"
+ *     city={cityObj}
+ *     service={serviceObj}
+ *     faqs={[{q: "...", a: "..."}]}
+ *     pageUrl="/jasa-iklan-facebook/jakarta/"
+ *     breadcrumbs={[["Beranda","/"], ["Facebook Ads","/jasa-iklan-facebook/"], ["Jakarta","/jasa-iklan-facebook/jakarta/"]]}
+ *   />
+ */
+interface FAQ {
+    q: string;
+    a: string;
+}
+
+interface City {
+    slug: string;
+    name: string;
+    province?: string;
+    lat?: number;
+    lng?: number;
+}
+
+interface Service {
+    slug: string;
+    name: string;
+    description?: string;
+}
+
+interface Props {
+    type?: "city-service" | "service-only" | "city-only" | "article";
+    city?: City;
+    service?: Service;
+    faqs?: FAQ[];
+    pageUrl?: string;
+    breadcrumbs?: [string, string][];
+    title?: string;
+    datePublished?: string;
+    dateModified?: string;
+    author?: string;
+}
+
+const {
+    type = "city-service",
+    city,
+    service,
+    faqs = [],
+    pageUrl = "",
+    breadcrumbs = [],
+    title,
+    datePublished,
+    dateModified,
+    author = "Tim Beriklan",
+} = Astro.props as Props;
+
+const baseUrl = "https://beriklan.co.id";
+const fullUrl = pageUrl.startsWith("http") ? pageUrl : `${baseUrl}${pageUrl}`;
+const canonicalUrl = fullUrl.endsWith("/") ? fullUrl : `${fullUrl}/`;
+
+function genLocalBusiness(c: City) {
+    return {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "@id": `${canonicalUrl}#business`,
+        "name": `Beriklan.co.id — ${c.name}`,
+        "image": `${baseUrl}/logoweb.webp`,
+        "url": canonicalUrl,
+        "telephone": "+62-81-1919-328",
+        "email": "info@beriklan.co.id",
+        "priceRange": "Rp 12.000 - Rp 175.000",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Jl. Arcamanik Endah No.76",
+            "addressLocality": "Bandung",
+            "addressRegion": "Jawa Barat",
+            "postalCode": "40195",
+            "addressCountry": "ID"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": c.lat ?? -6.9175,
+            "longitude": c.lng ?? 107.6191
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+                "opens": "09:00",
+                "closes": "18:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": "Saturday",
+                "opens": "10:00",
+                "closes": "14:00"
+            }
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+62-81-1919-328",
+            "contactType": "customer service",
+            "areaServed": ["ID","MY","SG"],
+            "availableLanguage": ["Indonesian","English","Malay"]
+        },
+        "areaServed": { "@type": "City", "name": c.name }
+    };
+}
+
+function genService(s: Service, c?: City) {
+    return {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": s.name,
+        "provider": { "@id": `${canonicalUrl}#business` },
+        "areaServed": c ? { "@type": "City", "name": c.name } : { "@type": "Country", "name": "Indonesia" },
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": `Paket ${s.name}`,
+            "itemListElement": [
+                { "@type": "Offer", "name": "Paket Pemanasan", "price": "12000", "priceCurrency": "IDR" },
+                { "@type": "Offer", "name": "Paket Starter", "price": "25000", "priceCurrency": "IDR" },
+                { "@type": "Offer", "name": "Paket Pro", "price": "80000", "priceCurrency": "IDR" },
+                { "@type": "Offer", "name": "Paket Premium", "price": "175000", "priceCurrency": "IDR" }
+            ]
+        }
+    };
+}
+
+function genFAQPage(faqs: FAQ[]) {
+    if (faqs.length === 0) return null;
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(f => ({
+            "@type": "Question",
+            "name": f.q,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": f.a
+            }
+        }))
+    };
+}
+
+function genBreadcrumbList(items: [string, string][]) {
+    if (items.length === 0) return null;
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": items.map((item, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": item[0],
+            "item": item[1].startsWith("http") ? item[1] : `${baseUrl}${item[1]}`
+        }))
+    };
+}
+
+function genArticle(t: string, pubDate?: string, modDate?: string, auth?: string) {
+    return {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": t,
+        "image": `${baseUrl}/og-image.png`,
+        "datePublished": pubDate ?? new Date().toISOString(),
+        "dateModified": modDate ?? new Date().toISOString(),
+        "author": { "@type": "Person", "name": auth ?? "Tim Beriklan" },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Beriklan.co.id",
+            "logo": { "@type": "ImageObject", "url": `${baseUrl}/logoweb.webp` }
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": canonicalUrl
+        }
+    };
+}
+
+const schemas: any[] = [];
+if (type === "city-service" && city && service) {
+    schemas.push(genLocalBusiness(city));
+    schemas.push(genService(service, city));
+}
+if (type === "city-only" && city) {
+    schemas.push(genLocalBusiness(city));
+}
+if (type === "service-only" && service) {
+    schemas.push(genService(service));
+}
+if (type === "article" && title) {
+    schemas.push(genArticle(title, datePublished, dateModified, author));
+}
+const faqSchema = genFAQPage(faqs);
+if (faqSchema) schemas.push(faqSchema);
+const breadcrumbSchema = genBreadcrumbList(breadcrumbs);
+if (breadcrumbSchema) schemas.push(breadcrumbSchema);
+---
+{schemas.map(s => (
+    <script type="application/ld+json" set:html={JSON.stringify(s)} />
+))}

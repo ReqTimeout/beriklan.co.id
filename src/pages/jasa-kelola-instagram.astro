@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20kelola%20Instagram.%20Mohon%20info%20paket%20dan%20harga.";
@@ -91,11 +92,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Laporan bulanan mencakup performa setiap post, insight audiens (demografi, jam aktif, lokasi), reach dan engagement, serta rekomendasi topik dan format untuk bulan depan. Dikirim via email dan didiskusikan via WhatsApp atau video call.' },
 ];
 
-const relatedItems = [
-    { icon: '📷', label: 'Instagram Ads', desc: 'Pasang iklan Instagram untuk menjangkau audiens baru di Feed, Stories, dan Reels.', href: '/jasa-iklan-instagram' },
-    { icon: '🎵', label: 'Kelola TikTok', desc: 'Manajemen konten TikTok: video pendek, riset musik, copy, dan optimasi.', href: '/jasa-kelola-tiktok' },
-    { icon: '🎬', label: 'Landing Page', desc: 'Halaman konversi untuk mengubah visitors Instagram menjadi leads atau pelanggan.', href: '/jasa-pembuatan-landing-page' },
-];
+const relatedItems = (relatedMap.services['jasa-kelola-instagram'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Jasa Kelola Instagram | Paket dari Rp 2.500.000 — Beriklan" description="Jasa kelola Instagram profesional: desain feed, story, video pendek, dan copywriting. Paket Basic 2,5jt, Standart 3,5jt, Business custom." canonical="https://beriklan.co.id/jasa-kelola-instagram/">

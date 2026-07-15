@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20paket%20promo%20Landing%20Page%20%2B%20Google%20Ads.%20Mohon%20info%20lebih%20lanjut.";
@@ -62,11 +63,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Laporan mingguan: jumlah visitor landing page, kata kunci yang mendatangkan klik, jumlah chat WhatsApp yang masuk, dan rekomendasi iterasi untuk minggu depan. Formatnya satu halaman, bahasa yang mudah dipahami.' },
 ];
 
-const relatedItems = [
-    { icon: '🔍', label: 'Google Search Ads', desc: 'Lanjutkan campaign Google Ads setelah paket 1 bulan ini berakhir.', href: '/jasa-iklan-google' },
-    { icon: '🌐', label: 'Pembuatan Website', desc: 'Untuk kebutuhan website multi-halaman (company profile, e-commerce).', href: '/jasa-pembuatan-website' },
-    { icon: '📘', label: 'Facebook Ads', desc: 'Tambahkan Facebook Ads untuk reach yang lebih luas di luar Google.', href: '/jasa-iklan-facebook' },
-];
+const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Landing Page + Google Ads | Paket Promo Rp 1.999.000 — Beriklan" description="Paket promo khusus: 1 landing page profesional + 1 bulan Google Ads. Copywriting, form kontak, integrasi ads, tracking & analisis. Cocok untuk Anda yang ingin langsung dapat leads dari hari pertama." canonical="https://beriklan.co.id/jasa-pembuatan-landing-page/">

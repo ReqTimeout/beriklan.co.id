@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20kelola%20TikTok.%20Mohon%20info%20paket%20dan%20harga.";
@@ -91,11 +92,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Laporan bulanan: performa setiap video (views, watch time, like, share, komentar), insight audiens (usia, lokasi, jam aktif), dan rekomendasi topik serta format untuk bulan depan. Dikirim via email dan didiskusikan via WhatsApp atau video call.' },
 ];
 
-const relatedItems = [
-    { icon: '🎵', label: 'TikTok Ads', desc: 'Pasang iklan TikTok untuk menjangkau audiens baru di FYP dengan targeting yang tepat.', href: '/jasa-iklan-tiktok' },
-    { icon: '📷', label: 'Kelola Instagram', desc: 'Manajemen akun Instagram: desain feed, story, Reels, dan interaksi followers.', href: '/jasa-kelola-instagram' },
-    { icon: '🎬', label: 'Landing Page', desc: 'Halaman konversi untuk mengubah visitors TikTok menjadi leads atau pelanggan.', href: '/jasa-pembuatan-landing-page' },
-];
+const relatedItems = (relatedMap.services['jasa-kelola-tiktok'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Jasa Kelola TikTok | Paket dari Rp 1.500.000 — Beriklan" description="Jasa kelola TikTok: upload produk, edit foto, video pendek, riset musik, dan optimasi followers. Paket TikTok Shop, Basic Content, Business Content." canonical="https://beriklan.co.id/jasa-kelola-tiktok/">

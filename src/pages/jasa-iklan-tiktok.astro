@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20iklan%20TikTok.%20Mohon%20info%20paket%20dan%20harga.";
@@ -94,11 +95,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Untuk paket Basic dan Standart, laporan dikirim di akhir periode. Untuk paket Business, laporan akhir periode ditambah review strategi via video call. Format laporan satu halaman: views, engagement, dan rekomendasi iterasi untuk periode berikutnya.' },
 ];
 
-const relatedItems = [
-    { icon: '📘', label: 'Facebook Ads', desc: 'Targeting interest dan remarketing untuk menjangkau audiens yang siap berkonsultasi.', href: '/jasa-iklan-facebook' },
-    { icon: '📷', label: 'Instagram Ads', desc: 'Visual storytelling untuk menemukan audiens baru di Feed, Stories, dan Reels.', href: '/jasa-iklan-instagram' },
-    { icon: '🎬', label: 'YouTube Ads', desc: 'Branding jangka panjang lewat video panjang di platform video terbesar.', href: '/jasa-iklan-youtube' },
-];
+const relatedItems = (relatedMap.services['jasa-iklan-tiktok'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Jasa Iklan TikTok Ads | Mulai Rp 1.000.000 — Views & Lead" description="Pasang iklan TikTok: brand awareness, traffic, dan lead. Paket 7 hari Rp 1jt, 14 hari Rp 1,6jt, 30 hari Rp 3,75jt. Estimasi hingga 75.000 views." canonical="https://beriklan.co.id/jasa-iklan-tiktok/">

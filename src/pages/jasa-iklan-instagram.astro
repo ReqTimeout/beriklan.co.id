@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20iklan%20Instagram.%20Mohon%20info%20paket%20dan%20harga.";
@@ -77,11 +78,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Laporan mingguan disusun dalam satu halaman dengan bahasa yang mudah dipahami — bukan sekadar deretan CPM-CTR-CPC. Anda mendapat kejelasan: mana yang berjalan optimal, mana yang perlu disesuaikan, dan rencana aksi untuk minggu depan.' },
 ];
 
-const relatedItems = [
-    { icon: '📷', label: 'Instagram Ads', desc: 'Visual storytelling untuk menemukan audiens baru di Feed, Stories, dan Reels.', href: '/jasa-iklan-instagram' },
-    { icon: '🎵', label: 'TikTok Ads', desc: 'Jangkau audiens muda lewat konten video pendek yang menghibur dan mengonversi.', href: '/jasa-iklan-tiktok' },
-    { icon: '🔍', label: 'Google Search Ads', desc: 'Tangkap intent tinggi dari orang yang sedang mencari produk atau layanan Anda.', href: '/jasa-iklan-google' },
-];
+const relatedItems = (relatedMap.services['jasa-iklan-instagram'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Jasa Iklan Instagram Ads | Paket Rp 1.750.000 & Rp 3.750.000 — Beriklan" description="Jasa iklan Instagram: Stories, Feed, Reels placement. Paket 30 hari mulai Rp 1.750.000." canonical="https://beriklan.co.id/jasa-iklan-instagram/">

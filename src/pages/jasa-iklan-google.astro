@@ -10,6 +10,7 @@ import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
 import Footer from '../components/Footer.svelte';
+import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20iklan%20Google.%20Mohon%20info%20paket%20dan%20harga.";
@@ -95,11 +96,12 @@ const faqs = [
     { q: 'Bagaimana laporan yang diberikan?', a: 'Laporan mingguan disusun dalam satu halaman dengan bahasa yang mudah dipahami — bukan sekadar deretan CPM-CTR-CPC. Anda mendapat kejelasan: mana yang berjalan optimal, mana yang perlu disesuaikan, dan rencana aksi untuk minggu depan.' },
 ];
 
-const relatedItems = [
-    { icon: '📘', label: 'Facebook Ads', desc: 'Targeting interest dan remarketing untuk menjangkau audiens yang siap berkonsultasi.', href: '/jasa-iklan-facebook' },
-    { icon: '📷', label: 'Instagram Ads', desc: 'Visual storytelling untuk menemukan audiens baru di Feed, Stories, dan Reels.', href: '/jasa-iklan-instagram' },
-    { icon: '🎬', label: 'YouTube Ads', desc: 'Branding jangka panjang lewat video panjang di platform video terbesar.', href: '/jasa-iklan-youtube' },
-];
+const relatedItems = (relatedMap.services['jasa-iklan-google'] || []).map(item => ({
+  icon: item.icon,
+  label: item.label,
+  desc: item.desc,
+  href: '/' + item.slug + '/',
+}));
 ---
 
 <Layout title="Jasa Iklan Google Ads / Search | Mulai Rp 1.750.000 — Beriklan" description="Jasa iklan Google Search Ads: muncul di halaman pertama saat calon customer mencari produk/layanan Anda. Paket Basic, Standart, Business dengan analisis keyword dan report bulanan." canonical="https://beriklan.co.id/jasa-iklan-google/">

@@ -23,3 +23,14 @@ npm-debug.log*
 
 # Sitemap intermediate
 public/_redirects.bak
+
+# Large data files (4MB+ posts.json + Excel source)
+src/data/posts.json
+Keyword Beriklan.xlsx
+jasadigitalmarketing.WordPress.*.xml
+backup/
+*.bak
+
+# Generated SQL chunks (regenerate via scripts/db/gen_seed_chunks.py)
+scripts/db/chunks/
+scripts/db/chunks_small/

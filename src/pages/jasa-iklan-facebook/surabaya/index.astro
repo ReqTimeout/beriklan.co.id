@@ -1,0 +1,162 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, Sparkles, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "surabaya", "name": "Surabaya", "alt_names": ["surabaya"], "province": "Jawa Timur", "tier": 1, "country": "ID", "lat": -7.2575, "lng": 112.7521, "umkm_count": 350000, "local_facts": ["Surabaya kota bisnis Jawa Timur dengan 280rb UMKM", "Pusat distribusi retail & F&B regional Jawa Timur", "2.8jt penduduk, kompetisi iklan tinggi"], "is_international": false};
+const service = {"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1};
+const testimonial = {"id": "tm_019", "name": "Sari", "industry": "kecantikan", "city": "Surabaya", "city_slug": "surabaya", "rating": 5, "quote": "Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan setelah migrasi dari agency sebelumnya.", "service": "jasa-iklan-facebook", "verified": true};
+const faqs = [{"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Berapa biaya Iklan Facebook di Surabaya?", "answer": "Biaya Iklan Facebook di Surabaya bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Apakah melayani UMKM di Surabaya?", "answer": "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Berapa lama setup campaign Iklan Facebook di Surabaya?", "answer": "Setup 1-3 hari termasuk riset lokal Surabaya, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Bagaimana laporan hasil campaign?", "answer": "Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Apakah ada kantor fisik di Surabaya?", "answer": "Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Surabaya kami bisa onsite meeting dengan notice 2 minggu."}];
+---
+
+<Layout
+    title="Jasa Iklan Facebook di Surabaya — Konsultasi Gratis | Beriklan"
+    description="Jasa Iklan Facebook di Surabaya dari tim Meta & Google Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-iklan-facebook/surabaya/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Iklan Facebook di Surabaya · Tim Online
+            </div>
+            <h1 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Jasa Iklan Facebook<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">di Surabaya.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Tim Beriklan (Meta & Google Partner sejak 2016) mengelola campaign Jasa Iklan Facebook untuk UMKM & bisnis menengah di Surabaya. Akses penuh ke akun iklan, dashboard real-time, laporan mingguan.
+            </p>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Surabaya.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine anim-fade-up" style="animation-delay: 240ms;">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi 15 Menit Gratis
+            </a>
+        </div>
+    </header>
+
+    <!-- AI-GENERATED CONTENT -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            <h2>Mengapa Bisnis di Surabaya Butuh Jasa Iklan Facebook</h2>
+<p>Surabaya, sebagai kota bisnis Jawa Timur dengan 280 ribu UMKM, menawarkan peluang besar bagi bisnis untuk berkembang. Namun, dengan 2,8 juta penduduk dan kompetisi iklan yang tinggi, memerlukan strategi pemasaran yang efektif untuk mencapai target pasar. Salah satu contoh bisnis yang berhasil menggunakan iklan Facebook di Surabaya adalah sebuah warung makan yang meningkatkan penjualan sebesar 25% setelah menggunakan iklan Facebook untuk meningkatkan kesadaran merek dan menarik pelanggan baru.</p>
+<p>Dengan menggunakan jasa iklan Facebook, bisnis di Surabaya dapat meningkatkan visibilitas merek, meningkatkan trafik website, dan meningkatkan penjualan. Selain itu, iklan Facebook juga dapat membantu bisnis untuk menargetkan audiens yang spesifik, sehingga memungkinkan bisnis untuk menggunakan budget iklan dengan lebih efektif.</p>
+<p>Contoh lainnya adalah sebuah toko online yang menggunakan iklan Facebook untuk meningkatkan penjualan produknya. Dengan menggunakan iklan Facebook, toko online tersebut dapat meningkatkan penjualan sebesar 50% dalam waktu 3 bulan.</p>
+
+<h2>Tantangan Jasa Iklan Facebook di Pasar Surabaya</h2>
+<p>Surabaya memiliki pasar yang sangat kompetitif, dengan banyak bisnis yang berlomba-lomba untuk mencapai target pasar. Oleh karena itu, bisnis di Surabaya memerlukan strategi pemasaran yang efektif untuk dapat bersaing dengan kompetitor. Salah satu tantangan yang dihadapi oleh bisnis di Surabaya adalah bagaimana cara membuat iklan yang efektif dan dapat menarik perhatian target pasar.</p>
+<p>Tantangan lainnya adalah bagaimana cara mengoptimalkan budget iklan untuk dapat mencapai hasil yang maksimal. Dengan menggunakan jasa iklan Facebook yang profesional, bisnis di Surabaya dapat mengatasi tantangan tersebut dan mencapai tujuan pemasaran dengan lebih efektif.</p>
+
+<h2>Solusi Beriklan untuk Jasa Iklan Facebook di Surabaya</h2>
+<p>Beriklan.co.id menawarkan solusi jasa iklan Facebook yang profesional untuk bisnis di Surabaya. Dengan menggunakan tim yang berpengalaman dan teknologi yang canggih, kami dapat membantu bisnis di Surabaya untuk mencapai tujuan pemasaran dengan lebih efektif. Berikut beberapa keuntungan yang dapat diperoleh dengan menggunakan jasa iklan Facebook dari Beriklan.co.id:</p>
+<ul>
+  <li>Meningkatkan visibilitas merek dan kesadaran target pasar</li>
+  <li>Meningkatkan trafik website dan penjualan</li>
+  <li>Mengoptimalkan budget iklan untuk dapat mencapai hasil yang maksimal</li>
+  <li>Menerima laporan yang detail dan akurat tentang performa iklan</li>
+  <li>Mendapatkan dukungan yang cepat dan profesional dari tim Beriklan.co.id</li>
+</ul>
+
+<h2>Layanan Lain yang Relevan di Surabaya</h2>
+<p>Selain jasa iklan Facebook, Beriklan.co.id juga menawarkan layanan lain yang relevan untuk bisnis di Surabaya, seperti jasa SEO, jasa Google Ads, dan jasa social media management. Dengan menggunakan layanan-layanan tersebut, bisnis di Surabaya dapat meningkatkan visibilitas merek, meningkatkan trafik website, dan meningkatkan penjualan dengan lebih efektif.</p>
+
+<h2>FAQ Jasa Iklan Facebook Surabaya</h2>
+<div>
+  <h3>Berapa biaya iklan Facebook di Surabaya?</h3>
+  <p>Biaya iklan Facebook di Surabaya bervariasi sesuai dengan paket yang dipilih. Paket mulai dari Rp 12.000 untuk entry, dan paket premium sebesar Rp 175.000 untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis.</p>
+  <h3>Apakah melayani UMKM di Surabaya?</h3>
+  <p>Ya, 80% klien kami adalah UMKM. Minimum budget iklan adalah Rp 50-100 ribu per hari, dengan fee manajemen yang terpisah. Konsultasi awal gratis.</p>
+  <h3>Berapa lama setup campaign iklan Facebook di Surabaya?</h3>
+  <p>Setup campaign iklan Facebook di Surabaya memerlukan waktu 1-3 hari, termasuk riset lokal Surabaya, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama.</p>
+  <h3>Bagaimana laporan hasil campaign?</h3>
+  <p>Laporan hasil campaign dapat dilihat melalui dashboard real-time, serta laporan mingguan yang dikirim via WhatsApp, yang berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi.</p>
+  <h3>Apakah ada kantor fisik di Surabaya?</h3>
+  <p>Tim kami berlokasi di Bandung, namun kami melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Surabaya, kami dapat melakukan onsite meeting dengan notice 2 minggu.</p>
+</div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Paket Harga</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Jasa Iklan Facebook Surabaya
+                </h2>
+                <p class="text-muted mt-3">Pilih paket sesuai skala campaign Anda. Semua paket sudah include pendampingan.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 reveal-stagger">
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pemanasan</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 12K</p><p class="text-sm text-muted mb-4">20 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pemanasan%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Starter</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 25K</p><p class="text-sm text-muted mb-4">50 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Starter%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Basic</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 45K</p><p class="text-sm text-muted mb-4">100 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Basic%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pro</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 80K</p><p class="text-sm text-muted mb-4">200 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pro%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Bisnis</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 115K</p><p class="text-sm text-muted mb-4">300 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Bisnis%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Premium</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 175K</p><p class="text-sm text-muted mb-4">500 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Premium%20untuk%20Jasa%20Iklan%20Facebook%20Surabaya" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+            </div>
+        </div>
+    </section>
+<section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige"><div class="container mx-auto px-6 max-w-3xl"><p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Klien dari Surabaya</p><h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Kata Mereka Setelah Bekerja Sama</h2><article class="bg-white rounded-2xl p-7 shadow-soft border border-gray-100"><p class="italic text-muted leading-relaxed mb-4">"Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan setelah migrasi dari agency sebelumnya."</p><div class="border-t border-gray-100 pt-3"><p class="font-bold text-ink">Sari</p><p class="text-xs text-muted"> · Surabaya</p></div></article></div></section>
+    <!-- RELATED SERVICES -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Lain di Surabaya</p>
+            <p class="text-center text-sm text-muted">
+                <a href="/jasa-jasa-iklan-instagram/surabaya/" class="text-accent hover:underline">Jasa Iklan Instagram di Surabaya</a>
+<a href="/jasa-jasa-iklan-tiktok/surabaya/" class="text-accent hover:underline">Jasa Iklan TikTok di Surabaya</a>
+<a href="/jasa-jasa-iklan-google/surabaya/" class="text-accent hover:underline">Jasa Iklan Google di Surabaya</a>
+<a href="/jasa-jasa-iklan-youtube/surabaya/" class="text-accent hover:underline">Jasa Iklan YouTube di Surabaya</a>
+<a href="/jasa-jasa-kelola-instagram/surabaya/" class="text-accent hover:underline">Jasa Kelola Instagram di Surabaya</a>
+<a href="/jasa-jasa-kelola-tiktok/surabaya/" class="text-accent hover:underline">Jasa Kelola TikTok di Surabaya</a>
+<a href="/jasa-jasa-pembuatan-website/surabaya/" class="text-accent hover:underline">Jasa Pembuatan Website di Surabaya</a>
+<a href="/jasa-jasa-pembuatan-landing-page/surabaya/" class="text-accent hover:underline">Jasa Landing Page di Surabaya</a>
+<a href="/jasa-jasa-digital-marketing/surabaya/" class="text-accent hover:underline">Jasa Digital Marketing di Surabaya</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari Surabaya</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Diskusi Jasa Iklan Facebook untuk Bisnis Anda
+            </h2>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Surabaya.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi via WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={{"slug": "surabaya", "name": "Surabaya", "alt_names": ["surabaya"], "province": "Jawa Timur", "tier": 1, "country": "ID", "lat": -7.2575, "lng": 112.7521, "umkm_count": 350000, "local_facts": ["Surabaya kota bisnis Jawa Timur dengan 280rb UMKM", "Pusat distribusi retail & F&B regional Jawa Timur", "2.8jt penduduk, kompetisi iklan tinggi"], "is_international": false}}
+        service={{"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1}}
+        faqs={[{"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Berapa biaya Iklan Facebook di Surabaya?", "answer": "Biaya Iklan Facebook di Surabaya bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Apakah melayani UMKM di Surabaya?", "answer": "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Berapa lama setup campaign Iklan Facebook di Surabaya?", "answer": "Setup 1-3 hari termasuk riset lokal Surabaya, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Bagaimana laporan hasil campaign?", "answer": "Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"city_slug": "surabaya", "city_name": "Surabaya", "service_slug": "jasa-iklan-facebook", "question": "Apakah ada kantor fisik di Surabaya?", "answer": "Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Surabaya kami bisa onsite meeting dengan notice 2 minggu."}]}
+        pageUrl="/jasa-iklan-facebook/surabaya/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Surabaya", "/jasa-iklan-facebook/surabaya/"]]}
+    />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 800; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content h2:first-child { margin-top: 0; }
+    .prose-content h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content p { margin: 1rem 0; line-height: 1.75; color: #4b5563; }
+    .prose-content ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose-content ul li { margin-bottom: 0.5rem; color: #4b5563; line-height: 1.65; }
+    .prose-content strong { color: #0b1426; }
+</style>

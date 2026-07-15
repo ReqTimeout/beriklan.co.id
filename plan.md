@@ -5075,21 +5075,74 @@ Plan v5.0 complete. 51 section, 5000 baris. Comprehensive tapi actionable.
 
 ---
 
-### 54.3 Day 3 — Schema Generator + Rank Match Builder 🔄 In progress
+### 54.3 Day 3 — Schema Generator + Rank Match Builder ✅ 100%
+
+| # | Deliverable | Status |
+|---|-------------|--------|
+| 1 | `scripts/seo/build_rank_match.py` (SERP scrape + target profile) | ✅ |
+| 2 | `scripts/seo/inject_schema.py` (programmatic schema injection) | ✅ |
+| 3 | `src/components/LocalSchema.astro` (reusable per-city schema) | ✅ |
+| 4 | Pilot 5 keyword → `src/data/rank_match_profiles.json` | ✅ |
+| 5 | `.github/workflows/00-deploy.yml` (GH Actions auto-deploy) | ✅ |
+| 6 | Build + verify schema injection works | ✅ |
+| 7 | Commit + push + manual deploy + verify live | ✅ |
+
+**Commit:** `2913c17` (git) + `766901d7-7597-4a7b-8aa8-e52999365232` (manual CF deploy) | **Live:** all pages HTTP 200, JSON-LD scripts rendering ✓
+
+**Files added Day 3:**
+- `scripts/seo/build_rank_match.py` (~270 lines)
+- `scripts/seo/inject_schema.py` (~280 lines)
+- `src/components/LocalSchema.astro` (~180 lines)
+- `src/data/rank_match_profiles.json` (5 pilot profiles)
+- `.github/workflows/00-deploy.yml` (50 lines)
+
+**Schema validation summary:**
+- **857 pages built**, **2540 JSON-LD scripts**, **0 schema errors** (built output)
+- **28 source pages**, 6 with explicit schema (E-E-A-T + legal), 22 inherit from Layout.astro
+- All 8 Day-2 E-E-A-T pages render Organization/ProfessionalService auto via Layout + custom JSON-LD inline
+
+**LocalSchema.astro supports 4 schema modes:**
+- `city-service`: LocalBusiness + Service (Offer catalog 4 tier)
+- `city-only`: LocalBusiness only
+- `service-only`: Service only
+- `article`: Article (headline, image, author, publisher, datePublished/Modified)
+- Plus optional FAQPage + BreadcrumbList
+
+**SERP scraping limitation found:**
+- Google returned 429 (rate-limited dalam 2 menit)
+- Bing rendered JS-only (no static HTML untuk BeautifulSoup parse)
+- Real SERP scrape butuh Google CSE API key (Day 5) atau Serper.dev (50 bln free)
+- Pilot 5 profiles saved as manual baseline; full rank match diaktifkan Day 5 setelah CSE API ready
+
+**GH Actions deploy workflow:**
+- Trigger: push ke main + manual `workflow_dispatch`
+- Steps: install → build → wrangler deploy → purge_cache → verify 4 sample
+- Needs `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` di GitHub Secrets
+- Estimated 2-3 min per deploy vs manual ~40s wrangler deploy
+
+---
+
+### 54.4 Day 4 — City Pages Bulk Generation (210 pages via free LLM) 🔄 In progress
 
 **Target checklist:**
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 1 | `scripts/seo/build_rank_match.py` (SERP scrape + target profile) | 🔄 |
-| 2 | `scripts/seo/inject_schema.py` (programmatic schema injection) | ⏳ |
-| 3 | `src/components/LocalSchema.astro` (reusable per-city schema) | ⏳ |
-| 4 | Test 5 pilot keyword → `src/data/rank_match_profiles.json` | ⏳ |
-| 5 | `.github/workflows/00-deploy.yml` (GH Actions auto-deploy) | ⏳ |
-| 6 | Build + verify schema injection works | ⏳ |
-| 7 | Commit + push + manual deploy + verify live | ⏳ |
+| 1 | `.env.example` + `scripts/.env` setup (API key via env, never echo) | 🔄 |
+| 2 | Test API key — identify base URL + available free models | ⏳ |
+| 3 | `scripts/seo/bulk_generate.py` (OpenAI-compatible + retry + quality gate) | ⏳ |
+| 4 | §48.2 AdSense policy filter (banned words auto-reject) | ⏳ |
+| 5 | Astro template: `src/templates/city-service-page.astro` | ⏳ |
+| 6 | Pilot 5 city pages (jakarta/bandung/surabaya/medan/makassar × facebook) | ⏳ |
+| 7 | User reviews pilot samples (~5 min review) | ⏳ |
+| 8 | Bulk generate 205 more (28 cities × 7 services = 196+ pages) | ⏳ |
+| 9 | Quality gate check (word count, FAQ, schema, density, AdSense policy) | ⏳ |
+| 10 | D1 update: each published city page → status='published' | ⏳ |
+| 11 | Build + commit + push + manual deploy + verify live | ⏳ |
 
-**Target commit:** TBD | **Live status:** TBD | **Effort:** ~4-6 jam
+**Target commit:** TBD | **Live status:** TBD | **Effort:** ~6-8 jam
+
+**API Key Security Notice:** ⚠️ API key yang di-share via chat saat ini terekspos. Setelah sprint selesai, rotate key di provider dashboard. Untuk now, key disimpan di `scripts/.env` (gitignored) dan dipakai via env var only.
 
 ---
 

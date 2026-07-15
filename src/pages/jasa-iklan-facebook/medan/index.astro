@@ -1,0 +1,162 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, Sparkles, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "medan", "name": "Medan", "alt_names": ["medan"], "province": "Sumatera Utara", "tier": 1, "country": "ID", "lat": 3.5952, "lng": 98.6722, "umkm_count": 350000, "local_facts": ["Medan hub Sumatera Utara dengan pertumbuhan e-commerce 40% YoY", "Pusat distribusi F&B, retail, jasa profesional", "2.4jt penduduk, naik kelas untuk iklan digital"], "is_international": false};
+const service = {"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1};
+const testimonial = {"id": "tm_040", "name": "Omar", "industry": "kesehatan", "city": "Medan", "city_slug": "medan", "rating": 5, "quote": "Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan setelah migrasi dari agency sebelumnya.", "service": "jasa-iklan-facebook", "verified": true};
+const faqs = [{"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Berapa biaya Iklan Facebook di Medan?", "answer": "Biaya Iklan Facebook di Medan bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Apakah melayani UMKM di Medan?", "answer": "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Berapa lama setup campaign Iklan Facebook di Medan?", "answer": "Setup 1-3 hari termasuk riset lokal Medan, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Bagaimana laporan hasil campaign?", "answer": "Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Apakah ada kantor fisik di Medan?", "answer": "Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Medan kami bisa onsite meeting dengan notice 2 minggu."}];
+---
+
+<Layout
+    title="Jasa Iklan Facebook di Medan — Konsultasi Gratis | Beriklan"
+    description="Jasa Iklan Facebook di Medan dari tim Meta & Google Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-iklan-facebook/medan/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Iklan Facebook di Medan · Tim Online
+            </div>
+            <h1 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Jasa Iklan Facebook<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">di Medan.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Tim Beriklan (Meta & Google Partner sejak 2016) mengelola campaign Jasa Iklan Facebook untuk UMKM & bisnis menengah di Medan. Akses penuh ke akun iklan, dashboard real-time, laporan mingguan.
+            </p>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Medan.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine anim-fade-up" style="animation-delay: 240ms;">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi 15 Menit Gratis
+            </a>
+        </div>
+    </header>
+
+    <!-- AI-GENERATED CONTENT -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            <h2>Mengapa Bisnis di Medan Butuh Jasa Iklan Facebook</h2>
+<p>Medan, sebagai hub Sumatera Utara, mengalami pertumbuhan e-commerce yang signifikan sebesar 40% YoY. Dengan populasi sekitar 2,4 juta penduduk, kota ini menawarkan peluang besar bagi bisnis untuk berkembang. Salah satu contoh bisnis yang dapat memanfaatkan ini adalah industri F&B, yang dapat menggunakan iklan Facebook untuk meningkatkan kesadaran dan penjualan produk. Misalnya, sebuah restoran di Medan dapat menggunakan iklan Facebook untuk mempromosikan menu baru mereka dan menargetkan audiens yang tepat, sehingga meningkatkan pelanggan dan pendapatan.</p>
+<p>Dengan menggunakan jasa iklan Facebook, bisnis di Medan dapat meningkatkan visibilitas dan mencapai target audiens yang lebih luas. Ini sangat penting, terutama bagi UMKM yang ingin meningkatkan penjualan dan meningkatkan kesadaran merek. Dengan biaya yang relatif rendah, iklan Facebook dapat membantu bisnis di Medan untuk bersaing dengan kompetitor lainnya.</p>
+<p>Contoh konkret dari bisnis yang berhasil menggunakan iklan Facebook di Medan adalah sebuah toko online yang menjual produk fashion. Mereka menggunakan iklan Facebook untuk mempromosikan produk mereka dan menargetkan audiens yang tepat, sehingga meningkatkan penjualan sebesar 25% dalam waktu 3 bulan.</p>
+
+<h2>Tantangan Jasa Iklan Facebook di Pasar Medan</h2>
+<p>Salah satu tantangan utama bagi bisnis di Medan yang ingin menggunakan iklan Facebook adalah kurangnya pemahaman tentang cara kerja iklan online. Banyak bisnis masih menggunakan metode pemasaran tradisional dan belum memanfaatkan potensi iklan online. Oleh karena itu, perlu adanya edukasi dan pelatihan tentang cara menggunakan iklan Facebook secara efektif.</p>
+<p>Tantangan lainnya adalah persaingan yang ketat di pasar Medan. Dengan banyaknya bisnis yang menggunakan iklan Facebook, perlu adanya strategi yang tepat untuk meningkatkan visibilitas dan mencapai target audiens. Oleh karena itu, perlu adanya analisis yang tepat tentang target audiens dan strategi pemasaran yang efektif.</p>
+
+<h2>Solusi Beriklan untuk Jasa Iklan Facebook di Medan</h2>
+<p>Beriklan.co.id menawarkan solusi jasa iklan Facebook yang profesional dan efektif untuk bisnis di Medan. Dengan tim yang berpengalaman dan teknologi yang canggih, kami dapat membantu bisnis di Medan untuk meningkatkan visibilitas dan mencapai target audiens yang lebih luas. Berikut adalah beberapa keuntungan dari menggunakan jasa iklan Facebook dari Beriklan.co.id:</p>
+<ul>
+  <li>Garansi tim online respon 1 jam</li>
+  <li>Laporan mingguan yang detail</li>
+  <li>Dashboard real-time untuk monitoring</li>
+  <li>Paket yang fleksibel dan sesuai dengan kebutuhan bisnis</li>
+  <li>Konsultasi awal gratis untuk membantu bisnis menentukan strategi pemasaran yang tepat</li>
+</ul>
+
+<h2>Layanan Lain yang Relevan di Medan</h2>
+<p>Selain jasa iklan Facebook, Beriklan.co.id juga menawarkan layanan lain yang relevan untuk bisnis di Medan, seperti jasa iklan Google Ads dan jasa SEO. Dengan menggunakan layanan ini, bisnis di Medan dapat meningkatkan visibilitas dan mencapai target audiens yang lebih luas, serta meningkatkan penjualan dan pendapatan.</p>
+
+<h2>FAQ Jasa Iklan Facebook Medan</h2>
+<div>
+  <h3>Berapa biaya Iklan Facebook di Medan?</h3>
+  <p>Biaya Iklan Facebook di Medan bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis.</p>
+  <h3>Apakah melayani UMKM di Medan?</h3>
+  <p>Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis.</p>
+  <h3>Berapa lama setup campaign Iklan Facebook di Medan?</h3>
+  <p>Setup 1-3 hari termasuk riset lokal Medan, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama.</p>
+  <h3>Bagaimana laporan hasil campaign?</h3>
+  <p>Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi.</p>
+  <h3>Apakah ada kantor fisik di Medan?</h3>
+  <p>Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Medan kami bisa onsite meeting dengan notice 2 minggu.</p>
+</div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Paket Harga</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Jasa Iklan Facebook Medan
+                </h2>
+                <p class="text-muted mt-3">Pilih paket sesuai skala campaign Anda. Semua paket sudah include pendampingan.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 reveal-stagger">
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pemanasan</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 12K</p><p class="text-sm text-muted mb-4">20 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pemanasan%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Starter</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 25K</p><p class="text-sm text-muted mb-4">50 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Starter%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Basic</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 45K</p><p class="text-sm text-muted mb-4">100 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Basic%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pro</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 80K</p><p class="text-sm text-muted mb-4">200 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pro%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Bisnis</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 115K</p><p class="text-sm text-muted mb-4">300 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Bisnis%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Premium</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 175K</p><p class="text-sm text-muted mb-4">500 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Premium%20untuk%20Jasa%20Iklan%20Facebook%20Medan" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+            </div>
+        </div>
+    </section>
+<section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige"><div class="container mx-auto px-6 max-w-3xl"><p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Klien dari Medan</p><h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Kata Mereka Setelah Bekerja Sama</h2><article class="bg-white rounded-2xl p-7 shadow-soft border border-gray-100"><p class="italic text-muted leading-relaxed mb-4">"Tim Beriklan responsif dan strategis. Campaign ROI naik signifikan setelah migrasi dari agency sebelumnya."</p><div class="border-t border-gray-100 pt-3"><p class="font-bold text-ink">Omar</p><p class="text-xs text-muted"> · Medan</p></div></article></div></section>
+    <!-- RELATED SERVICES -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Lain di Medan</p>
+            <p class="text-center text-sm text-muted">
+                <a href="/jasa-jasa-iklan-instagram/medan/" class="text-accent hover:underline">Jasa Iklan Instagram di Medan</a>
+<a href="/jasa-jasa-iklan-tiktok/medan/" class="text-accent hover:underline">Jasa Iklan TikTok di Medan</a>
+<a href="/jasa-jasa-iklan-google/medan/" class="text-accent hover:underline">Jasa Iklan Google di Medan</a>
+<a href="/jasa-jasa-iklan-youtube/medan/" class="text-accent hover:underline">Jasa Iklan YouTube di Medan</a>
+<a href="/jasa-jasa-kelola-instagram/medan/" class="text-accent hover:underline">Jasa Kelola Instagram di Medan</a>
+<a href="/jasa-jasa-kelola-tiktok/medan/" class="text-accent hover:underline">Jasa Kelola TikTok di Medan</a>
+<a href="/jasa-jasa-pembuatan-website/medan/" class="text-accent hover:underline">Jasa Pembuatan Website di Medan</a>
+<a href="/jasa-jasa-pembuatan-landing-page/medan/" class="text-accent hover:underline">Jasa Landing Page di Medan</a>
+<a href="/jasa-jasa-digital-marketing/medan/" class="text-accent hover:underline">Jasa Digital Marketing di Medan</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari Medan</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Diskusi Jasa Iklan Facebook untuk Bisnis Anda
+            </h2>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Medan.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi via WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={{"slug": "medan", "name": "Medan", "alt_names": ["medan"], "province": "Sumatera Utara", "tier": 1, "country": "ID", "lat": 3.5952, "lng": 98.6722, "umkm_count": 350000, "local_facts": ["Medan hub Sumatera Utara dengan pertumbuhan e-commerce 40% YoY", "Pusat distribusi F&B, retail, jasa profesional", "2.4jt penduduk, naik kelas untuk iklan digital"], "is_international": false}}
+        service={{"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1}}
+        faqs={[{"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Berapa biaya Iklan Facebook di Medan?", "answer": "Biaya Iklan Facebook di Medan bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Apakah melayani UMKM di Medan?", "answer": "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Berapa lama setup campaign Iklan Facebook di Medan?", "answer": "Setup 1-3 hari termasuk riset lokal Medan, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Bagaimana laporan hasil campaign?", "answer": "Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"city_slug": "medan", "city_name": "Medan", "service_slug": "jasa-iklan-facebook", "question": "Apakah ada kantor fisik di Medan?", "answer": "Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk Medan kami bisa onsite meeting dengan notice 2 minggu."}]}
+        pageUrl="/jasa-iklan-facebook/medan/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Medan", "/jasa-iklan-facebook/medan/"]]}
+    />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 800; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content h2:first-child { margin-top: 0; }
+    .prose-content h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content p { margin: 1rem 0; line-height: 1.75; color: #4b5563; }
+    .prose-content ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose-content ul li { margin-bottom: 0.5rem; color: #4b5563; line-height: 1.65; }
+    .prose-content strong { color: #0b1426; }
+</style>

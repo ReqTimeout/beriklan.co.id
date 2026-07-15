@@ -11,6 +11,9 @@
  *     pageUrl="/jasa-iklan-facebook/jakarta/"
  *     breadcrumbs={[["Beranda","/"], ["Facebook Ads","/jasa-iklan-facebook/"], ["Jakarta","/jasa-iklan-facebook/jakarta/"]]}
  *   />
+ *
+ * Or via JSON-stringified props (build-time safe):
+ *   <LocalSchema type="city-service" cityJson={JSON.stringify(city)} ...
  */
 interface FAQ {
     q: string;
@@ -203,3 +206,8 @@ if (breadcrumbSchema) schemas.push(breadcrumbSchema);
 {schemas.map(s => (
     <script type="application/ld+json" set:html={JSON.stringify(s)} />
 ))}
+---
+<!-- Build time parsing of pre-stringified JSON (used by bulk_generate.py output) -->
+<!-- The component above uses Astro props; for build-time generated pages,
+     include a parallel LocalSchema call with cityJson/serviceJson/faqsJson props if needed -->
+

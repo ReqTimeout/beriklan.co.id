@@ -1,0 +1,170 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, Sparkles, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "jakarta", "name": "Jakarta", "alt_names": ["jakarta"], "province": "DKI Jakarta", "tier": 1, "country": "ID", "lat": -6.2088, "lng": 106.8456, "umkm_count": 350000, "local_facts": ["Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi", "70% brand lokal Jakarta aktif di Meta dan Google Ads", "10.5jt penduduk, pasar paling matang untuk iklan digital"], "is_international": false};
+const service = {"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1};
+const testimonial = {"id": "tm_032", "name": "Gita", "industry": "kuliner", "city": "Bogor", "city_slug": "bogor", "rating": 5, "quote": "Pelayanan excellent, dashboard real-time-nya bantu kami monitor perform tanpa harus tungguin report mingguan.", "service": "jasa-iklan-tiktok", "verified": true};
+const faqs = [];
+---
+
+<Layout
+    title="Jasa Iklan Facebook di Jakarta — Konsultasi Gratis | Beriklan"
+    description="Jasa Iklan Facebook di Jakarta dari tim Meta & Google Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-iklan-facebook/jakarta/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Iklan Facebook di Jakarta · Tim Online
+            </div>
+            <h1 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Jasa Iklan Facebook<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">di Jakarta.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Tim Beriklan (Meta & Google Partner sejak 2016) mengelola campaign Jasa Iklan Facebook untuk UMKM & bisnis menengah di Jakarta. Akses penuh ke akun iklan, dashboard real-time, laporan mingguan.
+            </p>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Jakarta.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine anim-fade-up" style="animation-delay: 240ms;">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi 15 Menit Gratis
+            </a>
+        </div>
+    </header>
+
+    <!-- AI-GENERATED CONTENT -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            <h2>Mengapa Bisnis di Jakarta Butuh Jasa Iklan Facebook</h2>
+<p>Jakarta, sebagai pusat bisnis Indonesia, menawarkan peluang besar bagi para pelaku usaha untuk meningkatkan visibilitas dan meningkatkan penjualan. Dengan 10,5 juta penduduk, Jakarta merupakan pasar yang paling matang untuk iklan digital. Oleh karena itu, memiliki strategi iklan yang tepat sangat penting untuk mencapai target audiens yang tepat. Salah satu contoh bisnis yang sukses menggunakan iklan Facebook di Jakarta adalah bisnis fashion online, yang dapat meningkatkan penjualan hingga 30% dengan menggunakan iklan yang tepat.</p>
+<p>Banyak bisnis di Jakarta yang sudah menggunakan jasa iklan Facebook untuk meningkatkan visibilitas dan penjualan. Menurut data, 70% brand lokal Jakarta aktif di Meta dan Google Ads, menunjukkan bahwa iklan digital sudah menjadi bagian penting dari strategi pemasaran mereka. Dengan menggunakan jasa iklan Facebook, bisnis dapat meningkatkan kemampuan mereka untuk mencapai target audiens yang tepat dan meningkatkan penjualan.</p>
+<p>Contoh lainnya adalah bisnis kuliner, yang dapat menggunakan iklan Facebook untuk meningkatkan kesadaran dan meningkatkan penjualan. Dengan menggunakan iklan yang tepat, bisnis kuliner dapat meningkatkan penjualan hingga 25% dan meningkatkan kesadaran merek hingga 50%. Oleh karena itu, memiliki jasa iklan Facebook yang profesional sangat penting untuk mencapai target audiens yang tepat dan meningkatkan penjualan.</p>
+
+<h2>Tantangan Jasa Iklan Facebook di Pasar Jakarta</h2>
+<p>Jasa iklan Facebook di Jakarta memiliki beberapa tantangan yang harus diatasi. Salah satu tantangan terbesar adalah meningkatkan visibilitas dan mencapai target audiens yang tepat di tengah-tengah persaingan yang ketat. Dengan banyaknya bisnis yang menggunakan iklan Facebook, sangat penting untuk memiliki strategi iklan yang tepat dan efektif untuk mencapai target audiens yang tepat.</p>
+<p>Tantangan lainnya adalah meningkatkan konversi dan penjualan. Banyak bisnis yang menggunakan iklan Facebook, tetapi tidak semua bisnis dapat meningkatkan konversi dan penjualan. Oleh karena itu, sangat penting untuk memiliki strategi iklan yang tepat dan efektif untuk meningkatkan konversi dan penjualan. Dengan menggunakan jasa iklan Facebook yang profesional, bisnis dapat meningkatkan kemampuan mereka untuk mencapai target audiens yang tepat dan meningkatkan penjualan.</p>
+
+<h2>Solusi Beriklan untuk Jasa Iklan Facebook di Jakarta</h2>
+<p>Beriklan.co.id menawarkan solusi jasa iklan Facebook yang profesional dan efektif untuk bisnis di Jakarta. Dengan tim yang berpengalaman dan teknologi yang canggih, Beriklan.co.id dapat membantu bisnis meningkatkan visibilitas, meningkatkan konversi, dan meningkatkan penjualan. Berikut beberapa keuntungan menggunakan jasa iklan Facebook dari Beriklan.co.id:</p>
+<ul>
+<li>Meningkatkan visibilitas dan mencapai target audiens yang tepat</li>
+<li>Meningkatkan konversi dan penjualan</li>
+<li>Meningkatkan kesadaran merek dan meningkatkan reputasi</li>
+<li>Menghemat waktu dan biaya dengan menggunakan strategi iklan yang efektif</li>
+<li>Mendapatkan laporan yang akurat dan dapat diandalkan untuk memantau kemajuan iklan</li>
+</ul>
+
+<h2>Layanan Lain yang Relevan di Jakarta</h2>
+<p>Beriklan.co.id juga menawarkan layanan lain yang relevan untuk bisnis di Jakarta, seperti jasa SEO, jasa Google Ads, dan jasa social media marketing. Dengan menggunakan layanan ini, bisnis dapat meningkatkan visibilitas dan meningkatkan penjualan di berbagai platform. Beriklan.co.id dapat membantu bisnis meningkatkan kemampuan mereka untuk mencapai target audiens yang tepat dan meningkatkan penjualan.</p>
+
+<h2>FAQ Jasa Iklan Facebook Jakarta</h2>
+<div>
+<h3>Apakah jasa iklan Facebook efektif untuk bisnis di Jakarta?</h3>
+<p>Jasa iklan Facebook sangat efektif untuk bisnis di Jakarta, karena dapat membantu meningkatkan visibilitas, meningkatkan konversi, dan meningkatkan penjualan. Dengan menggunakan strategi iklan yang tepat, bisnis dapat mencapai target audiens yang tepat dan meningkatkan penjualan.</p>
+</div>
+<div>
+<h3>Bagaimana cara kerja jasa iklan Facebook?</h3>
+<p>Jasa iklan Facebook bekerja dengan menggunakan strategi iklan yang tepat untuk mencapai target audiens yang tepat. Beriklan.co.id dapat membantu bisnis meningkatkan visibilitas, meningkatkan konversi, dan meningkatkan penjualan dengan menggunakan strategi iklan yang efektif.</p>
+</div>
+<div>
+<h3>Apa keuntungan menggunakan jasa iklan Facebook dari Beriklan.co.id?</h3>
+<p>Keuntungan menggunakan jasa iklan Facebook dari Beriklan.co.id adalah dapat membantu bisnis meningkatkan visibilitas, meningkatkan konversi, dan meningkatkan penjualan. Beriklan.co.id juga dapat membantu bisnis menghemat waktu dan biaya dengan menggunakan strategi iklan yang efektif.</p>
+</div>
+<div>
+<h3>Bagaimana cara memantau kemajuan iklan?</h3>
+<p>Beriklan.co.id dapat membantu bisnis memantau kemajuan iklan dengan menggunakan laporan yang akurat dan dapat diandalkan. Laporan ini dapat membantu bisnis memahami bagaimana iklan mereka bekerja dan membuat keputusan yang tepat untuk meningkatkan penjualan.</p>
+</div>
+<div>
+<h3>Apa yang membuat Beriklan.co.id berbeda dari jasa iklan Facebook lainnya?</h3>
+<p>Beriklan.co.id berbeda dari jasa iklan Facebook lainnya karena memiliki tim yang berpengalaman dan teknologi yang canggih. Beriklan.co.id juga dapat membantu bisnis meningkatkan visibilitas, meningkatkan konversi, dan meningkatkan penjualan dengan menggunakan strategi iklan yang efektif.</p>
+</div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Paket Harga</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Jasa Iklan Facebook Jakarta
+                </h2>
+                <p class="text-muted mt-3">Pilih paket sesuai skala campaign Anda. Semua paket sudah include pendampingan.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 reveal-stagger">
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pemanasan</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 12K</p><p class="text-sm text-muted mb-4">20 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pemanasan%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Starter</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 25K</p><p class="text-sm text-muted mb-4">50 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Starter%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Basic</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 45K</p><p class="text-sm text-muted mb-4">100 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Basic%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pro</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 80K</p><p class="text-sm text-muted mb-4">200 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pro%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Bisnis</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 115K</p><p class="text-sm text-muted mb-4">300 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Bisnis%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Premium</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 175K</p><p class="text-sm text-muted mb-4">500 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Premium%20untuk%20Jasa%20Iklan%20Facebook%20Jakarta" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+            </div>
+        </div>
+    </section>
+<section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige"><div class="container mx-auto px-6 max-w-3xl"><p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Klien dari Jakarta</p><h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Kata Mereka Setelah Bekerja Sama</h2><article class="bg-white rounded-2xl p-7 shadow-soft border border-gray-100"><p class="italic text-muted leading-relaxed mb-4">"Pelayanan excellent, dashboard real-time-nya bantu kami monitor perform tanpa harus tungguin report mingguan."</p><div class="border-t border-gray-100 pt-3"><p class="font-bold text-ink">Gita</p><p class="text-xs text-muted"> · Bogor</p></div></article></div></section>
+    <!-- RELATED SERVICES -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Lain di Jakarta</p>
+            <p class="text-center text-sm text-muted">
+                <a href="/jasa-jasa-iklan-instagram/jakarta/" class="text-accent hover:underline">Jasa Iklan Instagram di Jakarta</a>
+<a href="/jasa-jasa-iklan-tiktok/jakarta/" class="text-accent hover:underline">Jasa Iklan TikTok di Jakarta</a>
+<a href="/jasa-jasa-iklan-google/jakarta/" class="text-accent hover:underline">Jasa Iklan Google di Jakarta</a>
+<a href="/jasa-jasa-iklan-youtube/jakarta/" class="text-accent hover:underline">Jasa Iklan YouTube di Jakarta</a>
+<a href="/jasa-jasa-kelola-instagram/jakarta/" class="text-accent hover:underline">Jasa Kelola Instagram di Jakarta</a>
+<a href="/jasa-jasa-kelola-tiktok/jakarta/" class="text-accent hover:underline">Jasa Kelola TikTok di Jakarta</a>
+<a href="/jasa-jasa-pembuatan-website/jakarta/" class="text-accent hover:underline">Jasa Pembuatan Website di Jakarta</a>
+<a href="/jasa-jasa-pembuatan-landing-page/jakarta/" class="text-accent hover:underline">Jasa Landing Page di Jakarta</a>
+<a href="/jasa-jasa-digital-marketing/jakarta/" class="text-accent hover:underline">Jasa Digital Marketing di Jakarta</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari Jakarta</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Diskusi Jasa Iklan Facebook untuk Bisnis Anda
+            </h2>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Jakarta.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi via WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={{"slug": "jakarta", "name": "Jakarta", "alt_names": ["jakarta"], "province": "DKI Jakarta", "tier": 1, "country": "ID", "lat": -6.2088, "lng": 106.8456, "umkm_count": 350000, "local_facts": ["Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi", "70% brand lokal Jakarta aktif di Meta dan Google Ads", "10.5jt penduduk, pasar paling matang untuk iklan digital"], "is_international": false}}
+        service={{"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1}}
+        faqs={[]}
+        pageUrl="/jasa-iklan-facebook/jakarta/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Jakarta", "/jasa-iklan-facebook/jakarta/"]]}
+    />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 800; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content h2:first-child { margin-top: 0; }
+    .prose-content h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content p { margin: 1rem 0; line-height: 1.75; color: #4b5563; }
+    .prose-content ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose-content ul li { margin-bottom: 0.5rem; color: #4b5563; line-height: 1.65; }
+    .prose-content strong { color: #0b1426; }
+</style>

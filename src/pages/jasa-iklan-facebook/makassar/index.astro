@@ -1,0 +1,162 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, Sparkles, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "makassar", "name": "Makassar", "alt_names": ["makassar"], "province": "Sulawesi Selatan", "tier": 1, "country": "ID", "lat": -5.1477, "lng": 119.4327, "umkm_count": 230000, "local_facts": ["Makassar gateway Indonesia Timur dengan 230rb UMKM", "F&B, retail, properti dominan", "1.4jt penduduk, adopsi mobile tinggi"], "is_international": false};
+const service = {"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1};
+const testimonial = {"id": "tm_008", "name": "Hadi", "industry": "F&B", "city": "Jogja", "city_slug": "jogja", "rating": 5, "quote": "Pelayanan excellent, dashboard real-time-nya bantu kami monitor perform tanpa harus tungguin report mingguan.", "service": "jasa-iklan-tiktok", "verified": true};
+const faqs = [];
+---
+
+<Layout
+    title="Jasa Iklan Facebook di Makassar — Konsultasi Gratis | Beriklan"
+    description="Jasa Iklan Facebook di Makassar dari tim Meta & Google Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-iklan-facebook/makassar/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- HERO -->
+    <header class="hero relative pt-28 md:pt-44 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Iklan Facebook di Makassar · Tim Online
+            </div>
+            <h1 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up">
+                Jasa Iklan Facebook<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">di Makassar.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 120ms;">
+                Tim Beriklan (Meta & Google Partner sejak 2016) mengelola campaign Jasa Iklan Facebook untuk UMKM & bisnis menengah di Makassar. Akses penuh ke akun iklan, dashboard real-time, laporan mingguan.
+            </p>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Makassar.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine anim-fade-up" style="animation-delay: 240ms;">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi 15 Menit Gratis
+            </a>
+        </div>
+    </header>
+
+    <!-- AI-GENERATED CONTENT -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            <h2>Mengapa Bisnis di Makassar Butuh Jasa Iklan Facebook</h2>
+<p>Makassar, sebagai gateway Indonesia Timur, memiliki potensi pasar yang besar dengan 230 ribu UMKM. Bisnis di sektor F&B, retail, dan properti sangat dominan di kota ini. Dengan 1,4 juta penduduk dan adopsi mobile yang tinggi, peluang untuk meningkatkan visibilitas dan penjualan melalui platform digital sangat terbuka. Sebagai contoh, sebuah bisnis kuliner di Makassar dapat meningkatkan penjualan hingga 20% dengan menggunakan iklan Facebook yang tepat.</p>
+<p>Untuk mencapai target pasar yang luas, bisnis di Makassar memerlukan strategi pemasaran digital yang efektif. Jasa iklan Facebook dapat membantu meningkatkan kesadaran merek, meningkatkan trafik website, dan meningkatkan penjualan. Dengan menggunakan jasa iklan Facebook, bisnis dapat menargetkan audiens yang spesifik dan meningkatkan ROI.</p>
+<p>Sebagai kota dengan pertumbuhan ekonomi yang cepat, Makassar memerlukan solusi pemasaran digital yang dapat membantu bisnis untuk bersaing di pasar yang kompetitif. Jasa iklan Facebook dapat membantu bisnis untuk meningkatkan visibilitas dan penjualan, serta meningkatkan kesadaran merek di kalangan masyarakat.</p>
+
+<h2>Tantangan Jasa Iklan Facebook di Pasar Makassar</h2>
+<p>Saat ini, banyak bisnis di Makassar yang masih belum memanfaatkan platform digital untuk meningkatkan penjualan dan visibilitas. Salah satu tantangan utama adalah kurangnya pengetahuan tentang cara menggunakan iklan Facebook secara efektif. Banyak bisnis yang masih belum memahami bagaimana menargetkan audiens yang tepat dan membuat iklan yang efektif.</p>
+<p>Tantangan lainnya adalah persaingan yang ketat di pasar digital. Banyak bisnis yang sudah menggunakan iklan Facebook, sehingga membuat persaingan sangat ketat. Oleh karena itu, bisnis di Makassar memerlukan strategi pemasaran digital yang unik dan efektif untuk dapat bersaing di pasar yang kompetitif.</p>
+
+<h2>Solusi Beriklan untuk Jasa Iklan Facebook di Makassar</h2>
+<p>Beriklan.co.id menawarkan solusi jasa iklan Facebook yang profesional dan efektif untuk bisnis di Makassar. Kami memiliki tim yang berpengalaman dan terlatih untuk membantu bisnis meningkatkan visibilitas dan penjualan melalui platform digital. Berikut adalah beberapa keuntungan yang dapat Anda dapatkan dengan menggunakan jasa iklan Facebook dari Beriklan.co.id:</p>
+<ul>
+<li>Tim online yang responsif dan dapat dihubungi dalam waktu 1 jam</li>
+<li>Laporan mingguan yang detail dan akurat</li>
+<li>Dashboard real-time untuk memantau performa iklan</li>
+<li>Strategi pemasaran digital yang unik dan efektif</li>
+<li>Garansi peningkatan visibilitas dan penjualan</li>
+</ul>
+
+<h2>Layanan Lain yang Relevan di Makassar</h2>
+<p>Selain jasa iklan Facebook, Beriklan.co.id juga menawarkan layanan lain yang relevan untuk bisnis di Makassar, seperti jasa SEO, jasa Google Ads, dan jasa social media management. Dengan menggunakan layanan-layanan ini, bisnis dapat meningkatkan visibilitas dan penjualan, serta meningkatkan kesadaran merek di kalangan masyarakat.</p>
+
+<h2>FAQ Jasa Iklan Facebook Makassar</h2>
+<div>
+<h3>Apakah jasa iklan Facebook efektif untuk bisnis di Makassar?</h3>
+<p>Jasa iklan Facebook sangat efektif untuk bisnis di Makassar, karena dapat membantu meningkatkan visibilitas dan penjualan, serta meningkatkan kesadaran merek di kalangan masyarakat.</p>
+<h3>Bagaimana cara membuat iklan Facebook yang efektif?</h3>
+<p>Untuk membuat iklan Facebook yang efektif, Anda perlu menentukan target audiens yang tepat, membuat desain iklan yang menarik, dan menulis teks iklan yang persuasif.</p>
+<h3>Apakah Beriklan.co.id menawarkan garansi untuk jasa iklan Facebook?</h3>
+<p>Ya, Beriklan.co.id menawarkan garansi peningkatan visibilitas dan penjualan untuk jasa iklan Facebook.</p>
+<h3>Bagaimana cara memantau performa iklan Facebook?</h3>
+<p>Anda dapat memantau performa iklan Facebook melalui dashboard real-time yang disediakan oleh Beriklan.co.id.</p>
+<h3>Apakah Beriklan.co.id memiliki tim yang berpengalaman untuk jasa iklan Facebook?</h3>
+<p>Ya, Beriklan.co.id memiliki tim yang berpengalaman dan terlatih untuk membantu bisnis meningkatkan visibilitas dan penjualan melalui platform digital.</p>
+</div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-12">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Paket Harga</p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink">
+                    Jasa Iklan Facebook Makassar
+                </h2>
+                <p class="text-muted mt-3">Pilih paket sesuai skala campaign Anda. Semua paket sudah include pendampingan.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 reveal-stagger">
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pemanasan</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 12K</p><p class="text-sm text-muted mb-4">20 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pemanasan%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Starter</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 25K</p><p class="text-sm text-muted mb-4">50 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Starter%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Basic</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 45K</p><p class="text-sm text-muted mb-4">100 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Basic%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Pro</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 80K</p><p class="text-sm text-muted mb-4">200 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Pro%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Bisnis</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 115K</p><p class="text-sm text-muted mb-4">300 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Bisnis%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100"><p class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Paket Premium</p><p class="font-display font-extrabold text-2xl text-primary mb-2">Rp 175K</p><p class="text-sm text-muted mb-4">500 viewers</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Paket%20Premium%20untuk%20Jasa%20Iklan%20Facebook%20Makassar" target="_blank" rel="noopener" class="block text-center bg-accent text-white px-4 py-2.5 rounded-full font-bold text-sm hover:bg-amber-600 transition">Pilih Paket</a></div>
+            </div>
+        </div>
+    </section>
+<section class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige"><div class="container mx-auto px-6 max-w-3xl"><p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Klien dari Makassar</p><h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Kata Mereka Setelah Bekerja Sama</h2><article class="bg-white rounded-2xl p-7 shadow-soft border border-gray-100"><p class="italic text-muted leading-relaxed mb-4">"Pelayanan excellent, dashboard real-time-nya bantu kami monitor perform tanpa harus tungguin report mingguan."</p><div class="border-t border-gray-100 pt-3"><p class="font-bold text-ink">Hadi</p><p class="text-xs text-muted"> · Jogja</p></div></article></div></section>
+    <!-- RELATED SERVICES -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Lain di Makassar</p>
+            <p class="text-center text-sm text-muted">
+                <a href="/jasa-jasa-iklan-instagram/makassar/" class="text-accent hover:underline">Jasa Iklan Instagram di Makassar</a>
+<a href="/jasa-jasa-iklan-tiktok/makassar/" class="text-accent hover:underline">Jasa Iklan TikTok di Makassar</a>
+<a href="/jasa-jasa-iklan-google/makassar/" class="text-accent hover:underline">Jasa Iklan Google di Makassar</a>
+<a href="/jasa-jasa-iklan-youtube/makassar/" class="text-accent hover:underline">Jasa Iklan YouTube di Makassar</a>
+<a href="/jasa-jasa-kelola-instagram/makassar/" class="text-accent hover:underline">Jasa Kelola Instagram di Makassar</a>
+<a href="/jasa-jasa-kelola-tiktok/makassar/" class="text-accent hover:underline">Jasa Kelola TikTok di Makassar</a>
+<a href="/jasa-jasa-pembuatan-website/makassar/" class="text-accent hover:underline">Jasa Pembuatan Website di Makassar</a>
+<a href="/jasa-jasa-pembuatan-landing-page/makassar/" class="text-accent hover:underline">Jasa Landing Page di Makassar</a>
+<a href="/jasa-jasa-digital-marketing/makassar/" class="text-accent hover:underline">Jasa Digital Marketing di Makassar</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-primary to-primary-2 text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl relative z-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Mulai dari Makassar</p>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl text-white">
+                Diskusi Jasa Iklan Facebook untuk Bisnis Anda
+            </h2>
+            <a href=https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Facebook%20di%20Makassar.%20Mau%20konsultasi%20awal. target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-bold shadow-lg hover:bg-amber-600 transition btn-shine">
+                <MessageCircle class="w-4 h-4" />
+                Konsultasi via WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={{"slug": "makassar", "name": "Makassar", "alt_names": ["makassar"], "province": "Sulawesi Selatan", "tier": 1, "country": "ID", "lat": -5.1477, "lng": 119.4327, "umkm_count": 230000, "local_facts": ["Makassar gateway Indonesia Timur dengan 230rb UMKM", "F&B, retail, properti dominan", "1.4jt penduduk, adopsi mobile tinggi"], "is_international": false}}
+        service={{"slug": "jasa-iklan-facebook", "name": "Jasa Iklan Facebook", "category": "paid-ads", "description": "Jasa Iklan Facebook profesional dari Beriklan. Bergaransi tim online respon 1 jam, laporan mingguan, dashboard real-time.", "faqs": [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Facebook?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 1}}
+        faqs={[]}
+        pageUrl="/jasa-iklan-facebook/makassar/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Makassar", "/jasa-iklan-facebook/makassar/"]]}
+    />
+</Layout>
+
+<style is:global>
+    .prose-content h2 { margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 800; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content h2:first-child { margin-top: 0; }
+    .prose-content h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #0b1426; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .prose-content p { margin: 1rem 0; line-height: 1.75; color: #4b5563; }
+    .prose-content ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose-content ul li { margin-bottom: 0.5rem; color: #4b5563; line-height: 1.65; }
+    .prose-content strong { color: #0b1426; }
+</style>

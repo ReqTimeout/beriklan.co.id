@@ -19,6 +19,44 @@
     "is_international": false
   },
   {
+    "slug": "jakarta",
+    "name": "Jakarta",
+    "alt_names": [
+      "jakarta"
+    ],
+    "province": "DKI Jakarta",
+    "tier": 1,
+    "country": "ID",
+    "lat": -6.2088,
+    "lng": 106.8456,
+    "umkm_count": 350000,
+    "local_facts": [
+      "Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi",
+      "70% brand lokal Jakarta aktif di Meta dan Google Ads",
+      "10.5jt penduduk, pasar paling matang untuk iklan digital"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "makassar",
+    "name": "Makassar",
+    "alt_names": [
+      "makassar"
+    ],
+    "province": "Sulawesi Selatan",
+    "tier": 1,
+    "country": "ID",
+    "lat": -5.1477,
+    "lng": 119.4327,
+    "umkm_count": 230000,
+    "local_facts": [
+      "Makassar gateway Indonesia Timur dengan 230rb UMKM",
+      "F&B, retail, properti dominan",
+      "1.4jt penduduk, adopsi mobile tinggi"
+    ],
+    "is_international": false
+  },
+  {
     "slug": "medan",
     "name": "Medan",
     "alt_names": [

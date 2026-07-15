@@ -13,6 +13,12 @@
       "database_id": "0e71d6e3-231f-40a1-ac6b-6defc3976efd"
     }
   ],
+  "ai": {
+    "binding": "AI"
+  },
+  "vars": {
+    "ADMIN_TOKEN": "beriklan-admin-2026"
+  },
   "observability": {
     "enabled": true
   },

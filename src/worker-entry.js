@@ -16,6 +16,9 @@ export default {
       });
     }
 
+    // Force fresh rebuild — bumped 2026-07-15 to include pillar pages
+    console.log(`[worker] serving: ${path}`);
+
     // Try static assets
     try {
       return await env.ASSETS.fetch(request);

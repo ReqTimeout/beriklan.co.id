@@ -1,6 +1,5 @@
 name: Deploy to Cloudflare
 
-# Trigger on push to main branch — runs after tests pass
 on:
   push:
     branches:
@@ -24,10 +23,15 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build
-        run: npm run build
+        run: npm run build 2>&1
+
+      - name: Verify dist created
+        run: |
+          ls -la dist/
+          test -f dist/index.html && echo "✓ index.html exists"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -41,7 +45,6 @@ jobs:
     name: Deploy via Wrangler
     needs: build
     runs-on: ubuntu-latest
-    # Only deploy on main branch pushes (not PRs)
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +55,7 @@ jobs:
           cache: 'npm'
 
       - name: Install wrangler
-        run: npm install wrangler@latest --no-save
+        run: npm install wrangler@latest --no-save --no-audit --no-fund
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -64,7 +67,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
+        run: |
+          echo "Deploying to CF Workers..."
+          npx wrangler deploy 2>&1 || (echo "❌ wrangler deploy failed (likely zone-scoped token)" && echo "Account ID: $CLOUDFLARE_ACCOUNT_ID" && exit 1)
 
       - name: Purge CF cache (force fresh content)
         if: success()
@@ -75,13 +80,14 @@ jobs:
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache" \
             -H "Authorization: Bearer $CF_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"purge_everything":true}' | head -c 200
+            -d '{"purge_everything":true}' | head -c 300
 
       - name: Verify deployment
         if: success()
         run: |
-          sleep 10
-          for slug in "" "tentang-kami/" "privacy-policy/" "jasa-iklan-facebook/"; do
+          sleep 30
+          echo "=== Verifying live URLs ==="
+          for slug in "" "tentang-kami/" "jasa-iklan-facebook/" "blog/agency-digital-aceh/" "jasa-iklan-facebook/pilar/" "test-deploy-check.txt"; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "https://beriklan.co.id/$slug")
             echo "  /$slug: HTTP $code"
           done

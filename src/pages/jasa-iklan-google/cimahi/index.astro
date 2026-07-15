@@ -1,0 +1,335 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "cimahi", "name": "Cimahi", "alt_names": ["cimahi"], "province": "Jawa Barat", "tier": 4, "country": "ID", "lat": -6.872, "lng": 107.5427, "umkm_count": 80000, "local_facts": ["Cimahi Jawa Barat suburban UMKM, 30rb UMKM"], "is_international": false};
+const service = {"slug": "jasa-iklan-google", "name": "Jasa Iklan Google", "category": "paid-ads", "description": "Ingin meningkatkan traffic website dan penjualan bisnis Anda? Kami siap membantu dengan jasa iklan Google Tumbuhkan bisnis Anda dengan iklan Google 0811-919-328", "faqs": [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Google?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}], "active": true, "order": 4, "tiers": [{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}], "why_features": [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}], "how_steps": [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}], "city_intro_template": ""};
+const tiers = [{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}];
+const faqs = [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Google?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}];
+const whyFeatures = [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}];
+const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}];
+const serviceTestimonials = [];
+---
+
+<Layout
+    title="Jasa Iklan Google di Cimahi — Paket dari Rp 1.750.000 | Beriklan"
+    description="Jasa Iklan Google di Cimahi — agensi Meta Business Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-iklan-google/cimahi/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Iklan Google di Cimahi · Meta & Google Partner
+            </div>
+            <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
+                <span class="anim-fade-up">Jasa Iklan Google</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Cimahi, Mendorong</span><br/>
+                <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa iklan google untuk UMKM & bisnis menengah di Cimahi. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Google%20di%20Cimahi.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Diskusi via WhatsApp
+                    </span>
+                </a>
+                <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+            <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">9 tahun</strong> mengelola campaign iklan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Optimasi berbasis data, bukan tebakan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Laporan <strong class="text-ink">setiap Senin pagi</strong>, bahasa yang mudah dipahami</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Cimahi dari berbagai industri</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>F&amp;B</span><span class="text-white/30">·</span>
+                    <span>Skincare</span><span class="text-white/30">·</span>
+                    <span>Fashion</span><span class="text-white/30">·</span>
+                    <span>Edutech</span><span class="text-white/30">·</span>
+                    <span>Klinik</span><span class="text-white/30">·</span>
+                    <span>Properti</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            
+<h2>Mengapa Bisnis di Cimahi Butuh Jasa Iklan Google</h2>
+<p>Cimahi sebagai salah satu pasar potensial di Indonesia dengan 80,000 UMKM aktif, membutuhkan strategi jasa iklan google yang terukur dan berbasis data. Mayoritas brand lokal Cimahi telah memanfaatkan platform iklan digital untuk meningkatkan visibilitas, leads, dan penjualan secara konsisten.</p>
+<p>Cimahi Jawa Barat suburban UMKM, 30rb UMKM. Dengan pendampingan tim Beriklan yang sudah mengelola lebih dari ratusan campaign iklan sejak 2016, Jasa Iklan Google di Cimahi dapat mendatangkan hasil yang dapat diukur dari minggu pertama.</p>
+<p>Yang kami kerjakan bukan sekadar tayang iklan — kami menyusun strategi targeting presisi, copy yang berbicara ke audiens spesifik di Cimahi, dan optimasi mingguan berdasarkan data real-time.</p>
+
+<h2>Tantangan Jasa Iklan Google di Pasar Cimahi</h2>
+<p>Pasar Cimahi memiliki karakteristik unik — target audiens yang berbeda dari kota lain, kompetitor yang agresif, dan seasonality yang bervariasi. Tanpa strategi yang sesuai dengan konteks lokal, campaign sering tidak menghasilkan ROI yang diharapkan dan terbuang sia-sia.</p>
+<p>Tantangan lainnya adalah mengukur efektivitas iklan secara akurat. Banyak bisnis tidak punya akses ke dashboard real-time atau tidak tahu cara menginterpretasi data yang tersedia. Inilah mengapa pendekatan berbasis data dan transparansi laporan menjadi penting untuk dipertimbangkan.</p>
+
+<h2>Cara Kerja Tim Beriklan di Cimahi</h2>
+<p>Setiap klien Cimahi mendapat pendampingan langsung dari tim yang sudah mengelola campaign iklan sejak 2016. Proses kami terstruktur, terukur, dan transparan dari hari pertama.</p>
+<ul>
+<li>Cimahi Jawa Barat suburban UMKM, 30rb UMKM</li>
+<li>Brief 30 menit untuk pahami bisnis Anda secara menyeluruh (online/Zoom atau tatap muka di Cimahi)</li>
+<li>Riset audience lokal Cimahi yang sesuai dengan produk dan penawaran Anda</li>
+<li>Setup campaign + materi iklan dari kami, revisi sampai Anda approve final</li>
+<li>Tayang 30 hari penuh + laporan mingguan bahasa manusia, bukan deretan CTR/CPM</li>
+<li>Optimasi mingguan berbasis data — iklan yang tidak perform diganti dengan creative baru</li>
+</ul>
+
+<h2>FAQ Jasa Iklan Google di Cimahi</h2>
+<h3>Berapa biaya Jasa Iklan Google di Cimahi?</h3>
+<p>Biaya bervariasi sesuai paket yang dipilih. Paket Standart mulai dari Rp 1.750.000 per 30 hari, sudah termasuk pendampingan profesional dan optimasi mingguan. Ad spend platform terpisah, dibayar langsung ke Meta/Google/TikTok atas nama Anda.</p>
+<h3>Berapa lama sampai iklan tayang?</h3>
+<p>Setup 1-3 hari kerja setelah strategi disetujui. Campaign live di minggu pertama. Optimasi mingguan berjalan sejak hari ke-7. Pola yang konsisten biasanya terlihat di minggu ke-3 hingga ke-4.</p>
+<h3>Apakah saya dapat akses penuh ke akun iklan?</h3>
+<p>Ya. Akun iklan tetap di bawah nama dan akses Anda. Anda memegang penuh kontrol terhadap dana dan data historis. Tidak ada account abal-abal atau tersembunyi di agency kami.</p>
+<h3>Bagaimana laporan hasil campaign?</h3>
+<p>Laporan mingguan via WhatsApp dengan bahasa manusia: mana yang berjalan optimal, mana yang perlu disesuaikan, dan rencana aksi untuk minggu depan. Plus dashboard real-time yang bisa Anda akses kapan saja.</p>
+<h3>Apakah ada kontrak minimum?</h3>
+<p>Tidak. Sistem kami bekerja secara bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat. Komitmen kami jaga lewat kualitas, bukan jebakan kontrak panjang.</p>
+
+        </div>
+    </section>
+
+    
+    <!-- ====================== WHY ====================== -->
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    3 Alasan Memilih Jasa Iklan Google
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Strategi yang terukur,<br/>
+                    <span class="text-accent">bukan jualan angka tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+            <div class="why-card group" style="animation-delay: 0ms;">
+                <div class="why-icon">🔍</div>
+                <h3 class="why-title">High Intent Traffic</h3>
+                <p class="why-desc">Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 100ms;">
+                <div class="why-icon">📍</div>
+                <h3 class="why-title">Page 1 in Minutes</h3>
+                <p class="why-desc">Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 200ms;">
+                <div class="why-icon">💰</div>
+                <h3 class="why-title">Pay Per Click</h3>
+                <p class="why-desc">Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya.</p>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Empat langkah dari brief<br/>
+                    <span class="text-accent">menuju iklan yang tayang optimal.</span>
+                </h2>
+            </div>
+            <StepGrid items={[{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== PRICING ====================== -->
+    
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Paket Jasa Iklan Google di Cimahi,<br/>
+                    <span class="text-accent">disesuaikan dengan objective Anda.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
+                </p>
+            </div>
+            <PricingCards tiers={[{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Iklan Google di Cimahi" highlightIndex={1} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Google%20di%20Cimahi.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Konsultasi via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUST DARK ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Beriklan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan agensi yang berjanji<br/>
+                    <span class="text-accent">angka fantastis tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun iklan tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data historis berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan setiap Senin pagi</h3>
+                    <p class="trust-desc-dark">Disusun dalam satu halaman dengan bahasa yang mudah dipahami. Anda mendapat kejelasan: mana yang berjalan optimal.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    
+
+    <!-- ====================== FAQ ====================== -->
+    
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum deal pertama
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum deal pertama.</span>
+                </h2>
+            </div>
+            <FaqAccordion items={[{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."}, {"q": "Berapa lama setup campaign Jasa Iklan Google?", "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."}, {"q": "Apakah saya dapat akses penuh ke akun iklan?", "a": "Ya. Berbeda dengan agency yang menyembunyikan akun, kami memberikan akses penuh. Anda bisa monitor dashboard real-time dan kami kirim laporan mingguan."}, {"q": "Bagaimana sistem pelaporan hasilnya?", "a": "Dashboard real-time + laporan mingguan via WhatsApp dengan breakdown spend, reach, CPA, ROAS, dan rekomendasi iterasi."}, {"q": "Berapa minimum budget iklan?", "a": "Minimum budget harian Rp 50K-Rp 100K tergantung niche. Untuk hasil terukur dalam 30 hari, kami rekomendasikan budget Rp 5-10jt/bulan dengan fee manajemen terpisah."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Cimahi</p>
+            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/cimahi/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/cimahi/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/cimahi/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
+        </div>
+    </section>
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam (jam kerja)
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Satu keputusan kecil hari ini,<br/>
+                    <span class="text-accent">dampaknya terasa di kuartal depan.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Cimahi.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Iklan Google%20di%20Cimahi.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Mulai Konsultasi via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={city}
+        service={service}
+        tiers={tiers}
+        faqs={faqs}
+        pageUrl="/jasa-iklan-google/cimahi/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Google", "/jasa-iklan-google/"], ["Cimahi", "/jasa-iklan-google/cimahi/"]]}
+    />
+</Layout>

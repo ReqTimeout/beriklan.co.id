@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SOCIO — Jasa Viewers Live TikTok, Shopee, Twitch & Lainnya</title>
+<meta name="description" content="Naikkan viewer live kamu mulai dari 20 sampai 500+. Cocok untuk seller Shopee, streamer Twitch, dan live TikTok. Mulai Rp 12.000." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg-0:#07091A;
+  --bg-1:#0F1230;
+  --bg-2:#1A1340;
+  --ink-0:#FFFFFF;
+  --ink-1:#F5F4FF;
+  --ink-2:#B8B5D8;
+  --ink-3:#6E6A9C;
+  --line:rgba(255,255,255,0.08);
+  --line-strong:rgba(255,255,255,0.16);
+  --pink:#FF2E93;
+  --orange:#FF6B35;
+  --yellow:#FFD93D;
+  --teal:#3DDCFF;
+  --green:#22E3A5;
+  --grad-1:linear-gradient(135deg,#FF2E93 0%,#FF6B35 50%,#FFD93D 100%);
+  --grad-2:linear-gradient(135deg,#3DDCFF 0%,#7C5CFF 100%);
+  --grad-3:linear-gradient(180deg,#FF2E93 0%,#FF6B35 100%);
+  --grad-soft:linear-gradient(135deg,rgba(255,46,147,0.18),rgba(255,107,53,0.18));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  background:var(--bg-0);
+  color:var(--ink-1);
+  line-height:1.55;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(at 12% 8%,rgba(255,46,147,0.18) 0%,transparent 42%),
+    radial-gradient(at 88% 14%,rgba(255,107,53,0.16) 0%,transparent 40%),
+    radial-gradient(at 60% 92%,rgba(124,92,255,0.20) 0%,transparent 50%);
+}
+
+/* Animated background blobs */
+.blob{position:fixed;pointer-events:none;z-index:0;filter:blur(80px);opacity:0.45;will-change:transform}
+.b1{width:520px;height:520px;background:var(--pink);top:-180px;left:-160px;animation:float-1 18s ease-in-out infinite}
+.b2{width:420px;height:420px;background:var(--orange);top:30%;right:-150px;animation:float-2 22s ease-in-out infinite}
+.b3{width:480px;height:480px;background:#7C5CFF;bottom:-180px;left:30%;animation:float-3 26s ease-in-out infinite}
+@keyframes float-1{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(40px,60px) rotate(35deg)}}
+@keyframes float-2{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(-60px,40px) rotate(-25deg)}}
+@keyframes float-3{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(30px,-50px) rotate(45deg)}}
+
+/* Container */
+.wrap{max-width:1200px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+section{padding:96px 0;position:relative;z-index:1}
+
+/* Top Nav */
+.nav{
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:rgba(7,9,26,0.65);border-bottom:1px solid var(--line);
+}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;max-width:1200px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-0.02em}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;background:var(--grad-1);
+  display:grid;place-items:center;color:#07091A;font-weight:900;font-style:italic;font-family:'Instrument Serif',serif;
+  box-shadow:0 8px 24px rgba(255,46,147,0.4);
+}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:999px;background:var(--grad-1);color:#07091A;font-weight:700;font-size:13px;
+  text-decoration:none;transition:transform .25s ease,box-shadow .25s ease;
+  box-shadow:0 8px 24px rgba(255,107,53,0.35);
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,46,147,0.55)}
+.nav-cta svg{width:14px;height:14px}
+
+/* Hero */
+.hero{padding:80px 0 60px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:60px;align-items:center}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;
+  background:var(--grad-soft);border:1px solid rgba(255,46,147,0.3);font-size:12px;font-weight:600;
+  color:#FFD0E8;letter-spacing:0.06em;text-transform:uppercase;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 12px var(--pink);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:0.6}}
+h1.display{
+  font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;
+  font-size:clamp(48px,6.5vw,92px);line-height:0.96;letter-spacing:-0.03em;
+  margin:22px 0 18px;color:var(--ink-0);
+}
+h1.display .accent{font-style:italic;background:var(--grad-1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;transform:rotate(-1.5deg)}
+h1.display .line2{display:block}
+.lead{font-size:19px;color:var(--ink-2);max-width:480px;line-height:1.55}
+.hero-ctas{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;padding:16px 26px;border-radius:14px;
+  font-weight:700;font-size:15px;text-decoration:none;transition:all .25s ease;cursor:pointer;border:none;
+  font-family:inherit;
+}
+.btn-primary{background:var(--grad-1);color:#07091A;box-shadow:0 12px 32px rgba(255,46,147,0.4)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(255,46,147,0.55)}
+.btn-ghost{background:rgba(255,255,255,0.06);color:var(--ink-1);border:1px solid var(--line-strong)}
+.btn-ghost:hover{background:rgba(255,255,255,0.10);transform:translateY(-3px)}
+.btn svg{width:18px;height:18px}
+
+/* Hero visual */
+.hero-vis{position:relative;height:560px;display:flex;align-items:center;justify-content:center}
+.phone-mock{
+  width:280px;height:560px;border-radius:42px;background:linear-gradient(145deg,#1A1340,#0F1230);
+  border:6px solid #2A2A4A;position:relative;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);
+}
+.phone-notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:96px;height:22px;background:#0A0A1A;border-radius:14px;z-index:3}
+.phone-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phone-screen{position:absolute;inset:8px;border-radius:34px;overflow:hidden;background:#000}
+.live-overlay{
+  position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(0,0,0,0.85) 100%);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:18px;color:#fff;
+}
+.live-tag{display:inline-flex;align-items:center;gap:6px;background:#FF2E93;color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;letter-spacing:0.1em;width:fit-content;margin-bottom:8px}
+.live-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1s ease-in-out infinite}
+.live-counter{display:flex;align-items:baseline;gap:6px;margin-top:4px}
+.live-counter .num{font-size:38px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-0.02em}
+.live-counter .label{font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.08em}
+
+/* Floating viewer avatars around phone */
+.float{position:absolute;background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;animation:floaty 5s ease-in-out infinite}
+.float .av{width:32px;height:32px;border-radius:50%;background:var(--grad-1);display:grid;place-items:center;color:#07091A;font-weight:800;font-size:14px}
+.float-1{top:30px;left:0;animation-delay:0s}
+.float-2{top:120px;right:0;animation-delay:0.6s}
+.float-3{bottom:200px;left:-20px;animation-delay:1.2s}
+.float-4{bottom:80px;right:-10px;animation-delay:1.8s}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.live-counters{display:flex;align-items:center;gap:6px;color:#fff}
+.live-counters .live-dot{width:8px;height:8px;border-radius:50%;background:#FF2E93;box-shadow:0 0 12px #FF2E93;animation:pulse 1.4s ease-in-out infinite}
+
+/* Trust strip */
+.trust{padding:32px 0;border-block:1px solid var(--line);background:rgba(255,255,255,0.02)}
+.trust-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px}
+.trust-label{color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:0.12em;font-weight:600}
+.trust-logos{display:flex;align-items:center;gap:36px;flex-wrap:wrap}
+.trust-logos .plat{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink-1);font-size:15px}
+.trust-logos .plat .dot{width:10px;height:10px;border-radius:4px}
+
+/* Section heading */
+.sec-head{max-width:720px;margin:0 auto 60px;text-align:center}
+.sec-head .eyebrow{margin-bottom:16px}
+h2.display{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:clamp(36px,4.8vw,62px);line-height:1.0;letter-spacing:-0.02em;color:var(--ink-0);margin-bottom:18px}
+h2.display .accent{font-style:italic;background:var(--grad-1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sec-head p{color:var(--ink-2);font-size:17px;max-width:560px;margin:0 auto}
+
+/* Section label */
+.sec-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+
+/* Why grid */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:24px;padding:36px 30px;
+  transition:all .35s ease;position:relative;overflow:hidden;
+}
+.why-card::after{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:var(--grad-1);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .35s;pointer-events:none}
+.why-card:hover{transform:translateY(-6px);background:rgba(255,255,255,0.06)}
+.why-card:hover::after{opacity:1}
+.why-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--grad-1);
+  display:grid;place-items:center;font-size:28px;margin-bottom:20px;
+  box-shadow:0 8px 20px rgba(255,46,147,0.3);
+}
+.why-card h3{font-size:20px;font-weight:700;margin-bottom:8px;color:var(--ink-0)}
+.why-card p{font-size:14px;color:var(--ink-2);line-height:1.6}
+
+/* Platform grid */
+.plat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.plat-card{
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:18px;padding:24px 18px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;
+  transition:all .3s ease;
+}
+.plat-card:hover{transform:translateY(-4px);background:rgba(255,255,255,0.08);border-color:var(--line-strong)}
+.plat-card .ic{
+  width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
+  font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;color:#07091A;
+}
+.plat-card .name{font-weight:700;font-size:14px;color:var(--ink-0)}
+.plat-card .role{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.06em}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.price-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:28px;padding:34px 28px;
+  display:flex;flex-direction:column;position:relative;transition:all .3s ease;
+}
+.price-card:hover{transform:translateY(-6px);background:rgba(255,255,255,0.05)}
+.price-card .tier{font-size:12px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--pink);margin-bottom:18px}
+.price-card .viewers{font-family:'Instrument Serif',serif;font-style:italic;font-size:46px;line-height:1;color:var(--ink-0);letter-spacing:-0.02em}
+.price-card .viewers small{font-family:'Plus Jakarta Sans',sans-serif;font-style:normal;font-size:14px;color:var(--ink-3);font-weight:600;letter-spacing:0}
+.price-card .price{margin-top:18px;display:flex;align-items:baseline;gap:8px}
+.price-card .price .rp{font-size:14px;font-weight:700;color:var(--ink-3)}
+.price-card .price .amt{font-size:42px;font-weight:800;color:var(--ink-0);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-0.03em}
+.price-card .per{font-size:12px;color:var(--ink-3);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.price-card ul{list-style:none;margin:24px 0 28px;display:flex;flex-direction:column;gap:10px}
+.price-card li{font-size:14px;color:var(--ink-2);display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.price-card li svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--green)}
+.price-card .btn{margin-top:auto;justify-content:center;width:100%}
+.price-card.hot{
+  background:linear-gradient(180deg,rgba(255,46,147,0.10),rgba(255,46,147,0.02));
+  border:1px solid rgba(255,46,147,0.4);transform:translateY(-12px)
+}
+.price-card.hot:hover{transform:translateY(-18px)}
+.hot-flag{position:absolute;top:18px;right:18px;background:var(--grad-1);color:#07091A;font-size:10px;font-weight:800;padding:5px 10px;border-radius:999px;letter-spacing:0.1em;text-transform:uppercase}
+
+/* Custom card */
+.price-card.custom{background:linear-gradient(135deg,rgba(124,92,255,0.18),rgba(61,220,255,0.10));border:1px solid rgba(124,92,255,0.4)}
+
+/* Pricing banner image */
+.pricing-banner{
+  margin-top:48px;border-radius:28px;overflow:hidden;position:relative;
+  border:1px solid var(--line);background:rgba(255,255,255,0.02);
+}
+.pricing-banner img{width:100%;height:280px;object-fit:cover;opacity:0.45}
+.pricing-banner .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:32px;background:linear-gradient(0deg,rgba(7,9,26,0.95) 0%,rgba(7,9,26,0.5) 100%)}
+.pricing-banner .overlay .ct{font-family:'Instrument Serif',serif;font-style:italic;font-size:34px;color:var(--ink-0);max-width:560px;line-height:1.1;margin-bottom:18px}
+.pricing-banner .overlay .ct strong{font-style:italic;color:#FFD93D}
+
+/* Add-ons section */
+.addon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:50px}
+.addon{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px;
+  text-align:center;transition:all .3s ease;
+}
+.addon:hover{transform:translateY(-4px);background:rgba(255,255,255,0.06)}
+.addon .ic{font-size:30px;margin-bottom:10px;display:block}
+.addon h4{font-size:15px;font-weight:700;color:var(--ink-0);margin-bottom:6px}
+.addon p{font-size:12px;color:var(--ink-3);line-height:1.5}
+.addon .plus{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--pink);letter-spacing:0.04em}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:step}
+.step{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:22px;padding:30px 24px;
+  position:relative;counter-increment:step;
+}
+.step::before{
+  content:counter(step,decimal-leading-zero);position:absolute;top:14px;right:18px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,0.18);letter-spacing:0.1em;
+}
+.step .ico{
+  width:48px;height:48px;border-radius:14px;background:var(--grad-1);display:grid;place-items:center;
+  font-size:22px;margin-bottom:16px;
+}
+.step h4{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--ink-0)}
+.step p{font-size:13px;color:var(--ink-2);line-height:1.55}
+
+/* Testimoni */
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.t-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:24px;padding:32px 28px;
+  position:relative;
+}
+.t-card .stars{color:#FFD93D;font-size:13px;letter-spacing:2px;margin-bottom:16px}
+.t-card blockquote{font-size:16px;color:var(--ink-1);line-height:1.55;font-style:italic;margin-bottom:22px}
+.t-card .who{display:flex;align-items:center;gap:12px}
+.t-card .who .av{width:42px;height:42px;border-radius:50%;background:var(--grad-1);display:grid;place-items:center;color:#07091A;font-weight:800;font-size:16px}
+.t-card .who .name{font-weight:700;font-size:14px}
+.t-card .who .role{font-size:12px;color:var(--ink-3)}
+
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:760px;margin:0 auto}
+.faq details{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:18px;padding:22px 24px;cursor:pointer;
+  transition:all .25s ease;
+}
+.faq details:hover{background:rgba(255,255,255,0.05)}
+.faq summary{font-weight:700;color:var(--ink-0);font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:'+';font-size:22px;color:var(--pink);transition:transform .3s ease;display:inline-block;font-weight:400;
+}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin-top:12px;color:var(--ink-2);font-size:14px;line-height:1.65}
+
+/* Big CTA */
+.cta-final{
+  padding:80px 28px;border-radius:36px;
+  background:linear-gradient(135deg,#FF2E93 0%,#FF6B35 100%);
+  text-align:center;position:relative;overflow:hidden;max-width:1200px;margin:0 auto;
+  box-shadow:0 30px 80px rgba(255,46,147,0.35);
+}
+.cta-final::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(at 20% 20%,rgba(255,255,255,0.25),transparent 50%),
+  radial-gradient(at 80% 80%,rgba(0,0,0,0.18),transparent 50%);pointer-events:none}
+.cta-final h2{font-family:'Instrument Serif',serif;font-style:italic;color:#fff;font-size:clamp(38px,5vw,64px);max-width:760px;margin:0 auto 18px;line-height:1.0;position:relative}
+.cta-final p{color:rgba(255,255,255,0.9);font-size:17px;max-width:540px;margin:0 auto 32px;position:relative}
+.cta-final .btn{background:#07091A;color:#fff;font-weight:700;font-size:16px;position:relative}
+.cta-final .btn:hover{background:#1A1340;transform:translateY(-3px);box-shadow:0 16px 36px rgba(0,0,0,0.4)}
+
+/* Footer */
+footer{padding:60px 0 40px;border-top:1px solid var(--line);text-align:center;color:var(--ink-3);font-size:13px;position:relative;z-index:1}
+footer .brand-mark{display:inline-flex;margin-bottom:14px}
+footer p{line-height:1.7;margin-bottom:6px}
+footer .mini{font-size:11px;color:var(--ink-3);opacity:0.7;margin-top:18px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* Responsive */
+@media (max-width: 960px){
+  .hero-grid{grid-template-columns:1fr;gap:50px}
+  .hero-vis{height:480px}
+  .why-grid,.pricing-grid,.t-grid{grid-template-columns:1fr}
+  .plat-grid{grid-template-columns:repeat(3,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .addon-grid{grid-template-columns:repeat(2,1fr)}
+  .price-card.hot{transform:none}
+  .price-card.hot:hover{transform:translateY(-6px)}
+  section{padding:64px 0}
+  .nav-cta span{display:none}
+}
+@media (max-width: 560px){
+  .plat-grid{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:1fr}
+  .addon-grid{grid-template-columns:1fr}
+  .hero-vis{height:420px}
+  .phone-mock{transform:scale(0.92)}
+  .float{font-size:11px;padding:8px 10px}
+  .float .av{width:24px;height:24px;font-size:11px}
+}
+
+/* Subtle entrance */
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero .eyebrow,.hero h1,.hero .lead,.hero-ctas,.hero-vis{animation:rise .8s ease both}
+.hero h1{animation-delay:.1s}
+.hero .lead{animation-delay:.2s}
+.hero-ctas{animation-delay:.3s}
+.hero-vis{animation-delay:.4s}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <span>SOCIO<span style="color:var(--pink)">.</span><span style="color:var(--orange)">id</span></span>
+    </div>
+    <a class="nav-cta" href="#pesan">
+      <span>Pesan Sekarang</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span>Live Viewer Service · Semua Platform</span>
+        <h1 class="display">
+          <span class="line1">Live kamu rame,</span>
+          <span class="line2"><span class="accent">penjualan</span> naik</span>
+          <span class="line2">tanpa drama.</span>
+        </h1>
+        <p class="lead">Tambah viewers live TikTok, Shopee, Twitch &amp; lainnya — mulai dari 20 sampai 500+ viewers per sesi. Murah, fast response, viewers stay sampai live selesai.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#pricing">
+            <span>Lihat Pricing</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M5 12l7 7 7-7"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#cara-order">
+            <span>Cara Order</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-vis" aria-hidden="true">
+        <!-- Floating viewer chips -->
+        <div class="float float-1">
+          <div class="av">R</div>
+          <div>
+            <div style="font-weight:700;color:#fff">+128 viewers</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">masuk 2 menit</div>
+          </div>
+        </div>
+        <div class="float float-2">
+          <div class="av" style="background:var(--grad-2)">A</div>
+          <div>
+            <div style="font-weight:700;color:#fff">Live aktif</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">durasi 1 jam</div>
+          </div>
+        </div>
+        <div class="float float-3">
+          <div class="av" style="background:linear-gradient(135deg,#22E3A5,#3DDCFF)">S</div>
+          <div>
+            <div style="font-weight:700;color:#fff">+450 viewers</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">live Shopee</div>
+          </div>
+        </div>
+        <div class="float float-4">
+          <div class="av" style="background:linear-gradient(135deg,#FFD93D,#FF6B35)">D</div>
+          <div>
+            <div style="font-weight:700;color:#fff">Order #5321</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">diproses 30 menit</div>
+          </div>
+        </div>
+
+        <!-- Phone mock -->
+        <div class="phone-mock">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <img class="phone-img" src="assets/hero-creator.jpg" alt="Live streaming creator" />
+            <div class="live-overlay">
+              <span class="live-tag">LIVE</span>
+              <div style="font-weight:700;font-size:15px;line-height:1.3;margin-bottom:10px">Live Shopping — Skincare Sale</div>
+              <div class="live-counter">
+                <span class="live-dot"></span>
+                <span class="num" id="liveNum">2.847</span>
+                <span class="label">viewers</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust" style="padding:32px 0">
+  <div class="wrap">
+    <div class="trust-row">
+      <div class="trust-label">Dipercaya seller & streamer di</div>
+      <div class="trust-logos">
+        <div class="plat"><span class="dot" style="background:#FF0050"></span>TikTok</div>
+        <div class="plat"><span class="dot" style="background:#EE4D2D"></span>Shopee</div>
+        <div class="plat"><span class="dot" style="background:#9146FF"></span>Twitch</div>
+        <div class="plat"><span class="dot" style="background:#FF0000"></span>YouTube</div>
+        <div class="plat"><span class="dot" style="background:#E1306C"></span>Instagram</div>
+        <div class="plat"><span class="dot" style="background:#0F146D"></span>Lazada</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KENAPA -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">Kenapa SOCIO</span>
+      <h2 class="display">Viewers yang<span class="accent">dateng,</span> bukan angka palsu.</h2>
+      <p>Algorithm platform favors live yang ramai — dan viewers kami bantu lo dapet boost itu, dengan interaksi yang natural.</p>
+    </div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <h3>Fast Ramp-up</h3>
+        <p>Viewers masuk gradual dalam 5–15 menit. Gak bikin platform curiga, dan live lo keliatan organik sejak menit pertama.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🛡️</div>
+        <h3>Aman &amp; No Detect</h3>
+        <p>Real account, no bot. Aman untuk Shopee, TikTok, Twitch &amp; multi-platform lain — gak ngaruh ke akun kamu.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🎯</div>
+        <h3>Stay Sampai Selesai</h3>
+        <p>Viewers bertahan sepanjang durasi live. Bisa extend kalau live kamu molor. Bukan numpang lewat doang.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">Multi-platform</span>
+      <h2 class="display">Support<span class="accent"> semua </span>platform live.</h2>
+      <p>Mau live di marketplace, social, atau streaming — semua disupport dengan setting masing-masing.</p>
+    </div>
+
+    <div class="plat-grid">
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#25F4EE,#FE2C55)">T</div>
+        <div class="name">TikTok</div>
+        <div class="role">Live streaming</div>
+      </div>
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#EE4D2D,#F86341)">S</div>
+        <div class="name">Shopee</div>
+        <div class="role">Live commerce</div>
+      </div>
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#9146FF,#5A3FB8)">T</div>
+        <div class="name">Twitch</div>
+        <div class="role">Gaming stream</div>
+      </div>
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#FF0000,#CC0000)">Y</div>
+        <div class="name">YouTube</div>
+        <div class="role">Live premier</div>
+      </div>
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#FEDA77,#F58529,#DD2A7B,#8134AF,#515BD4)">I</div>
+        <div class="name">Instagram</div>
+        <div class="role">Live broadcast</div>
+      </div>
+      <div class="plat-card">
+        <div class="ic" style="background:linear-gradient(135deg,#0F146D,#1F2A8A)">L</div>
+        <div class="name">Lazada</div>
+        <div class="role">Live shopping</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="padding-top:60px">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">Harga</span>
+      <h2 class="display">Mulai dari <span class="accent">Rp 12 ribuan.</span></h2>
+      <p>Semakin banyak viewers, semakin hemat per-head. Order 1 sesi = viewer masuk untuk 1 jam durasi live.</p>
+    </div>
+
+    <div class="pricing-grid">
+
+      <!-- 20 -->
+      <div class="price-card">
+        <div class="tier">Pemanasan</div>
+        <div class="viewers">20<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">12.000</span></div>
+        <div class="per">Rp 600 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Cocok untuk live pendek atau tes</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Masuk gradual 5–10 menit</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Multi-platform</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Support via WA</li>
+        </ul>
+        <a class="btn btn-ghost" href="#pesan">Pesan 20 viewers</a>
+      </div>
+
+      <!-- 50 -->
+      <div class="price-card hot">
+        <span class="hot-flag">★ Starter Pick</span>
+        <div class="tier">Starter</div>
+        <div class="viewers">50<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">25.000</span></div>
+        <div class="per">Rp 500 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Sweet spot buat seller pemula</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Durasi 1 jam live penuh</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Stay sampai live selesai</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Free extend 15 menit</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Multi-platform gratis</li>
+        </ul>
+        <a class="btn btn-primary" href="#pesan">Pesan 50 viewers</a>
+      </div>
+
+      <!-- 100 -->
+      <div class="price-card">
+        <div class="tier">Basic</div>
+        <div class="viewers">100<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">45.000</span></div>
+        <div class="per">Rp 450 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Hemat 10% per viewer</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Cocok live product launch</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Durasi 1 jam, free extend 30 menit</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Priority support</li>
+        </ul>
+        <a class="btn btn-ghost" href="#pesan">Pesan 100 viewers</a>
+      </div>
+
+      <!-- 200 -->
+      <div class="price-card">
+        <div class="tier">Pro</div>
+        <div class="viewers">200<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">80.000</span></div>
+        <div class="per">Rp 400 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Hemat 20% per viewer</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Best seller: flash sale live</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Durasi 1 jam, extend 45 menit</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Recurring schedule discount</li>
+        </ul>
+        <a class="btn btn-ghost" href="#pesan">Pesan 200 viewers</a>
+      </div>
+
+      <!-- 300 -->
+      <div class="price-card">
+        <div class="tier">Bisnis</div>
+        <div class="viewers">300<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">115.000</span></div>
+        <div class="per">Rp 383 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Hemat ~23% per viewer</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Untuk seller aktif tiap hari</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Free extend 1 jam</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Dedicated account manager</li>
+        </ul>
+        <a class="btn btn-ghost" href="#pesan">Pesan 300 viewers</a>
+      </div>
+
+      <!-- 500 -->
+      <div class="price-card">
+        <div class="tier">Premium</div>
+        <div class="viewers">500<small> viewers</small></div>
+        <div class="price"><span class="rp">Rp</span><span class="amt">175.000</span></div>
+        <div class="per">Rp 350 / viewer / jam</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Hemat 30% per viewer</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Best value — big launch live</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Free extend sampai 2 jam</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Custom scheduling</li>
+        </ul>
+        <a class="btn btn-ghost" href="#pesan">Pesan 500 viewers</a>
+      </div>
+
+    </div>
+
+    <!-- Add-ons -->
+    <div style="text-align:center;margin-top:80px;margin-bottom:30px">
+      <span class="sec-tag">Add-ons</span>
+      <h3 style="font-family:'Instrument Serif',serif;font-style:italic;font-size:36px;letter-spacing:-0.01em;margin-bottom:8px">Biar live makin <span style="background:var(--grad-1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">interaktif.</span></h3>
+      <p style="color:var(--ink-2);font-size:15px;max-width:520px;margin:0 auto">Tambah ke paket viewer manapun, biar live lo keliatan hidup &amp; platform suka.</p>
+    </div>
+    <div class="addon-grid">
+      <div class="addon">
+        <span class="ic">❤️</span>
+        <h4>100 Like</h4>
+        <p>Like masuk dari viewer berbeda, terasa natural.</p>
+        <div class="plus">+ Rp 5.000</div>
+      </div>
+      <div class="addon">
+        <span class="ic">💬</span>
+        <h4>50 Komentar</h4>
+        <p>Komentar positif &amp; pertanyaan produk yang relevan.</p>
+        <div class="plus">+ Rp 15.000</div>
+      </div>
+      <div class="addon">
+        <span class="ic">🔁</span>
+        <h4>50 Share</h4>
+        <p>Share ke platform sosmed lain untuk jangkauan lebih.</p>
+        <div class="plus">+ Rp 10.000</div>
+      </div>
+      <div class="addon">
+        <span class="ic">🪙</span>
+        <h4>100 Koin Shopee</h4>
+        <p>Boost engagement khusus live Shopee.</p>
+        <div class="plus">+ Rp 8.000</div>
+      </div>
+    </div>
+
+    <!-- Custom banner -->
+    <div class="pricing-banner">
+      <img src="assets/live-commerce.jpg" alt="Live commerce" />
+      <div class="overlay">
+        <div class="ct">Butuh <strong>500+ viewers</strong>? Atau paket mingguan / bulanan?<br/>Kita ngobrol dulu aja.</div>
+        <a class="btn btn-primary" href="#pesan"><span>Request Custom</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CARA ORDER -->
+<section id="cara-order">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">Cara Order</span>
+      <h2 class="display"><span class="accent">4 langkah.</span> Live jadi rame.</h2>
+      <p>Dari chat pertama sampai viewers masuk — gak lebih dari 30 menit kalau order di rush hour.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="ico">💬</div>
+        <h4>1. Chat dulu</h4>
+        <p>Pilih paket dari pricing — atau request custom kalau viewer banyak banget.</p>
+      </div>
+      <div class="step">
+        <div class="ico">📝</div>
+        <h4>2. Kirim data</h4>
+        <p>Username / link live, platform, tanggal &amp; jam mulai. Konfirmasi order via WA.</p>
+      </div>
+      <div class="step">
+        <div class="ico">💳</div>
+        <h4>3. Bayar</h4>
+        <p>Transfer / QRIS / e-wallet. Invoice langsung dikirim. Bisa DP 50% untuk paket besar.</p>
+      </div>
+      <div class="step">
+        <div class="ico">🚀</div>
+        <h4>4. Viewers masuk</h4>
+        <p>Saat live mulai, viewers masuk gradual. Stay sesuai durasi. Lo tinggal fokus jualan.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONI -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">Testimoni</span>
+      <h2 class="display">Kata mereka yang udah <span class="accent">order.</span></h2>
+      <p>Beberapa seller &amp; streamer yang viewers-nya udah jalan bareng SOCIO.</p>
+    </div>
+    <div class="t-grid">
+      <div class="t-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Order 200 viewers buat flash sale Shopee. Conversion naik, viewers-nya beneran stay. Sekarang tiap live pasti order di sini."</blockquote>
+        <div class="who">
+          <div class="av">R</div>
+          <div>
+            <div class="name">Rina Wulandari</div>
+            <div class="role">Seller Skincare · Shopee</div>
+          </div>
+        </div>
+      </div>
+      <div class="t-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Pakai paket 100 viewers di premiere Twitch. Chat jadi rame, retention viewer juga bagus. Murah banget buat kualitas segini."</blockquote>
+        <div class="who">
+          <div class="av" style="background:var(--grad-2)">A</div>
+          <div>
+            <div class="name">Andi Pratama</div>
+            <div class="role">Streamer Gaming · Twitch</div>
+          </div>
+        </div>
+      </div>
+      <div class="t-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Fast response, admin ramah, viewers-nya beneran stay sampai live selesai. Recommend banget buat seller TikTok!"</blockquote>
+        <div class="who">
+          <div class="av" style="background:linear-gradient(135deg,#22E3A5,#3DDCFF)">S</div>
+          <div>
+            <div class="name">Sari Oktavia</div>
+            <div class="role">Seller Fashion · TikTok</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">FAQ</span>
+      <h2 class="display">Pertanyaan yang sering <span class="accent">nongol.</span></h2>
+    </div>
+
+    <div class="faq">
+      <details open>
+        <summary>Real viewers atau bot?</summary>
+        <p>Real account, bukan bot automation. Viewers kami adalah akun aktif yang stay sesuai durasi live. Gak ada risiko deteksi platform karena interaksinya natural &amp; behavior-nya manusiawi.</p>
+      </details>
+      <details>
+        <summary>Berapa lama viewers bertahan di live?</summary>
+        <p>Sesuai paket: 1 jam durasi penuh, plus free extend 15–120 menit (tergantung paket). Kalau live kamu molor, viewers-nya stay. Kalau live molor jauh, kita extend dengan tarif follow-up.</p>
+      </details>
+      <details>
+        <summary>Aman gak buat akun saya?</summary>
+        <p>Aman. Tidak ada aktivitas yang dilakukan dari akun kamu. Viewer dari kami gak akan melakukan like/comment aneh-aneh yang bisa trigger flag platform. Sudah dipakai 1.200+ seller &amp; streamer tanpa satu pun akun kena masalah.</p>
+      </details>
+      <details>
+        <summary>Bisa custom jumlah viewer?</summary>
+        <p>Bisa. Untuk 500+ viewers atau paket mingguan/bulanan, kita ngobrol dulu via WA untuk dapat harga terbaik. Recurring schedule (misal: tiap Selasa &amp; Jumat) bisa dapet diskon tambahan 10–15%.</p>
+      </details>
+      <details>
+        <summary>Berapa minimal order?</summary>
+        <p>Minimal 20 viewers per sesi. Cocok buat tes performa live lo dulu sebelum naik ke paket yang lebih besar.</p>
+      </details>
+      <details>
+        <summary>Ada garansi refund?</summary>
+        <p>Ada. Kalau viewers drop sebelum durasi selesai (kasus force majeure / platform issue), kita refund pro-rata atau replace viewers di sesi berikutnya. Yang penting kita ngobrol dulu — komunikatif, bukan template bot.</p>
+      </details>
+      <details>
+        <summary>Platform apa aja yang disupport?</summary>
+        <p>TikTok Live, Shopee Live, Twitch, YouTube Live, Instagram Live, Lazada Live, dan platform lain yang support live streaming. Chat dulu aja kalau ada platform spesifik.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="pesan" style="padding:60px 0">
+  <div class="wrap">
+    <div class="cta-final">
+      <h2>Siap bikin live lo rame viewers?</h2>
+      <p>Chat WA sekarang — admin balas dalam 5 menit di jam kerja. Order H-1 supaya viewers siap saat live mulai.</p>
+      <a class="btn" href="https://wa.me/6281234567890?text=Halo%20SOCIO%2C%20saya%20mau%20order%20viewers%20live" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.5 3.5A11.94 11.94 0 0012 0C5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.2-1.6A12 12 0 0012 24c6.6 0 12-5.4 12-12 0-3.2-1.2-6.3-3.5-8.5zM12 22a10 10 0 01-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A10 10 0 1112 22zm5.4-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.4-.5.1-.2.1-.4 0-.6-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5H7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7 0 1.6 1.2 3.1 1.4 3.4.2.2 2.5 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.8-.7 2.1-1.4.3-.7.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
+        <span>Chat WhatsApp Sekarang</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand-mark">S</div>
+    <p><strong>SOCIO<span style="color:var(--pink)">.</span>id</strong> · Jasa Viewers Live Multi-Platform</p>
+    <p>TikTok · Shopee · Twitch · YouTube · Instagram · Lazada</p>
+    <p class="mini">SOCIO adalah layanan penyedia viewers untuk kebutuhan live streaming. Semua viewers adalah akun aktif organik. Layanan ini bukan-sponsored platform; gunakan sesuai dengan Terms of Service platform masing-masing.</p>
+    <p style="margin-top:18px;font-size:11px;opacity:0.5">© 2026 SOCIO.id · Semua hak dilindungi</p>
+  </div>
+</footer>
+
+<script>
+// Live counter animation
+(function(){
+  const num=document.getElementById('liveNum');
+  if(!num) return;
+  let v=2847;
+  setInterval(()=>{
+    v += Math.floor(Math.random()*7)-3;
+    if(v<2820) v=2820; if(v>2890) v=2890;
+    num.textContent=v.toLocaleString('id-ID');
+  },1100);
+})();
+</script>
+
+</body>
+</html>

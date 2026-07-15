@@ -1,0 +1,337 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "jakarta", "name": "Jakarta", "alt_names": ["jakarta"], "province": "DKI Jakarta", "tier": 1, "country": "ID", "lat": -6.2088, "lng": 106.8456, "umkm_count": 350000, "local_facts": ["Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi", "70% brand lokal Jakarta aktif di Meta dan Google Ads", "10.5jt penduduk, pasar paling matang untuk iklan digital"], "is_international": false};
+const service = {"slug": "jasa-digital-marketing", "name": "Jasa Digital Marketing", "category": "full-service", "description": "Jasa Digital Marketing Iklankan Perusahaan Anda di Google Ads Facebook Instagram dan TikTok Dapatkan Lebih Banyak Konsumen | Hubungi : 0811-919-328", "faqs": [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}], "active": true, "order": 10, "tiers": [{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}], "why_features": [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}], "how_steps": [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}], "city_intro_template": ""};
+const tiers = [{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}];
+const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}];
+const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
+const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
+const serviceTestimonials = [];
+---
+
+<Layout
+    title="Jasa Digital Marketing di Jakarta — Paket dari Rp Konsultasi | Beriklan"
+    description="Jasa Digital Marketing di Jakarta — agensi Meta Business Partner sejak 2016. Konsultasi 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-digital-marketing/jakarta/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Digital Marketing di Jakarta · Meta & Google Partner
+            </div>
+            <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
+                <span class="anim-fade-up">Jasa Digital Marketing</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Jakarta, Mendorong</span><br/>
+                <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa digital marketing untuk UMKM & bisnis menengah di Jakarta. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Jakarta.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Diskusi via WhatsApp
+                    </span>
+                </a>
+                <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+            <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">9 tahun</strong> mengelola campaign iklan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Optimasi berbasis data, bukan tebakan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Laporan <strong class="text-ink">setiap Senin pagi</strong>, bahasa yang mudah dipahami</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Jakarta dari berbagai industri</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>F&amp;B</span><span class="text-white/30">·</span>
+                    <span>Skincare</span><span class="text-white/30">·</span>
+                    <span>Fashion</span><span class="text-white/30">·</span>
+                    <span>Edutech</span><span class="text-white/30">·</span>
+                    <span>Klinik</span><span class="text-white/30">·</span>
+                    <span>Properti</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl prose-content">
+            
+<h2>Mengapa Bisnis di Jakarta Butuh Jasa Digital Marketing</h2>
+<p>Jakarta sebagai salah satu pasar potensial di Indonesia dengan 350,000 UMKM aktif, membutuhkan strategi jasa digital marketing yang terukur dan berbasis data. Mayoritas brand lokal Jakarta telah memanfaatkan platform iklan digital untuk meningkatkan visibilitas, leads, dan penjualan secara konsisten.</p>
+<p>Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi. Dengan pendampingan tim Beriklan yang sudah mengelola lebih dari ratusan campaign iklan sejak 2016, Jasa Digital Marketing di Jakarta dapat mendatangkan hasil yang dapat diukur dari minggu pertama.</p>
+<p>Yang kami kerjakan bukan sekadar tayang iklan — kami menyusun strategi targeting presisi, copy yang berbicara ke audiens spesifik di Jakarta, dan optimasi mingguan berdasarkan data real-time.</p>
+
+<h2>Tantangan Jasa Digital Marketing di Pasar Jakarta</h2>
+<p>Pasar Jakarta memiliki karakteristik unik — target audiens yang berbeda dari kota lain, kompetitor yang agresif, dan seasonality yang bervariasi. Tanpa strategi yang sesuai dengan konteks lokal, campaign sering tidak menghasilkan ROI yang diharapkan dan terbuang sia-sia.</p>
+<p>Tantangan lainnya adalah mengukur efektivitas iklan secara akurat. Banyak bisnis tidak punya akses ke dashboard real-time atau tidak tahu cara menginterpretasi data yang tersedia. Inilah mengapa pendekatan berbasis data dan transparansi laporan menjadi penting untuk dipertimbangkan.</p>
+
+<h2>Cara Kerja Tim Beriklan di Jakarta</h2>
+<p>Setiap klien Jakarta mendapat pendampingan langsung dari tim yang sudah mengelola campaign iklan sejak 2016. Proses kami terstruktur, terukur, dan transparan dari hari pertama.</p>
+<ul>
+<li>Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi</li>
+<li>70% brand lokal Jakarta aktif di Meta dan Google Ads</li>
+<li>10.5jt penduduk, pasar paling matang untuk iklan digital</li>
+<li>Brief 30 menit untuk pahami bisnis Anda secara menyeluruh (online/Zoom atau tatap muka di Jakarta)</li>
+<li>Riset audience lokal Jakarta yang sesuai dengan produk dan penawaran Anda</li>
+<li>Setup campaign + materi iklan dari kami, revisi sampai Anda approve final</li>
+<li>Tayang 30 hari penuh + laporan mingguan bahasa manusia, bukan deretan CTR/CPM</li>
+<li>Optimasi mingguan berbasis data — iklan yang tidak perform diganti dengan creative baru</li>
+</ul>
+
+<h2>FAQ Jasa Digital Marketing di Jakarta</h2>
+<h3>Berapa biaya Jasa Digital Marketing di Jakarta?</h3>
+<p>Biaya bervariasi sesuai paket yang dipilih. Paket Standart mulai dari Rp 1.750.000 per 30 hari, sudah termasuk pendampingan profesional dan optimasi mingguan. Ad spend platform terpisah, dibayar langsung ke Meta/Google/TikTok atas nama Anda.</p>
+<h3>Berapa lama sampai iklan tayang?</h3>
+<p>Setup 1-3 hari kerja setelah strategi disetujui. Campaign live di minggu pertama. Optimasi mingguan berjalan sejak hari ke-7. Pola yang konsisten biasanya terlihat di minggu ke-3 hingga ke-4.</p>
+<h3>Apakah saya dapat akses penuh ke akun iklan?</h3>
+<p>Ya. Akun iklan tetap di bawah nama dan akses Anda. Anda memegang penuh kontrol terhadap dana dan data historis. Tidak ada account abal-abal atau tersembunyi di agency kami.</p>
+<h3>Bagaimana laporan hasil campaign?</h3>
+<p>Laporan mingguan via WhatsApp dengan bahasa manusia: mana yang berjalan optimal, mana yang perlu disesuaikan, dan rencana aksi untuk minggu depan. Plus dashboard real-time yang bisa Anda akses kapan saja.</p>
+<h3>Apakah ada kontrak minimum?</h3>
+<p>Tidak. Sistem kami bekerja secara bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat. Komitmen kami jaga lewat kualitas, bukan jebakan kontrak panjang.</p>
+
+        </div>
+    </section>
+
+    
+    <!-- ====================== WHY ====================== -->
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    3 Alasan Memilih Jasa Digital Marketing
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Strategi yang terukur,<br/>
+                    <span class="text-accent">bukan jualan angka tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+            <div class="why-card group" style="animation-delay: 0ms;">
+                <div class="why-icon">🎯</div>
+                <h3 class="why-title">Multi-Channel</h3>
+                <p class="why-desc">Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 100ms;">
+                <div class="why-icon">📊</div>
+                <h3 class="why-title">Data Integration</h3>
+                <p class="why-desc">Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 200ms;">
+                <div class="why-icon">⚡</div>
+                <h3 class="why-title">Fast Iteration</h3>
+                <p class="why-desc">Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup.</p>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Empat langkah dari brief<br/>
+                    <span class="text-accent">menuju iklan yang tayang optimal.</span>
+                </h2>
+            </div>
+            <StepGrid items={[{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== PRICING ====================== -->
+    
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Paket Jasa Digital Marketing di Jakarta,<br/>
+                    <span class="text-accent">disesuaikan dengan objective Anda.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
+                </p>
+            </div>
+            <PricingCards tiers={[{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Digital Marketing di Jakarta" highlightIndex={1} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Jakarta.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Konsultasi via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUST DARK ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Beriklan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan agensi yang berjanji<br/>
+                    <span class="text-accent">angka fantastis tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun iklan tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data historis berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan setiap Senin pagi</h3>
+                    <p class="trust-desc-dark">Disusun dalam satu halaman dengan bahasa yang mudah dipahami. Anda mendapat kejelasan: mana yang berjalan optimal.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    
+
+    <!-- ====================== FAQ ====================== -->
+    
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum deal pertama
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum deal pertama.</span>
+                </h2>
+            </div>
+            <FaqAccordion items={[{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Jakarta</p>
+            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/jakarta/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/jakarta/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/jakarta/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
+        </div>
+    </section>
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam (jam kerja)
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Satu keputusan kecil hari ini,<br/>
+                    <span class="text-accent">dampaknya terasa di kuartal depan.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Jakarta.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Jakarta.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Mulai Konsultasi via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={city}
+        service={service}
+        tiers={tiers}
+        faqs={faqs}
+        pageUrl="/jasa-digital-marketing/jakarta/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Digital Marketing", "/jasa-digital-marketing/"], ["Jakarta", "/jasa-digital-marketing/jakarta/"]]}
+    />
+</Layout>

@@ -34,3 +34,6 @@ backup/
 # Generated SQL chunks (regenerate via scripts/db/gen_seed_chunks.py)
 scripts/db/chunks/
 scripts/db/chunks_small/
+account.md
+
+web/

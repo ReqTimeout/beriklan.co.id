@@ -524,6 +524,7 @@ const serviceTestimonials = ${testimonials_json};
         type="city-service"
         city={city}
         service={service}
+        tiers={tiers}
         faqs={faqs}
         pageUrl="/${service_slug}/${city_slug}/"
         breadcrumbs={${breadcrumb_array}}

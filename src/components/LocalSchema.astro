@@ -34,10 +34,22 @@ interface Service {
     description?: string;
 }
 
+interface Tier {
+    name: string;
+    priceLabel: string;
+    duration?: string;
+    tagline?: string;
+    features?: string[];
+    priceNote?: string;
+    disclaimer?: string;
+    highlight?: boolean;
+}
+
 interface Props {
     type?: "city-service" | "service-only" | "city-only" | "article";
     city?: City;
     service?: Service;
+    tiers?: Tier[];
     faqs?: FAQ[];
     pageUrl?: string;
     breadcrumbs?: [string, string][];
@@ -51,6 +63,7 @@ const {
     type = "city-service",
     city,
     service,
+    tiers = [],
     faqs = [],
     pageUrl = "",
     breadcrumbs = [],
@@ -114,22 +127,27 @@ function genLocalBusiness(c: City) {
 }
 
 function genService(s: Service, c?: City) {
+    // Build offer catalog from tiers if available, else omit
+    let offerCatalog: any = null;
+    if (tiers && tiers.length > 0) {
+        offerCatalog = {
+            "@type": "OfferCatalog",
+            "name": `Paket ${s.name}`,
+            "itemListElement": tiers.map((t) => ({
+                "@type": "Offer",
+                "name": `${t.name} · ${s.name}`,
+                "price": (t.priceLabel || "0").replace(/\./g, ""),
+                "priceCurrency": "IDR"
+            }))
+        };
+    }
     return {
         "@context": "https://schema.org",
         "@type": "Service",
         "serviceType": s.name,
         "provider": { "@id": `${canonicalUrl}#business` },
         "areaServed": c ? { "@type": "City", "name": c.name } : { "@type": "Country", "name": "Indonesia" },
-        "hasOfferCatalog": {
-            "@type": "OfferCatalog",
-            "name": `Paket ${s.name}`,
-            "itemListElement": [
-                { "@type": "Offer", "name": "Paket Pemanasan", "price": "12000", "priceCurrency": "IDR" },
-                { "@type": "Offer", "name": "Paket Starter", "price": "25000", "priceCurrency": "IDR" },
-                { "@type": "Offer", "name": "Paket Pro", "price": "80000", "priceCurrency": "IDR" },
-                { "@type": "Offer", "name": "Paket Premium", "price": "175000", "priceCurrency": "IDR" }
-            ]
-        }
+        ...(offerCatalog && { "hasOfferCatalog": offerCatalog })
     };
 }
 

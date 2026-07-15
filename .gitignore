@@ -37,3 +37,6 @@ scripts/db/chunks_small/
 account.md
 
 web/
+data/bulk_generate_log.json
+url_classification.csv
+web

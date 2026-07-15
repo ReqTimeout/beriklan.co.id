@@ -44,13 +44,16 @@ PER_CITY = json.loads((ROOT / "src/data/per_city.json").read_text())
 LOCAL_FAQS = json.loads((ROOT / "src/data/local-faqs.json").read_text())
 
 # LLM provider configuration
-# Default: Pollinations anonymous (openai-fast = GPT-OSS-20B), free, no API key.
-# Sequential only — Pollinations caps 1 concurrent per IP.
+# Default: Groq free tier (Llama 3.1 8b-instant) — fastest, lowest TPM cost, 14,400 req/day
 # Override via env: LLM_BASE_URL + LLM_MODEL + LLM_API_KEY
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "pollinations")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://text.pollinations.ai/openai")
-LLM_MODEL = os.getenv("LLM_MODEL", "openai-fast")
-LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("POLLINATIONS_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
+# Other supported providers via env:
+#   - "groq"         → https://api.groq.com/openai/v1 (default)
+#   - "pollinations" → https://text.pollinations.ai/openai
+#   - "openai"       → any OpenAI-compatible endpoint
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
+LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "beriklan-admin-2026")
 
 # AdSense policy blocklist (P0/§48.2 — auto-reject if matched)
@@ -136,100 +139,68 @@ def build_mock_content(city: dict, service: dict) -> str:
 """
 
 
-def build_prompt(city: dict, service: dict, word_target: int = 700) -> str:
-    """Build LLM prompt for city-specific body content."""
-    local_facts = "\n".join(f"- {f}" for f in city.get("local_facts", []))
-    faqs_seed = "\n".join(f"Q: {f['q']}\nA: {f['a'][:200]}" for f in service.get("faqs", [])[:6])
-    tiers_summary = ", ".join([f"{t['name']} Rp {t['priceLabel']}" for t in service.get("tiers", [])[:3]])
+def build_prompt(city: dict, service: dict, word_target: int = 600) -> str:
+    """Build compact LLM prompt optimized for low token usage (~600 prompt tokens).
 
-    tag_list = "<p>, <h2>, <h3>, <ul>, <li>"
-    tag_ban = "<section>, <article>, <!DOCTYPE>, <style>, atau tag meta"
+    Strategy:
+    - Inline only 2 most relevant facts (drop long FAQ seed — model can improvise)
+    - Use tight structural template (~2.5KB total prompt)
+    - Force JSON-ish output by listing expected sections
+    """
+    facts = city.get("local_facts", [])[:3]
+    facts_text = "; ".join(facts)
+    tiers_brief = ", ".join([f"{t['name']} Rp {t['priceLabel']}" for t in service.get("tiers", [])[:3]])
 
-    prompt = f"""Kamu adalah copywriter SEO senior untuk Beriklan.co.id. Tulis konten Bahasa Indonesia untuk halaman LAYANAN {service['name'].upper()} di kota {city['name'].upper()}.
+    prompt = f"""SEO copywriter. Tulis HTML body Bahasa Indonesia untuk halaman: {service['name']} {city['name']}.
 
-TARGET KEYWORD: "{service['name']} {city['name']}"
-KATA TARGET: {word_target} (±150 kata, BUKAN kurang)
+Facts kota: {facts_text}.
+Paket harga: {tiers_brief}.
 
-ATURAN WAJIB:
-1. UNIK & LOKAL — spesifik {city['name']}, BUKAN generic
-2. FACTUAL — pakai data FAKTA KOTA, JANGAN mengarang nomor
-3. TONE profesional, BUKAN sales-y/clickbait
-4. LARANG: "Dalam dunia", "Penting untuk", "Demikian", "Semoga bermanfaat", "Kesimpulannya", "Tidak dapat dipungkiri"
+TARGET: ~{word_target} kata, profesional, spesifik {city['name']}, NO clickbait.
+LARANG: "Dalam dunia", "Penting untuk", "Demikian", "Semoga bermanfaat".
 
-FAKTA KOTA {city['name'].upper()}:
-{local_facts}
-
-PAKET HARGA (referensi):
-{tiers_summary}
-
-FAQ REFERENSI (parafrase, jangan copy paste):
-{faqs_seed}
-
-=== OUTPUT — WAJIB LENGKAP SEMUA 4 SECTION ===
+WAJIB 4 section persis seperti template ini (jangan lebih, jangan kurang):
 
 <h2>Mengapa Bisnis di {city['name']} Butuh {service['name']}</h2>
-<p>paragraf 1 (WAJIB angka spesifik dari FAKTA KOTA + contoh UMKM nyata)</p>
-<p>paragraf 2 (penjelasan strategis)</p>
-<p>paragraf 3 (data spesifik tambahan + benefit)</p>
+<p>(2-3 paragraf, angka spesifik UMKM lokal {city['name']})</p>
 
 <h2>Tantangan {service['name']} di Pasar {city['name']}</h2>
-<p>paragraf 1 (tantangan utama, kompetisi)</p>
-<p>paragraf 2 (risiko kalau tanpa strategi)</p>
+<p>(2 paragraf, risiko tanpa strategi)</p>
 
 <h2>Cara Kerja Tim Beriklan di {city['name']}</h2>
-<p>paragraf intro tentang proses (2-3 kalimat)</p>
+<p>(intro 1 paragraf)</p>
 <ul>
-  <li>step 1</li>
-  <li>step 2</li>
-  <li>step 3</li>
-  <li>step 4</li>
-  <li>step 5</li>
+<li>step 1</li><li>step 2</li><li>step 3</li><li>step 4</li>
 </ul>
 
 <h2>FAQ {service['name']} di {city['name']}</h2>
-<h3>Pertanyaan 1</h3>
-<p>Jawaban 1</p>
-<h3>Pertanyaan 2</h3>
-<p>Jawaban 2</p>
-<h3>Pertanyaan 3</h3>
-<p>Jawaban 3</p>
-<h3>Pertanyaan 4</h3>
-<p>Jawaban 4</p>
-<h3>Pertanyaan 5</h3>
-<p>Jawaban 5</p>
+<h3>Berapa biaya?</h3><p>(jawab)</p>
+<h3>Berapa lama setup?</h3><p>(jawab)</p>
+<h3>Akses akun?</h3><p>(jawab)</p>
+<h3>Laporan?</h3><p>(jawab)</p>
 
-=== INSTRUKSI FINAL ===
-- LENGKAPI semua section. JANGAN berhenti di tengah jalan.
-- Setiap paragraf min 60 kata, max 120 kata.
-- Wajib ada 1 angka spesifik (contoh: "70% brand X aktif di Y", "10.5jt penduduk").
-- Wajib ada 1 contoh UMKM lokal yang spesifik di {city['name']}.
-- Output HANYA HTML body content ({tag_list}).
-- JANGAN sertakan {tag_ban} apapun.
-
-SEKARANG TULIS LENGKAP, jangan berhenti.:
-"""
+Output HANYA HTML body. Langsung mulai dari <h2> tanpa preamble.:"""
 
     return prompt
 
 
 def call_llm(prompt: str, model: str = None, max_tokens: int = 4096, max_retries: int = 5) -> dict:
-    """Call LLM via OpenAI-compatible endpoint. Default: Pollinations anonymous (openai-fast)."""
+    """Call LLM via OpenAI-compatible endpoint. Default: Ollama local."""
     url = f"{LLM_BASE_URL}/chat/completions"
     m = model or LLM_MODEL
     headers = {"Content-Type": "application/json"}
-    if LLM_API_KEY:
+    if LLM_API_KEY and LLM_API_KEY != "ollama":
         headers["Authorization"] = f"Bearer {LLM_API_KEY}"
     payload = {
         "model": m,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
         "temperature": 0.7,
-        "cache": True
     }
     last_error = "all retries failed"
     for attempt in range(1, max_retries + 1):
         try:
-            r = requests.post(url, headers=headers, json=payload, timeout=180)
+            r = requests.post(url, headers=headers, json=payload, timeout=600)
             if r.status_code == 200:
                 data = r.json()
                 content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
@@ -244,9 +215,8 @@ def call_llm(prompt: str, model: str = None, max_tokens: int = 4096, max_retries
         except Exception as e:
             last_error = f"{type(e).__name__}: {e}"
             print(f"  attempt {attempt}: {last_error}")
-        # Pollinations queue errors resolve in 5-15s; backoff aggressively
         if attempt < max_retries:
-            time.sleep(5 + 8 * attempt)
+            time.sleep(3 + 5 * attempt)
     return {"ok": False, "content": "", "error": last_error}
 
 
@@ -919,8 +889,9 @@ def main():
             "model": result['model']
         })
 
-        # Rate limit: avoid hammer
-        time.sleep(2.0)
+        # Rate limit: avoid hammer. Groq free tier 6000 TPM (8b-instant).
+        # Each request ~1300 tokens (p+c). Sleep 11s ensures we stay under TPM budget.
+        time.sleep(11.0)
 
     print(f"\n=== Done ===")
     print(f"Success/Generated: {stats['success']}")

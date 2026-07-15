@@ -3,216 +3,216 @@
     "city": "bandung",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 486,
-    "faq_count": 5,
-    "density": 0.58,
-    "model": "mock-template"
+    "word_count": 419,
+    "faq_count": 4,
+    "density": 0.64,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "jakarta",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 488,
-    "faq_count": 5,
-    "density": 0.57,
-    "model": "mock-template"
+    "word_count": 393,
+    "faq_count": 4,
+    "density": 0.84,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "makassar",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 475,
-    "faq_count": 5,
-    "density": 0.59,
-    "model": "mock-template"
+    "word_count": 423,
+    "faq_count": 4,
+    "density": 1.23,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "medan",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 483,
-    "faq_count": 5,
-    "density": 0.58,
-    "model": "mock-template"
+    "word_count": 515,
+    "faq_count": 4,
+    "density": 0.6,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "surabaya",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 481,
-    "faq_count": 5,
-    "density": 0.58,
-    "model": "mock-template"
+    "word_count": 439,
+    "faq_count": 4,
+    "density": 0.64,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "bekasi",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 464,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 553,
+    "faq_count": 4,
+    "density": 1.1,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "bogor",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 387,
+    "faq_count": 4,
+    "density": 1.03,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "depok",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 470,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 534,
+    "faq_count": 4,
+    "density": 1.2,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "jogja",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 471,
-    "faq_count": 5,
-    "density": 0.59,
-    "model": "mock-template"
+    "word_count": 363,
+    "faq_count": 4,
+    "density": 0.99,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "semarang",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 477,
-    "faq_count": 5,
-    "density": 0.59,
-    "model": "mock-template"
+    "word_count": 431,
+    "faq_count": 4,
+    "density": 0.42,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "tangerang",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 409,
+    "faq_count": 4,
+    "density": 1.27,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "yogyakarta",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 471,
-    "faq_count": 5,
-    "density": 0.59,
-    "model": "mock-template"
+    "word_count": 395,
+    "faq_count": 4,
+    "density": 0.86,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "bali",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 464,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 397,
+    "faq_count": 4,
+    "density": 0.93,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "denpasar",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 468,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 457,
+    "faq_count": 4,
+    "density": 0.48,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "malang",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 396,
+    "faq_count": 4,
+    "density": 1.24,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "palembang",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 380,
+    "faq_count": 4,
+    "density": 0.89,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "pontianak",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 464,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 494,
+    "faq_count": 4,
+    "density": 0.81,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "solo",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 470,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 324,
+    "faq_count": 4,
+    "density": 0.83,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "aceh",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 464,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 449,
+    "faq_count": 4,
+    "density": 0.94,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "batam",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 447,
+    "faq_count": 4,
+    "density": 0.96,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "cimahi",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 466,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 485,
+    "faq_count": 4,
+    "density": 0.95,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "lampung",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 464,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 516,
+    "faq_count": 4,
+    "density": 0.78,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "lombok",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 462,
-    "faq_count": 5,
-    "density": 0.61,
-    "model": "mock-template"
+    "word_count": 394,
+    "faq_count": 4,
+    "density": 1.17,
+    "model": "llama-3.1-8b-instant"
   },
   {
     "city": "padang",
     "service": "jasa-pembuatan-landing-page",
     "status": "ok",
-    "word_count": 468,
-    "faq_count": 5,
-    "density": 0.6,
-    "model": "mock-template"
+    "word_count": 504,
+    "faq_count": 4,
+    "density": 1.27,
+    "model": "llama-3.1-8b-instant"
   }
 ]

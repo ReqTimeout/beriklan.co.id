@@ -1,0 +1,492 @@
+{
+  "jasa-iklan-facebook": {
+    "title": "Panduan Lengkap Facebook Ads untuk Bisnis Indonesia",
+    "intro": "Facebook Ads masih menjadi salah satu kanal iklan digital paling efektif untuk menjangkau audiens Indonesia — lebih dari 190 juta pengguna aktif. Pelajari strategi targeting, format iklan, optimasi budget, dan cara mengukur ROI.",
+    "clusters": [
+      {
+        "tag": "Targeting",
+        "title": "Menentukan Audiens yang Tepat",
+        "desc": "Interest, behavior, lookalike audience, dan custom audience untuk menemukan prospek dengan presisi."
+      },
+      {
+        "tag": "Creative",
+        "title": "Materi Iklan yang Perform",
+        "desc": "Format gambar vs video, copywriting formula, dan pattern creative yang menghasilkan engagement tertinggi."
+      },
+      {
+        "tag": "Optimasi",
+        "title": "Meningkatkan ROAS dari Waktu ke Waktu",
+        "desc": "A/B testing, scaling, retargeting, dan cara Meta Pixel mendukung keputusan berbasis data."
+      },
+      {
+        "tag": "Budget",
+        "title": "Mengelola Ad Spend secara Efisien",
+        "desc": "Berapa budget minimum, kapan harus scale up, dan cara menghindari pemborosan budget."
+      },
+      {
+        "tag": "Conversion",
+        "title": "Dari Like ke Chat WhatsApp",
+        "desc": "Mengubah interaksi menjadi prospek qualified dan closing yang terukur."
+      }
+    ],
+    "stats": [
+      {
+        "num": "190+",
+        "label": "Juta pengguna aktif Indonesia"
+      },
+      {
+        "num": "3-5x",
+        "label": "ROAS rata-rata campaign"
+      },
+      {
+        "num": "Rp 50rb",
+        "label": "CPC rata-rata industri"
+      },
+      {
+        "num": "24 jam",
+        "label": "Waktu rata-rata approval iklan"
+      }
+    ]
+  },
+  "jasa-iklan-instagram": {
+    "title": "Instagram Ads Strategy untuk Brand Lokal",
+    "intro": "Instagram adalah platform visual-first dengan engagement rate tertinggi di Indonesia. Pelajari cara menggunakan Reels Ads, Story Ads, Feed Ads, dan Shopping Ads untuk membangun brand dan mengkonversi audiens.",
+    "clusters": [
+      {
+        "tag": "Visual",
+        "title": "Format Iklan Visual Terbaik",
+        "desc": "Reels vs Stories vs Feed — kapan menggunakan masing-masing format untuk objective berbeda."
+      },
+      {
+        "tag": "Audience",
+        "title": "Audiens Muda dan Premium",
+        "desc": "Menjangkau usia 18-34 dengan interest premium, gaya hidup, dan konsumsi konten visual."
+      },
+      {
+        "tag": "Creative",
+        "title": "Production Value Tanpa Studio Mahal",
+        "desc": "Tips produksi konten Instagram-grade dengan smartphone, ring light, dan template."
+      },
+      {
+        "tag": "Shopping",
+        "title": "Instagram Shopping Integration",
+        "desc": "Tag produk di organic post dan ads, plus checkout dalam aplikasi untuk e-commerce."
+      },
+      {
+        "tag": "Influencer",
+        "title": "Kolaborasi Creator & Paid Ads",
+        "desc": "Memanfaatkan user-generated content dan partnership creator untuk social proof."
+      }
+    ],
+    "stats": [
+      {
+        "num": "100+",
+        "label": "Juta pengguna aktif Indonesia"
+      },
+      {
+        "num": "1.6%",
+        "label": "Engagement rate rata-rata"
+      },
+      {
+        "num": "70%",
+        "label": "Pelanggan cek IG sebelum beli"
+      },
+      {
+        "num": "Rp 80rb",
+        "label": "CPC rata-rata industri"
+      }
+    ]
+  },
+  "jasa-iklan-tiktok": {
+    "title": "TikTok Ads untuk Bisnis yang Ingin Viral",
+    "intro": "TikTok menjadi platform pertumbuhan tercepat di Indonesia dengan 130 juta+ pengguna aktif. Algoritma FYP memberikan exposure organik tinggi — pelajari cara membuat konten native dan Spark Ads yang perform.",
+    "clusters": [
+      {
+        "tag": "FYP",
+        "title": "Memahami Algoritma For You Page",
+        "desc": "Hook 3 detik, retention curve, dan sinyal yang dipakai algoritma untuk push konten ke FYP."
+      },
+      {
+        "tag": "Spark",
+        "title": "Spark Ads vs In-Feed Ads",
+        "desc": "Menggunakan konten organik sebagai paid ads — format paling authentic dan cost-efficient."
+      },
+      {
+        "tag": "Creator",
+        "title": "Bekerja dengan TikTok Creator",
+        "desc": "Finding, briefing, dan measuring UGC untuk campaign — termasuk disclosure compliance."
+      },
+      {
+        "tag": "Trend",
+        "title": "Ride the Wave Trend & Sound",
+        "desc": "Cara mengikuti trending audio dan hashtag tanpa kehilangan brand identity."
+      },
+      {
+        "tag": "Conversion",
+        "title": "TikTok Shop & Direct Message Ads",
+        "desc": "Mengubah viewers menjadi customer melalui in-app checkout atau DM lead generation."
+      }
+    ],
+    "stats": [
+      {
+        "num": "130+",
+        "label": "Juta pengguna aktif Indonesia"
+      },
+      {
+        "num": "95 min",
+        "label": "Waktu harian rata-rata pengguna"
+      },
+      {
+        "num": "2.5%",
+        "label": "Engagement rate rata-rata"
+      },
+      {
+        "num": "Rp 30rb",
+        "label": "CPC termurah di Meta"
+      }
+    ]
+  },
+  "jasa-iklan-google": {
+    "title": "Google Ads untuk Menangkap Pembeli dengan Intent Tinggi",
+    "intro": "Google Ads menangkap audiens yang SEDANG mencari produk atau layanan Anda — bukan yang sedang scroll. Pelajari Search, Display, YouTube, dan Performance Max untuk mendominasi halaman pertama.",
+    "clusters": [
+      {
+        "tag": "Search",
+        "title": "Search Ads untuk High Intent",
+        "desc": "Keyword research, match types, dan copywriting untuk iklan teks di hasil pencarian."
+      },
+      {
+        "tag": "Display",
+        "title": "Display Network untuk Awareness",
+        "desc": "Banner ads di 2 juta+ website — bagus untuk retargeting dan brand exposure."
+      },
+      {
+        "tag": "YouTube",
+        "title": "YouTube Ads untuk Video Marketing",
+        "desc": "Skippable in-stream, bumper, dan discovery ads untuk menjangkau audiens premium."
+      },
+      {
+        "tag": "PMax",
+        "title": "Performance Max Optimization",
+        "desc": "Automated campaign Google yang menggabungkan semua inventory — perlu setup spesifik."
+      },
+      {
+        "tag": "Conversion",
+        "title": "Tracking & Attribution",
+        "desc": "Google Tag, GA4, conversion API, dan cara mengukur ROI yang akurat di multi-device journey."
+      }
+    ],
+    "stats": [
+      {
+        "num": "8.5M",
+        "label": "Pencarian Google per detik"
+      },
+      {
+        "num": "76%",
+        "label": "Click share dapat dimenangkan"
+      },
+      {
+        "num": "Rp 5rb",
+        "label": "CPC minimum industri"
+      },
+      {
+        "num": "4x",
+        "label": "ROAS rata-rata e-commerce"
+      }
+    ]
+  },
+  "jasa-iklan-youtube": {
+    "title": "YouTube Ads untuk Brand Awareness & Video Marketing",
+    "intro": "YouTube adalah platform video terbesar di Indonesia dengan 150 juta+ pengguna. Pelajari format iklan (skippable, bumper, shorts), targeting, dan cara membuat video yang menahan attention.",
+    "clusters": [
+      {
+        "tag": "Format",
+        "title": "Format Iklan YouTube",
+        "desc": "Skippable in-stream (5s skip), bumper (6s non-skip), discovery ads, dan YouTube Shorts."
+      },
+      {
+        "tag": "Targeting",
+        "title": "Audiens Premium Indonesia",
+        "desc": "Menjangkau profesional, gamers, dan audiens 25-54 dengan daya beli tinggi."
+      },
+      {
+        "tag": "Production",
+        "title": "Video Ads Production",
+        "desc": "Hook dalam 5 detik, storytelling 15-30 detik, dan CTA yang tidak terasa jualan."
+      },
+      {
+        "tag": "Performance",
+        "title": "View-Through & Click-Through",
+        "desc": "Memahami dua metric utama YouTube Ads dan cara mengoptimasi keduanya."
+      },
+      {
+        "tag": "Channel",
+        "title": "YouTube Channel Strategy",
+        "desc": "Membangun channel organik bersamaan dengan paid ads untuk compound growth."
+      }
+    ],
+    "stats": [
+      {
+        "num": "150+",
+        "label": "Juta pengguna aktif Indonesia"
+      },
+      {
+        "num": "70%",
+        "label": "Penonton lihat sampai habis (bumper)"
+      },
+      {
+        "num": "Rp 200rb",
+        "label": "CPV rata-rata"
+      },
+      {
+        "num": "8%",
+        "label": "View rate rata-rata in-stream"
+      }
+    ]
+  },
+  "jasa-kelola-instagram": {
+    "title": "Manajemen Instagram Profesional untuk Brand Konsisten",
+    "intro": "Instagram organik tetap menjadi channel brand building paling efektif. Pelajari content strategy, hashtag, reels, community management, dan cara mempertahankan engagement rate tinggi.",
+    "clusters": [
+      {
+        "tag": "Content",
+        "title": "Content Calendar & Planning",
+        "desc": "30-hari content framework, pillar content, dan kapan posting untuk reach maksimal."
+      },
+      {
+        "tag": "Reels",
+        "title": "Reels untuk Organic Reach",
+        "desc": "Format Reels yang viral tanpa harus viral — algoritma support semua niche."
+      },
+      {
+        "tag": "Hashtag",
+        "title": "Strategi Hashtag 2026",
+        "desc": "Beralih dari 30 hashtag ke 3-5 hashtag relevan — kenapa lebih baik untuk reach."
+      },
+      {
+        "tag": "Community",
+        "title": "DM & Comment Management",
+        "desc": "Response template, follow-up flow, dan converting DM ke WhatsApp atau checkout."
+      },
+      {
+        "tag": "Analytics",
+        "title": "Reading Instagram Insights",
+        "desc": "Metric mana yang penting: reach, saves, shares — bukan likes."
+      }
+    ],
+    "stats": [
+      {
+        "num": "12-20",
+        "label": "Posting optimal per bulan"
+      },
+      {
+        "num": "3-7%",
+        "label": "Engagement rate target"
+      },
+      {
+        "num": "Rp 2.5jt",
+        "label": "Biaya jasa bulanan"
+      },
+      {
+        "num": "5x",
+        "label": "Reach growth dalam 6 bulan"
+      }
+    ]
+  },
+  "jasa-kelola-tiktok": {
+    "title": "Manajemen TikTok untuk Konten yang Konsisten Viral",
+    "intro": "TikTok organik memberi ROI terbaik jika dilakukan konsisten. Pelajari cara bikin 30 video per bulan, ride trending sounds, dan bangun akun dari 0 ke 100K followers secara natural.",
+    "clusters": [
+      {
+        "tag": "Video",
+        "title": "Batch Production Workflow",
+        "desc": "Syuting 1 hari untuk 1 bulan konten — script, hook, dan editing template."
+      },
+      {
+        "tag": "Hook",
+        "title": "3-Detik Pertama yang Menentukan",
+        "desc": "Pattern hook yang menahan swipe — formula 'POV', 'Stop scrolling', dan story opening."
+      },
+      {
+        "tag": "Sound",
+        "title": "Trending Sounds & Audio",
+        "desc": "Cara deteksi trending sound lebih awal dan ride the wave tanpa terlihat desperate."
+      },
+      {
+        "tag": "Community",
+        "title": "Comment & Stitch Strategy",
+        "desc": "Membangun komunitas dengan reply video, stitch, dan duets yang mengonversi followers."
+      },
+      {
+        "tag": "Monetize",
+        "title": "TikTok Creator Fund & Affiliate",
+        "desc": "Setelah 10K followers: monetize via Creator Fund, affiliate, dan TikTok Shop."
+      }
+    ],
+    "stats": [
+      {
+        "num": "30",
+        "label": "Video target per bulan"
+      },
+      {
+        "num": "3-5%",
+        "label": "Engagement rate target"
+      },
+      {
+        "num": "100K",
+        "label": "Followers goal 6 bulan"
+      },
+      {
+        "num": "Rp 3jt",
+        "label": "Biaya jasa bulanan"
+      }
+    ]
+  },
+  "jasa-pembuatan-website": {
+    "title": "Panduan Membuat Website Profesional untuk UMKM Indonesia",
+    "intro": "Website adalah toko digital Anda 24/7. Pelajari perbedaan company profile, e-commerce, dan landing page, serta platform mana yang tepat untuk budget dan skala bisnis Anda.",
+    "clusters": [
+      {
+        "tag": "Company Profile",
+        "title": "Website Company Profile",
+        "desc": "5-7 halaman untuk menampilkan brand, layanan, portofolio, dan kontak profesional."
+      },
+      {
+        "tag": "E-commerce",
+        "title": "Toko Online & E-commerce",
+        "desc": "WooCommerce, Shopify, dan custom Laravel — fitur yang harus ada dan budget realistis."
+      },
+      {
+        "tag": "Landing Page",
+        "title": "Landing Page untuk Campaign",
+        "desc": "Single-page conversion-focused untuk iklan Meta atau Google Ads."
+      },
+      {
+        "tag": "Custom",
+        "title": "Web App & Custom System",
+        "desc": "Booking system, dashboard admin, LMS, dan internal tools — kapan butuh custom vs off-the-shelf."
+      },
+      {
+        "tag": "Maintenance",
+        "title": "Maintenance & Security",
+        "desc": "SSL, backup, update CMS, dan security patches — biaya operasional tahunan."
+      }
+    ],
+    "stats": [
+      {
+        "num": "1.5-50jt",
+        "label": "Range harga website"
+      },
+      {
+        "num": "14-30",
+        "label": "Hari pengerjaan"
+      },
+      {
+        "num": "85+",
+        "label": "Target PageSpeed score"
+      },
+      {
+        "num": "3 bulan",
+        "label": "Garansi bug fixing"
+      }
+    ]
+  },
+  "jasa-pembuatan-landing-page": {
+    "title": "Landing Page untuk Conversion Rate Tinggi",
+    "intro": "Landing page yang baik dapat menggandakan atau melipatgandakan ROI iklan Anda. Pelajari struktur, copy, dan elemen visual yang menghasilkan conversion 10-25%.",
+    "clusters": [
+      {
+        "tag": "Struktur",
+        "title": "Struktur Halaman Konversi Tinggi",
+        "desc": "Hook → Problem → Solution → Proof → CTA — pattern yang menghasilkan 15%+ conversion."
+      },
+      {
+        "tag": "Copy",
+        "title": "Copywriting untuk Landing Page",
+        "desc": "Headline formula, subheading, social proof, dan CTA copy yang tidak generic."
+      },
+      {
+        "tag": "Speed",
+        "title": "PageSpeed & Core Web Vitals",
+        "desc": "LCP < 2.5s, CLS < 0.1, INP < 200ms — kenapa critical untuk ad performance."
+      },
+      {
+        "tag": "Tracking",
+        "title": "Conversion Tracking Setup",
+        "desc": "Meta Pixel, Google Tag, conversion API — setup yang benar untuk data bersih."
+      },
+      {
+        "tag": "Testing",
+        "title": "A/B Testing untuk Landing Page",
+        "desc": "Apa yang harus ditest dulu: headline, CTA, hero image, atau form fields."
+      }
+    ],
+    "stats": [
+      {
+        "num": "10-25%",
+        "label": "Conversion rate target"
+      },
+      {
+        "num": "1.5-3jt",
+        "label": "Biaya landing page"
+      },
+      {
+        "num": "3-7",
+        "label": "Hari pengerjaan"
+      },
+      {
+        "num": "1 page",
+        "label": "Focused single conversion"
+      }
+    ]
+  },
+  "jasa-digital-marketing": {
+    "title": "Digital Marketing 360° untuk Pertumbuhan Bisnis",
+    "intro": "Digital marketing bukan hanya pasang iklan — ini strategi integrated yang mencakup paid ads, SEO, content, social media, dan analytics. Pelajari cara membangun sistem yang sustainable.",
+    "clusters": [
+      {
+        "tag": "Strategy",
+        "title": "Digital Marketing Strategy",
+        "desc": "Audit bisnis, customer journey mapping, channel selection, dan KPI setting."
+      },
+      {
+        "tag": "Paid Ads",
+        "title": "Multi-Channel Paid Advertising",
+        "desc": "Meta, Google, TikTok, YouTube, LinkedIn — kapan dan bagaimana mengkombinasikan."
+      },
+      {
+        "tag": "SEO",
+        "title": "Search Engine Optimization",
+        "desc": "On-page, off-page, technical SEO, dan content strategy untuk organic traffic."
+      },
+      {
+        "tag": "Content",
+        "title": "Content Marketing",
+        "desc": "Blog, video, infographic, podcast — pillar content yang menghasilkan leads."
+      },
+      {
+        "tag": "Analytics",
+        "title": "Analytics & Reporting",
+        "desc": "GA4, attribution model, dashboard KPI, dan cara membaca data untuk keputusan."
+      }
+    ],
+    "stats": [
+      {
+        "num": "6-9",
+        "label": "Channel marketing utama"
+      },
+      {
+        "num": "30K-80K",
+        "label": "Visitors/bulan target 6 bulan"
+      },
+      {
+        "num": "5-7x",
+        "label": "ROAS target paid + organic"
+      },
+      {
+        "num": "Rp 25jt",
+        "label": "Monthly retainer rata-rata"
+      }
+    ]
+  }
+}

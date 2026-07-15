@@ -1,0 +1,264 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import Footer from '../../../components/Footer.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, ArrowRight, BookOpen, Layers, Sparkles, MapPin, BarChart } from 'lucide-svelte';
+
+const SERVICE_SLUG = 'jasa-kelola-instagram';
+const SERVICE_NAME = 'Jasa Kelola Instagram';
+const SERVICE_DATA = {"slug": "jasa-kelola-instagram", "name": "Jasa Kelola Instagram", "category": "organic", "description": "Jasa Kelola Instagram Kami Membantu Bisnis Anda Meningkatkan Brand Awareness Dengan Mengelola Akun Instagram Anda Hubungi Kami Sekarang 0811-919-328", "faqs": [{"q": "Berapa biaya Jasa Kelola Instagram bulanan?", "a": "Paket mulai Rp 3jt/bulan untuk 12 posting + 60 story. Include content calendar, copywriting, design graphic, dan community management."}, {"q": "Berapa posting per hari/minggu?", "a": "Tergantung paket: 3-5 posting/minggu untuk akun reguler, 1 posting/hari untuk akun aktif. Kami sesuaikan dengan ritme niche Anda."}, {"q": "Apakah konten original?", "a": "Ya. Copywriting original Bahasa Indonesia, design kustom, foto/video dari stock library gratis atau shooting opsional berbayar."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan dengan metric reach, engagement, follower growth, dan rekomendasi content bulan depan."}, {"q": "Berapa lama kontrak minimum?", "a": "Minimum 3 bulan untuk hasil optimal. Setelah 3 bulan, evaluasi bulanan dengan opsi break dengan notice 30 hari."}], "active": true, "order": 6, "tiers": [], "why_features": [], "how_steps": [], "city_intro_template": ""};
+const PILLAR_TITLE = "Manajemen Instagram Profesional untuk Brand Konsisten";
+const PILLAR_INTRO = "Instagram organik tetap menjadi channel brand building paling efektif. Pelajari content strategy, hashtag, reels, community management, dan cara mempertahankan engagement rate tinggi.";
+const STATS = [{"num": "12-20", "label": "Posting optimal per bulan"}, {"num": "3-7%", "label": "Engagement rate target"}, {"num": "Rp 2.5jt", "label": "Biaya jasa bulanan"}, {"num": "5x", "label": "Reach growth dalam 6 bulan"}];
+const CLUSTERS = [{"tag": "Content", "title": "Content Calendar & Planning", "desc": "30-hari content framework, pillar content, dan kapan posting untuk reach maksimal."}, {"tag": "Reels", "title": "Reels untuk Organic Reach", "desc": "Format Reels yang viral tanpa harus viral — algoritma support semua niche."}, {"tag": "Hashtag", "title": "Strategi Hashtag 2026", "desc": "Beralih dari 30 hashtag ke 3-5 hashtag relevan — kenapa lebih baik untuk reach."}, {"tag": "Community", "title": "DM & Comment Management", "desc": "Response template, follow-up flow, dan converting DM ke WhatsApp atau checkout."}, {"tag": "Analytics", "title": "Reading Instagram Insights", "desc": "Metric mana yang penting: reach, saves, shares — bukan likes."}];
+const TOP_POSTS = [];
+const RELATED_ITEMS = [{"icon": "📷", "label": "Instagram Ads", "desc": "Paid ads untuk scaling; kelola organik untuk nurture.", "href": "/jasa-iklan-instagram/"}, {"icon": "📘", "label": "Facebook Ads", "desc": "Lintas platform Meta. Satu strategi Ads Manager untuk IG & FB.", "href": "/jasa-iklan-facebook/"}, {"icon": "📱", "label": "Kelola TikTok", "desc": "Organic TikTok sebagai amplifier IG content.", "href": "/jasa-kelola-tiktok/"}];
+const FAQS = [{"q": "Berapa biaya Jasa Kelola Instagram bulanan?", "a": "Paket mulai Rp 3jt/bulan untuk 12 posting + 60 story. Include content calendar, copywriting, design graphic, dan community management."}, {"q": "Berapa posting per hari/minggu?", "a": "Tergantung paket: 3-5 posting/minggu untuk akun reguler, 1 posting/hari untuk akun aktif. Kami sesuaikan dengan ritme niche Anda."}, {"q": "Apakah konten original?", "a": "Ya. Copywriting original Bahasa Indonesia, design kustom, foto/video dari stock library gratis atau shooting opsional berbayar."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan dengan metric reach, engagement, follower growth, dan rekomendasi content bulan depan."}, {"q": "Berapa lama kontrak minimum?", "a": "Minimum 3 bulan untuk hasil optimal. Setelah 3 bulan, evaluasi bulanan dengan opsi break dengan notice 30 hari."}];
+const CITIES = [{"slug": "bandung", "name": "Bandung"}, {"slug": "jakarta", "name": "Jakarta"}, {"slug": "makassar", "name": "Makassar"}, {"slug": "medan", "name": "Medan"}, {"slug": "surabaya", "name": "Surabaya"}, {"slug": "bekasi", "name": "Bekasi"}, {"slug": "bogor", "name": "Bogor"}, {"slug": "depok", "name": "Depok"}, {"slug": "jogja", "name": "Jogja"}, {"slug": "semarang", "name": "Semarang"}, {"slug": "tangerang", "name": "Tangerang"}, {"slug": "yogyakarta", "name": "Yogyakarta"}, {"slug": "bali", "name": "Bali"}, {"slug": "denpasar", "name": "Denpasar"}, {"slug": "malang", "name": "Malang"}, {"slug": "palembang", "name": "Palembang"}, {"slug": "pontianak", "name": "Pontianak"}, {"slug": "solo", "name": "Solo"}, {"slug": "aceh", "name": "Aceh"}, {"slug": "batam", "name": "Batam"}, {"slug": "cimahi", "name": "Cimahi"}, {"slug": "lampung", "name": "Lampung"}, {"slug": "lombok", "name": "Lombok"}, {"slug": "padang", "name": "Padang"}];
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20" + encodeURIComponent(SERVICE_NAME) + ".%20Mohon%20info%20lebih%20lanjut.";
+---
+
+<Layout
+    title={`${PILLAR_TITLE} | Panduan Lengkap & Strategi | Beriklan`}
+    description={PILLAR_INTRO.slice(0, 160)}
+    canonical={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-40 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <div class="container mx-auto px-6 max-w-4xl relative z-10">
+            <nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
+                <a href="/" class="hover:text-accent transition">Beranda</a>
+                <span class="text-muted/40">›</span>
+                <a href={`/${SERVICE_SLUG}/`} class="hover:text-accent transition">{SERVICE_NAME}</a>
+                <span class="text-muted/40">›</span>
+                <span class="text-ink font-semibold">Pilar Panduan</span>
+            </nav>
+
+            <div class="mb-5 anim-fade-up">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink text-[11px] font-bold uppercase tracking-wider rounded-full">
+                    <BookOpen class="w-3 h-3" />
+                    Panduan Lengkap
+                </span>
+            </div>
+
+            <h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6 anim-fade-up">
+                {PILLAR_TITLE}
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up">
+                {PILLAR_INTRO}
+            </p>
+
+            <div class="flex flex-wrap gap-3 anim-fade-up">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/90 text-ink font-bold text-sm rounded-full btn-shine shadow-pop transition">
+                    <MessageCircle class="w-4 h-4" />
+                    Konsultasi Gratis
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold text-sm rounded-full transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== STATS ====================== -->
+    <section class="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                {STATS.map((stat, i) => (
+                    <div class="text-center reveal">
+                        <div class="text-3xl md:text-4xl font-display font-extrabold text-primary mb-1 tabular-nums">{stat.num}</div>
+                        <div class="text-xs md:text-sm text-muted leading-snug">{stat.label}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== CLUSTERS ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-12 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Topical Cluster</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    5 Pilar Topik {SERVICE_NAME}
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    Setiap pilar dibahas mendalam di artikel blog terpisah. Klik salah satu untuk masuk ke cluster artikel spesifik.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {CLUSTERS.map((cluster) => (
+                    <div class="card-premium p-6 bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all duration-300">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-wider rounded-full mb-4">
+                            {cluster.tag}
+                        </div>
+                        <h3 class="text-lg font-display font-bold text-ink mb-2 leading-snug">{cluster.title}</h3>
+                        <p class="text-sm text-muted leading-relaxed mb-4">{cluster.desc}</p>
+                        <a href={`/blog/?tag=${encodeURIComponent(cluster.tag)}&service=${SERVICE_SLUG}`} class="inline-flex items-center gap-1.5 text-accent text-sm font-bold hover:gap-2.5 transition-all">
+                            Baca artikel cluster
+                            <ArrowRight class="w-3.5 h-3.5" />
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TOP POSTS ====================== -->
+    {TOP_POSTS.length > 0 && (
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-10 reveal">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Artikel Terbaru</span>
+                    <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                        Update Terbaru {SERVICE_NAME}
+                    </h2>
+                </div>
+                <a href="/blog/" class="inline-flex items-center gap-1.5 text-primary text-sm font-bold hover:gap-2.5 transition-all">
+                    Lihat semua artikel
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {TOP_POSTS.map((post) => (
+                    <a href={`/blog/${post.slug}/`} class="group block bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-xs text-muted mb-3">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-accent/10 text-accent font-bold rounded">
+                                    {post.category || 'Strategi'}
+                                </span>
+                                <span>·</span>
+                                <time>{post.date}</time>
+                                <span>·</span>
+                                <span>{post.readTime}</span>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-ink leading-snug mb-2 group-hover:text-accent transition line-clamp-2">
+                                {post.title}
+                            </h3>
+                            <p class="text-sm text-muted leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
+                            <span class="inline-flex items-center gap-1.5 text-accent text-xs font-bold group-hover:gap-2.5 transition-all">
+                                Baca selengkapnya
+                                <ArrowRight class="w-3.5 h-3.5" />
+                            </span>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== CITIES ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Coverage Area</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    Tersedia di {CITIES.length}+ Kota Indonesia
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    {SERVICE_NAME} untuk UMKM dan bisnis di kota Anda. Setiap halaman kota punya konteks lokal: demographics, UMKM count, dan trust signal regional.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 reveal-stagger">
+                {CITIES.map((c) => (
+                    <a href={`/${SERVICE_SLUG}/${c.slug}/`} class="text-center px-3 py-3 bg-white border border-gray-100 rounded-xl hover:border-accent/30 hover:shadow-sm transition text-sm font-semibold text-ink hover:text-accent">
+                        {c.name}
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    {FAQS.length > 0 && (
+    <section class="py-16 md:py-20 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">FAQ</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                    Pertanyaan yang Sering Diajukan
+                </h2>
+            </div>
+
+            <div class="space-y-4 reveal-stagger">
+                {FAQS.map((faq, i) => (
+                    <details class="group bg-soft rounded-2xl border border-gray-100 overflow-hidden">
+                        <summary class="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer font-display font-bold text-ink hover:text-accent transition">
+                            <span class="text-base md:text-lg">{faq.q}</span>
+                            <span class="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-open:rotate-45 transition-transform text-lg">+</span>
+                        </summary>
+                        <div class="px-6 pb-5 text-muted leading-relaxed text-sm md:text-base">
+                            {faq.a}
+                        </div>
+                    </details>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <RelatedServices
+        client:load
+        items={RELATED_ITEMS}
+        title="Kombinasikan dengan Channel Lain"
+        subtitle="Bisnis yang efektif biasanya menjalankan iklan di 2-3 kanal sekaligus agar saling menguatkan."
+    />
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-primary via-primary-2 to-primary text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 hero-grid pointer-events-none"></div>
+        <div class="container mx-auto px-6 max-w-3xl text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur text-white text-xs font-bold uppercase tracking-wider rounded-full mb-6">
+                <Sparkles class="w-3 h-3" />
+                Tim online · respon 1 jam
+            </div>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl mb-6 leading-tight">
+                Siap Meningkatkan Performa {SERVICE_NAME} Anda?
+            </h2>
+            <p class="text-base md:text-lg text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
+                Sesi konsultasi awal 15 menit gratis — tanpa komitmen. Kami diskusi target Anda, lalu susun strategi {SERVICE_NAME} yang terukur.
+            </p>
+            <div class="flex flex-wrap gap-3 justify-center">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-7 py-4 bg-accent hover:bg-accent/90 text-ink font-bold text-sm md:text-base rounded-full btn-shine shadow-lg transition">
+                    <MessageCircle class="w-5 h-5" />
+                    Diskusi via WhatsApp
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-bold text-sm md:text-base rounded-full border border-white/20 transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+
+    <LocalSchema
+        pageType="service"
+        title={PILLAR_TITLE}
+        description={PILLAR_INTRO.slice(0, 160)}
+        url={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+        serviceSlug={SERVICE_SLUG}
+        tiers={SERVICE_DATA && SERVICE_DATA.tiers ? SERVICE_DATA.tiers : []}
+        faqs={FAQS}
+    />
+</Layout>

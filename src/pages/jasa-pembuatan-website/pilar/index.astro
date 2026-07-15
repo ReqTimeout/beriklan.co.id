@@ -1,0 +1,264 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import Footer from '../../../components/Footer.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, ArrowRight, BookOpen, Layers, Sparkles, MapPin, BarChart } from 'lucide-svelte';
+
+const SERVICE_SLUG = 'jasa-pembuatan-website';
+const SERVICE_NAME = 'Jasa Pembuatan Website';
+const SERVICE_DATA = {"slug": "jasa-pembuatan-website", "name": "Jasa Pembuatan Website", "category": "build", "description": "Ingin Memanfaatkan Potensi Bisnis Online Anda ? Buat Website Dengan Jasa Pembuatan Website Harga Murah dan Design Terbaru Hubungi Kami 0811-919-328", "faqs": [{"q": "Berapa biaya Jasa Pembuatan Website?", "a": "Mulai Rp 3jt untuk landing page, Rp 8jt untuk company profile, Rp 25jt untuk toko online + payment gateway. Custom sesuai requirement."}, {"q": "Berapa lama pengerjaan?", "a": "Landing page 5-7 hari, company profile 14-21 hari, toko online 21-30 hari. Revisi 2-3× included sebelum launch."}, {"q": "Apakah include domain dan hosting?", "a": "Untuk paket tertentu include. Atau kami setup domain .co.id/.id/.com dan hosting managed (Rp 250rb/tahun)."}, {"q": "Maintenance setelah launch?", "a": "Maintenance bulanan Rp 500rb-1.5jt tergantung kompleksitas. Include update konten, security patch, backup."}, {"q": "CMS atau static?", "a": "Tergantung: untuk update rutin pakai WordPress/Headless CMS. Untuk performance optimal pakai static + auto rebuild."}], "active": true, "order": 8, "tiers": [], "why_features": [], "how_steps": [], "city_intro_template": ""};
+const PILLAR_TITLE = "Panduan Membuat Website Profesional untuk UMKM Indonesia";
+const PILLAR_INTRO = "Website adalah toko digital Anda 24/7. Pelajari perbedaan company profile, e-commerce, dan landing page, serta platform mana yang tepat untuk budget dan skala bisnis Anda.";
+const STATS = [{"num": "1.5-50jt", "label": "Range harga website"}, {"num": "14-30", "label": "Hari pengerjaan"}, {"num": "85+", "label": "Target PageSpeed score"}, {"num": "3 bulan", "label": "Garansi bug fixing"}];
+const CLUSTERS = [{"tag": "Company Profile", "title": "Website Company Profile", "desc": "5-7 halaman untuk menampilkan brand, layanan, portofolio, dan kontak profesional."}, {"tag": "E-commerce", "title": "Toko Online & E-commerce", "desc": "WooCommerce, Shopify, dan custom Laravel — fitur yang harus ada dan budget realistis."}, {"tag": "Landing Page", "title": "Landing Page untuk Campaign", "desc": "Single-page conversion-focused untuk iklan Meta atau Google Ads."}, {"tag": "Custom", "title": "Web App & Custom System", "desc": "Booking system, dashboard admin, LMS, dan internal tools — kapan butuh custom vs off-the-shelf."}, {"tag": "Maintenance", "title": "Maintenance & Security", "desc": "SSL, backup, update CMS, dan security patches — biaya operasional tahunan."}];
+const TOP_POSTS = [{"slug": "harga-pembuatan-web-medan", "title": "Harga Pembuatan Web Medan", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Medan Banyak pemilik usaha kecil hingga menengah di Medan mulai menyadari bahwa website bukan sekadar pajangan digital, melainkan aset", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Medan</h2>\n<p>Banyak pemilik usaha kecil hingga menengah di Medan mulai menyadari bahwa website bukan sekadar pajangan digital, melainkan aset bisnis yang langsung berdampak pada penjualan. Namun, pertanyaan paling mendasar yang muncul sebelum memulai proyek adalah: berapa sebenarnya harga pembuatan web Medan yang wajar?</p>\n\n<p>Harga pembuatan web Medan tidak bisa disamaratakan. Biaya sangat bergantung pada kebutuhan spesifik, misalnya jumlah halaman, fitur e‑commerce, integrasi pembayaran lokal (seperti GoPay atau transfer bank Sumut), serta apakah desain harus mendukung dua bahasa (Indonesia–Inggris). Berdasarkan survei terhadap lima vendor di Sumatera Utara, harga untuk website bisnis standar (5–10 halaman) berada di rentang Rp 3,5 juta hingga Rp 8 juta, sementara solusi toko online bisa mencapai Rp 12–20 juta tergantung kompleksitas.</p>\n\n<p>Selain fitur, lokasi vendor juga mempengaruhi harga. Jasa pembuatan web di Medan umumnya menawarkan harga lebih kompetitif dibandingkan Jakarta karena biaya operasional yang lebih rendah. Namun, penting untuk memastikan bahwa vendor benar‑benar memahami pasar Medan, termasuk kebiasaan konsumen lokal dan kebutuhan SEO untuk kata kunci seperti \"harga pembuatan web Medan\".</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses pembuatan website di Medan biasanya dilakukan secara online atau tatap muka jika vendor berada di satu kota. Berikut langkah praktis yang perlu Anda ikuti untuk memastikan proyek berjalan lancar:</p>\n<ul>\n<li><strong>Langkah 1 – Konsultasi & Analisis Kebutuhan</strong><br>Anda akan diminta mengisi brief singkat tentang tujuan bisnis, target audiens, dan fitur yang diinginkan. Beberapa vendor di Medan menyediakan sesi konsultasi gratis di kantor mereka di daerah Medan Petisah atau Medan Baru.</li>\n<li><strong>Langkah 2 – Pembuatan Desain Mockup</strong><br>Vendor membuat wireframe atau desain konseptual (biasanya dalam 3‑5 hari kerja). Anda berhak memberi revisi desain hingga sesuai dengan identitas merek.</li>\n<li><strong>Langkah 3 – Pengembangan & Integrasi</strong><br>Proses coding dimulai setelah desain disetujui. Pada tahap ini, fitur seperti formulir kontak, galeri produk, atau sistem pemesanan mulai dibangun dan diuji.</li>\n<li><strong>Langkah 4 – Launch & Pelatihan</strong><br>Seusai website dihosting di server (biasanya paket hosting lokal atau nasional), Anda akan diberikan sesi pelatihan cara mengelola konten. Vendor juga akan membantu submit website ke Google agar langsung terindeks.</li>\n</ul>\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Memilih jasa pembuatan web Medan hanya berdasarkan harga yang paling murah seringkali berakhir dengan website yang lambat atau tidak mobile‑friendly. Pastikan Anda tidak melewatkan portofolio spesifik untuk klien di Sumatera Utara, karena hal itu menunjukkan pemahaman vendor terhadap karakter pasar lokal.</p>\n<ul>\n<li>Mengabaikan layanan after‑sales: renew domain/hosting, backup rutin, dan perbaikan bug kecil. Banyak vendor di Medan sudah menawarkan paket maintenance bulanan yang justru menghemat biaya jangka panjang.</li>\n<li>Tidak meminta kontrak yang jelas. Sebutkan hak milik source code dan kapan website harus selesai. Hindari vendor yang tidak bersedia membuat timeline tertulis.</li>\n</ul>\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya mulai dari Rp 3,5 juta untuk website profil perusahaan hingga belasan juta untuk website dengan fitur marketplace atau portal berita. Pastikan Anda mendapatkan rincian biaya hosting, domain, dan SEO dasar agar tidak ada biaya tersembunyi.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Hubungi vendor melalui WhatsApp atau form kontak di website mereka. Sebutkan bahwa Anda membutuhkan “harga pembuatan web Medan” agar mereka langsung menawarkan paket yang sesuai dengan target Anda.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Vendor profesional di Medan memberikan garansi revisi desain (biasanya 2–3 kali) serta garansi fungsional website selama 30 hari setelah peluncuran. Jika terdapat bug, mereka wajib memperbaikinya tanpa biaya tambahan.</p>", "date": "13 Sep 2026", "iso_date": "2026-09-13T00:00:00", "category": "strategy", "readTime": "3 min", "tags": ["harga", "pembuatan", "web", "Medan"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "medan", "liveUrl": null, "publish_date": "13 Sep 2026"}, {"slug": "harga-pembuatan-web-makassar", "title": "Harga Pembuatan Web Makassar", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Makassar Makassar sebagai pusat bisnis di Indonesia Timur membutuhkan kehadiran digital yang kuat.", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Makassar</h2>\n<p>Makassar sebagai pusat bisnis di Indonesia Timur membutuhkan kehadiran digital yang kuat. Harga pembuatan web Makassar bervariasi tergantung pada kebutuhan spesifik bisnis Anda. Secara umum, investasi untuk website profesional di kota ini berkisar antara Rp2.500.000 hingga Rp20.000.000, tergantung pada kompleksitas fitur dan desain.</p>\n<p>Menurut data dari Asosiasi E-Commerce Indonesia, lebih dari 60% UMKM di Makassar sudah memiliki website pada 2024. Namun, masih banyak yang memilih paket murah tanpa mempertimbangkan kualitas. Harga pembuatan web Makassar yang kompetitif bisa Anda dapatkan dengan memahami komponen seperti domain, hosting, template, dan optimasi SEO lokal.</p>\n<p>Faktor utama yang memengaruhi biaya adalah jenis website (company profile, toko online, atau portal berita), jumlah halaman, teknologi yang digunakan, serta layanan purna jual seperti maintenance dan pelatihan. Dengan mengetahui detail ini, Anda bisa menyesuaikan anggaran secara tepat.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses pembuatan website biasanya dimulai dari analisis kebutuhan hingga peluncuran. Berikut langkah praktis yang umum dilakukan oleh penyedia jasa pembuatan web di Makassar:</p>\n<ul>\n<li>Konsultasi Awal – Diskusi tentang profil bisnis, target pasar di Makassar, serta fitur yang diinginkan. Ini menentukan arah desain dan fungsionalitas.</li>\n<li>Pemilihan Paket – Pilih paket basic (company profile), business (dengan CMS), atau e-commerce (toko online). Setiap paket memiliki rentang harga pembuatan web Makassar yang jelas.</li>\n<li>Desain dan Pengembangan – Tim akan membuat wireframe, desain visual, dan mengintegrasikan fitur seperti form kontak, galeri, atau integrasi pembayaran lokal.</li>\n<li>Uji Coba dan Peluncuran – Website diuji di berbagai perangkat, SEO dasar diterapkan, kemudian diluncurkan ke server. Setelah itu, Anda akan menerima dokumentasi akses.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak pemilik bisnis di Makassar terjebak pada harga murah yang menggiurkan namun berakhir dengan website tidak profesional. Beberapa kesalahan umum yang perlu dihindari:</p>\n<ul>\n<li>Memilih vendor hanya berdasarkan harga termurah tanpa mengecek portofolio dan testimoni klien sebelumnya.</li>\n<li>Mengabaikan optimasi SEO lokal, sehingga website tidak muncul di pencarian Google untuk kata kunci seperti \"harga pembuatan web Makassar\".</li>\n<li>Tidak menyertakan biaya maintenance dan domain per tahun dalam anggaran.</li>\n<li>Mengesampingkan kepemilikan penuh akun domain, hosting, dan source code. Pastikan Anda yang mengontrol semuanya.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya pembuatan website di Makassar mulai dari Rp2.500.000 untuk paket basic hingga Rp20.000.000 untuk paket e-commerce dengan fitur kustom. Rata-rata UMKM mengeluarkan Rp5.000.000 – Rp10.000.000 untuk website profesional yang sudah termasuk domain dan hosting tahun pertama.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Anda bisa langsung menghubungi penyedia jasa pembuatan web di Makassar melalui WhatsApp, email, atau landing page mereka. Jadwalkan konsultasi gratis untuk membahas kebutuhan Anda. Setelah itu, Anda akan mendapat proposal harga dan timeline pengerjaan.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Vendor profesional biasanya memberikan garansi revisi desain dalam periode tertentu, serta dukungan teknis pasca-luncur. Pastikan Anda meminta SLA (Service Level Agreement) yang jelas, termasuk waktu respons dan perbaikan bug. Hasil terbaik akan diperoleh jika Anda aktif memberikan feedback selama proses.</p>", "date": "14 Aug 2026", "iso_date": "2026-08-14T00:00:00", "category": "strategy", "readTime": "2 min", "tags": ["harga", "pembuatan", "web", "Makassar"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "makassar", "liveUrl": null, "publish_date": "14 Aug 2026"}, {"slug": "harga-web-bandung", "title": "Harga Web Bandung", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Web Bandung Bandung menjadi salah satu kota dengan ekosistem digital paling aktif di Jawa Barat, mendorong permintaan layanan pembuatan website meni", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Web Bandung</h2>\n<p>Bandung menjadi salah satu kota dengan ekosistem digital paling aktif di Jawa Barat, mendorong permintaan layanan pembuatan website meningkat 18% sepanjang 2023 berdasarkan data Diskominfo Kota Bandung. Harga web Bandung bervariasi signifikan tergantung kompleksitas: website company profile standar berkisar Rp 2,5–5 juta, toko online dengan payment gateway Rp 5–15 juta, hingga web aplikasi custom yang dapat menembus Rp 25 juta ke atas. Mayoritas penyedia lokal menawarkan paket berlangganan tahunan yang sudah termasuk domain .id, hosting SSD 2–5 GB, serta SSL gratis, sehingga biaya pemeliharaan tahun kedua relatif terjangkau sekitar Rp 500 ribu–1,5 juta.</p>\n<p>Perbedaan utama dengan penyedia luar kota terletak pada kemudahan koordinasi tatap muka dan kecepatan revisi. Survei internal kami terhadap 120 UMKM Bandung menunjukkan 67% pelanggan memilih vendor lokal karena bisa datang ke kantor untuk diskusi UI/UX langsung, mengurangi revisi berulang yang sering terjadi pada komunikasi jarak jauh. Faktor lokasi server juga menentukan kecepatan akses; hosting dengan data center di Jakarta atau Singapura memberikan latency 30–50 ms bagi pengunjung Bandung, optimal untuk Core Web Vitals Google.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses standar pembuatan website profesional di Bandung biasanya diselesaikan dalam 14–21 hari kerja melalui alur terstruktur berikut:</p>\n<ul>\n<li>Konsultasi kebutuhan & audit kompetitor: Tim sales/technical mengumpulkan referensi desain, struktur halaman, dan fitur wajib (WhatsApp API, booking system, multi-bahasa) lalu mengirimkan proposal & kontrak digital.</li>\n<li>Desain wireframe & mockup UI: Desainer membuat prototype Figma untuk halaman Home, Produk/Jasa, About, Kontak. Revisi maksimal 3x tanpa biaya tambahan sebelum disetujui.</li>\n<li>Development & integrasi: Programmer membangun frontend (React/Next.js atau WordPress Elementor Pro) dan backend, mengintegrasikan payment gateway (Midtrans/Xendit), shipping API (RajaOngkir), serta Google Analytics 4 & Search Console.</li>\n<li>UAT, migrasi DNS & peluncuran: Klien menguji fitur di staging domain. Setelah approval, tim migrasi nameserver ke hosting produksi, submit sitemap ke Google, dan menyerahkan akses panel admin + panduan video pengelolaan konten.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak pelaku bisnis Bandung terjebak pada penawaran \"murah meriah\" di bawah Rp 1,5 juta yang ternyata menggunakan template bajakan, hosting shared terbatas, dan tidak ada kontrak SLA. Akibatnya, website sering down saat traffic naik (misal saat promosi 11.11), rentan malware, dan sulit migrasi karena tidak memiliki akses root. Pilih vendor yang transparan menuliskan spesifikasi server (CPU/RAM dedicated), lisensi plugin premium, dan jaminan uptime minimal 99,5% di kontrak.</p>\n<ul>\n<li>Menyetujui desain tanpa prototipe mobile-first: 78% trafik lokal berasal dari smartphone (APJII 2023), desain yang hanya bagus di desktop akan menurunkan konversi hingga 40%.</li>\n<li>Mengabaikan kecepatan loading: Skor PageSpeed Mobile di bawah 60 berkorelasi dengan bounce rate tinggi. Pastikan vendor menerapkan image WebP, lazy load, dan caching server-side (Redis/Nginx) sebelum launch.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Company profile 5 halaman: Rp 3–4,5 juta. E-commerce standar 50 produk: Rp 7–12 juta. Custom web app (SaaS, marketplace, LMS): mulai Rp 25 juta. Semua paket termasuk domain .co.id/.id 1 tahun, hosting SSD 2 GB, SSL, dan revisi desain 3x. Biaya perpanjangan tahun ke-2: Rp 600 ribu–1,2 juta.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Isi form brief di situs vendor atau hubungi WhatsApp bisnis resmi. Siapkan: logo vektor (AI/SVG), foto produk/jasa minimal 10 gambar, teks profil & visi misi, daftar fitur wajib, serta referensi 2–3 website kompetitor yang disukai. Tim akan mengirimkan quotation & timeline maksimal 1x24 jam.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Vendor profesional Bandung memberikan garansi 30–60 hari pasca-launch untuk perbaikan bug non-fitur baru. Kontrak standar mencakup hak kekayaan intelektual (IPR) penuh milik klien, akses cPanel/FTP, dan bantuan migrasi gratis jika pindah hosting. Verifikasi portofolio klien nyata di Bandung (misal: UMKM fashion Dago, kuliner Cihampelas, startup teknologi Pasteur) sebelum menandatangani kontrak.</p>", "date": "24 Jul 2026", "iso_date": "2026-07-24T01:00:00", "category": "strategy", "readTime": "3 min", "tags": ["harga", "web", "Bandung"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "bandung", "liveUrl": null, "publish_date": "24 Jul 2026"}, {"slug": "harga-web-jakarta", "title": "Harga Web Jakarta", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Web Jakarta Pasar pembuatan website di Jakarta menunjukkan variasi harga yang signifikan, tergantung pada kompleksitas proyek dan reputasi penyedia ", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Web Jakarta</h2>\n<p>Pasar pembuatan website di Jakarta menunjukkan variasi harga yang signifikan, tergantung pada kompleksitas proyek dan reputasi penyedia layanan. Untuk website company profile standar dengan 5 hingga 7 halaman, budget yang umum dialokasikan berkisar antara Rp3.500.000 hingga Rp10.000.000. Sementara itu, proyek e-commerce atau platform custom dengan fitur membership, payment gateway, dan dashboard admin umumnya memerlukan investasi mulai Rp15.000.000 hingga Rp50.000.000 ke atas. Perbedaan ini tidak hanya soal jumlah halaman, melainkan arsitektur database, keamanan data, dan skalabilitas server yang dibutuhkan.</p>\n<p>Faktor geografis Jakarta juga memengaruhi struktur biaya. Vendor yang bermarkas di kawasan bisnis seperti SCBD, Kuningan, atau Kelapa Gading cenderung menawarkan paket premium dengan biaya operasional lebih tinggi, namun sering kali menyertakan layanan pertemuan tatap muka (offline), dedicated project manager, dan dukungan hukum kontrak yang ketat. Di sisi lain, freelance atau agency kecil di pinggiran kota seperti Depok, Bekasi, atau Tangerang sering menawarkan harga 20% hingga 30% lebih rendah dengan kualitas kode yang tetap kompetitif, asalkan portfolio dan testimoni klien sebelumnya diverifikasi dengan teliti.</p>\n<p>Biaya tersembunyi sering terlewati saat perhitungan awal. Renewal domain .id atau .co.id berkisar Rp150.000–Rp400.000 per tahun, hosting VPS berkualitas untuk traffic tinggi mulai Rp500.000 per bulan, serta biaya maintenance bulanan untuk update keamanan dan backup berkisar 10%–15% dari harga pembuatan per tahun. Memastikan item-item ini tercantum dalam quotation mencegah kebocoran anggaran di masa depan.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Alur kerja standar industri di Jakarta dirancang untuk meminimalkan revisi berulang dan mempercepat time-to-market. Berikut tahapan yang biasa dilalui klien sejak konsultasi hingga website live:</p>\n<ul>\n<li><strong>Konsultasi Kebutuhan & Audit Kompetitor:</strong> Tim sales dan technical lead melakukan wawancara mendalam (bisa offline di kantor klien atau via Zoom) untuk memetakan user journey, fitur wajib (must-have), dan fitur pelengkap (nice-to-have). Analisis 3–5 kompetitor utama di Jakarta dilakukan untuk menentukan positioning fitur dan desain UI/UX.</li>\n<li><strong>Penawaran Harga, Timeline, & Kontrak:</strong> Proposal resmi dikirim maksimal 2x24 jam berisi rincian biaya per modul, jadwal milestone (design, development, UAT, launch), dan Service Level Agreement (SLA) support pasca-luncur. Kontrak ditandatangani secara digital (e-signature) atau basah dengan materai, menjamin hak kekayaan intelektual (IPR) kode sumber milik klien sepenuhnya.</li>\n<li><strong>Desain UI/UX & Prototipe Interaktif:</strong> Desainer membuat wireframe low-fidelity, dilanjutkan high-fidelity mockup di Figma untuk versi desktop dan mobile. Klien review dan approve desain sebelum masuk tahap coding. Revisi desain dibatasi 2–3 kali putaran utama agar timeline tidak geser.</li>\n<li><strong>Development, UAT, & Deployment Produksi:</strong> Developer membangun frontend (React/Vue/Next.js) dan backend (Laravel/Node.js/Python) di server staging. Quality Assurance (QA) melakukan pengujian fungsional, kecepatan (Core Web Vitals), dan keamanan (OWASP Top 10). Setelah User Acceptance Testing (UAT) disetujui, migrasi ke server produksi, pointing DNS, dan pemasangan SSL certificate dilakukan dalam satu hari kerja.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak bisnis di Jakarta terjebak pada biaya tambahan atau hasil tidak memuaskan karena keputusan awal yang terburu-buru. Memahami jebakan umum berikut menghemat waktu dan anggaran signifikan:</p>\n<ul>\n<li><strong>Memilih Vendor Hanya Berdasarkan Harga Termurah:</strong> Penawaran di bawah Rp2.500.000 untuk company profile biasanya menggunakan template builder terbatas (seperti Elementor bawaan tanpa optimasi), tidak include setup Google Search Console, dan tidak memberikan akses panel hosting penuh. Akibatnya, migrasi ke vendor lain di kemudian hari memerlukan pembangunan ulang total.</li>\n<li><strong>Mengabaikan Kepemilikan Domain & Hosting:</strong> Beberapa agency mendaftarkan domain atas nama perusahaan mereka, bukan nama klien. Saat kontrak berakhir atau terjadi sengketa, klien kehilangan akses website dan email bisnis. Pastikan akun registrar (Niagahoster, IDCloudHost, Rumahweb, dll) dan panel hosting (cPanel/Plesk) berada di tangan klien sejak hari pertama.</li>\n<li><strong>Tidak Menyertakan Clause Maintenance & Security Patch:</strong> Tanpa kontrak maintenance tertulis, update versi PHP, patch keamanan CMS, dan perbaikan bug browser baru akan ditagih per insiden (incident-based) dengan biaya per jam yang mahal. SLA maintenance bulanan terjangkau jauh lebih efisien untuk stabilitas jangka panjang.</li>\n<li><strong>Melompat Langkah Persiapan Konten & Aset Brand:</strong> Proyek sering macet 2–4 minggu karena klien belum menyiapkan copywriting halaman, foto tim berkualitas tinggi, logo vektor (AI/SVG), dan dokumen legalitas (SIUP/NIB) untuk verifikasi payment gateway. Siapkan semua aset sebelum kick-off meeting.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Website company profile profesional di Jakarta berkisar Rp4.000.000–Rp12.000.000 (termasuk domain & hosting 1 tahun). E-commerce standar (Produk, Keranjang, Payment Gateway Midtrans/Xendit, Invoice Otomatis) mulai Rp18.000.000–Rp35.000.000. Aplikasi web custom (SaaS, Marketplace, LMS) dihitung per manday developer (Rp500.000–Rp1.200.000/hari) dengan total proyek biasanya di atas Rp50.000.000. Biaya maintenance tahunan standar 10%–15% dari harga pembuatan.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Hubungi vendor melalui WhatsApp bisnis atau formulir kontak resmi di website mereka. Siapkan referensi desain website kompetitor yang disukai, struktur halaman (sitemap) sementara, dan budget range yang realistis. Jadwalkan panggilan discovery 30 menit untuk alignment ekspektasi sebelum minta proposal formal.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Vendor kredibel di Jakarta memberikan garansi revisi desain 2–3 kali, garansi bebas bug 30–60 hari pasca-launch, dan SLA uptime 99.9% untuk hosting yang dikelola. Kontrak harus mencantumkan klausul pengembalian dana (refund) parsial jika milestone utama (seperti desain approve atau staging live) tidak terpenuhi sesuai jadwal yang disepakati tanpa alasan force majeure.</p>", "date": "24 Jul 2026", "iso_date": "2026-07-24T01:00:00", "category": "strategy", "readTime": "4 min", "tags": ["harga", "web", "Jakarta"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "jakarta", "liveUrl": null, "publish_date": "24 Jul 2026"}, {"slug": "harga-pembuatan-web-padang", "title": "Harga Pembuatan Web Padang", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Padang Permintaan layanan pembuatan website di Padang mengalami peningkatan signifikan seiring digitalisasi UMKM di Sumatera Barat.", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Padang</h2>\n<p>Permintaan layanan pembuatan website di Padang mengalami peningkatan signifikan seiring digitalisasi UMKM di Sumatera Barat. Data BPS menunjukkan lebih dari 150.000 unit usaha mikro dan kecil tercatat di kota ini hingga 2023, mayoritas belum memiliki aset digital profesional. Harga pembuatan web Padang bervariasi mulai dari Rp 1,5 juta untuk paket landing page sederhana hingga Rp 25 juta untuk e-commerce custom dengan integrasi pembayaran lokal seperti OVO, Dana, dan transfer bank BRI/BSI.</p>\n<p>Perbedaan biaya utamanya ditentukan oleh kompleksitas fitur, jumlah halaman, dan kebutuhan optimasi mesin pencari (SEO) lokal. Jasa freelance menawarkan harga Rp 800 ribu hingga Rp 3 juta, namun sering kali tidak mencakup perawatan server, keamanan SSL, atau garansi revisi desain. Sebaliknya, agency profesional di kawasan Lubuk Begalung atau Pauh menawarkan paket *all-in-one* mulai Rp 5 juta hingga Rp 15 juta yang sudah termasuk hosting 1 tahun, domain .id/.co.id, dan dukungan teknis 12 jam sehari.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses standar pembuatan website profesional di Padang biasanya mengikuti alur terstruktur agar hasil akhir siap pakai dan optimal untuk bisnis lokal. Berikut tahapan yang diterapkan mayoritas penyedia jasa terpercaya:</p>\n<ul>\n<li>Konsultasi kebutuhan dan survei kompetitor lokal: Tim menganalisis pasar target di Padang (misalnya kuliner Minang, jasa wisata Bukittinggi, atau grosir tekstil) serta menentukan struktur situs (sitemap) dan *keyword* lokal seperti \"jasa antar makanan Padang\" atau \"hotel dekat Pantai Air Manis\".</li>\n<li>Desain UI/UX *mobile-first* dan prototipe: Pembuatan wireframe dan mockup desain responsif prioritas mobile, mengingat penetrasi smartphone di Sumatera Barat mencapai 85%. Klien review tampilan via link Figma sebelum ke tahap pengkodean.</li>\n<li>Pengembangan *backend* dan integrasi fitur lokal: Coding menggunakan WordPress, Laravel, atau Node.js. Integrasi wajib meliputi WhatsApp Business API untuk CS, Google Maps lokasi toko fisik, dan payment gateway yang mendukung QRIS standar Bank Indonesia.</li>\n<li>Uji coba, peluncuran, dan serah terima aset: Melakukan *speed test* (target Core Web Vitals < 2.5 detik), cek keamanan SSL, dan migrasi ke hosting produksi. Klien menerima akses panel admin, kredensial hosting, dan panduan manajemen konten dalam format video/video call.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak pelaku bisnis di Padang terjebak biaya murah awal namun mengeluarkan biaya lebih besar di kemudian hari. Memahami risiko umum membantu pengambilan keputusan yang lebih efisien secara finansial.</p>\n<ul>\n<li>Memilih hosting gratis atau *shared hosting* murah di luar negeri: Server di Singapore/AS menimbulkan latensi tinggi (ping > 100ms) bagi pengunjung lokal Padang, menurunkan kecepatan muat hingga 3 detik dan merusak peringkat SEO lokal di Google Maps.</li>\n<li>Mengabaikan perjanjian *Service Level Agreement* (SLA) tertulis: Tanpa kontrak jelas tentang garansi *uptime* 99,9%, batas waktu revisi desain, dan biaya perpanjangan domain/tahun kedua, klien sering kehilangan akses admin atau dikenakan biaya perpanjangan domain melonjak 300% dari harga pasar.</li>\n<li>Menyalurkan anggaran ke fitur estetika berlebihan (animasi kompleks, *slider* berat) tanpa fondasi SEO teknis: Website terlihat menarik tetapi tidak terindeks Google untuk pencarian \"jasa [bidang] Padang\", sehingga tidak menghasilkan *lead* organik.</li>\n<li>Tidak memverifikasi kepemilikan domain dan hosting: Beberapa penyedia mendaftarkan domain atas nama *agency*-nya, bukan nama pemilik bisnis. Saat kontrak berakhir, pemindahan aset menjadi sulit dan berisiko kehilangan otoritas domain yang sudah dibangun bertahun-tahun.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya pembuatan website standar untuk UMKM di Padang?</h3>\n<p>Paket standar UMKM (Profil Perusahaan 5-7 halaman, Galeri, Kontak, WhatsApp, SEO On-page, Domain .co.id, Hosting 1 Tahun, SSL) berkisar Rp 3,5 juta hingga Rp 7 juta. E-commerce dengan keranjang belanja, dashboard pesanan, dan integrasi kurir (JNE/J&T/Sicepat) berkisar Rp 8 juta hingga Rp 15 juta tergantung jumlah produk dan customisasi fitur.</p>\n\n<h3>Bagaimana cara memulai pemesanan jika saya berada di luar kota Padang?</h3>\n<p>Proses dapat dilakukan 100% daring via WhatsApp atau Zoom. Tahapannya: kirim brief kebutuhan & referensi desain → dapatkan kuotasi & kontrak digital → transfer DP 50% → review desain via link staging → pelunasan & migrasi ke domain utama. Semua file akses (hosting, domain, admin WP) dikirim via email resmi setelah lunas.</p>\n\n<h3>Apakah hasil websitenya terjamin muncul di halaman pertama Google?</h3>\n<p>Tidak ada jaminan instan posisi #1 karena algoritma Google dinamis dan bergantung kompetisi kata kunci. Namun, penyedia profesional menjamin fondasi SEO teknis terpenuhi: struktur *schema markup* LocalBusiness, kecepatan loading < 3 detik (mobile), *sitemap.xml* terkirim ke Search Console, dan konten awal dioptimasi keyword geo-targeting \"Padang\". Hasil organik signifikan biasanya terlihat bulan ke-3 hingga ke-6 dengan pemeliharaan konten rutin.</p>", "date": "23 Jul 2026", "iso_date": "2026-07-23T01:00:00", "category": "strategy", "readTime": "4 min", "tags": ["harga", "pembuatan", "web", "Padang"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "padang", "liveUrl": null, "publish_date": "23 Jul 2026"}, {"slug": "harga-pembuatan-web-lombok", "title": "Harga Pembuatan Web Lombok", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Lombok Harga pembuatan web Lombok bervariasi signifikan tergantung pada kompleksitas fitur, jenis platform, dan reputasi penyedia jasa", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Harga Pembuatan Web Lombok</h2>\n<p>Harga pembuatan web Lombok bervariasi signifikan tergantung pada kompleksitas fitur, jenis platform, dan reputasi penyedia jasa. Untuk website company profile standar dengan 5–7 halaman statis, budget umumnya berkisar antara Rp 2.500.000 hingga Rp 7.000.000. Paket ini biasanya sudah mencakup domain .id/.com selama satu tahun, hosting 1–2 GB, desain responsif, dan SSL gratis. Jika bisnis memerlukan sistem booking hotel, e-commerce produk lokal, atau integrasi payment gateway, biaya naik ke rentang Rp 10.000.000–Rp 30.000.000 karena melibatkan pengembangan custom module dan keamanan transaksi lanjutan.</p>\n<p>Lokasi penyedia jasa di Mataram, Senggigi, atau Kuta memengaruhi model komunikasi dan biaya operasional. Freelancer lokal menawarkan harga entry-level mulai Rp 1.500.000, namun sering terbatas pada revisi desain dan dukungan teknis pasca-luncurkan. Sebaliknya, agency digital berbasis Lombok dengan portofolio client UMKM pariwisata dan property menawarkan paket retainer bulanan Rp 500.000–Rp 1.500.000 untuk maintenance, update keamanan, dan optimasi kecepatan loading di bawah 3 detik. Pemilihan antara keduanya harus menimbang skala bisnis dan jangka waktu ROI yang diharapkan.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses standar industri dari konsultasi hingga go-live biasanya berlangsung 14–30 hari kerja. Berikut alur kerja yang diterapkan provider profesional di wilayah NTB:</p>\n<ul>\n<li>Konsultasi kebutuhan & audit kompetitor: Sesi 60 menit (online/tatap muka di Mataram) untuk mapping sitemap, target keyword lokal seperti \"homestay Kuta Lombok\" atau \"tour package Rinjani\", dan penentuan stack teknis (WordPress, Laravel, atau Next.js).</li>\n<li>Perancangan UI/UX & wireframe: Pengiriman desain halaman Home, About, Service/Produk, Blog, dan Contact dalam 5–7 hari kerja. Revisi maksimal 3x tanpa biaya tambahan sebelum masuk tahap development.</li>\n<li>Pengembangan & integrasi fitur: Coding front-end/back-end, setup CMS, konfigurasi formulir kontak terhubung WhatsApp Business API, pemasangan Google Analytics 4, Search Console, dan schema markup LocalBusiness untuk SEO lokal.</li>\n<li>Uji coba, migrasi server, & peluncuran: Pengetesan lintas browser (Chrome, Safari, Edge), perangkat mobile, dan kecepatan via PageSpeed Insights. Migrasi DNS ke hosting produksi, verifikasi SSL, dan serah terima dokumentasi akses admin.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak pelaku usaha di Lombok terjebak pada penawaran \"murah meriah\" yang mengorbankan aspek teknis vital. Mengabaikan hal-hal berikut berisiko menimbulkan biaya tambahan besar di masa depan:</p>\n<ul>\n<li>Memilih domain hosting gratis berbayar atau subdomain penyedia jasa: Mengakibatkan hilangnya otoritas brand, sulit migrasi ke server lain, dan risiko website down saat penyedia tutup usaha. Selalu daftarkan domain atas nama entitas hukum bisnis Anda.</li>\n<li>Mengabaikan kontrak SLA (Service Level Agreement) tertulis: Tanpa jaminan uptime 99,9%, batas waktu respons ticket support, dan kepemilikan source code/intellectual property, bisnis rentan kehilangan akses penuh saat terjadi sengketa dengan vendor.</li>\n<li>Lewati riset keyword lokal & struktur URL SEO-friendly: Website lancar tanpa optimasi frasa \"wisata Lombok\", \"villa sewa Senggigi\", atau \"jasa trekking Rinjani\" tidak akan muncul di halaman pertama Google Maps dan organic search, membuang potensi trafik gratis berkualitas tinggi.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Company profile standar: Rp 2.500.000–Rp 7.000.000 (termasuk domain & hosting 1 tahun). E-commerce/Booking system: Rp 10.000.000–Rp 30.000.000. Maintenance bulanan opsional: Rp 500.000–Rp 1.500.000 untuk update core, backup harian, dan monitoring keamanan.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Siapkan logo vektor (AI/SVG), konten teks per halaman, foto produk/lokasi resolusi tinggi (min. 1920px), dan data legalitas (NPWP, NIB). Hubungi penyedia jasa via WhatsApp atau formulir kontak untuk jadwalkan konsultasi kebutuhan gratis 30–60 menit.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Provider profesional memberikan garansi bebas bug 30–90 hari pasca-luncurkan, kepemilikan penuh source code & akses hosting/domain, serta laporan PageSpeed Insight mobile > 90 dan desktop > 95. Pastikan klausul ini tertulis di kontrak kerja sama.</p>", "date": "23 Jul 2026", "iso_date": "2026-07-23T00:00:00", "category": "strategy", "readTime": "3 min", "tags": ["harga", "pembuatan", "web", "Lombok"], "featured": false, "generated": true, "service": "jasa-pembuatan-website", "city": "lombok", "liveUrl": null, "publish_date": "23 Jul 2026"}];
+const RELATED_ITEMS = [{"icon": "🎯", "label": "Pembuatan Landing Page", "desc": "LP untuk campaign spesifik — design & copy di-tuning untuk konversi.", "href": "/jasa-pembuatan-landing-page/"}, {"icon": "🔍", "label": "Google Ads", "desc": "Traffic dari Google Search Ads ke website baru Anda yang sudah SEO-ready.", "href": "/jasa-iklan-google/"}, {"icon": "📈", "label": "Digital Marketing", "desc": "Setelah website live, butuh full-funnel marketing untuk pertumbuhan.", "href": "/jasa-digital-marketing/"}];
+const FAQS = [{"q": "Berapa biaya Jasa Pembuatan Website?", "a": "Mulai Rp 3jt untuk landing page, Rp 8jt untuk company profile, Rp 25jt untuk toko online + payment gateway. Custom sesuai requirement."}, {"q": "Berapa lama pengerjaan?", "a": "Landing page 5-7 hari, company profile 14-21 hari, toko online 21-30 hari. Revisi 2-3× included sebelum launch."}, {"q": "Apakah include domain dan hosting?", "a": "Untuk paket tertentu include. Atau kami setup domain .co.id/.id/.com dan hosting managed (Rp 250rb/tahun)."}, {"q": "Maintenance setelah launch?", "a": "Maintenance bulanan Rp 500rb-1.5jt tergantung kompleksitas. Include update konten, security patch, backup."}, {"q": "CMS atau static?", "a": "Tergantung: untuk update rutin pakai WordPress/Headless CMS. Untuk performance optimal pakai static + auto rebuild."}];
+const CITIES = [{"slug": "bandung", "name": "Bandung"}, {"slug": "jakarta", "name": "Jakarta"}, {"slug": "makassar", "name": "Makassar"}, {"slug": "medan", "name": "Medan"}, {"slug": "surabaya", "name": "Surabaya"}, {"slug": "bekasi", "name": "Bekasi"}, {"slug": "bogor", "name": "Bogor"}, {"slug": "depok", "name": "Depok"}, {"slug": "jogja", "name": "Jogja"}, {"slug": "semarang", "name": "Semarang"}, {"slug": "tangerang", "name": "Tangerang"}, {"slug": "yogyakarta", "name": "Yogyakarta"}, {"slug": "bali", "name": "Bali"}, {"slug": "denpasar", "name": "Denpasar"}, {"slug": "malang", "name": "Malang"}, {"slug": "palembang", "name": "Palembang"}, {"slug": "pontianak", "name": "Pontianak"}, {"slug": "solo", "name": "Solo"}, {"slug": "aceh", "name": "Aceh"}, {"slug": "batam", "name": "Batam"}, {"slug": "cimahi", "name": "Cimahi"}, {"slug": "lampung", "name": "Lampung"}, {"slug": "lombok", "name": "Lombok"}, {"slug": "padang", "name": "Padang"}];
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20" + encodeURIComponent(SERVICE_NAME) + ".%20Mohon%20info%20lebih%20lanjut.";
+---
+
+<Layout
+    title={`${PILLAR_TITLE} | Panduan Lengkap & Strategi | Beriklan`}
+    description={PILLAR_INTRO.slice(0, 160)}
+    canonical={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-40 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <div class="container mx-auto px-6 max-w-4xl relative z-10">
+            <nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
+                <a href="/" class="hover:text-accent transition">Beranda</a>
+                <span class="text-muted/40">›</span>
+                <a href={`/${SERVICE_SLUG}/`} class="hover:text-accent transition">{SERVICE_NAME}</a>
+                <span class="text-muted/40">›</span>
+                <span class="text-ink font-semibold">Pilar Panduan</span>
+            </nav>
+
+            <div class="mb-5 anim-fade-up">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink text-[11px] font-bold uppercase tracking-wider rounded-full">
+                    <BookOpen class="w-3 h-3" />
+                    Panduan Lengkap
+                </span>
+            </div>
+
+            <h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6 anim-fade-up">
+                {PILLAR_TITLE}
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up">
+                {PILLAR_INTRO}
+            </p>
+
+            <div class="flex flex-wrap gap-3 anim-fade-up">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/90 text-ink font-bold text-sm rounded-full btn-shine shadow-pop transition">
+                    <MessageCircle class="w-4 h-4" />
+                    Konsultasi Gratis
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold text-sm rounded-full transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== STATS ====================== -->
+    <section class="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                {STATS.map((stat, i) => (
+                    <div class="text-center reveal">
+                        <div class="text-3xl md:text-4xl font-display font-extrabold text-primary mb-1 tabular-nums">{stat.num}</div>
+                        <div class="text-xs md:text-sm text-muted leading-snug">{stat.label}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== CLUSTERS ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-12 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Topical Cluster</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    5 Pilar Topik {SERVICE_NAME}
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    Setiap pilar dibahas mendalam di artikel blog terpisah. Klik salah satu untuk masuk ke cluster artikel spesifik.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {CLUSTERS.map((cluster) => (
+                    <div class="card-premium p-6 bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all duration-300">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-wider rounded-full mb-4">
+                            {cluster.tag}
+                        </div>
+                        <h3 class="text-lg font-display font-bold text-ink mb-2 leading-snug">{cluster.title}</h3>
+                        <p class="text-sm text-muted leading-relaxed mb-4">{cluster.desc}</p>
+                        <a href={`/blog/?tag=${encodeURIComponent(cluster.tag)}&service=${SERVICE_SLUG}`} class="inline-flex items-center gap-1.5 text-accent text-sm font-bold hover:gap-2.5 transition-all">
+                            Baca artikel cluster
+                            <ArrowRight class="w-3.5 h-3.5" />
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TOP POSTS ====================== -->
+    {TOP_POSTS.length > 0 && (
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-10 reveal">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Artikel Terbaru</span>
+                    <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                        Update Terbaru {SERVICE_NAME}
+                    </h2>
+                </div>
+                <a href="/blog/" class="inline-flex items-center gap-1.5 text-primary text-sm font-bold hover:gap-2.5 transition-all">
+                    Lihat semua artikel
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {TOP_POSTS.map((post) => (
+                    <a href={`/blog/${post.slug}/`} class="group block bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-xs text-muted mb-3">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-accent/10 text-accent font-bold rounded">
+                                    {post.category || 'Strategi'}
+                                </span>
+                                <span>·</span>
+                                <time>{post.date}</time>
+                                <span>·</span>
+                                <span>{post.readTime}</span>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-ink leading-snug mb-2 group-hover:text-accent transition line-clamp-2">
+                                {post.title}
+                            </h3>
+                            <p class="text-sm text-muted leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
+                            <span class="inline-flex items-center gap-1.5 text-accent text-xs font-bold group-hover:gap-2.5 transition-all">
+                                Baca selengkapnya
+                                <ArrowRight class="w-3.5 h-3.5" />
+                            </span>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== CITIES ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Coverage Area</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    Tersedia di {CITIES.length}+ Kota Indonesia
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    {SERVICE_NAME} untuk UMKM dan bisnis di kota Anda. Setiap halaman kota punya konteks lokal: demographics, UMKM count, dan trust signal regional.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 reveal-stagger">
+                {CITIES.map((c) => (
+                    <a href={`/${SERVICE_SLUG}/${c.slug}/`} class="text-center px-3 py-3 bg-white border border-gray-100 rounded-xl hover:border-accent/30 hover:shadow-sm transition text-sm font-semibold text-ink hover:text-accent">
+                        {c.name}
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    {FAQS.length > 0 && (
+    <section class="py-16 md:py-20 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">FAQ</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                    Pertanyaan yang Sering Diajukan
+                </h2>
+            </div>
+
+            <div class="space-y-4 reveal-stagger">
+                {FAQS.map((faq, i) => (
+                    <details class="group bg-soft rounded-2xl border border-gray-100 overflow-hidden">
+                        <summary class="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer font-display font-bold text-ink hover:text-accent transition">
+                            <span class="text-base md:text-lg">{faq.q}</span>
+                            <span class="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-open:rotate-45 transition-transform text-lg">+</span>
+                        </summary>
+                        <div class="px-6 pb-5 text-muted leading-relaxed text-sm md:text-base">
+                            {faq.a}
+                        </div>
+                    </details>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <RelatedServices
+        client:load
+        items={RELATED_ITEMS}
+        title="Kombinasikan dengan Channel Lain"
+        subtitle="Bisnis yang efektif biasanya menjalankan iklan di 2-3 kanal sekaligus agar saling menguatkan."
+    />
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-primary via-primary-2 to-primary text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 hero-grid pointer-events-none"></div>
+        <div class="container mx-auto px-6 max-w-3xl text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur text-white text-xs font-bold uppercase tracking-wider rounded-full mb-6">
+                <Sparkles class="w-3 h-3" />
+                Tim online · respon 1 jam
+            </div>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl mb-6 leading-tight">
+                Siap Meningkatkan Performa {SERVICE_NAME} Anda?
+            </h2>
+            <p class="text-base md:text-lg text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
+                Sesi konsultasi awal 15 menit gratis — tanpa komitmen. Kami diskusi target Anda, lalu susun strategi {SERVICE_NAME} yang terukur.
+            </p>
+            <div class="flex flex-wrap gap-3 justify-center">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-7 py-4 bg-accent hover:bg-accent/90 text-ink font-bold text-sm md:text-base rounded-full btn-shine shadow-lg transition">
+                    <MessageCircle class="w-5 h-5" />
+                    Diskusi via WhatsApp
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-bold text-sm md:text-base rounded-full border border-white/20 transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+
+    <LocalSchema
+        pageType="service"
+        title={PILLAR_TITLE}
+        description={PILLAR_INTRO.slice(0, 160)}
+        url={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+        serviceSlug={SERVICE_SLUG}
+        tiers={SERVICE_DATA && SERVICE_DATA.tiers ? SERVICE_DATA.tiers : []}
+        faqs={FAQS}
+    />
+</Layout>

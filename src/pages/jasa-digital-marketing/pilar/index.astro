@@ -1,0 +1,264 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import Footer from '../../../components/Footer.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import { MessageCircle, ArrowRight, BookOpen, Layers, Sparkles, MapPin, BarChart } from 'lucide-svelte';
+
+const SERVICE_SLUG = 'jasa-digital-marketing';
+const SERVICE_NAME = 'Jasa Digital Marketing';
+const SERVICE_DATA = {"slug": "jasa-digital-marketing", "name": "Jasa Digital Marketing", "category": "full-service", "description": "Jasa Digital Marketing Iklankan Perusahaan Anda di Google Ads Facebook Instagram dan TikTok Dapatkan Lebih Banyak Konsumen | Hubungi : 0811-919-328", "faqs": [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}], "active": true, "order": 10, "tiers": [{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}], "why_features": [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}], "how_steps": [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}], "city_intro_template": ""};
+const PILLAR_TITLE = "Digital Marketing 360° untuk Pertumbuhan Bisnis";
+const PILLAR_INTRO = "Digital marketing bukan hanya pasang iklan — ini strategi integrated yang mencakup paid ads, SEO, content, social media, dan analytics. Pelajari cara membangun sistem yang sustainable.";
+const STATS = [{"num": "6-9", "label": "Channel marketing utama"}, {"num": "30K-80K", "label": "Visitors/bulan target 6 bulan"}, {"num": "5-7x", "label": "ROAS target paid + organic"}, {"num": "Rp 25jt", "label": "Monthly retainer rata-rata"}];
+const CLUSTERS = [{"tag": "Strategy", "title": "Digital Marketing Strategy", "desc": "Audit bisnis, customer journey mapping, channel selection, dan KPI setting."}, {"tag": "Paid Ads", "title": "Multi-Channel Paid Advertising", "desc": "Meta, Google, TikTok, YouTube, LinkedIn — kapan dan bagaimana mengkombinasikan."}, {"tag": "SEO", "title": "Search Engine Optimization", "desc": "On-page, off-page, technical SEO, dan content strategy untuk organic traffic."}, {"tag": "Content", "title": "Content Marketing", "desc": "Blog, video, infographic, podcast — pillar content yang menghasilkan leads."}, {"tag": "Analytics", "title": "Analytics & Reporting", "desc": "GA4, attribution model, dashboard KPI, dan cara membaca data untuk keputusan."}];
+const TOP_POSTS = [{"slug": "tarif-digital-marketing-company", "title": "Tarif Digital Marketing Company", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Company Tarif layanan digital marketing company di Indonesia bervariasi signifikan tergantung pada cakupan proyek, reputasi agency", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Company</h2>\n<p>Tarif layanan digital marketing company di Indonesia bervariasi signifikan tergantung pada cakupan proyek, reputasi agency, dan model penagihan yang diterapkan. Untuk usaha mikro dan kecil (UMKM), budget bulanan rata-rata berkisar antara Rp5 juta hingga Rp25 juta untuk paket standar yang mencakup manajemen media sosial, iklan berbayar dasar, dan pelaporan bulanan. Sementara itu, perusahaan menengah ke atas biasanya mengeluarkan Rp50 juta hingga Rp500 juta per bulan untuk strategi terintegrasi meliputi SEO teknis, content marketing skala besar, dan manajemen kampanye multi-platform dengan tim dedikasi penuh.</p>\n<p>Model penagihan umum dibagi menjadi tiga kategori utama: retainer bulanan (monthly retainer), biaya berbasis proyek (project-based), dan performance-based pricing. Retainer bulanan menjadi pilihan paling populer karena memberikan kejelasan budget jangka panjang, dengan kisaran fee manajemen agency sekitar 15% hingga 25% dari total ad spend yang dikelola. Faktor penentu harga lain meliputi kompleksitas industri target, tingkat kompetisi kata kunci, serta kebutuhan aset kreatif seperti produksi video atau desain grafis kustom yang sering dihitung terpisah dari fee manajemen.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Memahami alur kerja standar agency membantu klien mengevaluasi apakah tarif yang ditawarkan sebanding dengan deliverables yang dijanjikan. Proses kolaborasi biasanya berlangsung melalui tahapan terstruktur berikut:</p>\n<ul>\n<li>Audit awal dan penetapan KPI: Tim agency menganalisis aset digital existing, performa kompetitor, dan menentukan metrik ukur keberhasilan (seperti CPA, ROAS, atau traffic organik) yang disepakati bersama sebelum kontrak ditandatangani.</li>\n<li>Perumusan strategi dan alokasi budget: Berdasarkan hasil audit, disusun roadmap 3–6 bulan yang merinci channel prioritas, estimasi ad spend, dan kebutuhan resource kreatif beserta timeline pelaksanaannya.</li>\n<li>Eksekusi kampanye dan optimasi harian: Peluncuran iklan, publikasi konten, dan perbaikan teknis SEO dijalankan dengan monitoring real-time untuk menyesuaikan targeting, bid strategy, dan kreatif guna mengurangi biaya per akuisisi.</li>\n<li>Pelaporan bulanan dan review strategi: Laporan komprehensif disampaikan mencakup pencapaian KPI, analisis tren, dan rekomendasi pivot strategi untuk periode mendatang guna memastikan ROI berkelanjutan.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak klien terjebak pada tarif murah tanpa memeriksa kualitas deliverables, yang berujung pada pemborosan budget dan reputasi brand terancam. Kesalahan klasik lainnya adalah tidak memasukkan klausul kepemilikan data dan akun iklan ke dalam kontrak, sehingga saat kontrak berakhir, klien kehilangan akses ke historical data piksel, audience custom, dan aset kreatif yang telah dibayar penuh.</p>\n<ul>\n<li>Memilih agency hanya berdasarkan biaya terendah tanpa memverifikasi portofolio industri yang relevan dan studi kasus dengan bukti angka konversi nyata.</li>\n<li>Mengabaikan biaya tersembunyi seperti fee setup awal, biaya tools premium (SEMrush, Ahrefs, dll), atau charge tambahan untuk revisi kreatif melebihi kuota yang tidak tercantum di proposal awal.</li>\n<li>Tidak menetapkan batas waktu tanggung jawab (SLA) untuk waktu respons laporan, penanganan crisis media sosial, atau penyesuaian kampanye saat performa menurun drastis.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya rata-rata menyewa digital marketing company?</h3>\n<p>Biaya standar untuk paket entry-level UMKM mulai Rp5–15 juta per bulan (exclude ad spend). Paket enterprise dengan tim full-stack (SEO, Paid Ads, Content, Creative, Data Analyst) berkisar Rp75–300 juta per bulan. Model performance-based biasanya memotong 10–20% dari revenue atau lead qualified yang dihasilkan, ditambah fee dasar minimal Rp3–5 juta untuk menutupi biaya operasional tim.</p>\n\n<h3>Bagaimana cara memulai kerja sama dengan agency?</h3>\n<p>Mulai dengan permintaan proposal (RFP) yang mencakup latar belakang bisnis, target pasar, budget range, dan tantangan saat ini. Lakukan wawancara dengan 3–5 agency kandidat, minta referensi klien sebelumnya yang bisa dihubungi langsung, dan tinjau kontrak secara detail fokus pada klausul terminasi, kepemilikan IP, dan jadwal pembayaran sebelum menandatangani MoU atau kontrak kerja.</p>\n\n<h3>Apakah hasil penjualan atau ranking terjamin?</h3>\n<p>Tidak ada agency kredibel yang menjamin posisi ranking #1 Google atau jumlah penjualan pasti karena algoritma platform dan perilaku konsumen bersifat dinamis dan di luar kendali. Garansi yang wajar adalah komitmen pada proses: transparansi data, frekuensi optimasi, peningkatan metrik perantara (CTR, Quality Score, Domain Authority), dan pelaporan jujur meski performa di bawah target agar keputusan pivot bisa diambil cepat.</p>", "date": "29 Oct 2026", "iso_date": "2026-10-29T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["tarif", "digital", "marketing", "company"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "29 Oct 2026"}, {"slug": "tarif-digital-marketing-agency", "title": "Tarif Digital Marketing Agency", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Agency Tarif layanan digital marketing agency di Indonesia bervariasi signifikan tergantung pada cakupan pekerjaan, reputasi agenc", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Agency</h2>\n<p>Tarif layanan digital marketing agency di Indonesia bervariasi signifikan tergantung pada cakupan pekerjaan, reputasi agency, dan model penagihan yang diterapkan. Berdasarkan survei industri terkini, retensi bulanan (monthly retainer) untuk paket komprehensif yang mencakup SEO, manajemen media sosial, dan iklan berbayar biasanya berkisar antara Rp 5 juta hingga Rp 50 juta per bulan untuk UMKM dan korporat menengah. Sementara itu, agency boutique atau freelancer senior sering menawarkan paket entry-level mulai Rp 2,5 juta hingga Rp 7 juta per bulan dengan fokus pada satu atau dua saluran utama saja.</p>\n<p>Model penagihan umum terbagi menjadi tiga kategori: retensi bulanan, berbasis proyek (project-based), dan berbasis kinerja (performance-based). Retensi cocok untuk strategi jangka panjang seperti SEO dan content marketing yang membutuhkan konsistensi. Model proyek sering dipakai untuk pembuatan website, kampanye musiman, atau setup awal akun iklan dengan biaya sekali bayar yang bisa mencapai Rp 10 juta hingga Rp 200 juta tergantung kompleksitas. Model performance-based, seperti revenue share atau cost per acquisition (CPA), semakin diminati namun biasanya memerlukan baseline trafik yang sudah stabil agar risiko agency terjaga.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Memilih agency yang tepat memerlukan proses evaluasi terstruktur agar anggaran tidak tersia-sia dan KPI tercapai. Berikut langkah praktis yang dapat diikuti sebelum menandatangani kontrak kerja sama:</p>\n<ul>\n<li>Audit kebutuhan internal: Tentukan tujuan spesifik (brand awareness, lead generation, atau e-commerce sales) dan budget range realistis sebelum menghubungi vendor.</li>\n<li>Minta proposal detail: Mintalah breakdown biaya per layanan (misal: biaya management fee terpisah dari ad spend), timeline, deliverables bulanan, dan tools yang digunakan.</li>\n<li>Verifikasi portofolio dan referensi: Fokus pada case study industri serupa, minta kontak klien lama untuk tesimonial jujur mengenai komunikasi dan pencapaian target.</li>\n<li>Negosiasikan SLA dan klausul keluar: Pastikan kontrak mencakup Service Level Agreement (waktu respons laporan, frekuensi meeting) serta syarat pemutusan kontrak tanpa denda berlebihan jika KPI tidak tercapai 3 bulan berturut-turut.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak bisnis terjebak pada biaya murah tanpa mempertimbangkan kualitas eksekusi dan transparansi data. Kesalahan fatal pertama adalah memilih agency yang menjamin ranking #1 Google atau ROAS spesifik dalam waktu singkat tanpa audit teknis terlebih dahulu. Janji instan semacam ini sering mengindikasikan praktik black-hat atau manipulasi data yang berisiko menghapus akun iklan atau mendapat penalty dari mesin pencari.</p>\n<p>Kesalahan kedua adalah mengabaikan biaya tersembunyi seperti fee setup pixel, biaya produksi konten video/foto, atau markup ad spend yang tidak dikomunikasikan di awal. Beberapa agency menagih management fee 15-20% dari total ad spend di atas fee bulanan, sementara yang lain sudah include. Kurangnya kejelasan soal kepemilikan aset (akun iklan, analytics, domain) saat kontrak berakhir juga sering jadi sengketa hukum yang memakan biaya tambahan.</p>\n<ul>\n<li>Tidak memisahkan budget management fee dan ad spend di proposal awal.</li>\n<li>Menyerahin strategi penuh ke agency tanpa internal champion yang memahami metrik bisnis.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya rata-rata retensi bulanan agency profesional berkisar Rp 7 juta - Rp 25 juta untuk paket standar (SEO + Social Media + Ads Management). Proyek website corporate berkisar Rp 15 juta - Rp 100 juta. Ad spend (budget iklan ke platform) terpisah dari fee agency dan dikembalikan ke target jangkauan klien.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Mulai dengan briefing tertulis berisi tujuan bisnis, target audience, produk unggulan, dan budget rentang 3-6 bulan. Minta proposal dari 3 agency berbeda, bandingkan metodologi bukan hanya harga, lalu lakukan wawancara tim teknis (bukan sales saja) untuk menilai kemampuan eksekusi.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Tidak ada agency yang bisa menjamin hasil angka pasti (misal: \"pasti 100 lead/bulan\") karena variabel eksternal seperti kompetitor, musiman, dan algoritma platform. Agency kredibel menjamin proses: transparansi laporan, optimasi berkala, dan strategi berbasis data. Kontrak ideal mengikat deliverables aktivitas (jumlah konten, frekuensi audit, meeting review) bukan outcome pasar.</p>", "date": "29 Oct 2026", "iso_date": "2026-10-29T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["tarif", "digital", "marketing", "agency"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "29 Oct 2026"}, {"slug": "tarif-digital-marketing-consultant", "title": "Tarif Digital Marketing Consultant", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Consultant Tarif digital marketing consultant di Indonesia bervariasi signifikan tergantung pada cakupan proyek, tingkat keahlian,", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Consultant</h2>\n<p>Tarif digital marketing consultant di Indonesia bervariasi signifikan tergantung pada cakupan proyek, tingkat keahlian, dan model kerja sama. Berdasarkan survei pasar terkini, konsultan junior dengan pengalaman 1–3 tahun biasanya menawarkan retensi bulanan antara Rp 3.000.000 hingga Rp 7.000.000. Sementara konsultan senior atau spesialis kanal tertentu seperti paid ads dan SEO teknis dapat menagih Rp 10.000.000 hingga Rp 30.000.000 per bulan untuk manajemen penuh. Model berbasis proyek (project-based) juga populer, dengan rentang biaya audit strategi sebesar Rp 5.000.000–Rp 15.000.000 per engagement.</p>\n<p>Perbedaan harga sering kali mencerminkan kedalaman analisis dan akses ke jaringan media. Konsultan yang menyertakan pembuatan konten, manajemen komunitas, dan pelaporan data real-time cenderung bernilai lebih tinggi dibandingkan yang hanya memberikan rekomendasi strategi tingkat tinggi. Pemahaman mengenai struktur biaya ini membantu bisnis menganggar dana marketing dengan lebih akurat dan menghindari kebocoran biaya tak terduga.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses penyewaan konsultan dimulai dari klarifikasi tujuan bisnis hingga eksekusi dan evaluasi berkala. Berikut alur standar yang berlaku di industri:</p>\n<ul>\n<li><strong>Audit Kebutuhan dan Kesepakatan KPI:</strong> Konsultan melakukan wawancara mendalam, menganalisis aset digital existing, lalu menyepakati metrik utama (seperti CAC, ROAS, atau lead qualified) sebelum kontrak ditandatangani.</li>\n<li><strong>Penyusunan Roadmap 90 Hari:</strong> Dokumen strategi rinci dibuat mencakup prioritas kanal, jadwal konten, anggaran iklan uji coba, dan milestone bulanan untuk review performa.</li>\n<li><strong>Eksekusi dan Optimasi Mingguan:</strong> Pelaksanaan kampanye dimulai dengan pengujian A/B creative, penargetan audiens, dan struktur akun iklan; diikuti rapat singkat mingguan untuk menyesuaikan bid strategy dan alokasi budget.</li>\n<li><strong>Pelaporan Bulanan dan Perencanaan Siklus Berikutnya:</strong> Laporan komprehensif disajikan dengan visualisasi data, insight perilaku konsumen, dan rekomendasi skala atau pivot strategi untuk kuartal selanjutnya.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak bisnis gagal memaksimalkan investasi konsultan karena kesalahan fundamental dalam tahap seleksi dan manajemen hubungan kerja. Kesalahan pertama adalah memilih konsultan hanya berdasarkan harga termurah tanpa memverifikasi portofolio spesifik industri. Studi kasus generik atau screenshot dashboard tanpa konteks bisnis sering kali menyesatkan. Kedua, tidak menetapkan batas wewenang dan protokol komunikasi di awal sering menyebabkan *scope creep*, di mana konsultan melakukan tugas di luar kontrak tanpa kompensasi tambahan, atau sebaliknya, klien meminta revisi tak terbatas.</p>\n<ul>\n<li>Mengabaikan klausul kepemilikan data dan akun iklan di kontrak, berisiko kehilangan akses aset digital saat kontrak berakhir.</li>\n<li>Mengharapkan hasil instan (instant result) pada kanal organik seperti SEO atau content marketing yang membutuhkan siklus 4–6 bulan untuk indeksasi dan autoritas domain.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya berkisar Rp 3.000.000–Rp 7.000.000/bulan untuk konsultan junior, Rp 10.000.000–Rp 30.000.000/bulan untuk senior, dan Rp 5.000.000–Rp 15.000.000 per proyek audit strategi. Biaya media buying (iklan) terpisah dari fee konsultan.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Siapkan dokumen *brief* berisi tujuan bisnis, target pasar, anggaran iklan bulanan, dan akses akun analitik (GA4, Meta Ads Manager). Jadwalkan *discovery call* 30–60 menit untuk evaluasi *fit* sebelum meminta proposal formal.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Tidak ada konsultan etis yang menjamin angka penjualan atau ranking #1 Google. Garansi standar industri adalah komitmen pada *best practice*, transparansi data, dan pencapaian KPI proses (seperti CTR, CPL, atau traffic growth) yang dikontrol langsung, bukan hasil akhir yang dipengaruhi faktor eksternal.</p>", "date": "29 Oct 2026", "iso_date": "2026-10-29T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["tarif", "digital", "marketing", "consultant"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "29 Oct 2026"}, {"slug": "tarif-digital-marketing-media", "title": "Tarif Digital Marketing Media", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Media Tarif layanan digital marketing media di Indonesia bervariasi signifikan tergantung pada cakupan proyek, platform yang dipil", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Media</h2>\n<p>Tarif layanan digital marketing media di Indonesia bervariasi signifikan tergantung pada cakupan proyek, platform yang dipilih, dan tingkat keahlian penyedia jasa. Untuk paket manajemen media sosial dasar (content creation, scheduling, dan community management), rentang harga umumnya berada di kisaran Rp 3.000.000 hingga Rp 8.000.000 per bulan. Sementara itu, layanan iklan berbayar (paid ads) seperti Google Ads atau Meta Ads biasanya dikenakan biaya manajemen sebesar 10% hingga 20% dari total anggaran iklan (ad spend), dengan minimal fee bulanan sekitar Rp 2.000.000 hingga Rp 5.000.000.</p>\n<p>Faktor penentu biaya lain meliputi volume konten, frekuensi posting, dan kebutuhan analitik lanjutan. Sebuah survei industri tahun 2023 menunjukkan bahwa 65% UMKM di Indonesia mengeluarkan anggaran marketing digital di bawah Rp 10.000.000 per bulan, sedangkan perusahaan menengah ke atas sering mengalokasikan dana di atas Rp 50.000.000 untuk strategi omnichannel. Memahami struktur biaya ini membantu bisnis menghindari biaya tersembunyi seperti biaya produksi video, lisensi tools otomatisasi, atau fee revisi melebihi kuota kontrak.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Menentukan anggaran yang tepat memerlukan pendekatan terstruktur agar investasi sesuai dengan tujuan bisnis. Berikut adalah langkah sistematis untuk mengevaluasi dan menegosiasikan tarif layanan:</p>\n<ul>\n<li><strong>Audit kebutuhan dan KPI:</strong> Tentukan metrik utama (misal: lead generation, brand awareness, atau e-commerce sales) sebelum meminta penawaran harga agar agency tidak menawarkan paket berlebihan.</li>\n<li><strong>Minta proposal berbasis deliverable:</strong> Mintalah rincian biaya per item (contoh: biaya per video Reels, biaya per artikel SEO, fee setup piksel) agar perbandingan antar vendor objektif.</li>\n<li><strong>Evaluasi model kontrak:</strong> Bandingkan model retainer bulanan, project-based, maupun performance-based (CPA/ROAS) untuk menemukan yang paling sejalan dengan arus kas perusahaan.</li>\n<li><strong>Negosiasi SLA dan klausul keluar:</strong> Pastikan kontrak mencakup Service Level Agreement (waktu respons laporan, jam kerja) serta klausul pemutusan kontrak dengan pemberitahuan 30 hari tanpa denda besar.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak pemilik bisnis terjebak pada biaya murah di awal yang berujung pada kualitas output rendah atau konflik kontrak. Kesalahan klasik adalah memilih vendor hanya berdasarkan harga termurah tanpa memverifikasi portofolio relevan di industri yang sama. Akibatnya, strategi yang diterapkan bersifat generik dan gagal mengonversi audiens spesifik. Kesalahan kedua adalah mengabaikan biaya produksi aset kreatif. Banyak kontrak hanya mencakup \"manajemen iklan\" namun mengecualikan biaya desain grafis, copywriting, atau editing video, sehingga anggaran melebihi perkiraan 30% hingga 50% di tengah jalan.</p>\n<ul>\n<li>Tidak meminta laporan transparan real-time (akses dashboard iklan milik klien, bukan screenshot dari agency).</li>\n<li>Mengunci kontrak jangka panjang (12 bulan) tanpa klausul performa minimal atau opsi review triwulanan.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya minimum untuk memulai layanan profesional berkisar Rp 5.000.000 hingga Rp 10.000.000 per bulan untuk paket gabungan (organic + paid management). Untuk kampanye skala besar enterprise, anggaran bulanan biasanya dimulai dari Rp 100.000.000 termasuk ad spend.</p>\n\n<h3>Bagaimana cara mulai?</h3>\n<p>Mulai dengan briefing singkat (1 halaman) berisi target pasar, unique selling proposition, anggaran bulanan, dan timeline. Jadwalkan discovery call dengan 2-3 vendor terpilih untuk membandingkan pendekatan strategis, bukan hanya kuotasi harga.</p>\n\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Tidak ada jaminan hasil absolut (seperti jumlah penjualan pasti) karena variabel eksternal seperti musiman, kompetitor, dan perubahan algoritma. Vendor kredibel menjamin *proses* (frekuensi laporan, optimasi mingguan, A/B testing berkala) dan transparansi data, bukan angka ROI pasti.</p>", "date": "29 Oct 2026", "iso_date": "2026-10-29T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["tarif", "digital", "marketing", "media"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "29 Oct 2026"}, {"slug": "tarif-digital-marketing-services", "title": "Tarif Digital Marketing Services", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Services Tarif layanan digital marketing di Indonesia bervariasi signifikan tergantung cakupan proyek, tingkat keahlian penyedia j", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Tarif Digital Marketing Services</h2>\n<p>Tarif layanan digital marketing di Indonesia bervariasi signifikan tergantung cakupan proyek, tingkat keahlian penyedia jasa, dan target pasar. Untuk paket *starter* yang mencakup pengelolaan media sosial dan pembuatan konten dasar, rentang harga biasanya berada di kisaran Rp3 juta hingga Rp8 juta per bulan. Sementara itu, layanan *full-service* yang mencakup SEO teknis, manajemen iklan berbayar (Google Ads, Meta Ads), *email marketing*, hingga analitik lanjutan dapat memakan biaya Rp15 juta hingga Rp50 juta per bulan, atau lebih untuk skala enterprise.</p>\n<p>Model penagihan umum terbagi menjadi tiga kategori: *retainer* bulanan, *project-based* (per proyek), dan *performance-based* (berbasis hasil). Data industri menunjukkan sekitar 65% agensi di Asia Tenggara mengadopsi model *retainer* dengan kontrak minimal 3 hingga 6 bulan untuk memastikan stabilitas *cash flow* dan waktu eksekusi strategi. Pemahaman model ini krusial sebelum menegosiasikan kontrak agar anggaran pemasaran tidak membengkak di tengah jalan.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Menentukan budget yang realistis memerlukan pendekatan terstruktur agar investasi selaras dengan tujuan bisnis. Berikut alur praktis yang dapat diterapkan:</p>\n<ul>\n<li>Audit aset digital existing: Identifikasi performa website, media sosial, dan *email list* saat ini untuk mengetahui *gap* yang harus diisi.</li>\n<li>Tetapkan KPI prioritas: Pilih 2–3 metrik utama (misalnya *cost per lead*, *return on ad spend*, atau *organic traffic growth*) sebagai patokan keberhasilan vendor.</li>\n<li>Minta proposal itemized: Mintakan rincian biaya per modul (SEO, *content*, *paid ads*, *reporting*) agar dapat membandingkan *quote* dari 3–5 vendor berbeda secara *apple-to-apple*.</li>\n<li>Negosiasikan *Service Level Agreement* (SLA): Pastikan kontrak mencakup waktu respons laporan, jadwal pertemuan bulanan, dan klausul keluar (*termination clause*) yang adil.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak bisnis kecil hingga menengah (UKM) terjebak pada harga murah tanpa mempertimbangkan kualitas eksekusi. Pilihan vendor termurah sering kali mengorbankan riset kata kunci mendalam, *copywriting* persuasif, atau pengoptimalan *landing page*, yang justru menentukan konversi. Akibatnya, anggaran terbuang tanpa *return on investment* (ROI) yang terukur dalam 3–6 bulan pertama.</p>\n<p>Kesalahan lain adalah menganggap digital marketing sebagai proyek sekali jadi (*one-off project*). Algoritma platform berubah, perilaku konsumen bergeser, dan kompetitor menyesuaikan strategi. Menghentikan optimisasi setelah website naik ranking atau iklan mendapat *lead* menyebabkan performa turun drastis dalam hitungan minggu. Konsistensi dan iterasi data adalah kunci pertumbuhan jangka panjang.</p>\n<ul>\n<li>Memilih vendor tanpa portofolio kasus serupa di industri yang relevan.</li>\n<li>Tidak menetapkan batas anggaran iklan (*ad spend*) terpisah dari *management fee*.</li>\n<li>Mengabaikan integrasi *analytics* (GA4, Pixel, *UTM parameters*) sejak hari pertama.</li>\n<li>Menekan revisi konten atau strategi tanpa data pendukung dari *A/B testing*.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Biaya *management fee* agensi rata-rata Rp5 juta–Rp25 juta/bulan untuk UKM, sementara *ad spend* direkomendasikan minimal Rp3 juta–Rp10 juta/bulan per platform (Meta/Google) agar algoritma belajar optimal. Proyek SEO *one-off* audit teknis berkisar Rp5 juta–Rp20 juta.</p>\n\n<h3>Bagaimana cara mulai?</h3>\n<p>Siapkan *brief* singkat berisi tujuan bisnis, target audiens, *unique selling proposition*, dan rentang anggaran bulanan. Jadwalkan *discovery call* dengan 3 vendor terpilih untuk menilai kemampuan strategis, bukan hanya presentasi *deck* generik.</p>\n\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Tidak ada agensi berreputasi yang menjamin posisi #1 Google atau ROAS angka pasti karena variabel eksternal (algoritma, kompetitor, musiman). Vendor profesional menjamin *deliverable* (jumlah konten, frekuensi laporan, cakupan *keyword*) dan transparensi data, bukan outcome yang di luar kendali.</p>", "date": "29 Oct 2026", "iso_date": "2026-10-29T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["tarif", "digital", "marketing", "services"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "29 Oct 2026"}, {"slug": "paket-seo-digital-marketing", "title": "Paket Seo Digital Marketing", "excerpt": "Pendahuluan: Apa yang Perlu Diketahui tentang Paket Seo Digital Marketing Paket SEO digital marketing merupakan rangkaian layanan terintegrasi yang dirancang untuk meningkatkan visibilitas website di ", "content": "<h2>Pendahuluan: Apa yang Perlu Diketahui tentang Paket Seo Digital Marketing</h2>\n<p>Paket SEO digital marketing merupakan rangkaian layanan terintegrasi yang dirancang untuk meningkatkan visibilitas website di halaman hasil pencarian (SERP) secara organik. Berbeda dengan iklan berbayar yang berhenti berfungsi saat anggaran habis, strategi ini membangun aset digital jangka panjang. Data dari BrightEdge menunjukkan bahwa 53,3% total traffic website berasal dari pencarian organik, menjadikannya saluran akuisisi pelanggan paling efisien secara biaya per akuisisi (CPA) dibandingkan media sosial atau display ads.</p>\n<p>Sebagian besar penyedia layanan membagi paket menjadi tiga tingkatan: starter, professional, dan enterprise. Paket entry-level biasanya mencakup audit teknis, riset 10–20 kata kunci, dan optimasi on-page untuk 5–10 halaman utama. Sementara paket enterprise mencakup link building berkualitas tinggi, content cluster strategy, dan pelaporan ROI bulanan. Pemilihan paket harus disesuaikan dengan tingkat kompetisi industri, usia domain, dan target konversi bisnis, bukan sekadar harga termurah.</p>\n\n<h2>Cara Kerja dan Langkah Praktis</h2>\n<p>Proses eksekusi paket SEO profesional mengikuti alur kerja terstruktur agar setiap rupiah anggaran menghasilkan nilai optimal. Berikut tahapan standar yang diterapkan agensi bereputasi:</p>\n<ul>\n<li>Audit teknis mendalam: Meliputi analisis Core Web Vitals, struktur URL, sitemap XML, robots.txt, serta deteksi duplicate content dan broken link menggunakan tools seperti Screaming Frog atau Sitebulb.</li>\n<li>Riset kata kunci berbasis intent: Pemetaan query berdasarkan informasional, navigasional, dan transaksional dengan volume pencarian dan keyword difficulty (KD) yang diverifikasi via Ahrefs atau Semrush.</li>\n<li>Optimasi on-page dan content gap: Penulisan ulang meta title, deskripsi, heading hierarchy (H1-H3), schema markup, serta pembuatan konten pilar yang menutupi topik yang dikesampingkan kompetitor.</li>\n<li>Off-page authority building: Akuisisi backlink berkualitas melalui digital PR, guest posting pada domain relevan DR 50+, dan reclamation unlinked brand mention untuk memperkuat Domain Rating.</li>\n</ul>\n\n<h2>Kesalahan yang Harus Dihindari</h2>\n<p>Banyak bisnis gagal melihat ROI karena terjebak pada praktik usang atau vendor yang menjanjikan ranking instan. Pemahaman risiko berikut menghemat anggaran dan melindungi reputasi domain:</p>\n<ul>\n<li>Membeli backlink massal dari PBN (Private Blog Network) atau situs spam: Google Penguin 4.0 berjalan real-time; penalti algoritmik dapat menghapus indeks website dalam hitungan hari dan pemulihannya memakan waktu 6–12 bulan.</li>\n<li>Mengabaikan SEO teknis di awal kontrak: Fokus langsung ke content tanpa memperbaiki crawl budget, kecepatan server, atau mobile usability membuat upaya optimasi lain sia-sia karena bot tidak mengindeks halaman dengan efisien.</li>\n<li>KPI hanya berfokus pada posisi kata kunci: Metrik vanity seperti \"rank 1 halaman 1\" tidak menjamin penjualan. Kontrak harus mengikat target traffic terkualifikasi, lead form submit, atau transaksi e-commerce.</li>\n</ul>\n\n<h2>Pertanyaan yang Sering Diajukan</h2>\n<h3>Berapa biaya?</h3>\n<p>Harga paket SEO di Indonesia berkisar antara IDR 3.000.000 hingga IDR 50.000.000 per bulan. Paket starter (IDR 3–7 juta) cocok untuk UMKM lokal dengan kompetisi rendah. Paket menengah (IDR 10–25 juta) standar untuk e-commerce skala nasional. Paket enterprise (di atas IDR 30 juta) mencakup tim dedicated, content production skala besar, dan enterprise link building.</p>\n<h3>Bagaimana cara mulai?</h3>\n<p>Mulai dengan permintaan proposal audit gratis atau berbayar ringan (IDR 500.000–1.500.000). Audit ini mengungkap baseline kesehatan website, peluang keyword, dan estimasi timeline. Pilih vendor yang menyediakan roadmap 3–6 bulan dengan deliverables bulanan transparan, bukan kontrak kunci tanpa laporan progres.</p>\n<h3>Apakah hasilnya terjamin?</h3>\n<p>Tidak ada agensi legit yang menjamin posisi #1 Google karena algoritma berubah ratusan kali per tahun. Jaminan yang realistis adalah peningkatan visibility index, traffic organik, dan jumlah halaman terindeks dalam 3–6 bulan. Kontrak berkinerja (performance-based) biasanya mengikat fee tambahan saat target KPI tercapai, bukan fee bulanan penuh.</p>", "date": "28 Oct 2026", "iso_date": "2026-10-28T02:00:00", "category": "strategy", "readTime": "3 min", "tags": ["paket", "seo", "digital", "marketing"], "featured": false, "generated": true, "service": "jasa-digital-marketing", "city": null, "liveUrl": null, "publish_date": "28 Oct 2026"}];
+const RELATED_ITEMS = [{"icon": "📘", "label": "Facebook Ads", "desc": "Channel utama untuk B2C, lead gen, dan brand awareness.", "href": "/jasa-iklan-facebook/"}, {"icon": "🔍", "label": "Google Ads", "desc": "Tangkap high-intent search traffic yang siap konversi.", "href": "/jasa-iklan-google/"}, {"icon": "🎵", "label": "TikTok Ads", "desc": "Jangkau audiens muda + viral potential untuk FYP.", "href": "/jasa-iklan-tiktok/"}];
+const FAQS = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}];
+const CITIES = [{"slug": "bandung", "name": "Bandung"}, {"slug": "jakarta", "name": "Jakarta"}, {"slug": "makassar", "name": "Makassar"}, {"slug": "medan", "name": "Medan"}, {"slug": "surabaya", "name": "Surabaya"}, {"slug": "bekasi", "name": "Bekasi"}, {"slug": "bogor", "name": "Bogor"}, {"slug": "depok", "name": "Depok"}, {"slug": "jogja", "name": "Jogja"}, {"slug": "semarang", "name": "Semarang"}, {"slug": "tangerang", "name": "Tangerang"}, {"slug": "yogyakarta", "name": "Yogyakarta"}, {"slug": "bali", "name": "Bali"}, {"slug": "denpasar", "name": "Denpasar"}, {"slug": "malang", "name": "Malang"}, {"slug": "palembang", "name": "Palembang"}, {"slug": "pontianak", "name": "Pontianak"}, {"slug": "solo", "name": "Solo"}, {"slug": "aceh", "name": "Aceh"}, {"slug": "batam", "name": "Batam"}, {"slug": "cimahi", "name": "Cimahi"}, {"slug": "lampung", "name": "Lampung"}, {"slug": "lombok", "name": "Lombok"}, {"slug": "padang", "name": "Padang"}];
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20" + encodeURIComponent(SERVICE_NAME) + ".%20Mohon%20info%20lebih%20lanjut.";
+---
+
+<Layout
+    title={`${PILLAR_TITLE} | Panduan Lengkap & Strategi | Beriklan`}
+    description={PILLAR_INTRO.slice(0, 160)}
+    canonical={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-40 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+
+        <div class="container mx-auto px-6 max-w-4xl relative z-10">
+            <nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
+                <a href="/" class="hover:text-accent transition">Beranda</a>
+                <span class="text-muted/40">›</span>
+                <a href={`/${SERVICE_SLUG}/`} class="hover:text-accent transition">{SERVICE_NAME}</a>
+                <span class="text-muted/40">›</span>
+                <span class="text-ink font-semibold">Pilar Panduan</span>
+            </nav>
+
+            <div class="mb-5 anim-fade-up">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink text-[11px] font-bold uppercase tracking-wider rounded-full">
+                    <BookOpen class="w-3 h-3" />
+                    Panduan Lengkap
+                </span>
+            </div>
+
+            <h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6 anim-fade-up">
+                {PILLAR_TITLE}
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up">
+                {PILLAR_INTRO}
+            </p>
+
+            <div class="flex flex-wrap gap-3 anim-fade-up">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/90 text-ink font-bold text-sm rounded-full btn-shine shadow-pop transition">
+                    <MessageCircle class="w-4 h-4" />
+                    Konsultasi Gratis
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold text-sm rounded-full transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== STATS ====================== -->
+    <section class="py-12 md:py-16 bg-white border-y border-gray-100">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                {STATS.map((stat, i) => (
+                    <div class="text-center reveal">
+                        <div class="text-3xl md:text-4xl font-display font-extrabold text-primary mb-1 tabular-nums">{stat.num}</div>
+                        <div class="text-xs md:text-sm text-muted leading-snug">{stat.label}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== CLUSTERS ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-12 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Topical Cluster</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    5 Pilar Topik {SERVICE_NAME}
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    Setiap pilar dibahas mendalam di artikel blog terpisah. Klik salah satu untuk masuk ke cluster artikel spesifik.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {CLUSTERS.map((cluster) => (
+                    <div class="card-premium p-6 bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all duration-300">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-wider rounded-full mb-4">
+                            {cluster.tag}
+                        </div>
+                        <h3 class="text-lg font-display font-bold text-ink mb-2 leading-snug">{cluster.title}</h3>
+                        <p class="text-sm text-muted leading-relaxed mb-4">{cluster.desc}</p>
+                        <a href={`/blog/?tag=${encodeURIComponent(cluster.tag)}&service=${SERVICE_SLUG}`} class="inline-flex items-center gap-1.5 text-accent text-sm font-bold hover:gap-2.5 transition-all">
+                            Baca artikel cluster
+                            <ArrowRight class="w-3.5 h-3.5" />
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TOP POSTS ====================== -->
+    {TOP_POSTS.length > 0 && (
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-10 reveal">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Artikel Terbaru</span>
+                    <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                        Update Terbaru {SERVICE_NAME}
+                    </h2>
+                </div>
+                <a href="/blog/" class="inline-flex items-center gap-1.5 text-primary text-sm font-bold hover:gap-2.5 transition-all">
+                    Lihat semua artikel
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {TOP_POSTS.map((post) => (
+                    <a href={`/blog/${post.slug}/`} class="group block bg-white rounded-2xl border border-gray-100 hover:border-accent/30 hover:shadow-pop transition-all overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-xs text-muted mb-3">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-accent/10 text-accent font-bold rounded">
+                                    {post.category || 'Strategi'}
+                                </span>
+                                <span>·</span>
+                                <time>{post.date}</time>
+                                <span>·</span>
+                                <span>{post.readTime}</span>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-ink leading-snug mb-2 group-hover:text-accent transition line-clamp-2">
+                                {post.title}
+                            </h3>
+                            <p class="text-sm text-muted leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
+                            <span class="inline-flex items-center gap-1.5 text-accent text-xs font-bold group-hover:gap-2.5 transition-all">
+                                Baca selengkapnya
+                                <ArrowRight class="w-3.5 h-3.5" />
+                            </span>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== CITIES ====================== -->
+    <section class="py-16 md:py-20">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Coverage Area</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3 mb-4">
+                    Tersedia di {CITIES.length}+ Kota Indonesia
+                </h2>
+                <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                    {SERVICE_NAME} untuk UMKM dan bisnis di kota Anda. Setiap halaman kota punya konteks lokal: demographics, UMKM count, dan trust signal regional.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 reveal-stagger">
+                {CITIES.map((c) => (
+                    <a href={`/${SERVICE_SLUG}/${c.slug}/`} class="text-center px-3 py-3 bg-white border border-gray-100 rounded-xl hover:border-accent/30 hover:shadow-sm transition text-sm font-semibold text-ink hover:text-accent">
+                        {c.name}
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    {FAQS.length > 0 && (
+    <section class="py-16 md:py-20 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="text-center mb-10 reveal">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-accent">FAQ</span>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mt-3">
+                    Pertanyaan yang Sering Diajukan
+                </h2>
+            </div>
+
+            <div class="space-y-4 reveal-stagger">
+                {FAQS.map((faq, i) => (
+                    <details class="group bg-soft rounded-2xl border border-gray-100 overflow-hidden">
+                        <summary class="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer font-display font-bold text-ink hover:text-accent transition">
+                            <span class="text-base md:text-lg">{faq.q}</span>
+                            <span class="shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-open:rotate-45 transition-transform text-lg">+</span>
+                        </summary>
+                        <div class="px-6 pb-5 text-muted leading-relaxed text-sm md:text-base">
+                            {faq.a}
+                        </div>
+                    </details>
+                ))}
+            </div>
+        </div>
+    </section>
+    )}}
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <RelatedServices
+        client:load
+        items={RELATED_ITEMS}
+        title="Kombinasikan dengan Channel Lain"
+        subtitle="Bisnis yang efektif biasanya menjalankan iklan di 2-3 kanal sekaligus agar saling menguatkan."
+    />
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-primary via-primary-2 to-primary text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 hero-grid pointer-events-none"></div>
+        <div class="container mx-auto px-6 max-w-3xl text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur text-white text-xs font-bold uppercase tracking-wider rounded-full mb-6">
+                <Sparkles class="w-3 h-3" />
+                Tim online · respon 1 jam
+            </div>
+            <h2 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl mb-6 leading-tight">
+                Siap Meningkatkan Performa {SERVICE_NAME} Anda?
+            </h2>
+            <p class="text-base md:text-lg text-white/80 leading-relaxed mb-8 max-w-2xl mx-auto">
+                Sesi konsultasi awal 15 menit gratis — tanpa komitmen. Kami diskusi target Anda, lalu susun strategi {SERVICE_NAME} yang terukur.
+            </p>
+            <div class="flex flex-wrap gap-3 justify-center">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-7 py-4 bg-accent hover:bg-accent/90 text-ink font-bold text-sm md:text-base rounded-full btn-shine shadow-lg transition">
+                    <MessageCircle class="w-5 h-5" />
+                    Diskusi via WhatsApp
+                </a>
+                <a href={`/${SERVICE_SLUG}/`} class="inline-flex items-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/20 backdrop-blur text-white font-bold text-sm md:text-base rounded-full border border-white/20 transition">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+
+    <LocalSchema
+        pageType="service"
+        title={PILLAR_TITLE}
+        description={PILLAR_INTRO.slice(0, 160)}
+        url={`https://beriklan.co.id/${SERVICE_SLUG}/pilar/`}
+        serviceSlug={SERVICE_SLUG}
+        tiers={SERVICE_DATA && SERVICE_DATA.tiers ? SERVICE_DATA.tiers : []}
+        faqs={FAQS}
+    />
+</Layout>

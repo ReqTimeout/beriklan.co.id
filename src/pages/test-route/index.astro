@@ -1,0 +1,13 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.svelte';
+import Footer from '../../components/Footer.svelte';
+---
+<Layout title="Test Route" description="Testing deploy">
+<Navbar client:only="svelte" />
+<div class="container py-20">
+<h1>Test route deployed</h1>
+<p>This page tests if new routes are picked up by CF deploy.</p>
+</div>
+<Footer client:only="svelte" />
+</Layout>

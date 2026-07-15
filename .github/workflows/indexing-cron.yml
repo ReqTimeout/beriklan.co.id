@@ -1,0 +1,89 @@
+name: Daily GSC Indexing Cron
+
+on:
+  schedule:
+    # Every day at 06:00 UTC (= 14:00 WIB, 7 hours after Google quota resets at midnight PT)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+concurrency:
+  group: indexing-cron
+  cancel-in-progress: false
+
+jobs:
+  submit-indexing:
+    name: Submit pending URLs to Google + IndexNow
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-api-python-client google-auth-httplib2 requests
+
+      - name: Check secrets available
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: |
+          if [ -z "$GSC_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::GSC_SERVICE_ACCOUNT_JSON secret not set"
+            exit 1
+          fi
+          echo "✓ GSC_SERVICE_ACCOUNT_JSON present (${#GSC_SERVICE_ACCOUNT_JSON} chars)"
+          if [ -n "$INDEXNOW_KEY" ]; then
+            echo "✓ INDEXNOW_KEY present (${#INDEXNOW_KEY} chars)"
+          else
+            echo "⚠ INDEXNOW_KEY not set — IndexNow parts will be skipped"
+          fi
+
+      - name: Submit pending URLs (Google + IndexNow)
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: |
+          python scripts/seo/gsc_indexer.py --new 2>&1 | tee /tmp/indexing-cron.log
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: indexing-cron-logs-${{ github.run_id }}
+          path: |
+            /tmp/indexing-cron.log
+            data/index_log.json
+          retention-days: 7
+
+      - name: Commit updated pending file
+        run: |
+          git config user.name "Beriklan SEO Bot"
+          git config user.email "seo-bot@beriklan.co.id"
+          git add data/index_log.json data/pending_google_indexing.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "cron: update indexing log $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Indexing Cron Run" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f /tmp/indexing-cron.log ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -30 /tmp/indexing-cron.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

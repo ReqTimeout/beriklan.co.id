@@ -19,19 +19,21 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --prefer-offline
 
       - name: Build
-        run: npm run build 2>&1
+        run: npm run build 2>&1 | tee /tmp/build.log
 
-      - name: Verify dist created
+      - name: Show build log tail
+        if: always()
         run: |
-          ls -la dist/
-          test -f dist/index.html && echo "✓ index.html exists"
+          echo "=== BUILD LOG TAIL ==="
+          tail -50 /tmp/build.log 2>/dev/null || echo "No log"
+          echo "=== DIST CHECK ==="
+          ls -la dist/ | head -10
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -51,8 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
 
       - name: Install wrangler
         run: npm install wrangler@latest --no-save --no-audit --no-fund
@@ -68,10 +69,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Deploying to CF Workers..."
-          npx wrangler deploy 2>&1 || (echo "❌ wrangler deploy failed (likely zone-scoped token)" && echo "Account ID: $CLOUDFLARE_ACCOUNT_ID" && exit 1)
+          echo "Account ID: $CLOUDFLARE_ACCOUNT_ID"
+          echo "Token (first 20): ${CLOUDFLARE_API_TOKEN:0:20}..."
+          npx wrangler deploy 2>&1 | tee /tmp/deploy.log
 
-      - name: Purge CF cache (force fresh content)
+      - name: Purge CF cache
         if: success()
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -87,7 +89,7 @@ jobs:
         run: |
           sleep 30
           echo "=== Verifying live URLs ==="
-          for slug in "" "tentang-kami/" "jasa-iklan-facebook/" "blog/agency-digital-aceh/" "jasa-iklan-facebook/pilar/" "test-deploy-check.txt"; do
+          for slug in "" "tentang-kami/" "jasa-iklan-facebook/" "blog/agency-digital-aceh/" "jasa-iklan-facebook/pilar/" "2dac33f6303f4041b9ec7e2f2910ea80.txt"; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "https://beriklan.co.id/$slug")
             echo "  /$slug: HTTP $code"
           done

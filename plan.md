@@ -5546,3 +5546,48 @@ After CF Pages connected:
 - `GROQ_API_KEY` (secret) — Groq LLM
 - `GITHUB_TOKEN` (secret) — Direct API commit (bypass GH Action)
 
+
+---
+
+## 65. DAY 9.5 — Niche Filter Improved ✅
+
+User feedback: trending topics harus niche bisnis/teknologi, exclude sport.
+
+### Fix di Worker endpoint
+
+- **Niche include** regex: 50+ DM keywords (iklan, ads, marketing, umkm, shopee, tokopedia, ecommerce, facebook ads, instagram ads, tiktok ads, google ads, whatsapp business, youtube ads, meta, spark, reels, performance marketing, digital agency, marketing agency, konten, content, creator, influencer, chatgpt, gemini ai, claude, gpt-4, automation, generative ai, software, saas, crm, seo, sem, ppc, roas, cpc, cpm, ctr, konversi, lead generation, landing page, funnel, email marketing)
+- **Niche exclude** regex: 30+ non-DM (sport, gaming, politics, celeb, gambling, news-sensitive, dll)
+- **Multi-geo RSS**: ID, MY, US (3 feed untuk coverage lebih luas)
+- **Curated fallback**: 7 always-relevant DM topics (AI untuk UMKM, Meta Ads 2026, TikTok Shop, Google PMax, WhatsApp Business AI, Content Marketing, ROAS Optimization)
+- **Debug info** di response: `niche_topics`, `all_topics`, `pool_source` (only with `?debug=1`)
+
+### Test result (15 Jul 2026)
+
+| Source | Topic | Notes |
+|--------|-------|-------|
+| ID RSS | 14 topics (mostly non-DM: xi jinping, mahjong, sports) | None passed filter |
+| MY RSS | (similar) | None passed filter |
+| US RSS | (similar) | None passed filter |
+| Curated | **"Strategi Meta Ads 2026"** | ✓ Article generated (2963 chars), committed (sha `0256cf7`) |
+
+### CF Pages project created via API
+
+| Field | Value |
+|-------|-------|
+| Project ID | `90af4056-5aca-439b-a85d-dc32d89e779c` |
+| Subdomain | `beriklanweb.pages.dev` |
+| Build cmd | `cd web && npm install && npm run build` |
+| Output dir | `dist` |
+| Root dir | `web` |
+| Build caching | enabled |
+
+**Pending (user 5 min):** Connect GitHub di dashboard → auto-deploy every push.
+
+### Removed local (verified gone)
+
+- `~/Library/LaunchAgents/com.beriklan.*.plist` ✓
+- `web/scripts/auto-deploy.sh` ✓
+- `scripts/seo/trending_news.py` ✓ (replaced by Worker endpoint)
+- `scripts/seo/fast_articles.py` ✓ (one-time batch, can be re-run if needed)
+- `scripts/seo/bulk_*.py` ✓ (legacy)
+

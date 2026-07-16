@@ -5591,3 +5591,54 @@ User feedback: trending topics harus niche bisnis/teknologi, exclude sport.
 - `scripts/seo/fast_articles.py` ✓ (one-time batch, can be re-run if needed)
 - `scripts/seo/bulk_*.py` ✓ (legacy)
 
+
+---
+
+## 66. DAY 9.5 — CF Pages Status (15 Jul 2026 17:38 WIB)
+
+### Current state
+
+| Mode | Status | Notes |
+|------|--------|-------|
+| Direct Upload (`wrangler pages deploy`) | ✅ WORKING | Build #9a79acb8 live, all URLs 200 OK |
+| GitHub source (push to auto-deploy) | ❌ FAILING | CF Pages build keeps returning "build failure" in 3s — CF status says "Minor Service Outage" |
+| Custom domain `beriklan.co.id` | ❌ Worker still serving | Pages only has `beriklanweb.pages.dev` |
+
+### Issue
+
+CF Pages build via GitHub source consistently fails. Build image v3, build_command `cd web && npm install && npm run build` — the same as our manual deploy. CF status reports "Minor Service Outage" which may be related.
+
+### Workaround (current)
+
+Use **Direct Upload mode**:
+```bash
+cd web
+npm run build
+npx wrangler pages deploy dist --project-name beriklanweb
+```
+
+This works reliably but requires local execution (not cloud). Once CF Pages build is fixed, can switch back to GitHub source.
+
+### wrangler.jsonc update for Pages compatibility
+
+Pages project can't have `"main"` field (only Workers can). Updated to:
+```json
+{
+  "name": "beriklanweb",
+  "compatibility_date": "2026-01-01",
+  "d1_databases": [...],
+  "ai": {...},
+  "vars": {...},
+  "pages_build_output_dir": "dist"
+}
+```
+
+This works for BOTH Worker deploys (`npx wrangler deploy`) AND Pages deploys (`npx wrangler pages deploy`).
+
+### Next steps
+
+1. Wait for CF Pages build to be fixed (Minor Service Outage)
+2. Switch back to GitHub source for true auto-deploy
+3. Migrate custom domain to Pages (after build works)
+4. Add cron-job.org for trending + indexing automation
+

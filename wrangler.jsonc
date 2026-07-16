@@ -1,5 +1,6 @@
 {
   "name": "beriklanweb",
+  "main": "src/worker-entry.js",
   "compatibility_date": "2026-01-01",
   "d1_databases": [
     {
@@ -20,5 +21,8 @@
   "placement": {
     "mode": "smart"
   },
-  "pages_build_output_dir": "dist"
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "dist"
+  }
 }

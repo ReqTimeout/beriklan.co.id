@@ -355,23 +355,18 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
                 }
 
                 const indexContent = btoa(unescape(encodeURIComponent(JSON.stringify(indexData, null, 2))));
-                const indexCommit = await fetch(
-                  `https://api.github.com/repos/${owner}/${repo}/contents/public/data/posts-index.json`,
-                  {
-                    method: "PUT",
-                    headers: {
-                      "Authorization": `token ${env.GITHUB_TOKEN}`,
-                      "Content-Type": "application/json",
-                      "User-Agent": "BeriklanWorker/1.0",
-                    },
-                    body: JSON.stringify({
-                      message: `trending: update posts-index for '${slug}'`,
-                      content: indexContent,
-                      sha: indexSha,
-                      branch: "main",
-                    }),
+                // Retry once on 409 (stale sha from concurrent commit)
+                let indexCommit = await putIndexFile(owner, repo, env.GITHUB_TOKEN, indexContent, indexSha, slug);
+                if (indexCommit.status === 409) {
+                  const reGet = await fetch(
+                    `https://api.github.com/repos/${owner}/${repo}/contents/public/data/posts-index.json`,
+                    { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } }
+                  );
+                  if (reGet.ok) {
+                    const reSha = (await reGet.json()).sha;
+                    indexCommit = await putIndexFile(owner, repo, env.GITHUB_TOKEN, indexContent, reSha, slug);
                   }
-                );
+                }
                 if (!indexCommit.ok) {
                   errors.push({stage: "github_index", status: indexCommit.status,
                                 body: (await indexCommit.text()).substring(0, 200) });
@@ -614,4 +609,24 @@ function pem2der(pem) {
     .replace(/-----BEGIN PRIVATE KEY-----/, "")
     .replace(/-----END PRIVATE KEY-----/, "")
     .replace(/\s+/g, "");
+}
+
+async function putIndexFile(owner, repo, token, content, sha, slug) {
+  return await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/public/data/posts-index.json`,
+    {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Content-Type": "application/json",
+        "User-Agent": "BeriklanWorker/1.0",
+      },
+      body: JSON.stringify({
+        message: `trending: update posts-index for '${slug}'`,
+        content,
+        sha,
+        branch: "main",
+      }),
+    }
+  );
 }

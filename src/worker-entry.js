@@ -266,6 +266,8 @@ const chosen = pool[0] || "Digital Marketing Trends Indonesia";
               publish_date: dateStr,
             };
             posts.unshift(newPost);
+            // Re-sort by iso_date desc to ensure newest always at top
+            posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
 
             const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
 
@@ -289,6 +291,58 @@ const chosen = pool[0] || "Digital Marketing Trends Indonesia";
             if (commitResp.ok) {
               const data = await commitResp.json();
               commitSha = data.commit?.sha?.substring(0, 7);
+
+              // Also commit posts-index.json update (top 24 most recent)
+              try {
+                const indexEntry = {
+                  slug, title, excerpt: newPost.excerpt, date: dateStr,
+                  iso_date: now, category: "trending", readTime: newPost.readTime,
+                  featured: false, tags: newPost.tags,
+                };
+                const indexData = [indexEntry, ...posts.filter(p => p.slug !== slug)]
+                  .slice(0, 24)
+                  .map(p => ({
+                    slug: p.slug, title: p.title, excerpt: p.excerpt,
+                    date: p.date, iso_date: p.iso_date, category: p.category,
+                    readTime: p.readTime, featured: p.featured, tags: p.tags,
+                  }));
+
+                // Get current index sha
+                const indexGet = await fetch(
+                  `https://api.github.com/repos/${owner}/${repo}/contents/public/data/posts-index.json`,
+                  { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } }
+                );
+                let indexSha = "";
+                if (indexGet.ok) {
+                  const idxData = await indexGet.json();
+                  indexSha = idxData.sha;
+                }
+
+                const indexContent = btoa(unescape(encodeURIComponent(JSON.stringify(indexData, null, 2))));
+                const indexCommit = await fetch(
+                  `https://api.github.com/repos/${owner}/${repo}/contents/public/data/posts-index.json`,
+                  {
+                    method: "PUT",
+                    headers: {
+                      "Authorization": `token ${env.GITHUB_TOKEN}`,
+                      "Content-Type": "application/json",
+                      "User-Agent": "BeriklanWorker/1.0",
+                    },
+                    body: JSON.stringify({
+                      message: `trending: update posts-index for '${slug}'`,
+                      content: indexContent,
+                      sha: indexSha,
+                      branch: "main",
+                    }),
+                  }
+                );
+                if (!indexCommit.ok) {
+                  errors.push({stage: "github_index", status: indexCommit.status,
+                                body: (await indexCommit.text()).substring(0, 200) });
+                }
+              } catch (e) {
+                errors.push({stage: "github_index_overall", error: e.message});
+              }
             } else {
               errors.push({stage: "github_commit", status: commitResp.status, body: (await commitResp.text()).substring(0, 200) });
             }

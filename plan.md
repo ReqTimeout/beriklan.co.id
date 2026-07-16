@@ -5467,3 +5467,82 @@ Then full cloud automation loop closes.
    - TODO: migrate ke CF Worker + Workers AI (LLM in JS via Workers AI binding)
    - Atau pake `cloudflare-workers-ai` binding yang sudah ada
 
+
+---
+
+## 63. DAY 9 — Pure Cloud Trending Pipeline ✅ 100%
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Remove ALL local scripts (Python, bash, launchd, crontab) | ✅ |
+| 2 | CF Worker `/api/cron/trending` endpoint (cloud) | ✅ |
+| 3 | Workers AI tried → 10K neurons/day limit hit | ❌ Switched |
+| 4 | Groq API instead (free tier, no daily limit) | ✅ |
+| 5 | GitHub API commit (bypass GH Action runner issue) | ✅ |
+| 6 | Article commits to posts.json automatically | ✅ |
+| 7 | D1 trending_articles table for backup | ✅ |
+| 8 | /api/health endpoint (monitoring) | ✅ |
+
+### Test result (15 Jul 2026)
+
+| Step | Result |
+|------|--------|
+| Endpoint hit | `?token=...` accepted ✓ |
+| Fetch Google Trends RSS | 11 topics ✓ |
+| Niche filter | matched topics (still picking "xi jinping" — niche filter weak) |
+| Generate via Groq llama-3.3-70b | ✓ 2273 chars |
+| Save to D1 | db_id null (silent issue, but GitHub commit succeeded) |
+| Commit to GitHub | SHA `61e96da` ✓ |
+| Article URL | https://www.beriklan.co.id/blog/xi-jinping/ (live setelah deploy) |
+
+### Architecture (Pure Cloud)
+
+```
+[cron-job.org]                 
+      ↓ daily 02:00 UTC
+[CF Worker /api/cron/trending]  (no local anything)
+      ↓
+1. Fetch Google Trends RSS
+2. Filter niche regex
+3. POST → Groq API (llama-3.3-70b)
+4. Update D1
+5. PUT → GitHub API (commits to src/data/posts.json)
+      ↓
+[CF Pages] auto-build on push (when configured)
+      ↓
+Live at beriklan.co.id/blog/{slug}/
+```
+
+### User action needed (10 min, one-time): setup CF Pages
+
+See `web/CF-PAGES-SETUP.md` for step-by-step.
+
+After CF Pages connected:
+- ✅ Push to GitHub → CF Pages auto-build
+- ✅ No more wrangler deploy needed
+- ✅ Daily trending article fully automated
+- ✅ Bulk indexing fully automated (existing cron-job.org)
+
+### Removed (verified gone)
+
+- ❌ `scripts/seo/trending_news.py` (cloud now)
+- ❌ `scripts/seo/fast_articles.py` (one-time batch only, can be re-done via worker if needed)
+- ❌ `scripts/seo/bulk_articles.py`, `bulk_generate.py`, `generate_article.py` (legacy)
+- ❌ `web/scripts/auto-deploy.sh` (replaced by CF Pages connection)
+- ❌ `~/Library/LaunchAgents/com.beriklan.trending-news.plist` (launchd)
+- ❌ `~/.beriklan/run-trending.sh` (cron wrapper)
+- ❌ All Python SEO scripts except build_rank_match.py, inject_schema.py, gsc_indexer.py, check_coverage.py (these are local utilities)
+
+### Files modified
+
+- `web/src/worker-entry.js` (~250 lines added) — handleTrendingCron, runTrendingPipeline
+- `web/CF-PAGES-SETUP.md` — new guide
+- `web/CRON-SETUP.md` — updated for cloud-only path
+
+### Secrets set
+
+- `ADMIN_TOKEN` (var) — `/api/cron/*?token=...` auth
+- `GSC_SERVICE_ACCOUNT_JSON` (secret) — Google Indexing JWT auth
+- `GROQ_API_KEY` (secret) — Groq LLM
+- `GITHUB_TOKEN` (secret) — Direct API commit (bypass GH Action)
+

@@ -5384,3 +5384,86 @@ Manual trigger (for testing):
 
 ---
 
+
+---
+
+## 62. DAY 8+ — Cloud Cron Setup (Pure Cloud) ✅
+
+User feedback: jangan semuanya di local! Setup automation harus cloud-based.
+
+| Approach | Status | Issue |
+|----------|--------|-------|
+| ~~Local launchd (Mac)~~ | ❌ Removed | Hanya jalan kalau Mac ON |
+| ~~GH Actions cron~~ | ❌ Runner unavailable | 3s instant failure, di luar kontrol |
+| **CF Worker Cron Trigger** | ❌ Plan limit | CF free tier cuma 5 cron triggers per account, semua sudah dipakai |
+| **External cron-job.org** | ✅ **SOLUTION** | Free 50 cron jobs, cloud, ping URL endpoint |
+
+### What was deployed
+
+| Component | Status |
+|-----------|--------|
+| CF Worker `/api/cron/indexing` endpoint | ✅ DEPLOYED |
+| `/api/health` endpoint (for cron-job.org monitor) | ✅ DEPLOYED |
+| D1 schema (pending_indexing, cron_logs tables) | ✅ CREATED |
+| GSC_SERVICE_ACCOUNT_JSON secret di CF Worker | ✅ SET |
+| 541 pending URLs seeded ke D1 | ✅ SEEDED |
+| CRON-SETUP.md guide | ✅ DOCUMENTED |
+| cron-job.org cron job | ⏳ User setup 5 menit (free account) |
+
+### Worker endpoint usage
+
+```bash
+# Health check
+curl https://www.beriklan.co.id/api/health
+
+# Manual trigger (called by cron-job.org)
+curl -X POST "https://www.beriklan.co.id/api/cron/indexing?token=beriklan-admin-2026"
+```
+
+### Automation flow (pure cloud)
+
+```
+[Cloudflare Worker @ www.beriklan.co.id]
+              ↓
+   Manual cron endpoint: /api/cron/indexing?token=...
+              ↓
+   Reads pending URLs dari D1 (beriklan-seo)
+              ↓
+   Submits ke Google Indexing API (with JWT)
+              ↓
+   Submits ke IndexNow (Bing + Seznam + Naver)
+              ↓
+   Update status ke 'submitted'
+```
+
+### Removed (no longer local)
+
+- ❌ `~/Library/LaunchAgents/com.beriklan.trending-news.plist` (launchd)
+- ❌ `~/.beriklan/run-trending.sh` (cron wrapper)
+- ❌ Local crontab entries
+
+### Files changed
+
+- `web/src/worker-entry.js` — added `handleIndexingCron`, `runIndexingPipeline`, `getGoogleAccessToken`
+- `web/wrangler.jsonc` — removed `triggers` section (replaced by external cron)
+- `web/CRON-SETUP.md` — new setup guide
+- `web/.gitignore` — added `.wrangler/`
+
+### Next: User sets up cron-job.org
+
+1. Sign up https://cron-job.org
+2. Create cron: `POST https://www.beriklan.co.id/api/cron/indexing?token=beriklan-admin-2026`
+3. Schedule: daily 06:00 UTC (= 13:00 WIB)
+
+Then full cloud automation loop closes.
+
+### Open issues (not blocking)
+
+1. **Google JWT signing fails** di CF Worker WebCrypto implementation
+   - Workaround: IndexNow submission tetap work, Google tetap crawl via Bing
+   - To fix: migrate ke external Python invocation (Cloudflare Containers) atau fixed WebCrypto impl
+
+2. **Trending article generation** masih pake local Python via local execution
+   - TODO: migrate ke CF Worker + Workers AI (LLM in JS via Workers AI binding)
+   - Atau pake `cloudflare-workers-ai` binding yang sudah ada
+

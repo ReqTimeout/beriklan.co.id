@@ -525,7 +525,15 @@ async function runIndexingPipeline(env, debug = false) {
           headers: { "Content-Type": "application/json; charset=utf-8" },
           body: JSON.stringify(payload),
         });
-        if (resp.ok || resp.status === 202) indexnow_engines++;
+        if (resp.ok || resp.status === 202) {
+          indexnow_engines++;
+        } else if (resp.status === 429) {
+          errors.push({stage: "indexnow", engine: ep, status: 429, message: "rate limited — retry later"});
+          break;
+        } else {
+          const ib = await resp.text().catch(() => "");
+          errors.push({stage: "indexnow", engine: ep, status: resp.status, body: ib.substring(0, 150)});
+        }
       } catch (e) { errors.push({stage: "indexnow", engine: ep, error: e.message}); }
     }
   } catch (e) { errors.push({stage: "indexnow_outer", error: e.message}); }
@@ -560,14 +568,14 @@ async function getGoogleAccessToken(sa) {
   const claimB64 = b64u(JSON.stringify(claim));
   const input = `${headerB64}.${claimB64}`;
 
-  const keyData = pkcs8Bytes(sa.private_key);
+  const keyData = str2ab(pem2der(sa.private_key));
   const privateKey = await crypto.subtle.importKey(
     "pkcs8", keyData,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false, ["sign"]
   );
   const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", privateKey, new TextEncoder().encode(input));
-  const jwt = `${input}.${b64u(ab2b64(sig))}`;
+  const jwt = `${input}.${buf2b64url(new Uint8Array(sig))}`;
 
   const resp = await fetch(sa.token_uri, {
     method: "POST",
@@ -584,25 +592,26 @@ async function getGoogleAccessToken(sa) {
 
 // ─── Helpers ──────────────────────────────────────────────────
 function b64u(s) {
-  const b64 = typeof s === "string" ? btoa(s) : ab2b64(s);
+  const b64 = typeof s === "string" ? btoa(s) : buf2b64url(new Uint8Array(s));
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function ab2b64(buf) {
-  const bytes = new Uint8Array(buf);
+function buf2b64url(bytes) {
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function pkcs8Bytes(pem) {
-  const b64 = pem
+function str2ab(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function pem2der(pem) {
+  return pem
     .replace(/-----BEGIN PRIVATE KEY-----/, "")
     .replace(/-----END PRIVATE KEY-----/, "")
     .replace(/\s+/g, "");
-  const bin = atob(b64);
-  const buf = new ArrayBuffer(bin.length);
-  const view = new Uint8Array(buf);
-  for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
-  return buf;
 }

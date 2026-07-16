@@ -42,3 +42,4 @@ url_classification.csv
 web
 web/secrets/
 .last-deployed-sha
+.wrangler/

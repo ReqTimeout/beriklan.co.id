@@ -106,26 +106,62 @@ async function handleTrendingCron(request, env) {
   try {
     await ensureTrendingTables(env);
 
-    // Step 1: Fetch trending from Google Trends RSS
+    // Step 1: Fetch trending from Google Trends RSS (multi-geo for more topics)
     let topics = [];
-    try {
-      const rssResp = await fetch("https://trends.google.com/trending/rss?geo=ID", {
-        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
-      });
-      const xml = await rssResp.text();
-      const itemMatches = [...xml.matchAll(/<item>[\s\S]*?<title>([^<]+)<\/title>/g)];
-      topics = itemMatches.slice(0, 10).map(m => m[1].trim());
-    } catch (e) {
-      errors.push({stage: "rss_fetch", error: e.message});
+    const geos = ["ID", "MY", "US"];  // Indonesia, Malaysia, US
+    for (const geo of geos) {
+      try {
+        const rssResp = await fetch(`https://trends.google.com/trending/rss?geo=${geo}`, {
+          headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+        });
+        if (!rssResp.ok) continue;
+        const xml = await rssResp.text();
+        const itemMatches = [...xml.matchAll(/<item>[\s\S]*?<title>([^<]+)<\/title>/g)];
+        const geo_topics = itemMatches.slice(0, 15).map(m => m[1].trim());
+        topics.push(...geo_topics);
+      } catch (e) {
+        errors.push({stage: "rss_fetch", geo, error: e.message});
+      }
     }
+    // De-dup (case insensitive)
+    const seen = new Set();
+    topics = topics.filter(t => {
+      const k = t.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
 
-    // Step 2: Filter niche
-    const nicheRegex = /iklan|ads|marketing|digital|umkm|bisnis|facebook|instagram|tiktok|google|whatsapp|youtube|konten|content|chatgpt|gemini|ai|meta ai|spark ads|ads manager/i;
-    const nicheTopics = topics.filter(t => nicheRegex.test(t));
+    // Step 2: Filter niche — strict include + exclude
+    // INCLUDE: business, tech, digital marketing, AI, social platforms
+    // EXCLUDE: sports, gambling, entertainment non-DM, news-sensitive
+    const nicheInclude = /\biklan\b|\bads\b|\bmarketing\b|\badvertising\b|pemasaran|umkm|\bbisnis\b|jualan|\btoko online\b|\bonline shop\b|marketplace|\bshopee\b|\btokopedia\b|ecommerce|\bstartup\b|\bbrand\b|\bfacebook ads\b|\binstagram ads\b|\btiktok ads\b|\bgoogle ads\b|\bwhatsapp business\b|\byoutube ads\b|meta ads|\bspark ads\b|\breels ads\b|\bperformance marketing\b|\bdigital agency\b|\bmarketing agency\b|konten|\bcontent\b|creator|\binfluencer\b|\bchatgpt\b|\bgemini ai\b|\bclaude\b|\bgpt-4\b|automation|\bgenerative ai\b|\bsoftware\b|\bsaas\b|\bcrm\b|\bseo\b|\bsem\b|\bppc\b|\broas\b|\bcpc\b|\bcpm\b|\bctr\b|\bkonversi\b|\blead generation\b|\blanding page\b|\bfunnel\b|\bemail marketing\b/i;
+    const nicheExclude = /\bbola\b|sepak bola|\bliga\b|pemain|olahrag|stadion|stadion|pertandingan|kemenangan|kekalahan|fitness|gym|\bbasket\b|tenis|bulutangkis|\bvoli\b|renang|moto gp|\bf1\b|esports|mlbb|\bpubg\b|\bmobile legend\b|\bgenshin\b|\bhonkai\b|mahjong|catur|gaming|game online|mlbb|genshin impact|mobile games|video game|politik|pemilu|pilpres|partai|korupsi|skandal|gosip|artis|selebriti|kpop|drakor|hollywood|film laga|drama|\bnetflix\b|bencana|kecelakaan|tewas|meninggal|crypto|bitcoin|saham|forex|judi|togel|kasino|bisbol|kriket|hockey|\bgame\b|\bbermain\b/i;
+    const nicheTopics = topics.filter(t => {
+      if (!nicheInclude.test(t)) return false;
+      if (nicheExclude.test(t)) return false;
+      return true;
+    });
     // Pick best topic: niche > non-niche, prefer longer (more descriptive) topics
 let pool = nicheTopics.filter(t => t.length > 5);
-if (pool.length === 0) pool = topics.filter(t => t.length > 5);
-const chosen = pool[0] || "Digital Marketing Trends Indonesia";
+let poolSource = "niche_trending";
+if (pool.length === 0) {
+  // Fallback to curated DM topics (always relevant)
+  poolSource = "curated_fallback";
+  const curatedTopics = [
+    "AI Tools untuk UMKM Indonesia",
+    "Strategi Meta Ads 2026",
+    "TikTok Shop Indonesia Update",
+    "Google Performance Max Optimization",
+    "WhatsApp Business AI Chatbot",
+    "Content Marketing Trends 2026",
+    "ROAS Optimization untuk E-commerce",
+  ];
+  // Pick a random curated topic
+  pool = curatedTopics;
+  errors.push({stage: "niche_empty", message: "No trending topic matched niche filter, using curated fallback"});
+}
+const chosen = pool[Math.floor(Math.random() * pool.length)];
 
     // Step 3: Generate article via Groq API (free tier, no daily limit)
     let article = null;
@@ -365,6 +401,9 @@ const chosen = pool[0] || "Digital Marketing Trends Indonesia";
       db_id: savedId,
       commit_sha: commitSha,
       url: `https://www.beriklan.co.id/blog/${slug}/`,
+      niche_topics: debug ? nicheTopics.slice(0, 10) : undefined,
+      all_topics: debug ? topics.slice(0, 15) : undefined,
+      pool_source: poolSource || "niche_trending",
       errors: debug || errors.length > 0 ? errors : undefined,
       had_errors: errors.length > 0,
     }), { headers: { "Content-Type": "application/json" } });

@@ -1,128 +1,125 @@
-# CF Pages Setup — Auto-Deploy dari GitHub Push
+# CF Pages Setup — Pure Cloud Auto-Deploy
 
-> Goal: setiap push ke GitHub → CF auto-build + deploy. Tidak perlu wrangler local.
-
----
-
-## Kenapa CF Pages?
-
-Saat ini deployment masih manual via `wrangler deploy`. Workflow cloud-only butuh push ke GitHub → auto-deploy.
-
-**CF Pages Build** (free tier):
-- Direct connection ke GitHub repo
-- Auto-build setiap push
-- Auto-deploy static + workers (kalau pakai `_worker.js`)
-- Free unlimited static deploy
+> **Status:** CF Pages project sudah dibuat via API: `beriklanweb` (subdomain: `beriklanweb.pages.dev`)
+> 
+> **Yang perlu user lakukan (5 menit):** Connect GitHub di dashboard
 
 ---
 
-## Setup (10 menit, one-time di dashboard)
+## Status Setup
 
-### 1. Buka Cloudflare Dashboard
+| Step | Status |
+|------|--------|
+| CF Pages project created | ✅ API done (id: `90af4056-5aca-439b-a85d-dc32d89e779c`) |
+| Build command configured | ✅ `cd web && npm install && npm run build` |
+| Output dir configured | ✅ `dist` |
+| Root dir configured | ✅ `web` |
+| Build caching | ✅ enabled |
+| **GitHub connection** | ❌ **Need user (5 min)** |
+| Custom domain `beriklan.co.id` | ❌ Optional, can be set after |
 
-Pergi ke: https://dash.cloudflare.com → **Workers & Pages** → **Create** → **Pages** tab
+---
+
+## Setup (5 menit, one-time di dashboard)
+
+### 1. Buka CF Pages Dashboard
+
+- https://dash.cloudflare.com → **Workers & Pages** → **Pages** tab
+- Cari project `beriklanweb` (sudah ada dari API)
+- Klik project
 
 ### 2. Connect GitHub
 
-Klik **"Connect to Git"** → pilih **GitHub** → authorize **cloudflare** GitHub App:
-- Repository: `ReqTimeout/beriklan.co.id`
-- Branch: `main`
+Klik **"Connect to Git"** button:
+- Pilih **GitHub**
+- Authorize **cloudflare** GitHub App
+- Pilih:
+  - **Repository:** `ReqTimeout/beriklan.co.id`
+  - **Production branch:** `main`
+  - **Build command:** `cd web && npm install && npm run build` (pre-filled)
+  - **Build output directory:** `dist` (pre-filled)
+  - **Root directory:** `web` (pre-filled)
+- Klik **"Save and Deploy"**
 
-### 3. Build Configuration
+### 3. First Deploy
 
-- **Build command:**
-  ```bash
-  cd web && npm install && npm run build
-  ```
-- **Build output directory:** `dist`
-- **Root directory (advanced):** `web`
-- **Environment variables:**
-  - `NODE_VERSION=20`
-  - `CI=true`
-  - `PUBLIC_URL=https://beriklan.co.id` (optional)
-- **Compatibility flags:**
-  - `nodejs_compat`
+Tunggu ~3-5 menit untuk first build. Status akan berubah ke **Success** atau **Failed** (check logs if failed).
 
-### 4. Save and Deploy
+### 4. Set Custom Domain (Optional)
 
-Klik **"Save and Deploy"** → tunggu ~3-5 menit untuk first build.
+Setelah first build OK:
+- **Custom domains** tab → **Set up a custom domain**
+- Add `beriklan.co.id` dan `www.beriklan.co.id`
+- CF auto-setup DNS
 
-### 5. Custom Domain (Optional)
+⚠️ **Conflict with existing worker:** `beriklan.co.id` saat ini served by `beriklanweb` worker. Untuk migrasi ke Pages:
+- Setup Pages custom domain **first** (bisa coexist via DNS priority)
+- Hapus Worker route setelah Pages live (settings → workers → beriklanweb → routes)
 
-Setelah first deploy berhasil:
-- **Settings** → **Triggers** → **Custom Domains** → **Set up a custom domain**
-- Masukkan `beriklan.co.id` dan `www.beriklan.co.id`
-- CF otomatis setup DNS records
+### 5. Continuous Deploy (after connect)
 
-⚠️ **Note:** Beriklan.co.id saat ini di-serve oleh worker `beriklanweb`. Mengganti ke Pages perlu:
-- Pages URL di-set ke `beriklan.co.id`
-- Worker `beriklanweb` route dihapus (kalau mau Pages handle semua)
-- ATAU keep keduanya: Pages untuk static, worker untuk `/api/*` endpoints
-
-Pilihan paling sederhana: **Pages handles static + API routes via `_worker.js`** (Pages Workers).
+Setiap push ke `main` → CF Pages auto-builds (~1-3 menit) → deployed ke `beriklanweb.pages.dev` (atau custom domain)
 
 ---
 
-## Arsitektur Final (Pure Cloud)
+## Architecture (Final, Pure Cloud)
 
 ```
-[cron-job.org]
+[cron-job.org]                          ← your browser UI, free 50 cron jobs
       ↓ daily 02:00 UTC
-[CF Worker /api/cron/trending]
+[CF Worker /api/cron/trending]          ← deployed, auto-runs
       ↓
-   Fetch trending RSS → filter → pick
+1. Fetch Google Trends RSS (3 geos)
+2. Filter niche DM topics
+3. Generate article via Groq API (free, no quota)
+4. Commit to GitHub via API
+5. Update D1
       ↓
-   Generate article via Groq API (Workers AI quota habis pakai Groq)
+[GitHub receives push]
       ↓
-   Commit to GitHub via API
+[CF Pages auto-builds on push]          ← after step 2-3 above
       ↓
-[CF Pages] auto-detect push
-      ↓
-   npm install → npm run build → wrangler assets
-      ↓
-[Cloudflare Edge] → https://beriklan.co.id
+[Cloudflare Edge] → https://beriklan.co.id/blog/{slug}/
 ```
 
-### Daily ops (zero local involvement)
-
-1. ⏰ 02:00 UTC: cron-job.org hits `/api/cron/trending`
-2. 🤖 Worker generates article + commits to GitHub
-3. 🚀 CF Pages auto-builds (1-3 menit)
-4. 🌍 New article live at `https://www.beriklan.co.id/blog/{slug}/`
-5. 📡 Indexer similar cron submits ke Bing/Seznam/Naver
-6. 📊 Real-time metrics di `/api/health`
-
-### Bulk indexing (separate cron)
-
-Sudah ada `/api/cron/indexing` — setup cron-job.org cron kedua:
-- Schedule: daily 06:00 UTC (after Google quota reset at midnight Pacific)
-- URL: `https://www.beriklan.co.id/api/cron/indexing?token=...`
+Parallel cron (06:00 UTC):
+```
+[cron-job.org] → /api/cron/indexing
+              → submits to Bing/Seznam/Naver
+              → D1 tracks 541 pending URLs
+```
 
 ---
 
-## After CF Pages connected, runbook for daily ops
+## cron-job.org Setup (5 min)
 
-| Task | Owner | How |
-|------|-------|-----|
-| Add new service page | user | Edit `web/src/pages/jasa-*/index.astro`, push to main |
-| Update copy | user | Edit, commit, push |
-| Daily trending article | auto | cron-job.org → Worker → GitHub → Pages |
-| Bulk indexing | auto | cron-job.org → Worker → IndexNow |
-| Staging test | user | Run `npm run build` locally first |
-| Rollback | manual | `git revert <bad-commit> && git push` (CF Pages auto-rolls-back) |
-| Force rebuild | manual | Trigger deploy di CF Pages dashboard |
+After CF Pages connected, setup 2 cron jobs at https://cron-job.org:
+
+### Cron 1: Trending Article
+- **Title:** `Beriklan Daily Trending`
+- **URL:** `https://www.beriklan.co.id/api/cron/trending?token=beriklan-admin-2026`
+- **Method:** POST
+- **Schedule:** Daily 02:00 UTC (= 09:00 WIB)
+
+### Cron 2: Bulk Indexing
+- **Title:** `Beriklan Daily Indexing`
+- **URL:** `https://www.beriklan.co.id/api/cron/indexing?token=beriklan-admin-2026`
+- **Method:** POST
+- **Schedule:** Daily 06:00 UTC (= 13:00 WIB, after Google quota reset)
 
 ---
 
-## Plan.md Status (after CF Pages)
+## After Everything Connected
 
-| Day | Status |
-|-----|--------|
-| 1-5 | ✅ 100% (Foundation + bulk articles) |
-| 6 | ✅ 90% (Google Indexing submission) |
-| 7 | ✅ 100% (Cron trigger + endpoints) |
-| 7+ Pillar | ✅ 100% |
-| 8 Trending | ✅ 100% (cloud pipeline via Groq + Worker) |
-| CF Pages setup | ⏳ User to do (10 min, one-time) |
+Zero local involvement. Every day:
+1. ⏰ 02:00 UTC: cron-job.org → `/api/cron/trending` → Groq generates article → commits to GitHub
+2. 🚀 02:01 UTC: CF Pages auto-builds → article live
+3. ⏰ 06:00 UTC: cron-job.org → `/api/cron/indexing` → submits 200 URLs to Bing/Seznam/Naver
+4. 📊 24/7: `/api/health` shows pending_count trending down daily
 
-After CF Pages connected, EVERYTHING is cloud. Zero local scripts needed.
+### Monitoring
+
+- `https://www.beriklan.co.id/api/health` → JSON status (live)
+- CF Pages dashboard → deploys tab
+- cron-job.org dashboard → history
+- D1 queries: `wrangler d1 execute beriklan-seo --remote --command "SELECT * FROM cron_logs ORDER BY timestamp DESC LIMIT 5"`

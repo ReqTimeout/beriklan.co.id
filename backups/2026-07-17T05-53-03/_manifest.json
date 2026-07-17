@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T05-53-03",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T05-53-03/batch4_queue.json",
+      "github_status": 201,
+      "sha": "830f7792c3cd5c3d5e178507a84cbba6c348ce43"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T05-53-03/batch4_articles.json",
+      "github_status": 201,
+      "sha": "a25b96ab9c5db795a87d0e3b93aa2e16bc1f7533"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T05-53-03/city_content_queue.json",
+      "github_status": 201,
+      "sha": "c7a671c88ab9bbf3ae918eb44acb37080e4a8ebf"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T05-53-03/city_content.json",
+      "github_status": 201,
+      "sha": "42881311152c899f3671febff3c368a15f4e7253"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T05-53-03/pending_indexing.json",
+      "github_status": 201,
+      "sha": "393cc0b3b3dce48934c74e8fc7e0e6f85ae644aa"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 6,
+      "path": "backups/2026-07-17T05-53-03/trending_articles.json",
+      "github_status": 201,
+      "sha": "9e19d4d1456adf093c77972c328dc3685098b80b"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 21,
+      "path": "backups/2026-07-17T05-53-03/cron_logs.json",
+      "github_status": 201,
+      "sha": "3ea07526cf1dcfae183c8fa76f835c017c974a48"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T05-53-03/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "2dc01f1659cc017bd4478a3f0a71b2ca385fb162"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T05-53-03/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "d648898faf3c38d911095599c199dec4e81b5517"
+    }
+  ],
+  "errors": []
+}

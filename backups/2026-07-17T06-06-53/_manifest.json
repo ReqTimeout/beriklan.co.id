@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T06-06-53",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T06-06-53/batch4_queue.json",
+      "github_status": 201,
+      "sha": "97f5f255382c772672337f17721bf2e002a607c1"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T06-06-53/batch4_articles.json",
+      "github_status": 201,
+      "sha": "f682828b028876d55d7f56c8aec9f319bf1a6409"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T06-06-53/city_content_queue.json",
+      "github_status": 201,
+      "sha": "1b8228e01e6459716119c0289de8f03fa8a443b4"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T06-06-53/city_content.json",
+      "github_status": 201,
+      "sha": "db7c2c741164b1325578116333fff675eef95a8e"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T06-06-53/pending_indexing.json",
+      "github_status": 201,
+      "sha": "2e6343aff0dbf3304f1aa7c6f0f08060558e555b"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T06-06-53/trending_articles.json",
+      "github_status": 201,
+      "sha": "0676cea56f3cbb3a6c3209f07b632f1fbcf3e99f"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 24,
+      "path": "backups/2026-07-17T06-06-53/cron_logs.json",
+      "github_status": 201,
+      "sha": "b6fc0d63853aa635efe98f06fea5901be6bb099d"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T06-06-53/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "2574531a8ff4a75c78d843741a7640d2d5f24ed0"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T06-06-53/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "7d5eb04da9e94624d4c0f1233ff959d48b7be637"
+    }
+  ],
+  "errors": []
+}

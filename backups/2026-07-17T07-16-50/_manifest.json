@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T07-16-50",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T07-16-50/batch4_queue.json",
+      "github_status": 201,
+      "sha": "e5ffeb771e94f51d0d1af5c11c893bb995e2ed23"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T07-16-50/batch4_articles.json",
+      "github_status": 201,
+      "sha": "fd943e049e0d511830eed05579da5d4224676f4a"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T07-16-50/city_content_queue.json",
+      "github_status": 201,
+      "sha": "0fd36a44f992ff545f94a9a79b60cbe137f9d480"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T07-16-50/city_content.json",
+      "github_status": 201,
+      "sha": "a49549818a41da0232d9466a452da00e7336e9e6"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T07-16-50/pending_indexing.json",
+      "github_status": 201,
+      "sha": "a1ad6a08b40218d87fd1c9f7fefbb63e577c7476"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T07-16-50/trending_articles.json",
+      "github_status": 201,
+      "sha": "a4b26346dcb5cfdfdf68c6b520e6f285fb69c42b"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 26,
+      "path": "backups/2026-07-17T07-16-50/cron_logs.json",
+      "github_status": 201,
+      "sha": "43f3c7b6c89e33606146c1b26bdf8b8ebbdb474d"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T07-16-50/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "bab539bdad5b6731f5bf9797ca19499f148dcefb"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T07-16-50/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "1f4e609b7f5b73cb34d5a8e729fd984202017721"
+    }
+  ],
+  "errors": []
+}

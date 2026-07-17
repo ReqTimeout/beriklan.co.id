@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T06-18-05",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T06-18-05/batch4_queue.json",
+      "github_status": 201,
+      "sha": "d0a5b3a78e7e4c2cf3b86a4b7f1900da847816bb"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T06-18-05/batch4_articles.json",
+      "github_status": 201,
+      "sha": "46df859f72832b1ef2e14207f4966400435b9db0"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T06-18-05/city_content_queue.json",
+      "github_status": 201,
+      "sha": "e2895f117369f648ce3424c904c26cfc95109dbc"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T06-18-05/city_content.json",
+      "github_status": 201,
+      "sha": "cd15c1381ad0f80f7228af30137e83751e92ac94"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T06-18-05/pending_indexing.json",
+      "github_status": 201,
+      "sha": "6c70c9681520e424fe245074e02944487af6c50a"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T06-18-05/trending_articles.json",
+      "github_status": 201,
+      "sha": "326e4e558ac5ade0e907806d9936a85653042e4b"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 25,
+      "path": "backups/2026-07-17T06-18-05/cron_logs.json",
+      "github_status": 201,
+      "sha": "240e44da4cbf610cd939024181919b0c818da68c"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T06-18-05/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "7ff0edd5b554dbee22b236f1a2f5bd63e054cadf"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T06-18-05/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "160aaa097cc56a0a7fe3c651137e61e4bf15becd"
+    }
+  ],
+  "errors": []
+}

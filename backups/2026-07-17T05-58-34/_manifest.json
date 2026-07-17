@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T05-58-34",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T05-58-34/batch4_queue.json",
+      "github_status": 201,
+      "sha": "3448114c3be3b152cc5bb8f5c2cd29ab059de456"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T05-58-34/batch4_articles.json",
+      "github_status": 201,
+      "sha": "ef779f0808818970b7faebe9d372d9a70b2dac20"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T05-58-34/city_content_queue.json",
+      "github_status": 201,
+      "sha": "0a5632664c30e5e3edb9dad8b318f9ecd42182fc"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T05-58-34/city_content.json",
+      "github_status": 201,
+      "sha": "deb2ded87396f2332553db1ea4777c626382ab8d"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T05-58-34/pending_indexing.json",
+      "github_status": 201,
+      "sha": "8fbf25d2b8be67f3f15639998685791f542b7876"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 6,
+      "path": "backups/2026-07-17T05-58-34/trending_articles.json",
+      "github_status": 201,
+      "sha": "ae8c81cfec33bfb27e7be00c2a54ec68f6be19e6"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 22,
+      "path": "backups/2026-07-17T05-58-34/cron_logs.json",
+      "github_status": 201,
+      "sha": "58f8bf2c671d4c29281949ee699500d2ce88173f"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T05-58-34/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "3da84431a645177f106e95675972723010435176"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T05-58-34/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "51ccfcd79ddb3c071e3e78f7008c25861b210465"
+    }
+  ],
+  "errors": []
+}

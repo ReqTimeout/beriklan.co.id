@@ -29,6 +29,8 @@
     {#each tiers as tier, i}
         {@const isHighlight = i === highlightIndex || tier.highlight}
         <div
+            data-tier={tier.name}
+            data-price={tier.priceLabel}
             class="pricing-card relative rounded-2xl p-7 md:p-8 transition-all duration-300 border-2 {isHighlight ? 'border-accent bg-white shadow-pop md:scale-[1.02]' : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-soft'}"
         >
             {#if isHighlight}
@@ -70,6 +72,11 @@
                 href={buildWaLink(tier)}
                 target="_blank"
                 rel="noopener"
+                data-cta="pricing_whatsapp"
+                data-package={tier.name}
+                data-price={tier.priceLabel}
+                data-service={pageSlug}
+                data-cta-location="pricing_card"
                 class="group w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-bold text-[13px] md:text-sm transition-all relative overflow-hidden {isHighlight ? 'bg-ink text-white hover:bg-accent hover:text-ink' : 'bg-white text-ink border-2 border-ink hover:bg-ink hover:text-white'}"
             >
                 <span class="cta-shine absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"></span>

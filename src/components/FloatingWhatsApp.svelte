@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="p-3 space-y-2">
-                <a href={waLink} target="_blank" rel="noopener" class="quick-row">
+                <a href={waLink} target="_blank" rel="noopener" data-cta="floating_whatsapp" data-cta-location="floating_sheet" class="quick-row">
                     <span class="quick-row-icon bg-[#25d366]/10 text-[#075e54]">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 32 32"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.385.696 4.605 1.896 6.482L4 29l7.737-1.852A11.94 11.94 0 0 0 16 27c6.627 0 12-5.373 12-12S22.628 3 16.001 3Z"/></svg>
                     </span>

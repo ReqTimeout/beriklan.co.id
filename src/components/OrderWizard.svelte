@@ -45,6 +45,19 @@
     function submit() {
         const serviceNames = selectedServices.map(id => services.find(s => s.id === id)?.label).join(', ');
         const budgetLabel = budgets.find(b => b.id === budget)?.label || '';
+        // Push generate_lead to GTM dataLayer before opening WhatsApp
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'generate_lead',
+            event_category: 'conversion',
+            event_label: 'order_wizard_submit',
+            services: serviceNames,
+            budget: budgetLabel,
+            business_name: business.name,
+            page_location: window.location.pathname,
+            value: 1,
+            currency: 'IDR'
+        });
         const msg = encodeURIComponent(
             `Halo Beriklan, saya tertarik untuk diskusi:\n\n` +
             `Layanan: ${serviceNames}\n` +
@@ -153,7 +166,7 @@
                     Lanjut <ArrowRight class="w-4 h-4" />
                 </button>
             {:else}
-                <button type="button" on:click={submit} disabled={!business.name || !business.contact} class="inline-flex items-center gap-1.5 bg-gradient-to-r from-accent to-accent-2 text-ink px-5 py-3 rounded-full font-bold text-sm hover:shadow-pop transition-all disabled:opacity-40 disabled:cursor-not-allowed btn-shine">
+                <button type="button" on:click={submit} disabled={!business.name || !business.contact} data-cta="order_submit" data-cta-location="order_wizard" data-track="order_wizard_submit" data-service={selectedServices.join(',')} data-price={budget} class="inline-flex items-center gap-1.5 bg-gradient-to-r from-accent to-accent-2 text-ink px-5 py-3 rounded-full font-bold text-sm hover:shadow-pop transition-all disabled:opacity-40 disabled:cursor-not-allowed btn-shine">
                     <MessageCircle class="w-4 h-4" /> Kirim via WhatsApp
                     <span class="cta-shine absolute inset-0 opacity-0 group-hover:opacity-100"></span>
                 </button>

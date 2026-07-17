@@ -107,6 +107,8 @@
                             href={waLink}
                             target="_blank"
                             rel="noopener"
+                            data-cta="sticky_whatsapp"
+                            data-cta-location="sticky_panel"
                             class="flex items-center gap-3 p-3.5 rounded-2xl bg-ink text-white hover:bg-accent hover:text-ink transition-all group"
                         >
                             <div class="w-11 h-11 rounded-xl bg-white/10 group-hover:bg-ink/10 flex items-center justify-center shrink-0">

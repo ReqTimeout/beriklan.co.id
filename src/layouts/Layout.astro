@@ -101,10 +101,108 @@ const showOrganization = true;
 			})}></script>
 		)}
 
-		<!-- Google Tag Manager placeholder -->
-		<!-- <script>(function(w,d,s,l,i){...})(...,'GTM-XXXX');</script> -->
+		<!-- Google Tag Manager -->
+		<script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','GTM-MJXSNCSD');</script>
+		<!-- End Google Tag Manager -->
+
+		<!-- Global dataLayer push helpers (GTM event tracking) -->
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			// Helper: derive event key + payload from any anchor or button
+			function bk_attr(el, key) { return el.getAttribute(key) || el.dataset[key] || ''; }
+			function bk_text(el) { return (el.textContent || '').trim().slice(0, 60); }
+			// WhatsApp click capture — covers wa.me links, telp links, all CTA
+			document.addEventListener('click', function(e) {
+				var t = e.target;
+				while (t && t !== document.body) {
+					if (t.tagName === 'A' || t.tagName === 'BUTTON') break;
+					t = t.parentElement;
+				}
+				if (!t || t === document.body) return;
+				var href = (t.href || bk_attr(t, 'href') || '').toLowerCase();
+				var isWa = href.indexOf('wa.me/') !== -1 || href.indexOf('whatsapp') !== -1;
+				var isTel = href.indexOf('tel:') === 0;
+				if (isWa || isTel) {
+					window.dataLayer.push({
+						event: isWa ? 'whatsapp_click' : 'phone_click',
+						event_category: 'contact',
+						event_label: t.dataset.cta || bk_text(t) || (isWa ? 'whatsapp' : 'phone'),
+						page_location: window.location.pathname,
+						page_title: document.title,
+						service_slug: t.dataset.service || '',
+						package_name: t.dataset.package || '',
+						package_price: t.dataset.price || '',
+						cta_location: t.dataset.ctaLocation || '',
+						link_url: t.href || ''
+					});
+				}
+				// Generic CTA tracking
+				if (t.dataset.cta) {
+					window.dataLayer.push({
+						event: 'cta_click',
+						event_category: 'engagement',
+						event_label: t.dataset.cta,
+						cta_text: bk_text(t),
+						cta_location: t.dataset.ctaLocation || '',
+						page_location: window.location.pathname
+					});
+				}
+			}, true);
+			// Pricing tier view (IntersectionObserver)
+			(function() {
+				if (typeof IntersectionObserver === 'undefined') return;
+				var io = new IntersectionObserver(function(entries) {
+					entries.forEach(function(en) {
+						if (en.isIntersecting) {
+							var el = en.target;
+							window.dataLayer.push({
+								event: 'pricing_view',
+								event_category: 'engagement',
+								event_label: el.dataset.tier || el.id || 'tier',
+								package_name: el.dataset.tier || '',
+								package_price: el.dataset.price || '',
+								page_location: window.location.pathname
+							});
+							io.unobserve(el);
+						}
+					});
+				}, { threshold: 0.4 });
+				document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('[data-tier]').forEach(function(el) { io.observe(el); });
+				});
+			})();
+			// Form submission capture (OrderWizard + any <form data-track>)
+			document.addEventListener('submit', function(e) {
+				var f = e.target;
+				if (!f || f.tagName !== 'FORM') return;
+				if (f.dataset.track) {
+					window.dataLayer.push({
+						event: 'form_submit',
+						event_category: 'conversion',
+						event_label: f.dataset.track,
+						form_name: f.dataset.track,
+						page_location: window.location.pathname
+					});
+				}
+			}, true);
+			// Page view (manual SPA-style push as backup to GTM container's own trigger)
+			window.dataLayer.push({
+				event: 'page_view',
+				page_location: window.location.pathname,
+				page_title: document.title
+			});
+		</script>
 	</head>
 	<body class="font-sans text-primary bg-white antialiased pb-24 lg:pb-0">
+		<!-- Google Tag Manager (noscript) -->
+		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD"
+		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		<!-- End Google Tag Manager (noscript) -->
+
 		<slot />
 	<FloatingWhatsApp client:only="svelte" />
 	<CookieConsent />

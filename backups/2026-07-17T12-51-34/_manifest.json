@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T12-51-34",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T12-51-34/batch4_queue.json",
+      "github_status": 201,
+      "sha": "6fafc05eb1204eb8c11ec7c811ee1c481d16b922"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T12-51-34/batch4_articles.json",
+      "github_status": 201,
+      "sha": "72eb86d213b1ce3aa2aa082c140a79fc751ab37d"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T12-51-34/city_content_queue.json",
+      "github_status": 201,
+      "sha": "5a3ff1c25836596c4160ba8f454a561bf0a76c26"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T12-51-34/city_content.json",
+      "github_status": 201,
+      "sha": "c8f0231816e9287fc4ba5091d87f7c2d4a710955"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T12-51-34/pending_indexing.json",
+      "github_status": 201,
+      "sha": "9dd0c34807d557671839f28a9bcf6939b710dce0"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T12-51-34/trending_articles.json",
+      "github_status": 201,
+      "sha": "5ba9cf503196faf7a643e0f1f21f17d4422aed5b"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 30,
+      "path": "backups/2026-07-17T12-51-34/cron_logs.json",
+      "github_status": 201,
+      "sha": "f8e278b5e1b3a9bbab6518cd6357adb4f9c1ef72"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T12-51-34/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "fd6c6d7b6157d90bd9282b0576c593e1a457bafe"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T12-51-34/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "4b33de8b3f4e6d6908168dd2db5adafff9b72e5a"
+    }
+  ],
+  "errors": []
+}

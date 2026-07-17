@@ -1,0 +1,1393 @@
+{
+  "exported_at": "2026-07-17T06-18-05",
+  "table": "city_content_queue",
+  "row_count": 198,
+  "rows": [
+    {
+      "route": "jasa-digital-marketing/medan/",
+      "city": "medan",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/lombok/",
+      "city": "lombok",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/palembang/",
+      "city": "palembang",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/bali/",
+      "city": "bali",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/semarang/",
+      "city": "semarang",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/aceh/",
+      "city": "aceh",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/jakarta/",
+      "city": "jakarta",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/makassar/",
+      "city": "makassar",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/depok/",
+      "city": "depok",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/solo/",
+      "city": "solo",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/bogor/",
+      "city": "bogor",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/lampung/",
+      "city": "lampung",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/bandung/",
+      "city": "bandung",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/jogja/",
+      "city": "jogja",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/malang/",
+      "city": "malang",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-digital-marketing/padang/",
+      "city": "padang",
+      "service": "jasa-digital-marketing",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/palembang/",
+      "city": "palembang",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/bali/",
+      "city": "bali",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/semarang/",
+      "city": "semarang",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/aceh/",
+      "city": "aceh",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/depok/",
+      "city": "depok",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/bogor/",
+      "city": "bogor",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/batam/",
+      "city": "batam",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/malang/",
+      "city": "malang",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-youtube/padang/",
+      "city": "padang",
+      "service": "jasa-iklan-youtube",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/medan/",
+      "city": "medan",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/lombok/",
+      "city": "lombok",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/palembang/",
+      "city": "palembang",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/bali/",
+      "city": "bali",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/semarang/",
+      "city": "semarang",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/aceh/",
+      "city": "aceh",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/jakarta/",
+      "city": "jakarta",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/depok/",
+      "city": "depok",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/solo/",
+      "city": "solo",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/bogor/",
+      "city": "bogor",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/lampung/",
+      "city": "lampung",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/bandung/",
+      "city": "bandung",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/batam/",
+      "city": "batam",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/malang/",
+      "city": "malang",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-google/padang/",
+      "city": "padang",
+      "service": "jasa-iklan-google",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/lombok/",
+      "city": "lombok",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/palembang/",
+      "city": "palembang",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/aceh/",
+      "city": "aceh",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/jakarta/",
+      "city": "jakarta",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/makassar/",
+      "city": "makassar",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/lampung/",
+      "city": "lampung",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/bandung/",
+      "city": "bandung",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/jogja/",
+      "city": "jogja",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/batam/",
+      "city": "batam",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/malang/",
+      "city": "malang",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-instagram/padang/",
+      "city": "padang",
+      "service": "jasa-iklan-instagram",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/lombok/",
+      "city": "lombok",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/palembang/",
+      "city": "palembang",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/bali/",
+      "city": "bali",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/jakarta/",
+      "city": "jakarta",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/makassar/",
+      "city": "makassar",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/bogor/",
+      "city": "bogor",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/bandung/",
+      "city": "bandung",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/jogja/",
+      "city": "jogja",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/batam/",
+      "city": "batam",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/malang/",
+      "city": "malang",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-facebook/padang/",
+      "city": "padang",
+      "service": "jasa-iklan-facebook",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/medan/",
+      "city": "medan",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/lombok/",
+      "city": "lombok",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/aceh/",
+      "city": "aceh",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-iklan-tiktok",
+      "status": "done",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/makassar/",
+      "city": "makassar",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/depok/",
+      "city": "depok",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/solo/",
+      "city": "solo",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/bogor/",
+      "city": "bogor",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/lampung/",
+      "city": "lampung",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/bandung/",
+      "city": "bandung",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/jogja/",
+      "city": "jogja",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/batam/",
+      "city": "batam",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/malang/",
+      "city": "malang",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-iklan-tiktok/padang/",
+      "city": "padang",
+      "service": "jasa-iklan-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/medan/",
+      "city": "medan",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/lombok/",
+      "city": "lombok",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/palembang/",
+      "city": "palembang",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/semarang/",
+      "city": "semarang",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/aceh/",
+      "city": "aceh",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/jakarta/",
+      "city": "jakarta",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/makassar/",
+      "city": "makassar",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/depok/",
+      "city": "depok",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/solo/",
+      "city": "solo",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/bogor/",
+      "city": "bogor",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/lampung/",
+      "city": "lampung",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/bandung/",
+      "city": "bandung",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/jogja/",
+      "city": "jogja",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/batam/",
+      "city": "batam",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/malang/",
+      "city": "malang",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-pembuatan-landing-page/padang/",
+      "city": "padang",
+      "service": "jasa-pembuatan-landing-page",
+      "status": "pending",
+      "created_at": "2026-07-16 15:38:57"
+    },
+    {
+      "route": "jasa-kelola-instagram/aceh/",
+      "city": "aceh",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/bali/",
+      "city": "bali",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/bandung/",
+      "city": "bandung",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/batam/",
+      "city": "batam",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/bogor/",
+      "city": "bogor",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/depok/",
+      "city": "depok",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/jogja/",
+      "city": "jogja",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/lampung/",
+      "city": "lampung",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/lombok/",
+      "city": "lombok",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/malang/",
+      "city": "malang",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/medan/",
+      "city": "medan",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/padang/",
+      "city": "padang",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/palembang/",
+      "city": "palembang",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/semarang/",
+      "city": "semarang",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/sidoarjo/",
+      "city": "sidoarjo",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/solo/",
+      "city": "solo",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-instagram/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-kelola-instagram",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/aceh/",
+      "city": "aceh",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/bali/",
+      "city": "bali",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/bandung/",
+      "city": "bandung",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/batam/",
+      "city": "batam",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/bogor/",
+      "city": "bogor",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/depok/",
+      "city": "depok",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/jogja/",
+      "city": "jogja",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/lampung/",
+      "city": "lampung",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/lombok/",
+      "city": "lombok",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/malang/",
+      "city": "malang",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/medan/",
+      "city": "medan",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/padang/",
+      "city": "padang",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/palembang/",
+      "city": "palembang",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/semarang/",
+      "city": "semarang",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/sidoarjo/",
+      "city": "sidoarjo",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/solo/",
+      "city": "solo",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-kelola-tiktok/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-kelola-tiktok",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/aceh/",
+      "city": "aceh",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/bali/",
+      "city": "bali",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/bandung/",
+      "city": "bandung",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/batam/",
+      "city": "batam",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/bekasi/",
+      "city": "bekasi",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/bogor/",
+      "city": "bogor",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/cimahi/",
+      "city": "cimahi",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/denpasar/",
+      "city": "denpasar",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/depok/",
+      "city": "depok",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/jogja/",
+      "city": "jogja",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/lampung/",
+      "city": "lampung",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/lombok/",
+      "city": "lombok",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/malang/",
+      "city": "malang",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/medan/",
+      "city": "medan",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/padang/",
+      "city": "padang",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/palembang/",
+      "city": "palembang",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/pontianak/",
+      "city": "pontianak",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/semarang/",
+      "city": "semarang",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/sidoarjo/",
+      "city": "sidoarjo",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/solo/",
+      "city": "solo",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/surabaya/",
+      "city": "surabaya",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/tangerang/",
+      "city": "tangerang",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    },
+    {
+      "route": "jasa-pembuatan-website/yogyakarta/",
+      "city": "yogyakarta",
+      "service": "jasa-pembuatan-website",
+      "status": "pending",
+      "created_at": "2026-07-16 16:00:46"
+    }
+  ]
+}

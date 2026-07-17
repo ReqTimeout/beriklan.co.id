@@ -1,0 +1,277 @@
+{
+  "exported_at": "2026-07-17T12-51-34",
+  "table": "cron_logs",
+  "row_count": 30,
+  "rows": [
+    {
+      "id": 1,
+      "timestamp": "2026-07-16 02:54:56",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 2,
+      "timestamp": "2026-07-16 02:55:04",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 3,
+      "timestamp": "2026-07-16 02:55:08",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 4,
+      "timestamp": "2026-07-16 02:55:55",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 5,
+      "timestamp": "2026-07-16 02:56:03",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 6,
+      "timestamp": "2026-07-16 02:57:10",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 7,
+      "timestamp": "2026-07-16 02:58:53",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 8,
+      "timestamp": "2026-07-16 02:59:53",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 9,
+      "timestamp": "2026-07-16 03:55:10",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 10,
+      "timestamp": "2026-07-16 05:02:06",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 11,
+      "timestamp": "2026-07-16 05:02:06",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 12,
+      "timestamp": "2026-07-16 05:02:12",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 13,
+      "timestamp": "2026-07-16 05:52:17",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 14,
+      "timestamp": "2026-07-16 06:00:20",
+      "google_ok": 0,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 15,
+      "timestamp": "2026-07-16 06:06:29",
+      "google_ok": 0,
+      "google_fail": 1,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 16,
+      "timestamp": "2026-07-16 06:15:00",
+      "google_ok": 0,
+      "google_fail": 1,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 17,
+      "timestamp": "2026-07-16 06:30:23",
+      "google_ok": 2,
+      "google_fail": 1,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 18,
+      "timestamp": "2026-07-16 06:30:23",
+      "google_ok": 0,
+      "google_fail": 1,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 19,
+      "timestamp": "2026-07-16 06:50:23",
+      "google_ok": 0,
+      "google_fail": 1,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 20,
+      "timestamp": "2026-07-16 19:06:08",
+      "google_ok": 49,
+      "google_fail": 151,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 21,
+      "timestamp": "2026-07-17 03:06:58",
+      "google_ok": 49,
+      "google_fail": 151,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 22,
+      "timestamp": "2026-07-17 05:53:25",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5461
+    },
+    {
+      "id": 23,
+      "timestamp": "2026-07-17 05:58:53",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5462
+    },
+    {
+      "id": 24,
+      "timestamp": "2026-07-17 06:04:55",
+      "google_ok": 49,
+      "google_fail": 151,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 200
+    },
+    {
+      "id": 25,
+      "timestamp": "2026-07-17 06:07:13",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5465
+    },
+    {
+      "id": 26,
+      "timestamp": "2026-07-17 06:18:24",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5466
+    },
+    {
+      "id": 27,
+      "timestamp": "2026-07-17 07:17:13",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5467
+    },
+    {
+      "id": 28,
+      "timestamp": "2026-07-17 12:05:38",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5468
+    },
+    {
+      "id": 29,
+      "timestamp": "2026-07-17 12:07:05",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5469
+    },
+    {
+      "id": 30,
+      "timestamp": "2026-07-17 12:42:56",
+      "google_ok": 9,
+      "google_fail": 0,
+      "indexnow_ok": 0,
+      "indexnow_fail": 0,
+      "urls_processed": 5470
+    }
+  ]
+}

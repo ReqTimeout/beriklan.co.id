@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -9,11 +9,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build Astro
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,24 +26,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
 
       - name: Install
+        working-directory: web
         run: npm ci --no-audit --no-fund
 
       - name: Build
-        run: npm run build 2>&1
+        working-directory: web
+        run: npm run build
 
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: web/dist/
+          if-no-files-found: error
+          retention-days: 3
 
   deploy:
-    name: Deploy via Wrangler
+    name: Deploy to Cloudflare Pages
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Download dist
         uses: actions/download-artifact@v4
@@ -52,19 +62,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Deploy
+      - name: Deploy to Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
-
-      - name: Purge cache
-        if: success()
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ZONE_ID: '47f87944d6d690eb388e7be1143c14a2'
-        run: |
-          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache" \
-            -H "Authorization: Bearer $CF_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"purge_everything":true}'
+        run: npx wrangler pages deploy dist --project-name=beriklanweb --branch=main --commit-dirty=true

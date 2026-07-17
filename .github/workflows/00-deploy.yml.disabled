@@ -1,0 +1,28 @@
+# NOTE: GH Actions disabled (Runner unavailable, causing build failures)
+# Manual deploy: python3 scripts/cf_pages_deploy.py
+# See scripts/cf_pages_deploy.py + scripts/cf_deploy.py for the two deploy paths:
+#   - cf_pages_deploy.py → wrangler pages deploy (for static dist)
+#   - cf_deploy.py → API PUT Worker (for worker-entry.js changes)
+# To re-enable: rename to 00-deploy.yml and check GH Actions status
+name: Deploy to Cloudflare Pages (DISABLED)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Astro
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - run: echo "GH Actions disabled — use scripts/cf_pages_deploy.py"

@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T12-05-18",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T12-05-18/batch4_queue.json",
+      "github_status": 201,
+      "sha": "f7b02ae30a1f01a4a1c95191b35087306ec64e31"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T12-05-18/batch4_articles.json",
+      "github_status": 201,
+      "sha": "6beda9d31f3e2ac7e00989023f7cdf389e05ba10"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T12-05-18/city_content_queue.json",
+      "github_status": 201,
+      "sha": "b0ca4bc4590d2d6b907313689bf026ff68f01223"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T12-05-18/city_content.json",
+      "github_status": 201,
+      "sha": "5dd5bb9aa4789312108efe12afc7a9a4d4c04abe"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T12-05-18/pending_indexing.json",
+      "github_status": 201,
+      "sha": "a06d217f0db5fa91a21681aa6e49ea7d2e02e677"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T12-05-18/trending_articles.json",
+      "github_status": 201,
+      "sha": "0ed577f0c1e5325b2959fffda3470edf2fc17b60"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 27,
+      "path": "backups/2026-07-17T12-05-18/cron_logs.json",
+      "github_status": 201,
+      "sha": "00d8cc5014390e5938945d95ec7b3416e5367581"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T12-05-18/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "add0ee3631d8e36a628da5f3b6ef91355707d00e"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T12-05-18/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "ca63dbb19427e0253a2cf53355959b487379b02f"
+    }
+  ],
+  "errors": []
+}

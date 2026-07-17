@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-17T12-42-36",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-17T12-42-36/batch4_queue.json",
+      "github_status": 201,
+      "sha": "5417bb417a1d4f0989c81dc5d357f39a7ff96171"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-17T12-42-36/batch4_articles.json",
+      "github_status": 201,
+      "sha": "18a3ea169b29d548314e860ecf86daf5381fb4d8"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-17T12-42-36/city_content_queue.json",
+      "github_status": 201,
+      "sha": "e3fb42925488227383bddc4a22ec16789276a18f"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-17T12-42-36/city_content.json",
+      "github_status": 201,
+      "sha": "2b29584dfcbff6103f81e54e5a11ccf17a8b73c0"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-17T12-42-36/pending_indexing.json",
+      "github_status": 201,
+      "sha": "8b796c9b01397b250a92ca76dccb88178e5b6d35"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-17T12-42-36/trending_articles.json",
+      "github_status": 201,
+      "sha": "45f97316d5f92c30ea230642e323592b8356ce7b"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 29,
+      "path": "backups/2026-07-17T12-42-36/cron_logs.json",
+      "github_status": 201,
+      "sha": "7dc57f4f2ca1e89f108e69726863a67b00fdd2bc"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-17T12-42-36/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "53e8d7c0002fd159ebf828355de723c325df2bd7"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-17T12-42-36/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "7cd14f3017916126bcab1d91491fa1dbe4bcde13"
+    }
+  ],
+  "errors": []
+}

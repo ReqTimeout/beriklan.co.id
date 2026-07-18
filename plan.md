@@ -147,7 +147,7 @@
 | **Hreflang (EN/ID)** | ❌ Belum | Low (saat ini ID only) |
 | **Canonical chains (paginated)** | ❌ Belum | Low-Medium |
 | **Content freshness engine** | ❌ Belum (manual only) | High |
-| **Internal link optimizer** | ❌ Belum | High |
+| **Internal link optimizer** | ✅ Done (§79: build-time, 1030 posts linked to service/pillar, topical-relevance gated) | High |
 | **Per-city landing pages (full content)** | ⚠️ 242/300 pages exist, 58 missing | High |
 | **Author/Expert E-E-A-T signals** | ✅ Done (merged with E-E-A-T row above, §78) | High (YMYL pages) |
 
@@ -6421,3 +6421,36 @@ api_key_usage (id, key_name, endpoint, ip, user_agent, status, timestamp)
 - `web/src/components/LocalSchema.astro`
 
 
+
+---
+
+## 79. ✅ INTERNAL LINK OPTIMIZER (18 Jul 2026)
+
+### Goal
+Automated, build-time internal linking from blog posts -> relevant service/pillar pages
+to distribute PageRank and improve topical relevance (no manual editing of 1966 posts).
+
+### Implementation
+- New `web/scripts/internal_link_optimizer.py` (idempotent, dry-run capable).
+- **Keyword -> URL map**: 10 services + 10 pillars (display-name variants in ID).
+- For each post: link the FIRST occurrence of a keyword that matches the post's own
+  `service` (or `category` for strategy/case-study -> digital-marketing) to the
+  corresponding service URL. **Max 1 link per post** (conservative, no over-optimization).
+- **Only inside `<p>` paragraph text** — never headings, attributes, or existing `<a>`.
+- Skips posts that already have internal links (idempotent re-runs safe).
+- Link class `ilink` (inherits `.prose a` amber underline styling).
+
+### Result
+- **1030 posts** got 1 contextual internal link each (52% of 1966; rest lacked a
+  matching topically-relevant keyword or had no `service` field -> correctly skipped).
+- All links point to the post's own topic service page (e.g. Facebook post -> /jasa-iklan-facebook/).
+- No broken HTML, no links in H2/h3, no nested-link bugs (verified via regex scan).
+
+### Verification (live)
+- `tarif-digital-marketing-company`: `<a href="/jasa-digital-marketing/" class="ilink">digital marketing</a>` live.
+- HTTP 200 on tested posts. Build clean (7225 pages). Deployed via `cf_pages_deploy.py`.
+- Backup of pre-link posts.json saved at /tmp/posts_backup_before_link.json.
+
+### Files
+- `web/scripts/internal_link_optimizer.py` (new)
+- `web/src/data/posts.json` (1030 posts enriched)

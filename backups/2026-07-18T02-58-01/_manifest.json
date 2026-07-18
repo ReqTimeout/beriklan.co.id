@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-18T02-58-01",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-18T02-58-01/batch4_queue.json",
+      "github_status": 201,
+      "sha": "5a52789a589fa6ccf7f3fd9339f84fe18a0747c8"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-18T02-58-01/batch4_articles.json",
+      "github_status": 201,
+      "sha": "33d80b93d1e8831b9133788edae84ac3b32302c0"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-18T02-58-01/city_content_queue.json",
+      "github_status": 201,
+      "sha": "9381e964f3197653e1d9e73d7a7749e7bfcb5ae2"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-18T02-58-01/city_content.json",
+      "github_status": 201,
+      "sha": "8f7db496b9246d09a0dbcc852ca296a050d0e62f"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-18T02-58-01/pending_indexing.json",
+      "github_status": 201,
+      "sha": "8d53d32684bfb096a62dd8d7564ab7ce7be17895"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-18T02-58-01/trending_articles.json",
+      "github_status": 201,
+      "sha": "600c325e4441166361bb740debe19f6f9be4286c"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 31,
+      "path": "backups/2026-07-18T02-58-01/cron_logs.json",
+      "github_status": 201,
+      "sha": "b03f9d28ccfdc7b02ef62878b2d45050bdefb571"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-18T02-58-01/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "758bb8e31e8bd5072b736d6ebba87239f8284f94"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-18T02-58-01/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "e998da0cbdd1d1790c0059b5aac1f53491be1fa9"
+    }
+  ],
+  "errors": []
+}

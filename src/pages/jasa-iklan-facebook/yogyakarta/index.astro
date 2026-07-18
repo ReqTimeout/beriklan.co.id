@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya
 const whyFeatures = [{"icon": "🎯", "title": "Targeting Akurat", "desc": "Lebih dari 100 kategori minat, perilaku, dan demografi yang dapat dikombinasikan. Kami memilih kombinasi yang paling sesuai dengan karakter audiens Anda."}, {"icon": "📊", "title": "Data yang Terbaca", "desc": "Dashboard Meta menampilkan data detail tentang siapa yang melihat, mengklik, dan berkonsultasi — semuanya bisa Anda cek sendiri."}, {"icon": "💬", "title": "Chat WhatsApp Langsung", "desc": "Tombol Call-to-Action bawaan Meta mengirim klik langsung ke WhatsApp — mempersempit jarak dari 'tertarik' menjadi 'percakapan'."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Riset", "desc": "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda. Kami susun strategi targeting yang sesuai."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Kreatif", "desc": "Kami siapkan akun iklan & Meta Pixel, dan materi iklan (foto, video, copy). Anda approve, kami eksekusi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Iklan tayang selama 30 hari penuh di seluruh placement Facebook. Anda menerima laporan setiap Senin pagi."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi & Ganti Iklan", "desc": "Kami monitor performa harian. Iklan yang tidak perform diganti. Yang jalan, di-scale-up."}];
 const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.", "author": "Andini Pratiwi", "role": "Owner · Brand Skincare, Bandung", "metric": "ROAS 1.8x → 4.5x dalam 4 bulan", "avatar": "🧴", "color": "from-amber-500 to-orange-500"}, {"quote": "Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.", "author": "Rizky Maulana", "role": "Marketing Manager · Klinik Kecantikan, Jakarta", "metric": "Lead konsisten 3x lipat dari bulan ke-2", "avatar": "💆", "color": "from-pink-500 to-rose-500"}, {"quote": "Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.", "author": "Sarah Nathania", "role": "Head of Growth · SaaS B2B, Jakarta", "metric": "Qualified leads +180% di Q3 2025", "avatar": "💼", "color": "from-blue-500 to-indigo-500"}];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-  <h2>Mengapa Bisnis di Yogyakarta Butuh Jasa Iklan Facebook</h2>
-  <p>Yogyakarta dikenal sebagai kota pendidikan dan pariwisata, dengan lebih dari 130 ribu Unit Mikro, Kecil, dan Menengah (UMKM) yang aktif beroperasi. Di antaranya adalah industri kerajinan, kuliner, dan jasa edukasi yang menjadi pilar utama ekonomi kota ini. Namun, di tengah persaingan yang semakin sengit, bisnis di Yogyakarta membutuhkan strategi iklan yang efektif untuk meningkatkan visibilitas dan penjualan. Inilah kebutuhan jasa iklan Facebook di Yogyakarta.</p>
-  <p>Berdasarkan survei yang dilakukan oleh Kementerian Koperasi dan UKM, lebih dari 70% UMKM di Yogyakarta belum memiliki strategi iklan yang efektif, sehingga mengalami kesulitan meningkatkan penjualan dan pendapatan. Oleh karena itu, jasa iklan Facebook di Yogyakarta menjadi solusi untuk membantu bisnis di kota ini meningkatkan visibilitas dan penjualan.</p>
-  <p>Dengan lebih dari 130 ribu UMKM yang aktif beroperasi di Yogyakarta, jasa iklan Facebook di kota ini menawarkan kesempatan bagi bisnis untuk meningkatkan visibilitas dan penjualan. Dengan strategi iklan yang efektif, bisnis di Yogyakarta dapat meningkatkan penjualan dan pendapatan, serta meningkatkan kehadiran di pasar.</p>
-
-  <h2>Tantangan Jasa Iklan Facebook di Pasar Yogyakarta</h2>
-  <p>Salah satu tantangan jasa iklan Facebook di pasar Yogyakarta adalah risiko tidak ada strategi yang efektif. Tanpa strategi yang tepat, iklan Facebook dapat menjadi tidak efektif dan tidak dapat meningkatkan visibilitas dan penjualan. Selain itu, risiko lainnya adalah kebutuhan untuk memantau dan mengoptimalkan iklan secara terus menerus untuk memastikan bahwa iklan tersebut tetap efektif.</p>
-  <p>Untuk mengatasi tantangan ini, jasa iklan Facebook di Yogyakarta menawarkan layanan yang profesional dan efektif untuk membantu bisnis meningkatkan visibilitas dan penjualan. Dengan strategi iklan yang efektif, jasa iklan Facebook di Yogyakarta dapat membantu bisnis di kota ini meningkatkan penjualan dan pendapatan.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Yogyakarta</h2>
-  <p>Tim beriklan di Yogyakarta bekerja sama dengan Anda untuk membantu meningkatkan visibilitas dan penjualan bisnis Anda. Berikut adalah langkah-langkah yang dilakukan oleh tim beriklan di Yogyakarta:</p>
-  <ul>
-    <li>Langkah 1: Analisis Bisnis - Tim beriklan di Yogyakarta melakukan analisis bisnis untuk memahami kebutuhan dan tujuan bisnis Anda.</li>
-    <li>Langkah 2: Strategi Iklan - Tim beriklan di Yogyakarta menciptakan strategi iklan yang efektif untuk meningkatkan visibilitas dan penjualan bisnis Anda.</li>
-    <li>Langkah 3: Pemilihan Media - Tim beriklan di Yogyakarta memilih media yang tepat untuk iklan, seperti Facebook, Instagram, atau Google Ads.</li>
-    <li>Langkah 4: Pelaksanaan Iklan - Tim beriklan di Yogyakarta melaksanakan iklan dengan strategi yang telah disepakati sebelumnya.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan Facebook di Yogyakarta</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Paket harga jasa iklan Facebook di Yogyakarta adalah sebagai berikut: Paket Standart Rp 1.750.000 dan Paket Business Rp 3.750.000.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Setup jasa iklan Facebook di Yogyakarta biasanya memakan waktu 3-5 hari kerja.</p>
-  <h3>Akses akun?</h3>
-  <p>Anda akan mendapatkan akses akun iklan Facebook yang dapat Anda gunakan untuk memantau dan mengoptimalkan iklan.</p>
-  <h3>Laporan?</h3>
-  <p>Anda akan mendapatkan laporan harian dan bulanan tentang performa iklan, sehingga Anda dapat memantau dan mengoptimalkan iklan secara efektif.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-facebook/yogyakarta/" content={cityContentMap["jasa-iklan-facebook/yogyakarta/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -348,5 +318,7 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         faqs={faqs}
         pageUrl="/jasa-iklan-facebook/yogyakarta/"
         breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Yogyakarta", "/jasa-iklan-facebook/yogyakarta/"]]}
+        howSteps={howSteps}
+        testimonials={serviceTestimonials}
     />
 </Layout>

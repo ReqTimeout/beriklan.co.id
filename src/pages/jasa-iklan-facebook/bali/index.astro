@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya
 const whyFeatures = [{"icon": "🎯", "title": "Targeting Akurat", "desc": "Lebih dari 100 kategori minat, perilaku, dan demografi yang dapat dikombinasikan. Kami memilih kombinasi yang paling sesuai dengan karakter audiens Anda."}, {"icon": "📊", "title": "Data yang Terbaca", "desc": "Dashboard Meta menampilkan data detail tentang siapa yang melihat, mengklik, dan berkonsultasi — semuanya bisa Anda cek sendiri."}, {"icon": "💬", "title": "Chat WhatsApp Langsung", "desc": "Tombol Call-to-Action bawaan Meta mengirim klik langsung ke WhatsApp — mempersempit jarak dari 'tertarik' menjadi 'percakapan'."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Riset", "desc": "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda. Kami susun strategi targeting yang sesuai."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Kreatif", "desc": "Kami siapkan akun iklan & Meta Pixel, dan materi iklan (foto, video, copy). Anda approve, kami eksekusi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Iklan tayang selama 30 hari penuh di seluruh placement Facebook. Anda menerima laporan setiap Senin pagi."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi & Ganti Iklan", "desc": "Kami monitor performa harian. Iklan yang tidak perform diganti. Yang jalan, di-scale-up."}];
 const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.", "author": "Andini Pratiwi", "role": "Owner · Brand Skincare, Bandung", "metric": "ROAS 1.8x → 4.5x dalam 4 bulan", "avatar": "🧴", "color": "from-amber-500 to-orange-500"}, {"quote": "Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.", "author": "Rizky Maulana", "role": "Marketing Manager · Klinik Kecantikan, Jakarta", "metric": "Lead konsisten 3x lipat dari bulan ke-2", "avatar": "💆", "color": "from-pink-500 to-rose-500"}, {"quote": "Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.", "author": "Sarah Nathania", "role": "Head of Growth · SaaS B2B, Jakarta", "metric": "Qualified leads +180% di Q3 2025", "avatar": "💼", "color": "from-blue-500 to-indigo-500"}];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,42 +88,9 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<body>
-  <h2>Mengapa Bisnis di Bali Butuh Jasa Iklan Facebook</h2>
-  <p>Bali telah menjadi merek pariwisata global yang sukses, dengan lebih dari 80.000 UMKM yang beroperasi di pulau ini. Namun, dalam lingkungan persaingan yang sangat ketat, sulit bagi bisnis untuk meningkatkan visibilitas dan meningkatkan penjualan. Jasa iklan Facebook dapat membantu bisnis di Bali meningkatkan penjualan dan meningkatkan kesadaran merek.</p>
-  <p>Bisnis di Bali dapat menikmati keuntungan dari jasa iklan Facebook, seperti meningkatkan visibilitas dan meningkatkan penjualan. Dengan menggunakan jasa iklan Facebook, bisnis dapat mencapai target audiens yang lebih luas dan meningkatkan kesadaran merek.</p>
-  <p>Lebih dari 80.000 UMKM di Bali dapat menikmati keuntungan dari jasa iklan Facebook. Dengan menggunakan jasa iklan Facebook, UMKM dapat meningkatkan visibilitas dan meningkatkan penjualan, sehingga dapat meningkatkan keuntungan.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-facebook/bali/" content={cityContentMap["jasa-iklan-facebook/bali/"]} cityName={city.name} serviceName={service.name} />
 
-  <h2>Tantangan Jasa Iklan Facebook di Pasar Bali</h2>
-  <p>Jasa iklan Facebook di Bali memiliki tantangan tersendiri, seperti risiko tanpa strategi yang tepat. Jika tidak ada strategi yang tepat, jasa iklan Facebook dapat menjadi biaya yang tidak berproduktif. Selain itu, risiko tidak ada hasil yang diharapkan juga dapat terjadi jika tidak ada strategi yang tepat.</p>
-  <p>Untuk menghindari risiko tersebut, perlu adanya strategi yang tepat dalam mengelola jasa iklan Facebook. Strategi yang tepat dapat membantu meningkatkan hasil dan meningkatkan keuntungan dari jasa iklan Facebook.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Bali</h2>
-  <p>Tim beriklan kami di Bali bekerja sama dengan Anda untuk meningkatkan visibilitas dan meningkatkan penjualan. Berikut adalah cara kerja tim beriklan kami:</p>
-  <ul>
-    <li><b>Step 1: Analisis Target Audiens</b> - Kami akan melakukan analisis target audiens Anda untuk mengetahui kebutuhan dan preferensi mereka.</li>
-    <li><b>Step 2: Membuat Strategi Iklan</b> - Berdasarkan hasil analisis, kami akan membuat strategi iklan yang tepat untuk meningkatkan visibilitas dan meningkatkan penjualan.</li>
-    <li><b>Step 3: Membuat Konten Iklan</b> - Kami akan membuat konten iklan yang menarik dan relevan dengan target audiens Anda.</li>
-    <li><b>Step 4: Mengelola Iklan</b> - Kami akan mengelola iklan Anda secara terus-menerus untuk meningkatkan hasil dan meningkatkan keuntungan.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan Facebook di Bali</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Paket harga kami adalah Rp 1.750.000 (Standart) dan Rp 3.750.000 (Business). Biaya ini sudah termasuk semua layanan yang kami berikan.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Setup dapat diselesaikan dalam waktu 3-5 hari kerja.</p>
-  <h3>Akses akun?</h3>
-  <p>Kami akan memberikan akses akun kepada Anda untuk memantau hasil iklan.</p>
-  <h3>Laporan?</h3>
-  <p>Kami akan memberikan laporan hasil iklan secara terus-menerus kepada Anda.</p>
-</body>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -350,5 +319,7 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         faqs={faqs}
         pageUrl="/jasa-iklan-facebook/bali/"
         breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Bali", "/jasa-iklan-facebook/bali/"]]}
+        howSteps={howSteps}
+        testimonials={serviceTestimonials}
     />
 </Layout>

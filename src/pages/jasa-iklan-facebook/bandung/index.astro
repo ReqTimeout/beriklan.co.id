@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya
 const whyFeatures = [{"icon": "🎯", "title": "Targeting Akurat", "desc": "Lebih dari 100 kategori minat, perilaku, dan demografi yang dapat dikombinasikan. Kami memilih kombinasi yang paling sesuai dengan karakter audiens Anda."}, {"icon": "📊", "title": "Data yang Terbaca", "desc": "Dashboard Meta menampilkan data detail tentang siapa yang melihat, mengklik, dan berkonsultasi — semuanya bisa Anda cek sendiri."}, {"icon": "💬", "title": "Chat WhatsApp Langsung", "desc": "Tombol Call-to-Action bawaan Meta mengirim klik langsung ke WhatsApp — mempersempit jarak dari 'tertarik' menjadi 'percakapan'."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Riset", "desc": "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda. Kami susun strategi targeting yang sesuai."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Kreatif", "desc": "Kami siapkan akun iklan & Meta Pixel, dan materi iklan (foto, video, copy). Anda approve, kami eksekusi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Iklan tayang selama 30 hari penuh di seluruh placement Facebook. Anda menerima laporan setiap Senin pagi."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi & Ganti Iklan", "desc": "Kami monitor performa harian. Iklan yang tidak perform diganti. Yang jalan, di-scale-up."}];
 const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.", "author": "Andini Pratiwi", "role": "Owner · Brand Skincare, Bandung", "metric": "ROAS 1.8x → 4.5x dalam 4 bulan", "avatar": "🧴", "color": "from-amber-500 to-orange-500"}, {"quote": "Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.", "author": "Rizky Maulana", "role": "Marketing Manager · Klinik Kecantikan, Jakarta", "metric": "Lead konsisten 3x lipat dari bulan ke-2", "avatar": "💆", "color": "from-pink-500 to-rose-500"}, {"quote": "Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.", "author": "Sarah Nathania", "role": "Head of Growth · SaaS B2B, Jakarta", "metric": "Qualified leads +180% di Q3 2025", "avatar": "💼", "color": "from-blue-500 to-indigo-500"}];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,37 +88,9 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Bandung Butuh Jasa Iklan Facebook</h2>
-<p>Bandung, kota yang dijuluki sebagai hub kreatif dengan lebih dari 1,5 juta UMKM yang beroperasi di berbagai sektor, termasuk fashion dan kuliner. Kota ini juga menjadi pusat bagi lebih dari 30 startup digital yang telah mengadopsi platform iklan Meta dan TikTok Ads. Dengan populasi penduduk lebih dari 2,4 juta dan penetrasi mobile sebesar 95%, Bandung menjadi salah satu kota yang paling berpotensi untuk melakukan pemasaran melalui platform digital.</p>
-<p>Bisnis di Bandung memerlukan jasa iklan Facebook untuk meningkatkan visibilitas dan pendapatan mereka. Dengan lebih dari 1,5 juta UMKM yang bersaing di pasar, penting bagi bisnis untuk dapat terlihat dan diingat oleh calon pelanggan. Jasa iklan Facebook dapat membantu bisnis di Bandung untuk meningkatkan kesadaran merek, meningkatkan lalu lintas situs web, dan meningkatkan penjualan.</p>
-<p>Salah satu keuntungan menggunakan jasa iklan Facebook di Bandung adalah kemampuan untuk target audiens yang spesifik. Dengan menggunakan fitur-fitur iklan Facebook yang canggih, bisnis dapat menargetkan audiens yang paling relevan dengan produk atau layanan mereka. Hal ini dapat membantu meningkatkan efisiensi dan efektivitas kampanye pemasaran.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-facebook/bandung/" content={cityContentMap["jasa-iklan-facebook/bandung/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Facebook di Pasar Bandung</h2>
-<p>Jasa iklan Facebook di Bandung juga memiliki beberapa tantangan yang perlu diatasi. Salah satu tantangan utama adalah risiko kehilangan investasi. Jika tidak ada strategi yang jelas, jasa iklan Facebook dapat menjadi biaya yang tidak efektif bagi bisnis. Selain itu, perlu juga diingat bahwa pasar di Bandung sangat berkompetisi, sehingga bisnis harus dapat menonjolkan keunggulan mereka dalam pemasaran online.</p>
-<p>Salah satu cara untuk mengatasi tantangan ini adalah dengan memiliki strategi yang jelas dan spesifik. Ini termasuk menentukan target audiens, mengatur anggaran, dan memantau hasil kampanye secara terus-menerus. Dengan strategi yang tepat, bisnis di Bandung dapat mengambil keuntungan dari jasa iklan Facebook dan meningkatkan kesuksesan mereka.</p>
-
-<h2>Cara Kerja Tim Beriklan di Bandung</h2>
-<p>Kami adalah tim beriklan yang berpengalaman dan berdedikasi untuk membantu bisnis di Bandung meningkatkan kesuksesan mereka melalui jasa iklan Facebook. Kami memiliki kemampuan untuk menangani semua aspek kampanye pemasaran, dari perencanaan hingga pelaksanaan.</p>
-
-<ul>
-  <li>Langkah 1: Kami akan melakukan analisis pasar dan audiens untuk mengetahui kebutuhan dan kelemahan bisnis.</li>
-  <li>Langkah 2: Kami akan merancang strategi iklan yang spesifik dan efektif untuk meningkatkan visibilitas dan pendapatan bisnis.</li>
-  <li>Langkah 3: Kami akan mengatur dan melaksanakan kampanye iklan Facebook yang telah direncanakan.</li>
-  <li>Langkah 4: Kami akan memantau dan mengevaluasi hasil kampanye secara terus-menerus untuk memastikan bahwa bisnis dapat mencapai tujuan mereka.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Facebook di Bandung</h2>
-<h3>Berapa biaya?</h3><p>Paket harga kami adalah Rp 1.750.000 untuk paket standart dan Rp 3.750.000 untuk paket business.</p>
-<h3>Berapa lama setup?</h3><p>Waktu setup kampanye iklan Facebook kami sekitar 2-3 hari kerja.</p>
-<h3>Akses akun?</h3><p>Kami akan memberikan akses akun iklan Facebook kepada Anda untuk memantau hasil kampanye secara langsung.</p>
-<h3>Laporan?</h3><p>Kami akan menyediakan laporan yang terperinci dan lengkap tentang hasil kampanye setiap bulan.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -345,5 +319,7 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         faqs={faqs}
         pageUrl="/jasa-iklan-facebook/bandung/"
         breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Bandung", "/jasa-iklan-facebook/bandung/"]]}
+        howSteps={howSteps}
+        testimonials={serviceTestimonials}
     />
 </Layout>

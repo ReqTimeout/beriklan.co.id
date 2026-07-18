@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Facebook di Beriklan?", "a": "Biaya
 const whyFeatures = [{"icon": "🎯", "title": "Targeting Akurat", "desc": "Lebih dari 100 kategori minat, perilaku, dan demografi yang dapat dikombinasikan. Kami memilih kombinasi yang paling sesuai dengan karakter audiens Anda."}, {"icon": "📊", "title": "Data yang Terbaca", "desc": "Dashboard Meta menampilkan data detail tentang siapa yang melihat, mengklik, dan berkonsultasi — semuanya bisa Anda cek sendiri."}, {"icon": "💬", "title": "Chat WhatsApp Langsung", "desc": "Tombol Call-to-Action bawaan Meta mengirim klik langsung ke WhatsApp — mempersempit jarak dari 'tertarik' menjadi 'percakapan'."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Riset", "desc": "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda. Kami susun strategi targeting yang sesuai."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Kreatif", "desc": "Kami siapkan akun iklan & Meta Pixel, dan materi iklan (foto, video, copy). Anda approve, kami eksekusi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Iklan tayang selama 30 hari penuh di seluruh placement Facebook. Anda menerima laporan setiap Senin pagi."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi & Ganti Iklan", "desc": "Kami monitor performa harian. Iklan yang tidak perform diganti. Yang jalan, di-scale-up."}];
 const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.", "author": "Andini Pratiwi", "role": "Owner · Brand Skincare, Bandung", "metric": "ROAS 1.8x → 4.5x dalam 4 bulan", "avatar": "🧴", "color": "from-amber-500 to-orange-500"}, {"quote": "Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.", "author": "Rizky Maulana", "role": "Marketing Manager · Klinik Kecantikan, Jakarta", "metric": "Lead konsisten 3x lipat dari bulan ke-2", "avatar": "💆", "color": "from-pink-500 to-rose-500"}, {"quote": "Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.", "author": "Sarah Nathania", "role": "Head of Growth · SaaS B2B, Jakarta", "metric": "Qualified leads +180% di Q3 2025", "avatar": "💼", "color": "from-blue-500 to-indigo-500"}];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,47 +88,9 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Surabaya Butuh Jasa Iklan Facebook</h2>
-<p>Surabaya adalah kota bisnis yang sangat kompetitif di Jawa Timur, dengan lebih dari 280.000 UMKM yang beroperasi di kota ini. Dengan populasi lebih dari 2,8 juta penduduk, pasar Surabaya sangat berpotensi untuk bisnis yang ingin meningkatkan visibilitas dan penjualan. Namun, dengan kompetisi yang tinggi, bisnis di Surabaya harus memiliki strategi iklan yang efektif untuk dapat menonjol dari kerumunan. Jasa iklan Facebook dapat membantu bisnis di Surabaya untuk meningkatkan visibilitas dan meningkatkan penjualan dengan menggunakan platform iklan yang efektif dan terjangkau.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-facebook/surabaya/" content={cityContentMap["jasa-iklan-facebook/surabaya/"]} cityName={city.name} serviceName={service.name} />
 
-<p>Banyak bisnis di Surabaya yang telah menggunakan jasa iklan Facebook untuk meningkatkan penjualan dan visibilitas. Dengan menggunakan platform iklan Facebook, bisnis dapat mencapai target audiens yang spesifik dan meningkatkan kesadaran merek. Selain itu, jasa iklan Facebook juga dapat membantu bisnis di Surabaya untuk meningkatkan konversi dan meningkatkan keuntungan. Dengan demikian, bisnis di Surabaya dapat meningkatkan potensi penjualan dan meningkatkan kompetisi di pasar.</p>
-
-<p>Untuk bisnis di Surabaya yang ingin meningkatkan penjualan dan visibilitas, jasa iklan Facebook adalah pilihan yang tepat. Dengan menggunakan platform iklan Facebook, bisnis dapat meningkatkan kesadaran merek, meningkatkan konversi, dan meningkatkan keuntungan. Jangan ragu untuk menghubungi kami untuk informasi lebih lanjut tentang jasa iklan Facebook yang dapat membantu bisnis di Surabaya.</p>
-
-<h2>Tantangan Jasa Iklan Facebook di Pasar Surabaya</h2>
-<p>Tidak semua bisnis di Surabaya yang menggunakan jasa iklan Facebook dapat mencapai hasil yang diinginkan. Risiko yang tidak terduga dapat terjadi jika bisnis tidak memiliki strategi iklan yang efektif. Dengan tidak adanya strategi yang jelas, bisnis dapat kehilangan sumber daya dan waktu yang signifikan, serta dapat mengalami kerugian keuangan.</p>
-
-<p>Bisnis di Surabaya yang ingin menggunakan jasa iklan Facebook harus memiliki strategi yang efektif untuk dapat mencapai hasil yang diinginkan. Strategi ini harus melibatkan analisis pasar, target audiens, dan tujuan yang spesifik. Dengan demikian, bisnis dapat meningkatkan kesadaran merek, meningkatkan konversi, dan meningkatkan keuntungan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Surabaya</h2>
-<p>Kami adalah tim profesional yang memiliki pengalaman luas dalam jasa iklan Facebook. Kami memiliki kemampuan untuk mengembangkan strategi iklan yang efektif dan terjangkau, serta memiliki kemampuan untuk mengelola akun iklan Facebook yang kompleks.</p>
-
-<ul>
-  <li>Langkah 1: Analisis Pasar - Kami melakukan analisis pasar untuk memahami target audiens dan tujuan yang spesifik.</li>
-  <li>Langkah 2: Pembuatan Strategi - Kami membuat strategi iklan yang efektif dan terjangkau berdasarkan hasil analisis pasar.</li>
-  <li>Langkah 3: Pengelolaan Akun - Kami mengelola akun iklan Facebook yang kompleks dan memastikan bahwa iklan dibuat sesuai dengan strategi yang telah ditentukan.</li>
-  <li>Langkah 4: Evaluasi Hasil - Kami melakukan evaluasi hasil iklan untuk memastikan bahwa iklan mencapai tujuan yang diinginkan.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Facebook di Surabaya</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami adalah sebagai berikut: Standart Rp 1.750.000, Business Rp 3.750.000.</p>
-
-<h3>Berapa lama setup?</h3>
-<p>Setup iklan dapat diselesaikan dalam waktu 3-5 hari kerja.</p>
-
-<h3>Akses akun?</h3>
-<p>Kami memberikan akses akun iklan Facebook kepada klien kami untuk memudahkan pengelolaan akun.</p>
-
-<h3>Laporan?</h3>
-<p>Kami memberikan laporan hasil iklan kepada klien kami secara berkala untuk memastikan bahwa iklan mencapai tujuan yang diinginkan.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -355,5 +319,7 @@ const serviceTestimonials = [{"quote": "ROAS kami meningkat dari 1.8x menjadi 4.
         faqs={faqs}
         pageUrl="/jasa-iklan-facebook/surabaya/"
         breadcrumbs={[["Beranda", "/"], ["Jasa Iklan Facebook", "/jasa-iklan-facebook/"], ["Surabaya", "/jasa-iklan-facebook/surabaya/"]]}
+        howSteps={howSteps}
+        testimonials={serviceTestimonials}
     />
 </Layout>

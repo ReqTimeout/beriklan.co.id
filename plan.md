@@ -142,14 +142,14 @@
 |------|--------|--------|
 | **Pillar/cluster content model** | ⚠️ Pillar pages ada, cluster belum | High |
 | **Topical clustering** | ❌ Belum | High |
-| **E-E-A-T signals** (author bio, credentials) | ❌ Belum | High (YMYL) |
-| **LocalBusiness NAP consistency** | ❌ Belum dioptimasi | High |
+| **E-E-A-T signals** (author bio, credentials) | ✅ Done (§78: blog Person author + bio block; Service provider Org w/ foundingDate 2016 + sameAs) | High (YMYL) |
+| **LocalBusiness NAP consistency** | ⚠️ Schema NAP consistent (LocalBusiness); page-body NAP not yet standardized | High |
 | **Hreflang (EN/ID)** | ❌ Belum | Low (saat ini ID only) |
 | **Canonical chains (paginated)** | ❌ Belum | Low-Medium |
 | **Content freshness engine** | ❌ Belum (manual only) | High |
 | **Internal link optimizer** | ❌ Belum | High |
 | **Per-city landing pages (full content)** | ⚠️ 242/300 pages exist, 58 missing | High |
-| **Author/Expert E-E-A-T signals** | ❌ Belum | High (YMYL pages) |
+| **Author/Expert E-E-A-T signals** | ✅ Done (merged with E-E-A-T row above, §78) | High (YMYL pages) |
 
 #### Tracking & Tools (P1)
 
@@ -6382,5 +6382,42 @@ api_key_usage (id, key_name, endpoint, ip, user_agent, status, timestamp)
 ### Files
 - `web/src/components/LocalSchema.astro` (HowTo + Review + props)
 - 247 `src/pages/**/index.astro` (LocalSchema prop injection)
+
+---
+
+## 78. ✅ E-E-A-T AUTHOR/CREDENTIALS SIGNALS (18 Jul 2026)
+
+### Context (YMYL)
+- Blog posts previously set `author: { "@type": "Organization" }` — weak E-E-A-T for
+  money/health-adjacent content. Service schema provider was just `{ "@id": "#business" }`
+  (no name, no foundingDate, no sameAs).
+- Google's YMYL guidelines require clear author identity + credentials.
+
+### Changes (additive, zero layout risk on service pages)
+1. **Blog post author (Person)** — `src/pages/blog/[slug].astro`:
+   - New `AUTHOR` const: name "Tim Beriklan", role "Performance Marketing Strategist",
+     credentials (Meta & Google certified sejak 2016), url `/tentang-kami/`.
+   - `articleSchema.author` upgraded Organization → **Person** with `jobTitle` + `worksFor` (Organization w/ logo).
+   - Visible **author bio block** added after article ("Ditulis oleh Tim Beriklan · role · credentials · link to /tentang-kami/").
+   - Header meta line "Oleh Tim Beriklan" now uses AUTHOR.name.
+   - Covers all 1966 blog posts (single template).
+2. **Service schema provider (Organization)** — `LocalSchema.astro` `genService()`:
+   - `provider` expanded to full Organization: name, url, logo, `sameAs` (IG+FB), `foundingDate: "2016"`, full NAP address.
+   - Covers 242 city + 10 service + 10 pillar pages.
+
+### Verification (live)
+- Blog post: `Person`=1, `worksFor`=1, `jobTitle`=1, "Ditulis oleh"=1, `/tentang-kami/`=2, 3 valid JSON-LD.
+- Service page: `foundingDate:"2016"`=2, provider `sameAs` IG=2, 6 valid JSON-LD.
+- Both HTTP 200, no parse errors.
+- Build clean (7225 pages). Deployed via `cf_pages_deploy.py`.
+
+### Note
+- Used agency-level author ("Tim Beriklan") — deliberately NOT inventing a fake individual
+  person's name/bio (avoids fabricated-identity risk; compliant with AGENTS.md).
+- "foundingDate 2016" + "Meta & Google certified" are truthful agency facts.
+
+### Files
+- `web/src/pages/blog/[slug].astro`
+- `web/src/components/LocalSchema.astro`
 
 

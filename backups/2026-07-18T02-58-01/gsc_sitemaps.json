@@ -1,0 +1,137 @@
+{
+  "exported_at": "2026-07-18T02-58-01",
+  "table": "gsc_sitemaps",
+  "row_count": 13,
+  "rows": [
+    {
+      "id": 57,
+      "siteUrl": "https://beriklan.co.id",
+      "sitemapPath": "https://beriklan.co.id/sitemap-static.xml",
+      "lastSubmitted": "2026-07-17 03:07:18",
+      "lastDownloaded": null,
+      "lastStatus": 403,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:07:18"
+    },
+    {
+      "id": 58,
+      "siteUrl": "https://beriklan.co.id",
+      "sitemapPath": "https://beriklan.co.id/sitemap-pillar.xml",
+      "lastSubmitted": "2026-07-17 03:07:18",
+      "lastDownloaded": null,
+      "lastStatus": 403,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:07:18"
+    },
+    {
+      "id": 59,
+      "siteUrl": "https://beriklan.co.id",
+      "sitemapPath": "https://beriklan.co.id/sitemap-city.xml",
+      "lastSubmitted": "2026-07-17 03:07:19",
+      "lastDownloaded": null,
+      "lastStatus": 403,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:07:19"
+    },
+    {
+      "id": 60,
+      "siteUrl": "https://beriklan.co.id",
+      "sitemapPath": "https://beriklan.co.id/sitemap-blog.xml",
+      "lastSubmitted": "2026-07-17 03:07:19",
+      "lastDownloaded": null,
+      "lastStatus": 403,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:07:19"
+    },
+    {
+      "id": 61,
+      "siteUrl": "https://www.beriklan.co.id/",
+      "sitemapPath": "https://www.beriklan.co.id//sitemap-static.xml",
+      "lastSubmitted": "2026-07-17 03:12:50",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:12:50"
+    },
+    {
+      "id": 62,
+      "siteUrl": "https://www.beriklan.co.id/",
+      "sitemapPath": "https://www.beriklan.co.id//sitemap-pillar.xml",
+      "lastSubmitted": "2026-07-17 03:12:50",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:12:50"
+    },
+    {
+      "id": 63,
+      "siteUrl": "https://www.beriklan.co.id/",
+      "sitemapPath": "https://www.beriklan.co.id//sitemap-city.xml",
+      "lastSubmitted": "2026-07-17 03:12:51",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:12:51"
+    },
+    {
+      "id": 64,
+      "siteUrl": "https://www.beriklan.co.id/",
+      "sitemapPath": "https://www.beriklan.co.id//sitemap-blog.xml",
+      "lastSubmitted": "2026-07-17 03:12:52",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 03:12:52"
+    },
+    {
+      "id": 79,
+      "siteUrl": "https://www.beriklan.co.id",
+      "sitemapPath": "https://www.beriklan.co.id/sitemap-static.xml",
+      "lastSubmitted": "2026-07-17 05:04:27",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 05:04:27"
+    },
+    {
+      "id": 80,
+      "siteUrl": "https://www.beriklan.co.id",
+      "sitemapPath": "https://www.beriklan.co.id/sitemap-pillar.xml",
+      "lastSubmitted": "2026-07-17 05:04:28",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 05:04:28"
+    },
+    {
+      "id": 81,
+      "siteUrl": "https://www.beriklan.co.id",
+      "sitemapPath": "https://www.beriklan.co.id/sitemap-city.xml",
+      "lastSubmitted": "2026-07-17 05:04:28",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 05:04:28"
+    },
+    {
+      "id": 82,
+      "siteUrl": "https://www.beriklan.co.id",
+      "sitemapPath": "https://www.beriklan.co.id/sitemap-tag.xml",
+      "lastSubmitted": "2026-07-17 05:04:28",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 05:04:28"
+    },
+    {
+      "id": 83,
+      "siteUrl": "https://www.beriklan.co.id",
+      "sitemapPath": "https://www.beriklan.co.id/sitemap-blog.xml",
+      "lastSubmitted": "2026-07-17 05:04:28",
+      "lastDownloaded": null,
+      "lastStatus": 204,
+      "isPending": 1,
+      "created_at": "2026-07-17 05:04:28"
+    }
+  ]
+}

@@ -122,7 +122,7 @@
 
 > **See MASTER CHECKLIST at top of file for canonical P0 status. This section tracks SEO/Schema gaps only (P1+).**
 
-#### Schema Gaps (P1) — SYNCED 18 Jul 2026 (post-§72/§75)
+#### Schema Gaps (P1) — SYNCED 18 Jul 2026 (post-§72/§75/§77)
 
 | Item | Status | Impact |
 |------|--------|--------|
@@ -130,9 +130,10 @@
 | **Schema Service per service** | ✅ Done (10 service, §72) | Medium |
 | **Breadcrumb navigation** | ✅ Done (homepage + 10 service + city, §72) | Medium |
 | **LocalBusiness (homepage)** | ✅ Done (full NAP, §72) | Medium-High |
-| **Schema LocalBusiness per city** | ❌ Belum | Medium-High |
-| **Schema.org HowTo** | ❌ Belum | Low |
-| **AggregateRating review schema** | ❌ Belum | Medium |
+| **Schema LocalBusiness per city** | ✅ Done (LocalSchema.astro, all 242 city pages) | Medium-High |
+| **Schema.org HowTo** | ✅ Done (§77, from howSteps — 242 city pages) | Low-Med |
+| **Review schema (truthful)** | ✅ Done (§77, from real testimonials — 24 pages with data) | Medium |
+| **AggregateRating (fake)** | ⛔ Deliberately NOT done — AGENTS.md bans fake ratings (4.8/5) | n/a |
 | **VideoObject schema** | ❌ Belum (kami ada video mockup) | Low |
 
 #### Content Gaps (P1)
@@ -6345,4 +6346,41 @@ api_key_usage (id, key_name, endpoint, ip, user_agent, status, timestamp)
   added Schema row.
 - §1.2 Schema Gaps table: marked FAQ/Service/Breadcrumb/LocalBusiness(homepage) as ✅ Done.
 - NEXT MOVE unchanged: P0.8 Telegram Alert still top priority.
+
+---
+
+## 77. ✅ SCHEMA: HowTo + Review (per city) DEPLOYED (18 Jul 2026)
+
+### Background finding
+- **"Schema LocalBusiness per city" was ALREADY done** — `LocalSchema.astro` (used by all
+  242 city pages) generates `LocalBusiness` with `addressLocality` + `areaServed: City` per city.
+  plan.md checklist was stale (tracked only homepage `Schema.astro` LocalBusiness).
+- Verified live: `jasa-iklan-facebook/bandung` → 1 LocalBusiness, addressLocality Bandung.
+
+### Added (§77)
+1. **HowTo schema** — `genHowTo()` in `LocalSchema.astro` from `howSteps` (4-step process:
+   Brief & Riset → Setup & Kreatif → Launch 30 Hari → Optimasi). Attached to Service via `hasPart`.
+2. **Review schema** — `genReviews()` from real `testimonials` → `Review` objects with
+   `reviewBody` + `author` + optional `Rating` (ratingValue 5, with real metric as description).
+   Attached to both LocalBusiness + Service via `review` array.
+3. **NO fake AggregateRating** — AGENTS.md bans fabricated "4.8/5" ratings. We only emit
+   Review objects where real testimonial data exists. Compliant.
+
+### Prop injection
+- Enhanced `LocalSchema.astro` Props: added `howSteps`, `testimonials`.
+- Injected `howSteps={howSteps} testimonials={serviceTestimonials}` into all 247 LocalSchema calls
+  (242 city + 10 pillar + 5 view-live paths matched; pillar pages set to `[]` since no vars).
+- Build clean (7225 pages). Deployed via `cf_pages_deploy.py`.
+
+### Live verification
+- `jasa-iklan-facebook/bandung`: HowTo=1, HowToStep=4, Review=6, LocalBusiness=1, aggregateRating=0.
+- `jasa-iklan-facebook/aceh`: HowTo=1, Review=6, LocalBusiness=1, 6 valid JSON-LD blocks (no parse errors).
+- `jasa-digital-marketing/jakarta` (no testimonial data): HowTo=1, Review=0 (correctly skipped).
+- **Coverage**: HowTo on 242 city pages; Review on 24 pages that have real testimonial data
+  (213 pages have empty `serviceTestimonials=[]` → no fake reviews, by design).
+
+### Files
+- `web/src/components/LocalSchema.astro` (HowTo + Review + props)
+- 247 `src/pages/**/index.astro` (LocalSchema prop injection)
+
 

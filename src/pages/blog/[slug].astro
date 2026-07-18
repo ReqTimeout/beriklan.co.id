@@ -6,27 +6,33 @@ import Footer from '../../components/Footer.svelte';
 import { Calendar, Clock, ArrowRight, ArrowLeft, MessageCircle, BookOpen, Tag } from 'lucide-svelte';
 import posts from '../../data/posts.json';
 
-// AdSense configuration (per post)
+// AdSense configuration (4 slots)
 const ADSENSE_CLIENT = 'ca-pub-4438184351486735';
-// IMPORTANT: Replace ad-slot ID with your actual ad unit ID from AdSense dashboard
-const ADSENSE_SLOT_INLINE = '1234567890';
-const ADSENSE_SLOT_AFTER = '9876543210';
-
-// Unsplash photo mapping per category (per UNSPLASH-PHOTOS.md)
-const unsplashByCategory = {
-    meta: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-    google: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
-    tiktok: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-    youtube: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-    strategy: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
-    'case-study': 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80&fm=avif&fit=crop',
+// Replace with real ad-unit slot IDs from AdSense dashboard (one per position)
+const ADSENSE_SLOTS = {
+  inlineTop: '1101825065',   // in-article, autorelaxed
+  inlineMid: '6162580059',   // in-article, fluid
+  afterArticle: '4505315237',// autorelaxed, after article
+  sidebar: '1237556436',     // sidebar, auto responsive
 };
 
-// Pick featured image: post.featuredImage OR category fallback
+const SERVICE_NAMES = {
+  'jasa-digital-marketing': 'Digital Marketing',
+  'jasa-iklan-facebook': 'Facebook Ads',
+  'jasa-iklan-instagram': 'Instagram Ads',
+  'jasa-iklan-tiktok': 'TikTok Ads',
+  'jasa-iklan-google': 'Google Ads',
+  'jasa-iklan-youtube': 'YouTube Ads',
+  'jasa-kelola-instagram': 'Manajemen Instagram',
+  'jasa-kelola-tiktok': 'Manajemen TikTok',
+  'jasa-pembuatan-website': 'Pembuatan Website',
+  'jasa-pembuatan-landing-page': 'Landing Page',
+};
+
+// Pick featured image: post.featuredImage OR service-specific OR hash-based category pool (50+ images)
+import { getFeaturedImage as getFeaturedImageRich } from '../../utils/featured_image.js';
 function getFeaturedImage(post) {
-    if (post.featuredImage) return post.featuredImage;
-    if (post.category && unsplashByCategory[post.category]) return unsplashByCategory[post.category];
-    return 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&fm=avif&fit=crop';
+    return getFeaturedImageRich(post);
 }
 
 export function getStaticPaths() {
@@ -77,6 +83,13 @@ const sidebarCategories = [
     { id: 'case-study', label: 'Studi Kasus', count: categoryCounts['case-study'] || 0 },
 ];
 
+const AUTHOR = {
+    name: 'Tim Beriklan',
+    role: 'Performance Marketing Strategist',
+    credentials: 'Tim bersertifikasi Meta & Google sejak 2016 · mengelola campaign untuk ratusan UMKM & bisnis menengah Indonesia',
+    url: 'https://beriklan.co.id/tentang-kami/',
+};
+
 const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -84,7 +97,18 @@ const articleSchema = {
     description: post.excerpt,
     datePublished: post.iso_date,
     dateModified: post.iso_date,
-    author: { '@type': 'Organization', name: 'Beriklan.co.id' },
+    author: {
+        '@type': 'Person',
+        name: AUTHOR.name,
+        jobTitle: AUTHOR.role,
+        url: AUTHOR.url,
+        worksFor: {
+            '@type': 'Organization',
+            name: 'Beriklan.co.id',
+            url: 'https://beriklan.co.id/',
+            logo: { '@type': 'ImageObject', url: 'https://beriklan.co.id/logoweb.webp' }
+        }
+    },
     publisher: {
         '@type': 'Organization',
         name: 'Beriklan.co.id',
@@ -99,6 +123,8 @@ const articleSchema = {
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
+
+    <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
 
     <script type="application/ld+json" set:html={JSON.stringify(articleSchema)}></script>
 
@@ -138,7 +164,7 @@ const articleSchema = {
                 </span>
                 <span class="flex items-center gap-1.5">
                     <BookOpen class="w-3.5 h-3.5" />
-                    Oleh Tim Beriklan
+                    Oleh {AUTHOR.name}
                 </span>
             </div>
         </div>
@@ -154,35 +180,40 @@ const articleSchema = {
 
             <div class="grid lg:grid-cols-12 gap-10">
                 <div class="lg:col-span-8">
-                    <!-- AdSense: Inline (in-article) -->
+                    <!-- AdSense Slot 1: Inline top (autorelaxed) -->
                     <div class="my-8 p-4 bg-soft/30 rounded-xl border border-gray-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-format="autorelaxed"
+                             data-ad-client={ADSENSE_CLIENT}
+                             data-ad-slot={ADSENSE_SLOTS.inlineTop}></ins>
+                        <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                    </div>
+
+                    <div class="prose prose-lg max-w-none text-ink leading-relaxed" set:html={post.content} />
+
+                    <!-- AdSense Slot 2: Inline mid (in-article, fluid) -->
+                    <div class="mt-8 p-4 bg-soft/30 rounded-xl border border-gray-100">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
                         <ins class="adsbygoogle"
                              style="display:block; text-align:center;"
                              data-ad-layout="in-article"
                              data-ad-format="fluid"
                              data-ad-client={ADSENSE_CLIENT}
-                             data-ad-slot={ADSENSE_SLOT_INLINE}></ins>
-                        <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-                                crossorigin="anonymous"></script>
-                        <script is:inline>
-                            (adsbygoogle = window.adsbygoogle || []).push({{}});
-                        </script>
+                             data-ad-slot={ADSENSE_SLOTS.inlineMid}></ins>
+                        <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                     </div>
 
-                    <div class="prose prose-lg max-w-none text-ink leading-relaxed" set:html={post.content} />
-
-                    <!-- AdSense: After-article -->
+                    <!-- AdSense Slot 3: After-article (autorelaxed) -->
                     <div class="mt-10 p-4 bg-soft/30 rounded-xl border border-gray-100">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
                         <ins class="adsbygoogle"
                              style="display:block"
-                             data-ad-format="fluid"
+                             data-ad-format="autorelaxed"
                              data-ad-client={ADSENSE_CLIENT}
-                             data-ad-slot={ADSENSE_SLOT_AFTER}></ins>
-                        <script is:inline>
-                            (adsbygoogle = window.adsbygoogle || []).push({{}});
-                        </script>
+                             data-ad-slot={ADSENSE_SLOTS.afterArticle}></ins>
+                        <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                     </div>
 
                     {post.tags.length > 0 && (
@@ -195,6 +226,18 @@ const articleSchema = {
                                     </span>
                                 ))}
                             </div>
+                        </div>
+                    )}
+
+                    {post.service && (
+                        <div class="mt-8 p-5 bg-gradient-to-br from-soft to-white rounded-2xl border border-accent/20">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-accent mb-1.5">Mau belajar lebih dalam?</p>
+                            <h4 class="font-display font-bold text-lg text-ink leading-snug mb-2">Panduan Lengkap {SERVICE_NAMES[post.service] || post.service}</h4>
+                            <p class="text-xs text-muted leading-relaxed mb-3">Strategi, format iklan, optimasi budget, dan cara ukur ROI dari tim Beriklan.</p>
+                            <a href={`/${post.service}/pilar/`} class="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Baca panduan pilar
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
                         </div>
                     )}
 
@@ -214,6 +257,18 @@ const articleSchema = {
                                 Chat Tim
                                 <ArrowRight class="w-4 h-4" />
                             </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 p-6 md:p-7 bg-white border border-gray-100 rounded-2xl shadow-soft flex items-start gap-4">
+                        <div class="shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-2 flex items-center justify-center text-white font-display font-extrabold text-lg">
+                            {AUTHOR.name.split(' ').map((w) => w[0]).join('').slice(0, 2)}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-accent mb-1">Ditulis oleh</p>
+                            <a href={AUTHOR.url} class="font-display font-bold text-ink text-base hover:text-accent transition-colors">{AUTHOR.name}</a>
+                            <p class="text-xs text-muted font-semibold mb-1.5">{AUTHOR.role}</p>
+                            <p class="text-xs text-muted leading-relaxed">{AUTHOR.credentials}</p>
                         </div>
                     </div>
 
@@ -273,6 +328,18 @@ const articleSchema = {
                             </div>
                         </div>
                     )}
+
+                    <!-- AdSense Slot 4: Sidebar (desktop, auto responsive) -->
+                    <div class="hidden lg:block p-4 bg-soft/30 rounded-2xl border border-gray-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-client={ADSENSE_CLIENT}
+                             data-ad-slot={ADSENSE_SLOTS.sidebar}
+                             data-ad-format="auto"
+                             data-full-width-responsive="true"></ins>
+                        <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                    </div>
 
                     <div class="bg-gradient-to-br from-ink via-primary-2 to-ink rounded-2xl p-6 text-white relative overflow-hidden">
                         <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.18) 0%, transparent 60%);"></div>

@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan YouTube di Beriklan?", "a": "Biaya 
 const whyFeatures = [{"icon": "🎬", "title": "Visual Storytelling", "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."}, {"icon": "🎯", "title": "Affinity Targeting", "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."}, {"icon": "📊", "title": "Brand Lift Measurement", "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Video Audit", "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup Targeting", "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."}, {"num": "04", "tag": "ONGOING", "title": "Refresh & Optimize", "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,45 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-  <h2>Mengapa Bisnis di Lampung Butuh Jasa Iklan YouTube</h2>
-  <p>Lampung, salah satu provinsi di Sumatera yang memiliki potensi besar dalam pengembangan UMKM. Dengan lebih dari 65 ribu UMKM yang beroperasi, Lampung menjadi salah satu kota yang paling aktif dalam pengembangan bisnis kecil menengah. Namun, dalam era digital seperti sekarang, UMKM di Lampung perlu memiliki strategi pemasaran yang efektif untuk meningkatkan kesadaran dan penjualan. Itulah mengapa jasa iklan YouTube menjadi salah satu pilihan yang tepat bagi bisnis di Lampung.</p>
-  <p>Banyak UMKM di Lampung yang masih belum memiliki strategi pemasaran yang efektif, sehingga mereka kesulitan untuk meningkatkan kesadaran dan penjualan. Dengan jasa iklan YouTube, UMKM di Lampung dapat meningkatkan visibilitas dan kesadaran mereka di pasar, serta meningkatkan penjualan. Selain itu, jasa iklan YouTube juga dapat membantu UMKM di Lampung untuk meningkatkan reputasi dan kepercayaan mereka di pasar.</p>
-  <p>Jasa iklan YouTube juga dapat membantu UMKM di Lampung untuk meningkatkan kemampuan pemasaran mereka. Dengan menggunakan teknologi canggih seperti analisis data dan optimasi iklan, UMKM di Lampung dapat meningkatkan efisiensi dan efektifitas pemasaran mereka. Selain itu, jasa iklan YouTube juga dapat membantu UMKM di Lampung untuk meningkatkan kepuasan pelanggan mereka, sehingga meningkatkan reputasi dan kepercayaan mereka di pasar.</p>
-
-  <h2>Tantangan Jasa Iklan YouTube di Pasar Lampung</h2>
-  <p>Jasa iklan YouTube di pasar Lampung memiliki beberapa tantangan yang perlu diatasi. Salah satu tantangan utama adalah risiko kegagalan dalam meningkatkan kesadaran dan penjualan. Jika jasa iklan YouTube tidak dapat meningkatkan visibilitas dan kesadaran UMKM di Lampung, maka mereka akan kehilangan kepercayaan dan reputasi di pasar. Selain itu, jasa iklan YouTube juga perlu menghadapi risiko kegagalan dalam meningkatkan kemampuan pemasaran UMKM di Lampung.</p>
-  <p>Untuk mengatasi tantangan ini, jasa iklan YouTube di pasar Lampung perlu memiliki strategi pemasaran yang efektif dan efisien. Mereka perlu memiliki kemampuan untuk menganalisis data dan optimasi iklan, sehingga dapat meningkatkan efisiensi dan efektifitas pemasaran. Selain itu, jasa iklan YouTube di pasar Lampung juga perlu memiliki kemampuan untuk meningkatkan kepuasan pelanggan, sehingga meningkatkan reputasi dan kepercayaan mereka di pasar.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Lampung</h2>
-  <p>Tim beriklan di Lampung bekerja sama dengan UMKM untuk meningkatkan kesadaran dan penjualan mereka di pasar. Berikut adalah cara kerja tim beriklan di Lampung:</p>
-  <ul>
-    <li>Langkah 1: Analisis Data - Tim beriklan di Lampung menganalisis data UMKM untuk mengetahui kebutuhan dan tantangan mereka.</li>
-    <li>Langkah 2: Membuat Strategi Pemasaran - Tim beriklan di Lampung membuat strategi pemasaran yang efektif dan efisien untuk meningkatkan kesadaran dan penjualan UMKM.</li>
-    <li>Langkah 3: Membuat Iklan - Tim beriklan di Lampung membuat iklan yang efektif dan menarik untuk meningkatkan kesadaran dan penjualan UMKM.</li>
-    <li>Langkah 4: Memonitor dan Optimasi - Tim beriklan di Lampung memantau dan memperbaiki iklan untuk meningkatkan efisiensi dan efektifitas pemasaran.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan YouTube di Lampung</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Paket harga jasa iklan YouTube di Lampung adalah sebagai berikut:</p>
-  <p>* Basic: Rp 1.250.000</p>
-  <p>* Starter: Rp 2.500.000</p>
-  <p>* Standart: Rp 3.750.000</p>
-
-  <h3>Berapa lama setup?</h3>
-  <p>Waktu setup jasa iklan YouTube di Lampung adalah sekitar 1-2 minggu.</p>
-
-  <h3>Akses akun?</h3>
-  <p>UMKM dapat memiliki akses ke akun YouTube mereka sendiri.</p>
-
-  <h3>Laporan?</h3>
-  <p>Tim beriklan di Lampung akan memberikan laporan kepada UMKM tentang hasil iklan mereka.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-youtube/lampung/" content={cityContentMap["jasa-iklan-youtube/lampung/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

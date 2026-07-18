@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan YouTube di Beriklan?", "a": "Biaya 
 const whyFeatures = [{"icon": "🎬", "title": "Visual Storytelling", "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."}, {"icon": "🎯", "title": "Affinity Targeting", "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."}, {"icon": "📊", "title": "Brand Lift Measurement", "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Video Audit", "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup Targeting", "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."}, {"num": "04", "tag": "ONGOING", "title": "Refresh & Optimize", "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Depok Butuh Jasa Iklan YouTube</h2>
-<p>Depok merupakan salah satu kota metropolitan yang memiliki tingkat pendidikan yang tinggi, dengan lebih dari 95.000 UMKM (Usaha Mikro, Kecil, dan Menengah) yang beroperasi di kota ini. Dengan jumlah UMKM yang besar, persaingan di pasar Depok sangat ketat. Oleh karena itu, bisnis di Depok memerlukan strategi pemasaran yang efektif untuk meningkatkan visibilitas dan kesadaran masyarakat tentang produk atau jasa yang ditawarkan. Jasa iklan YouTube menjadi salah satu pilihan yang efektif untuk meningkatkan keterlibatan pasar dan meningkatkan penjualan.</p>
-<p>Bisnis di Depok dapat meningkatkan keterlibatan pasar dengan menggunakan jasa iklan YouTube karena platform ini memiliki akses yang luas ke berbagai kalangan dan latar belakang. Selain itu, jasa iklan YouTube juga dapat membantu bisnis di Depok meningkatkan kesadaran masyarakat tentang produk atau jasa yang ditawarkan, sehingga meningkatkan penjualan.</p>
-<p>Salah satu kelebihan jasa iklan YouTube adalah kemampuan untuk mencapai target audiens yang spesifik. Dengan menggunakan strategi pemasaran yang tepat, jasa iklan YouTube dapat membantu bisnis di Depok meningkatkan visibilitas dan kesadaran masyarakat tentang produk atau jasa yang ditawarkan.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-youtube/depok/" content={cityContentMap["jasa-iklan-youtube/depok/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan YouTube di Pasar Depok</h2>
-<p>Jasa iklan YouTube di pasar Depok memiliki beberapa tantangan, salah satunya adalah risiko tanpa strategi pemasaran yang efektif. Jika jasa iklan YouTube tidak dilakukan dengan strategi yang tepat, maka bisnis di Depok dapat kehilangan visibilitas dan kesadaran masyarakat tentang produk atau jasa yang ditawarkan. Selain itu, jasa iklan YouTube juga dapat menjadi mahal jika tidak dilakukan dengan efektif.</p>
-<p>Bisnis di Depok harus memiliki strategi pemasaran yang efektif untuk meningkatkan visibilitas dan kesadaran masyarakat tentang produk atau jasa yang ditawarkan. Jika tidak, maka jasa iklan YouTube dapat menjadi tidak efektif dan tidak menghasilkan hasil yang diharapkan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Depok</h2>
-<p>Tim beriklan di Depok memiliki pengalaman yang luas dalam melakukan jasa iklan YouTube. Dengan menggunakan strategi pemasaran yang efektif, tim beriklan di Depok dapat membantu bisnis di Depok meningkatkan visibilitas dan kesadaran masyarakat tentang produk atau jasa yang ditawarkan.</p>
-<ul>
-  <li>Step 1: Penelitian pasar untuk mengetahui kebutuhan dan preferensi target audiens.</li>
-  <li>Step 2: Pembuatan konten iklan yang menarik dan efektif.</li>
-  <li>Step 3: Pengaturan pengaturan iklan di YouTube dengan strategi pemasaran yang tepat.</li>
-  <li>Step 4: Evaluasi hasil iklan dan melakukan perbaikan jika perlu.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan YouTube di Depok</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga jasa iklan YouTube di Depok adalah sebagai berikut: Basic Rp 1.250.000, Starter Rp 2.500.000, dan Standart Rp 3.750.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan YouTube di Depok dapat dilakukan dalam waktu 3-5 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Anda akan diberikan akses akun YouTube untuk melihat hasil iklan.</p>
-<h3>Laporan?</h3>
-<p>Anda akan menerima laporan hasil iklan secara berkala.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Surabaya Butuh Jasa Iklan Instagram</h2>
-<p>Surabaya, kota bisnis Jawa Timur dengan lebih dari 280 ribu Usaha Mikro, Kecil, dan Menengah (UMKM), merupakan salah satu pusat distribusi retail dan F&B regional di Jawa Timur. Dengan populasi lebih dari 2,8 juta penduduk, kompetisi di bidang iklan di Surabaya sangat tinggi. Oleh karena itu, bisnis di Surabaya memerlukan jasa iklan Instagram yang profesional untuk meningkatkan visibilitas dan penjualan.</p>
-<p>Untuk mencapai tujuan tersebut, bisnis di Surabaya perlu memiliki strategi iklan yang tepat, pengaturan akun yang efektif, dan konten yang menarik. Dengan jasa iklan Instagram yang profesional, bisnis di Surabaya dapat meningkatkan kemampuan pengenalan merek, meningkatkan penjualan, dan meningkatkan kesadaran merek di kalangan pelanggan potensial.</p>
-<p>Bagaimana kita dapat membantu bisnis di Surabaya untuk meningkatkan visibilitas dan penjualan melalui jasa iklan Instagram? Mari kita lihat langkah-langkahnya!</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-instagram/surabaya/" content={cityContentMap["jasa-iklan-instagram/surabaya/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Instagram di Pasar Surabaya</h2>
-<p>Tantangan utama bagi jasa iklan Instagram di Surabaya adalah menghadapi kompetisi yang sangat tinggi di pasar. Dengan lebih dari 280 ribu UMKM yang beroperasi di Surabaya, setiap bisnis harus memiliki strategi iklan yang unik dan efektif untuk meningkatkan visibilitas dan penjualan. Jika tidak, bisnis dapat kehilangan pelanggan potensial dan meninggalkan kompetitor di belakang.</p>
-<p>Risiko lainnya adalah jika bisnis tidak memiliki strategi iklan yang tepat, mereka dapat kehilangan waktu dan sumber daya dalam membuat iklan yang efektif. Hal ini dapat menyebabkan kehilangan pelanggan potensial dan penurunan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Surabaya</h2>
-<p>Mari kita lihat bagaimana tim beriklan di Surabaya dapat membantu bisnis Anda meningkatkan visibilitas dan penjualan melalui jasa iklan Instagram.</p>
-<ul>
-  <li>Step 1: Pengaturan Akun - Kami akan mengatur akun Instagram Anda untuk meningkatkan visibilitas dan kemampuan pengenalan merek.</li>
-  <li>Step 2: Strategi Iklan - Kami akan merancang strategi iklan yang tepat untuk meningkatkan penjualan dan kesadaran merek di kalangan pelanggan potensial.</li>
-  <li>Step 3: Konten Iklan - Kami akan membuat konten iklan yang menarik dan efektif untuk meningkatkan visibilitas dan penjualan.</li>
-  <li>Step 4: Analisis Hasil - Kami akan menganalisis hasil iklan untuk meningkatkan strategi iklan dan meningkatkan kemampuan pengenalan merek.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Surabaya</h2>
-<h3>Berapa biaya?</h3>
-<p>Kami menawarkan dua paket harga, yaitu Standart Rp 1.750.000 dan Business Rp 3.750.000. Paket Standart mencakup pengaturan akun, strategi iklan, dan konten iklan, sementara Paket Business mencakup semua fitur di atas, plus analisis hasil dan strategi iklan yang lebih detail.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup iklan biasanya memakan waktu 1-3 hari, tergantung pada kompleksitas strategi iklan dan konten iklan.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun Instagram Anda kepada tim beriklan untuk memantau dan mengatur iklan.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan hasil iklan kepada Anda setiap bulan untuk meningkatkan strategi iklan dan meningkatkan kemampuan pengenalan merek.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -252,7 +223,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

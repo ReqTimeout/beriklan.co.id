@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi 
 const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
 const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Solo Butuh Jasa Digital Marketing</h2>
-<p>Kota Solo, Surakarta, Jawa Tengah, dikenal sebagai pusat budaya dan UMKM (Usaha Mikro, Kecil, dan Menengah) di Indonesia. Menurut data terbaru, ada sekitar 60.000 UMKM yang beroperasi di Solo, dengan sebagian besar dari mereka masih menghadapi tantangan dalam meningkatkan penjualan dan visibilitas di pasar. Oleh karena itu, jasa digital marketing menjadi salah satu solusi yang tepat untuk membantu UMKM Solo meningkatkan bisnis mereka.</p>
-<p>Banyak UMKM Solo yang masih belum memahami potensi digital marketing dan masih mengandalkan metode pemasaran tradisional yang kurang efektif. Dengan jasa digital marketing, UMKM Solo dapat meningkatkan visibilitas di internet, meningkatkan penjualan, dan meningkatkan kepercayaan pelanggan.</p>
-<p>Dengan demikian, jasa digital marketing menjadi salah satu investasi yang tepat untuk UMKM Solo untuk meningkatkan bisnis dan mencapai tujuan mereka.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-digital-marketing/solo/" content={cityContentMap["jasa-digital-marketing/solo/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Digital Marketing di Pasar Solo</h2>
-<p>Bisnis digital di Solo masih memiliki beberapa tantangan, terutama bagi UMKM yang tidak memiliki sumber daya yang cukup untuk mengembangkan strategi digital yang efektif. Risiko yang paling besar adalah kehilangan kompetisi di pasar online, karena banyak bisnis lain yang juga menggunakan jasa digital marketing untuk meningkatkan penjualan mereka.</p>
-<p>Dengan tidak adanya strategi digital yang efektif, UMKM Solo berisiko kehilangan pelanggan dan penjualan, sehingga dapat mempengaruhi keberlangsungan bisnis mereka.</p>
-
-<h2>Cara Kerja Tim Beriklan di Solo</h2>
-<p>Tim Beriklan di Solo terdiri dari ahli-ahli yang berpengalaman dalam bidang digital marketing, dengan tujuan untuk membantu UMKM Solo meningkatkan bisnis mereka melalui strategi digital yang efektif.</p>
-<ul>
-<li>Langkah 1: Analisis Bisnis - Tim Beriklan melakukan analisis bisnis UMKM Solo untuk memahami kebutuhan dan tujuan mereka.</li>
-<li>Langkah 2: Rancang Strategi - Tim Beriklan merancang strategi digital yang efektif untuk meningkatkan visibilitas dan penjualan UMKM Solo.</li>
-<li>Langkah 3: Eksekusi Strategi - Tim Beriklan mengimplementasikan strategi digital yang telah dirancang untuk meningkatkan visibilitas dan penjualan UMKM Solo.</li>
-<li>Langkah 4: Evaluasi Hasil - Tim Beriklan melakukan evaluasi hasil untuk memastikan bahwa strategi digital yang digunakan telah efektif dalam meningkatkan visibilitas dan penjualan UMKM Solo.</li>
-</ul>
-
-<h2>FAQ Jasa Digital Marketing di Solo</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami terdiri dari Starter Rp (konsultasi), Growth Rp 5.500.000, dan Scale Rp 9.500.000. Harga ini dapat disesuaikan dengan kebutuhan UMKM Solo.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup waktu kami biasanya memakan waktu 2-4 minggu, tergantung pada kompleksitas proyek.</p>
-<h3>Akses akun?</h3>
-<p>UMKM Solo akan memiliki akses penuh ke akun digital marketing kami, sehingga mereka dapat melihat hasil dan memantau kemajuan proyek.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan bulanan kepada UMKM Solo untuk memastikan bahwa strategi digital yang digunakan telah efektif dalam meningkatkan visibilitas dan penjualan.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

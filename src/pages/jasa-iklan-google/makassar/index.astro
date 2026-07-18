@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-  <h2>Mengapa Bisnis di Makassar Butuh Jasa Iklan Google</h2>
-  <p>Makassar, sebagai gateway Indonesia Timur, menawarkan potensi besar bagi bisnis UMKM. Dengan populasi lebih dari 1,4 juta penduduk dan tingkat adopsi mobile yang tinggi, peluang untuk meningkatkan kesadaran dan penjualan sangatlah besar. Di Makassar, 230.000 UMKM yang aktif, terutama di sektor F&B, retail, dan properti, memiliki kebutuhan akan strategi pemasaran yang efektif untuk meningkatkan visibilitas dan penjualan.</p>
-  <p>Salah satu cara untuk meningkatkan kesadaran dan penjualan adalah dengan menggunakan jasa iklan Google. Dengan kemampuan untuk memperluas jangkauan dan meningkatkan kualitas trafik, jasa iklan Google dapat membantu bisnis UMKM di Makassar meningkatkan penjualan dan meningkatkan keuntungan.</p>
-  <p>Di Makassar, bisnis UMKM yang tidak menggunakan jasa iklan Google dapat kehilangan kesempatan untuk meningkatkan visibilitas dan penjualan. Dengan menggunakan jasa iklan Google, bisnis UMKM dapat meningkatkan kesadaran dan penjualan, serta meningkatkan keuntungan.</p>
-
-  <h2>Tantangan Jasa Iklan Google di Pasar Makassar</h2>
-  <p>Menggunakan jasa iklan Google di pasar Makassar tidaklah mudah. Tanpa strategi yang tepat, bisnis UMKM dapat kehilangan kesempatan untuk meningkatkan visibilitas dan penjualan. Risiko lainnya adalah bahwa bisnis UMKM dapat mengalami kehilangan kepercayaan pelanggan karena kesalahan dalam menggunakan jasa iklan Google.</p>
-  <p>Di sisi lain, menggunakan jasa iklan Google di pasar Makassar yang sangat kompetitif juga dapat menjadi tantangan. Bisnis UMKM harus memiliki strategi yang tepat untuk meningkatkan visibilitas dan penjualan, serta menghindari kesalahan dalam menggunakan jasa iklan Google.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Makassar</h2>
-  <p>Tim beriklan kami memiliki pengetahuan dan pengalaman yang luas dalam menggunakan jasa iklan Google di pasar Makassar. Kami memiliki kemampuan untuk membantu bisnis UMKM meningkatkan visibilitas dan penjualan dengan efektif.</p>
-  <ul>
-    <li>Langkah 1: Kami membantu Anda memahami kebutuhan bisnis Anda dan menentukan strategi yang tepat untuk meningkatkan visibilitas dan penjualan.</li>
-    <li>Langkah 2: Kami membantu Anda membuat konten yang efektif untuk meningkatkan kesadaran dan penjualan.</li>
-    <li>Langkah 3: Kami membantu Anda mengatur iklan Google yang efektif untuk meningkatkan visibilitas dan penjualan.</li>
-    <li>Langkah 4: Kami membantu Anda menganalisis hasil iklan Google dan membuat perubahan yang diperlukan untuk meningkatkan visibilitas dan penjualan.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan Google di Makassar</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Biaya jasa iklan Google kami di Makassar adalah sebagai berikut: Basic Rp 1.750.000, Standart Rp 3.750.000, Business Rp 6.000.000.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Setup jasa iklan Google kami di Makassar biasanya memakan waktu 1-2 minggu, tergantung pada kompleksitas kebutuhan bisnis Anda.</p>
-  <h3>Akses akun?</h3>
-  <p>Kami memberikan akses akun jasa iklan Google kepada Anda, sehingga Anda dapat melihat hasil iklan Google secara langsung.</p>
-  <h3>Laporan?</h3>
-  <p>Kami memberikan laporan hasil iklan Google kepada Anda secara teratur, sehingga Anda dapat melihat hasil iklan Google secara efektif.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-google/makassar/" content={cityContentMap["jasa-iklan-google/makassar/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -252,7 +222,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

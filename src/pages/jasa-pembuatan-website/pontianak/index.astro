@@ -1,0 +1,302 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "pontianak", "name": "Pontianak", "alt_names": ["pontianak"], "province": "Kalimantan Barat", "tier": 3, "country": "ID", "lat": -0.0263, "lng": 109.3425, "umkm_count": 120000, "local_facts": ["Pontianak Kalimantan Barat perbatasan, 55rb UMKM"], "is_international": false};
+const service = {"slug": "jasa-pembuatan-website", "name": "Jasa Pembuatan Website", "category": "build", "description": "Jasa Pembuatan Website dari Beriklan (Bandung, sejak 2016). Tim online respon 1 jam, laporan rutin, konsultasi awal 15 menit gratis.", "faqs": [{"q": "Berapa biaya Jasa Pembuatan Website?", "a": "Landing page mulai Rp 3jt, company profile Rp 8jt, toko online Rp 18jt. Custom (multi-bahasa, membership, dll) di-quote terpisah."}, {"q": "Berapa lama pengerjaan?", "a": "Landing page 5-7 hari, company profile 14-21 hari, toko online 21-30 hari. Revisi 2-3× included sebelum launch."}, {"q": "Apakah include domain dan hosting?", "a": "Ya, include 1 tahun. Domain .co.id/.id/.com. Hosting managed Indonesia (SSD, SSL gratis, CDN, backup harian)."}, {"q": "Maintenance setelah launch?", "a": "Opsional. Landing page tidak perlu maintenance. Company profile Rp 500rb/bulan. Toko online Rp 1jt/bulan. Include update konten, security patch, backup."}, {"q": "CMS atau static?", "a": "Tergantung: untuk update rutin (blog, news) pakai WordPress atau Headless CMS. Untuk performance maksimal (landing page campaign) pakai static (Astro/Next.js)."}], "active": true, "order": 8, "tiers": [{"name": "Landing Page", "priceLabel": "3.000.000", "duration": "5-7 hari kerja", "tagline": "Untuk campaign Meta/Google Ads atau promo spesifik yang butuh halaman konversi dedicated.", "features": ["1 halaman custom (mobile responsive)", "Form integrasi WhatsApp + Email", "Meta Pixel + Google Tag setup", "SSL + domain .co.id/.id (1 tahun)", "Loading speed < 3 detik", "Revisi 2×"], "priceNote": "include domain + hosting 1 tahun", "disclaimer": "Sekali bayar, source code menjadi milik Anda."}, {"name": "Company Profile", "priceLabel": "8.000.000", "duration": "14-21 hari kerja", "highlight": true, "tagline": "Untuk bisnis yang butuh website profesional multi-halaman dengan CMS untuk update rutin.", "features": ["5-7 halaman (Home, About, Services, Blog, Contact)", "CMS WordPress / Headless", "Design custom sesuai brand", "SEO on-page dasar (title, meta, schema)", "Blog integration (untuk content marketing)", "Training update website (2 jam)", "Revisi 3×"], "priceNote": "include domain + hosting 1 tahun", "disclaimer": "Maintenance bulanan opsional Rp 500rb."}, {"name": "Toko Online", "priceLabel": "18.000.000", "duration": "21-30 hari kerja", "tagline": "Untuk bisnis yang butuh e-commerce lengkap dengan payment gateway dan shipping integration.", "features": ["Katalog produk unlimited", "Payment gateway (Midtrans/Xendit)", "Shipping API (JNE/J&T/SiCepat)", "Admin dashboard untuk order management", "Customer account + order tracking", "Integrasi Meta Pixel + Google Analytics", "Training tim (4 jam)", "Revisi 3× + support 30 hari"], "priceNote": "include domain + hosting 1 tahun, tidak termasuk payment gateway fee", "disclaimer": "Maintenance bulanan opsional Rp 1jt."}], "why_features": [{"icon": "🎯", "title": "Conversion-First", "desc": "Website yang kami bangun dirancang untuk konversi: tombol CTA jelas, loading cepat, mobile responsive, dan tracking akurat."}, {"icon": "⚡", "title": "Performance Optimal", "desc": "PageSpeed score 90+ di mobile, hosting managed Indonesia (latency rendah), SSL + CDN gratis."}, {"icon": "🔧", "title": "Mudah Update", "desc": "CMS WordPress atau Headless CMS (konten marketing friendly). Anda update sendiri tanpa harus hubungi developer."}], "how_steps": [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Wireframe", "desc": "Diskusi 90 menit: tujuan website, target audience, halaman yang dibutuhkan, dan referensi design."}, {"num": "02", "tag": "MINGGU 2-3", "title": "Design & Build", "desc": "Mockup design → approval → development. CMS setup, integrasi payment/tracking, dan content population."}, {"num": "03", "tag": "MINGGU 3-4", "title": "Testing & Launch", "desc": "Cross-browser testing, mobile testing, speed test, security audit. Launch + monitoring 7 hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Support & Maintenance", "desc": "Support teknis via WhatsApp. Maintenance opsional: update konten, security patch, backup bulanan."}], "city_intro_template": "", "testimonials": []};
+const tiers = [{"name": "Landing Page", "priceLabel": "3.000.000", "duration": "5-7 hari kerja", "tagline": "Untuk campaign Meta/Google Ads atau promo spesifik yang butuh halaman konversi dedicated.", "features": ["1 halaman custom (mobile responsive)", "Form integrasi WhatsApp + Email", "Meta Pixel + Google Tag setup", "SSL + domain .co.id/.id (1 tahun)", "Loading speed < 3 detik", "Revisi 2×"], "priceNote": "include domain + hosting 1 tahun", "disclaimer": "Sekali bayar, source code menjadi milik Anda."}, {"name": "Company Profile", "priceLabel": "8.000.000", "duration": "14-21 hari kerja", "highlight": true, "tagline": "Untuk bisnis yang butuh website profesional multi-halaman dengan CMS untuk update rutin.", "features": ["5-7 halaman (Home, About, Services, Blog, Contact)", "CMS WordPress / Headless", "Design custom sesuai brand", "SEO on-page dasar (title, meta, schema)", "Blog integration (untuk content marketing)", "Training update website (2 jam)", "Revisi 3×"], "priceNote": "include domain + hosting 1 tahun", "disclaimer": "Maintenance bulanan opsional Rp 500rb."}, {"name": "Toko Online", "priceLabel": "18.000.000", "duration": "21-30 hari kerja", "tagline": "Untuk bisnis yang butuh e-commerce lengkap dengan payment gateway dan shipping integration.", "features": ["Katalog produk unlimited", "Payment gateway (Midtrans/Xendit)", "Shipping API (JNE/J&T/SiCepat)", "Admin dashboard untuk order management", "Customer account + order tracking", "Integrasi Meta Pixel + Google Analytics", "Training tim (4 jam)", "Revisi 3× + support 30 hari"], "priceNote": "include domain + hosting 1 tahun, tidak termasuk payment gateway fee", "disclaimer": "Maintenance bulanan opsional Rp 1jt."}];
+const faqs = [{"q": "Berapa biaya Jasa Pembuatan Website?", "a": "Landing page mulai Rp 3jt, company profile Rp 8jt, toko online Rp 18jt. Custom (multi-bahasa, membership, dll) di-quote terpisah."}, {"q": "Berapa lama pengerjaan?", "a": "Landing page 5-7 hari, company profile 14-21 hari, toko online 21-30 hari. Revisi 2-3× included sebelum launch."}, {"q": "Apakah include domain dan hosting?", "a": "Ya, include 1 tahun. Domain .co.id/.id/.com. Hosting managed Indonesia (SSD, SSL gratis, CDN, backup harian)."}, {"q": "Maintenance setelah launch?", "a": "Opsional. Landing page tidak perlu maintenance. Company profile Rp 500rb/bulan. Toko online Rp 1jt/bulan. Include update konten, security patch, backup."}, {"q": "CMS atau static?", "a": "Tergantung: untuk update rutin (blog, news) pakai WordPress atau Headless CMS. Untuk performance maksimal (landing page campaign) pakai static (Astro/Next.js)."}];
+const whyFeatures = [{"icon": "🎯", "title": "Conversion-First", "desc": "Website yang kami bangun dirancang untuk konversi: tombol CTA jelas, loading cepat, mobile responsive, dan tracking akurat."}, {"icon": "⚡", "title": "Performance Optimal", "desc": "PageSpeed score 90+ di mobile, hosting managed Indonesia (latency rendah), SSL + CDN gratis."}, {"icon": "🔧", "title": "Mudah Update", "desc": "CMS WordPress atau Headless CMS (konten marketing friendly). Anda update sendiri tanpa harus hubungi developer."}];
+const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Brief & Wireframe", "desc": "Diskusi 90 menit: tujuan website, target audience, halaman yang dibutuhkan, dan referensi design."}, {"num": "02", "tag": "MINGGU 2-3", "title": "Design & Build", "desc": "Mockup design → approval → development. CMS setup, integrasi payment/tracking, dan content population."}, {"num": "03", "tag": "MINGGU 3-4", "title": "Testing & Launch", "desc": "Cross-browser testing, mobile testing, speed test, security audit. Launch + monitoring 7 hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Support & Maintenance", "desc": "Support teknis via WhatsApp. Maintenance opsional: update konten, security patch, backup bulanan."}];
+const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+---
+
+<Layout
+    title="Jasa Pembuatan Website di Pontianak — Paket Profesional | Beriklan"
+    description="Jasa Pembuatan Website di Pontianak dari agensi Beriklan (Bandung, sejak 2016). Konsultasi awal 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-pembuatan-website/pontianak/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Pembuatan Website di Pontianak · Meta & Google Partner
+            </div>
+            <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
+                <span class="anim-fade-up">Jasa Pembuatan Website</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Pontianak, Mendorong</span><br/>
+                <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa iklan google untuk UMKM & bisnis menengah di Pontianak. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Pembuatan Website%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Diskusi via WhatsApp
+                    </span>
+                </a>
+                <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+            <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">9 tahun</strong> mengelola campaign iklan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Optimasi berbasis data, bukan tebakan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Laporan <strong class="text-ink">setiap Senin pagi</strong>, bahasa yang mudah dipahami</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Pontianak dari berbagai industri</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>F&amp;B</span><span class="text-white/30">·</span>
+                    <span>Skincare</span><span class="text-white/30">·</span>
+                    <span>Fashion</span><span class="text-white/30">·</span>
+                    <span>Edutech</span><span class="text-white/30">·</span>
+                    <span>Klinik</span><span class="text-white/30">·</span>
+                    <span>Properti</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-pembuatan-website/pontianak/" content={cityContentMap["jasa-pembuatan-website/pontianak/"]} cityName={city.name} serviceName={service.name} />
+
+
+    
+    <!-- ====================== WHY ====================== -->
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    3 Alasan Memilih Jasa Pembuatan Website
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Strategi yang terukur,<br/>
+                    <span class="text-accent">bukan jualan angka tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+            <div class="why-card group" style="animation-delay: 0ms;">
+                <div class="why-icon">🔍</div>
+                <h3 class="why-title">High Intent Traffic</h3>
+                <p class="why-desc">Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 100ms;">
+                <div class="why-icon">📍</div>
+                <h3 class="why-title">Page 1 in Minutes</h3>
+                <p class="why-desc">Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 200ms;">
+                <div class="why-icon">💰</div>
+                <h3 class="why-title">Pay Per Click</h3>
+                <p class="why-desc">Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya.</p>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Empat langkah dari brief<br/>
+                    <span class="text-accent">menuju iklan yang tayang optimal.</span>
+                </h2>
+            </div>
+            <StepGrid items={[{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== PRICING ====================== -->
+    
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Paket Jasa Pembuatan Website di Pontianak,<br/>
+                    <span class="text-accent">disesuaikan dengan objective Anda.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
+                </p>
+            </div>
+            <PricingCards tiers={[{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Pembuatan Website di Pontianak" highlightIndex={1} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Pembuatan Website%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Konsultasi via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUST DARK ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Beriklan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan agensi yang berjanji<br/>
+                    <span class="text-accent">angka fantastis tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun iklan tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data historis berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan setiap Senin pagi</h3>
+                    <p class="trust-desc-dark">Disusun dalam satu halaman dengan bahasa yang mudah dipahami. Anda mendapat kejelasan: mana yang berjalan optimal.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    
+
+    <!-- ====================== FAQ ====================== -->
+    
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum deal pertama
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum deal pertama.</span>
+                </h2>
+            </div>
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Pontianak</p>
+            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/medan/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/medan/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/medan/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
+        </div>
+    </section>
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam (jam kerja)
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Satu keputusan kecil hari ini,<br/>
+                    <span class="text-accent">dampaknya terasa di kuartal depan.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Pontianak.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Pembuatan Website%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Mulai Konsultasi via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={city}
+        service={service}
+        tiers={tiers}
+        faqs={faqs}
+        pageUrl="/jasa-iklan-google/medan/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Pembuatan Website", "/jasa-iklan-google/"], ["Medan", "/jasa-iklan-google/medan/"]]}
+    />
+</Layout>

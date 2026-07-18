@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,43 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Cimahi Butuh Jasa Iklan TikTok</h2>
-<p>Cimahi, kota kecil di Jawa Barat, terdiri dari lebih dari 30 ribu UMKM yang bertumbuh pesat. Masing-masing UMKM ini memiliki potensi untuk meningkatkan penjualan dan meningkatkan brand awarenessnya melalui platform media sosial seperti TikTok. Dengan lebih dari 1 miliar pengguna aktif setiap bulan, TikTok adalah platform yang sangat potensial untuk meningkatkan visibilitas bisnis Anda di Cimahi.</p>
-<p>Mengingat potensi ini, penting bagi UMKM di Cimahi untuk memiliki strategi pemasaran yang efektif di platform TikTok. Jasa iklan TikTok dapat membantu UMKM dalam meningkatkan penjualan, meningkatkan brand awareness, dan meningkatkan visibilitas bisnis di Cimahi. Dengan demikian, UMKM dapat meningkatkan kinerja bisnis dan meningkatkan keuntungan.</p>
-<p>Lebih dari 30 ribu UMKM di Cimahi memiliki potensi untuk meningkatkan penjualan dan meningkatkan brand awarenessnya melalui platform media sosial seperti TikTok. Jasa iklan TikTok dapat membantu UMKM dalam meningkatkan visibilitas bisnis dan meningkatkan kinerja bisnis.</p>
-
-<h2>Tantangan Jasa Iklan TikTok di Pasar Cimahi</h2>
-<p>Jasa iklan TikTok di pasar Cimahi memiliki tantangan yang signifikan, terutama ketika tidak ada strategi yang efektif. Risiko utama adalah bahwa kampanye iklan tidak efektif dan tidak mencapai target audiens yang diinginkan. Hal ini dapat menyebabkan pengeluaran biaya yang tidak efektif dan tidak memberikan hasil yang diharapkan.</p>
-<p>Bahkan, jika tidak ada strategi yang efektif, kampanye iklan dapat merugikan bisnis Anda. Hal ini dapat terjadi ketika iklan tidak relevan dengan target audiens, sehingga tidak efektif dalam meningkatkan penjualan dan meningkatkan brand awareness.</p>
-
-<h2>Cara Kerja Tim Beriklan di Cimahi</h2>
-<p>Kami memiliki tim beriklan yang berpengalaman dalam meningkatkan visibilitas bisnis di Cimahi melalui platform TikTok. Dengan menggunakan strategi yang efektif dan terstruktur, kami dapat membantu UMKM dalam meningkatkan penjualan, meningkatkan brand awareness, dan meningkatkan visibilitas bisnis.</p>
-<ul>
-<li>Langkah pertama kami adalah memahami bisnis Anda dan target audiens yang diinginkan.</li>
-<li>Kami kemudian menciptakan strategi iklan yang efektif dan relevan dengan target audiens.</li>
-<li>Kami mengelola kampanye iklan dan memantau hasilnya secara terus-menerus.</li>
-<li>Terakhir, kami memberikan laporan hasil kampanye iklan kepada Anda.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan TikTok di Cimahi</h2>
-<h3>Berapa biaya?</h3>
-<p>Berikut adalah paket harga kami:</p>
-<p>* Basic: Rp 1.000.000</p>
-<p>* Standart: Rp 1.600.000</p>
-<p>* Business: Rp 3.750.000</p>
-
-<h3>Berapa lama setup?</h3>
-<p>Setup kami biasanya memakan waktu 3-5 hari kerja.</p>
-
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun TikTok kepada Anda setelah setup selesai.</p>
-
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan hasil kampanye iklan kepada Anda secara terus-menerus.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-tiktok/cimahi/" content={cityContentMap["jasa-iklan-tiktok/cimahi/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

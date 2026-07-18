@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <html body>
-<h2>Mengapa Bisnis di Semarang Butuh Jasa Iklan Instagram</h2>
-<p>Didirikan sebagai kota pelabuhan utama di Jawa, Semarang memiliki potensi besar sebagai pusat bisnis dan perdagangan. Menurut data terbaru, ada sekitar 200.000 unit usaha mikro, kecil, dan menengah (UMKM) di Semarang, serta sekitar 50.000 retail dan manufaktur yang beroperasi di kota ini. Dengan 92% penetrasi mobile, Semarang memiliki potensi besar untuk pengembangan iklan digital.</p>
-<p>Jumlah besar UMKM dan retail di Semarang menunjukkan bahwa ada banyak peluang bagi bisnis untuk meningkatkan penjualan dan meningkatkan visibilitas mereka. Namun, tanpa strategi iklan yang efektif, bisnis-bisnis ini mungkin tidak dapat menjangkau audiens yang luas dan meningkatkan penjualan mereka.</p>
-<p>Meta Ads ROI tinggi di Semarang menunjukkan bahwa iklan di platform ini dapat memberikan hasil yang sangat baik. Dengan menggunakan jasa iklan Instagram, bisnis di Semarang dapat meningkatkan visibilitas, meningkatkan penjualan, dan meningkatkan keuntungan mereka.</p>
-
-<h2>Tantangan Jasa Iklan Instagram di Pasar Semarang</h2>
-<p>Salah satu tantangan utama dalam menggunakan jasa iklan Instagram di Semarang adalah risiko tanpa strategi yang efektif. Jika tidak dilakukan dengan benar, iklan tidak akan efektif dan tidak akan memberikan hasil yang diharapkan. Selain itu, kebanyakan bisnis di Semarang tidak memiliki sumber daya yang cukup untuk mengembangkan strategi iklan yang efektif.</p>
-<p>Namun, dengan menggunakan jasa iklan Instagram, bisnis di Semarang dapat meningkatkan visibilitas dan meningkatkan penjualan mereka. Namun, perlu diingat bahwa tidak semua jasa iklan Instagram sama, dan beberapa jasa mungkin tidak efektif dalam meningkatkan hasil.</p>
-
-<h2>Cara Kerja Tim Beriklan di Semarang</h2>
-<p>Tim beriklan kami di Semarang bekerja sama dengan Anda untuk meningkatkan visibilitas dan meningkatkan penjualan Anda. Berikut adalah langkah-langkah yang kami lakukan:</p>
-<ul>
-<li>Analisis target audiens Anda dan membuat strategi iklan yang efektif untuk meningkatkan visibilitas dan meningkatkan penjualan Anda.</li>
-<li>Membuat konten iklan yang menarik dan relevan dengan produk atau layanan Anda.</li>
-<li>Mengoptimalkan iklan Anda untuk meningkatkan visibilitas dan meningkatkan penjualan Anda.</li>
-<li>Mengawasi dan mengevaluasi hasil iklan Anda untuk meningkatkan hasil dan meningkatkan keuntungan Anda.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Semarang</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami ada dua, yaitu Standart Rp 1.750.000 dan Business Rp 3.750.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup iklan kami biasanya memakan waktu 1-3 hari, tergantung pada kompleksitas iklan Anda.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan Anda akses akun Instagram Anda untuk memantau hasil iklan Anda.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan Anda laporan hasil iklan Anda setiap bulan untuk membantu Anda memantau hasil iklan Anda.</p>
-</html body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-instagram/semarang/" content={cityContentMap["jasa-iklan-instagram/semarang/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -252,7 +222,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,42 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<body>
-  <h2>Mengapa Bisnis di Padang Butuh Jasa Iklan TikTok</h2>
-  <p>Padang, ibukota Provinsi Sumatera Barat, memiliki lebih dari 55 ribu Unit Mikro, Kecil, dan Menengah (UMKM) yang beroperasi di berbagai sektor, dari kuliner hingga industri manufaktur. Meskipun demikian, masih banyak UMKM di Padang yang menghadapi tantangan untuk meningkatkan visibilitas dan penjualan melalui platform media sosial. TikTok, sebagai salah satu platform media sosial paling populer, dapat menjadi solusi yang efektif untuk meningkatkan kesadaran dan penjualan UMKM di Padang.</p>
-  <p>Jumlah pengguna TikTok di Indonesia terus meningkat, dan Padang tidak terkecuali. Dengan lebih dari 55 ribu UMKM yang beroperasi di kota ini, ada potensi besar untuk meningkatkan visibilitas dan penjualan melalui platform ini. Namun, masih banyak UMKM di Padang yang tidak memiliki kemampuan untuk membuat konten yang menarik dan efektif di TikTok.</p>
-  <p>Itulah mengapa jasa iklan TikTok di Padang sangat dibutuhkan. Dengan bantuan tim beriklan yang berpengalaman, UMKM di Padang dapat meningkatkan visibilitas dan penjualan melalui platform TikTok.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-tiktok/padang/" content={cityContentMap["jasa-iklan-tiktok/padang/"]} cityName={city.name} serviceName={service.name} />
 
-  <h2>Tantangan Jasa Iklan TikTok di Pasar Padang</h2>
-  <p>Untuk meningkatkan visibilitas dan penjualan melalui TikTok, UMKM di Padang harus menghadapi beberapa tantangan. Pertama, risiko kehilangan keunikan dan keaslian konten yang dibuat oleh tim beriklan. Jika konten tersebut tidak sesuai dengan kebutuhan dan preferensi target pasar, maka UMKM di Padang dapat kehilangan kesempatan untuk meningkatkan visibilitas dan penjualan.</p>
-  <p>Kedua, risiko kehilangan kontrol atas konten yang dibuat oleh tim beriklan. Jika konten tersebut tidak sesuai dengan kebutuhan dan preferensi UMKM di Padang, maka UMKM tersebut dapat kehilangan kontrol atas konten yang telah dibuat.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Padang</h2>
-  <p>Tim beriklan di Padang berkomitmen untuk membantu UMKM meningkatkan visibilitas dan penjualan melalui TikTok. Berikut adalah cara kerja tim beriklan di Padang:</p>
-  <ul>
-    <li>Langkah 1: Analisis kebutuhan dan preferensi target pasar untuk membuat konten yang sesuai.</li>
-    <li>Langkah 2: Membuat konten yang menarik dan efektif di TikTok.</li>
-    <li>Langkah 3: Mengoptimalkan konten untuk meningkatkan visibilitas dan penjualan.</li>
-    <li>Langkah 4: Mengevaluasi dan melakukan perubahan pada konten untuk meningkatkan kesempatan untuk meningkatkan visibilitas dan penjualan.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan TikTok di Padang</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Paket harga jasa iklan TikTok di Padang adalah sebagai berikut: Basic Rp 1.000.000, Standart Rp 1.600.000, Business Rp 3.750.000.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Setup jasa iklan TikTok di Padang memakan waktu sekitar 1-2 minggu, tergantung pada kompleksitas konten dan kebutuhan UMKM.</p>
-  <h3>Akses akun?</h3>
-  <p>UMKM di Padang dapat memiliki akses akun TikTok yang dibuat oleh tim beriklan untuk memantau dan mengatur konten.</p>
-  <h3>Laporan?</h3>
-  <p>Tim beriklan di Padang dapat memberikan laporan tentang hasil iklan TikTok setiap bulan untuk membantu UMKM memantau kemajuan.</p>
-</body>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,41 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <html>
-  <body>
-    <h2>Mengapa Bisnis di Bali Butuh Jasa Iklan Instagram</h2>
-    <p>Bali, salah satu ikon pariwisata global, memiliki lebih dari 80.000 UMKM yang beroperasi di kawasan ini. Dengan kepadatan pelaku usaha kecil menengah yang begitu besar, menghadapi tantangan dalam memasarkan produk dan jasa mereka menjadi hal yang sangat signifikan. Oleh karena itu, jasa iklan Instagram menjadi salah satu strategi yang efektif untuk meningkatkan visibilitas dan kemampuan memasarkan bisnis di Bali.</p>
-    <p>Salah satu alasan mengapa bisnis di Bali butuh jasa iklan Instagram adalah karena platform ini memiliki lebih dari satu miliar pengguna aktif setiap bulan. Dengan demikian, bisnis di Bali dapat menjangkau pasar yang lebih luas dan meningkatkan kesadaran produk dan jasa mereka. Selain itu, platform Instagram juga memiliki fitur-fitur yang sangat bermanfaat bagi para pelaku usaha kecil menengah, seperti fitur Stories dan Reels yang dapat membantu meningkatkan interaksi dengan pelanggan.</p>
-    <p>Oleh karena itu, jasa iklan Instagram dapat menjadi salah satu pilihan strategis bagi bisnis di Bali untuk meningkatkan visibilitas dan memasarkan produk dan jasa mereka lebih efektif.</p>
-
-    <h2>Tantangan Jasa Iklan Instagram di Pasar Bali</h2>
-    <p>Salah satu tantangan utama jasa iklan Instagram di pasar Bali adalah risiko tanpa strategi yang efektif. Dengan begitu banyak pelaku usaha kecil menengah yang beroperasi di kawasan ini, kompetisi di pasar menjadi sangat ketat. Oleh karena itu, tanpa strategi yang tepat, bisnis di Bali dapat mengalami kesulitan dalam meningkatkan visibilitas dan memasarkan produk dan jasa mereka.</p>
-    <p>Salah satu contoh risiko tanpa strategi yang efektif adalah kehilangan keunikan bisnis. Dengan banyaknya bisnis yang beroperasi di Bali, keunikan bisnis menjadi sangat penting untuk membedakan diri dari kompetitor. Tanpa strategi yang tepat, bisnis di Bali dapat kehilangan keunikan ini dan menjadi sulit untuk meningkatkan visibilitas dan memasarkan produk dan jasa mereka.</p>
-
-    <h2>Cara Kerja Tim Beriklan di Bali</h2>
-    <p>Tim beriklan kami di Bali memiliki pengalaman yang luas dalam mengembangkan strategi iklan Instagram yang efektif untuk meningkatkan visibilitas dan memasarkan produk dan jasa bisnis di kawasan ini.</p>
-    <ul>
-      <li>Step 1: Analisis Bisnis - Kami akan melakukan analisis bisnis untuk memahami kebutuhan dan tujuan bisnis Anda.</li>
-      <li>Step 2: Pengembangan Strategi - Berdasarkan analisis bisnis, kami akan mengembangkan strategi iklan Instagram yang efektif untuk meningkatkan visibilitas dan memasarkan produk dan jasa bisnis Anda.</li>
-      <li>Step 3: Implementasi - Kami akan menerapkan strategi iklan Instagram yang telah dikembangkan untuk meningkatkan visibilitas dan memasarkan produk dan jasa bisnis Anda.</li>
-      <li>Step 4: Evaluasi - Kami akan melakukan evaluasi kemajuan bisnis Anda untuk memastikan bahwa strategi iklan Instagram yang telah dikembangkan efektif dan perlu perubahan.</li>
-    </ul>
-
-    <h2>FAQ Jasa Iklan Instagram di Bali</h2>
-    <h3>Berapa biaya?</h3>
-    <p>Biaya jasa iklan Instagram kami di Bali adalah Rp 1.750.000 (paket standar) dan Rp 3.750.000 (paket bisnis).</p>
-    <h3>Berapa lama setup?</h3>
-    <p>Waktu setup jasa iklan Instagram kami di Bali adalah sekitar 1-2 minggu, tergantung pada kompleksitas bisnis Anda.</p>
-    <h3>Akses akun?</h3>
-    <p>Kami tidak akan memiliki akses akun Anda, melainkan hanya akan mengembangkan strategi iklan Instagram yang efektif untuk meningkatkan visibilitas dan memasarkan produk dan jasa bisnis Anda.</p>
-    <h3>Laporan?</h3>
-    <p>Kami akan menyediakan laporan kemajuan bisnis Anda secara berkala untuk memastikan bahwa strategi iklan Instagram yang telah dikembangkan efektif.</p>
-  </body>
-</html>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-instagram/bali/" content={cityContentMap["jasa-iklan-instagram/bali/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

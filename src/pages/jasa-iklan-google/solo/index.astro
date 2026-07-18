@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Solo Butuh Jasa Iklan Google</h2>
-<p> Solo Surakarta, ibukota Jawa Tengah, terkenal sebagai kota budaya dan UMKM yang berlimpah. Dengan lebih dari 60.000 UMKM yang beroperasi di kota ini, Solo menjadi salah satu kota yang paling potensial untuk bisnis kecil menengah. Namun, dalam berbagai bidang, UMKM di Solo masih menghadapi tantangan untuk meningkatkan visibilitas dan penjualan. Hal ini membuat jasa iklan Google menjadi salah satu pilihan yang tepat untuk membantu bisnis di Solo meningkatkan kehadiran online dan meningkatkan penjualan.</p>
-<p> Dengan menggunakan jasa iklan Google, bisnis di Solo dapat meningkatkan visibilitas dan penjualan melalui berbagai strategi pemasaran online. Dengan demikian, bisnis dapat meningkatkan kehadiran online dan meningkatkan penjualan di pasar lokal.</p>
-<p> Selain itu, jasa iklan Google juga dapat membantu bisnis di Solo meningkatkan kredibilitas dan kepercayaan pelanggan. Dengan demikian, bisnis dapat meningkatkan penjualan dan meningkatkan kehadiran di pasar lokal.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-google/solo/" content={cityContentMap["jasa-iklan-google/solo/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Google di Pasar Solo</h2>
-<p> Jasa iklan Google di pasar Solo memiliki beberapa tantangan yang perlu diatasi. Salah satu tantangan utama adalah risiko tanpa strategi yang tepat. Banyak bisnis yang menggunakan jasa iklan Google tanpa memiliki strategi yang jelas, sehingga mereka tidak dapat meningkatkan visibilitas dan penjualan dengan efektif. Hal ini dapat menyebabkan biaya yang tidak terduga dan waktu yang tidak efektif.</p>
-<p> Selain itu, jasa iklan Google di pasar Solo juga memiliki risiko yang terkait dengan persaingan yang ketat. Dengan lebih dari 60.000 UMKM yang beroperasi di Solo, persaingan di pasar lokal sangat ketat. Hal ini dapat membuat bisnis sulit untuk meningkatkan visibilitas dan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Solo</h2>
-<p> Tim Beriklan di Solo bekerja sama dengan bisnis untuk meningkatkan visibilitas dan penjualan melalui jasa iklan Google. Berikut adalah langkah-langkah yang dilakukan oleh tim:</p>
-<ul>
-  <li>Langkah 1: Analisis bisnis dan pasar lokal untuk menentukan strategi yang tepat.</li>
-  <li>Langkah 2: Pembuatan iklan online yang efektif untuk meningkatkan visibilitas dan penjualan.</li>
-  <li>Langkah 3: Pengelolaan iklan online untuk meningkatkan visibilitas dan penjualan.</li>
-  <li>Langkah 4: Evaluasi dan pengembangan strategi untuk meningkatkan visibilitas dan penjualan.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Google di Solo</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa iklan Google di Solo bervariasi tergantung pada paket yang dipilih. Paket Basic berharga Rp 1.750.000, paket Standart berharga Rp 3.750.000, dan paket Business berharga Rp 6.000.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan Google di Solo biasanya memakan waktu 1-2 minggu, tergantung pada kompleksitas bisnis dan pasar lokal.</p>
-<h3>Akses akun?</h3>
-<p>Tim Beriklan di Solo akan memberikan akses akun iklan online kepada bisnis, sehingga bisnis dapat mengelola iklan online sendiri.</p>
-<h3>Laporan?</h3>
-<p>Tim Beriklan di Solo akan memberikan laporan reguler tentang hasil iklan online, sehingga bisnis dapat mengetahui performa iklan online secara real-time.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

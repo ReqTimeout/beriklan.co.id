@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Batam Butuh Jasa Iklan Instagram</h2>
-<p>Batam, sebuah kota yang menjadi salah satu pusat industri dan UMKM di Indonesia, memiliki sekitar 40.000 UMKM yang beroperasi di wilayah ini. Dengan demikian, persaingan di pasar Batam sangat ketat, dan bisnis-bisnis yang ingin sukses membutuhkan strategi pemasaran yang efektif. Jasa iklan Instagram dapat menjadi salah satu pilihan yang tepat bagi bisnis di Batam untuk meningkatkan visibilitas dan meningkatkan penjualan.</p>
-<p>Pada kenyataannya, sekitar 30% UMKM di Batam yang sudah menggunakan media sosial sebagai salah satu strategi pemasaran mereka, tetapi masih belum efektif dalam meningkatkan penjualan. Hal ini karena tidak memiliki strategi pemasaran yang tepat dan tidak memiliki konten yang menarik. Oleh karena itu, jasa iklan Instagram dapat membantu bisnis di Batam untuk meningkatkan visibilitas dan meningkatkan penjualan.</p>
-<p>Lebih lanjut, jasa iklan Instagram dapat membantu bisnis di Batam untuk meningkatkan brand awareness dan meningkatkan loyalitas pelanggan. Dengan menggunakan strategi iklan yang tepat, bisnis di Batam dapat meningkatkan penjualan dan meningkatkan keuntungan. Oleh karena itu, jasa iklan Instagram adalah salah satu pilihan yang tepat bagi bisnis di Batam untuk meningkatkan visibilitas dan meningkatkan penjualan.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-instagram/batam/" content={cityContentMap["jasa-iklan-instagram/batam/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Instagram di Pasar Batam</h2>
-<p>Tidak dapat dipungkiri bahwa jasa iklan Instagram memiliki beberapa tantangan yang harus dihadapi, terutama di pasar Batam. Salah satu tantangannya adalah risiko tanpa strategi. Jika tidak memiliki strategi pemasaran yang tepat, jasa iklan Instagram dapat tidak efektif dalam meningkatkan penjualan. Selain itu, jasa iklan Instagram juga dapat terkena risiko kehilangan target pasar, sehingga keuntungan yang diharapkan tidak tercapai.</p>
-<p>Lebih lanjut, jasa iklan Instagram juga dapat terkena risiko kehilangan reputasi. Jika tidak memiliki konten yang menarik dan tidak memiliki strategi pemasaran yang tepat, jasa iklan Instagram dapat tidak efektif dalam meningkatkan visibilitas dan meningkatkan penjualan. Oleh karena itu, perlu memiliki strategi pemasaran yang tepat dan memiliki konten yang menarik untuk meningkatkan visibilitas dan meningkatkan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Batam</h2>
-<p>Tim beriklan kami memiliki pengalaman yang luas dalam melayani bisnis di Batam dan memiliki kemampuan untuk meningkatkan visibilitas dan meningkatkan penjualan. Berikut adalah cara kerja tim beriklan kami:</p>
-<ul>
-<li>Langkah 1: Membuat strategi pemasaran yang tepat</li>
-<li>Langkah 2: Membuat konten yang menarik dan efektif</li>
-<li>Langkah 3: Menggunakan strategi iklan yang tepat</li>
-<li>Langkah 4: Meningkatkan visibilitas dan meningkatkan penjualan</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Batam</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa iklan Instagram kami berkisar antara Rp 1.750.000 untuk paket Standart dan Rp 3.750.000 untuk paket Business.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan Instagram kami dapat dilakukan dalam waktu 3 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami memberikan akses akun Instagram yang lengkap untuk Anda, sehingga Anda dapat memantau kinerja iklan dengan mudah.</p>
-<h3>Laporan?</h3>
-<p>Kami memberikan laporan kinerja iklan secara berkala, sehingga Anda dapat memantau hasil iklan dengan mudah.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

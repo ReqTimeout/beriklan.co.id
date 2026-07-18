@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan YouTube di Beriklan?", "a": "Biaya 
 const whyFeatures = [{"icon": "🎬", "title": "Visual Storytelling", "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."}, {"icon": "🎯", "title": "Affinity Targeting", "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."}, {"icon": "📊", "title": "Brand Lift Measurement", "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Video Audit", "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup Targeting", "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."}, {"num": "04", "tag": "ONGOING", "title": "Refresh & Optimize", "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,53 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Surabaya Butuh Jasa Iklan YouTube</h2>
-<p>Surabaya merupakan kota bisnis utama di Jawa Timur dengan lebih dari 280 ribu UMKM yang aktif beroperasi. Kota ini juga menjadi pusat distribusi retail dan F&B regional, dengan populasi lebih dari 2,8 juta penduduk. Namun, kompetisi iklan di Surabaya juga sangat tinggi, sehingga membuat bisnis sulit untuk mencapai target audiens yang tepat. Oleh karena itu, jasa iklan YouTube menjadi sangat penting untuk bisnis di Surabaya untuk meningkatkan visibilitas dan mencapai pendapatan yang lebih besar.</p>
-<p>Berikut beberapa alasan mengapa bisnis di Surabaya butuh jasa iklan YouTube:</p>
-<ul>
-<li>Meningkatkan visibilitas dan kesadaran merek</li>
-<li>Mencapai target audiens yang lebih spesifik</li>
-<li>Meningkatkan pendapatan dan keuntungan</li>
-<li>Membangun kepercayaan dan loyalitas pelanggan</li>
-</ul>
-<p>Mengetahui kebutuhan dan tantangan bisnis di Surabaya, jasa iklan YouTube dapat membantu bisnis meningkatkan kinerja dan mencapai tujuan yang diinginkan.</p>
-
-<h2>Tantangan Jasa Iklan YouTube di Pasar Surabaya</h2>
-<p>Bisnis yang tidak memiliki strategi iklan yang efektif dapat mengalami risiko kegagalan, seperti:</p>
-<ul>
-<li>Tidak mencapai target audiens yang tepat</li>
-<li>Tidak meningkatkan visibilitas dan kesadaran merek</li>
-<li>Tidak mencapai pendapatan yang diharapkan</li>
-<li>Mengalami kehilangan kepercayaan dan loyalitas pelanggan</li>
-</ul>
-<p>Oleh karena itu, penting bagi bisnis di Surabaya untuk memiliki strategi iklan yang efektif dan terpercaya untuk mencapai kinerja yang lebih baik.</p>
-
-<h2>Cara Kerja Tim Beriklan di Surabaya</h2>
-<p>Tim beriklan kami di Surabaya memiliki pengalaman dan kemampuan untuk membantu bisnis meningkatkan kinerja dan mencapai tujuan yang diinginkan. Berikut adalah cara kerja kami:</p>
-<ul>
-<li><b>Step 1: Analisis Tujuan dan Target Audiens</b> - Kami akan bekerja sama dengan Anda untuk menentukan tujuan dan target audiens yang ingin dicapai.</li>
-<li><b>Step 2: Membuat Strategi Iklan yang Efektif</b> - Kami akan membuat strategi iklan yang efektif berdasarkan data dan analisis.</li>
-<li><b>Step 3: Membuat Konten yang Menarik</b> - Kami akan membuat konten yang menarik dan relevan dengan target audiens.</li>
-<li><b>Step 4: Meningkatkan Visibilitas dan Kesadaran Merek</b> - Kami akan meningkatkan visibilitas dan kesadaran merek melalui iklan YouTube.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan YouTube di Surabaya</h2>
-<h3>Berapa biaya?</h3><p>Paket harga kami adalah:</p>
-<ul>
-<li>Basic: Rp 1.250.000</li>
-<li>Starter: Rp 2.500.000</li>
-<li>Standart: Rp 3.750.000</li>
-</ul>
-
-<h3>Berapa lama setup?</h3><p>Setup akan dilakukan dalam waktu 3-5 hari kerja.</p>
-
-<h3>Akses akun?</h3><p>Kami akan memberikan akses akun iklan kepada Anda untuk memantau kemajuan.</p>
-
-<h3>Laporan?</h3><p>Kami akan memberikan laporan bulanan tentang kemajuan iklan.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-youtube/surabaya/" content={cityContentMap["jasa-iklan-youtube/surabaya/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -266,7 +222,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

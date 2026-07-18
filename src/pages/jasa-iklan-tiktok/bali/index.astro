@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,44 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-	<h2>Mengapa Bisnis di Bali Butuh Jasa Iklan TikTok</h2>
-	<p>Bali sebagai global tourism brand yang sukses memiliki lebih dari 80 ribu UKM (Usaha Kecil Menengah) yang beroperasi di seluruh pulau. Namun, tidak semua UKM ini dapat menembus pasar lokal dan internasional dengan efektif. Hal ini terutama karena tantangan dalam mengembangkan strategi pemasaran yang tepat dan memaksimalkan penggunaan media sosial. Oleh karena itu, jasa iklan TikTok menjadi salah satu pilihan yang tepat untuk membantu UKM di Bali meningkatkan visibilitas dan penjualan mereka.</p>
-	<p>Dengan menggunakan jasa iklan TikTok, UKM di Bali dapat memanfaatkan platform yang paling populer di kalangan muda untuk meningkatkan brand awareness dan meningkatkan penjualan. TikTok memiliki lebih dari 1 miliar pengguna aktif per bulan, sehingga menjadi platform yang ideal untuk mencapai target audiens yang luas di Bali dan di seluruh Indonesia.</p>
-	<p>Keunggulan lain dari jasa iklan TikTok adalah kemampuan untuk meningkatkan interaksi dengan pelanggan melalui konten visual yang menarik dan interaktif. Dengan demikian, UKM di Bali dapat meningkatkan loyalitas pelanggan dan meningkatkan penjualan mereka.</p>
-
-	<h2>Tantangan Jasa Iklan TikTok di Pasar Bali</h2>
-	<p>Tak dapat disangkal bahwa jasa iklan TikTok memiliki tantangan yang signifikan di pasar Bali. Salah satu tantangan utama adalah risiko kegagalan dalam membuat konten yang menarik dan relevan dengan target audiens. Jika konten yang dibuat tidak cukup menarik atau relevan, maka pelanggan tidak akan terpengaruh dan tidak akan melakukan aksi yang diharapkan.</p>
-	<p>Risiko lainnya adalah kekurangan strategi yang tepat dalam mengembangkan kampanye iklan di TikTok. Tanpa strategi yang tepat, jasa iklan TikTok tidak akan dapat mencapai tujuan yang diinginkan dan tidak akan dapat meningkatkan visibilitas dan penjualan UKM di Bali.</p>
-
-	<h2>Cara Kerja Tim Beriklan di Bali</h2>
-	<p>Tim beriklan kami di Bali memiliki pengalaman yang luas dalam mengembangkan strategi pemasaran yang efektif untuk UKM di Bali. Kami memiliki tim yang terdiri dari ahli-ahli di bidang pengembangan konten, pemasaran digital, dan analisis data.</p>
-	<ul>
-		<li>Langkah 1: Membuat rencana pemasaran yang efektif berdasarkan analisis pasar dan penargetan audiens.</li>
-		<li>Langkah 2: Membuat konten yang menarik dan relevan dengan target audiens.</li>
-		<li>Langkah 3: Mengembangkan kampanye iklan di TikTok dengan strategi yang tepat.</li>
-		<li>Langkah 4: Menganalisis hasil kampanye dan melakukan evaluasi untuk meningkatkan performa.</li>
-	</ul>
-
-	<h2>FAQ Jasa Iklan TikTok di Bali</h2>
-	<h3>Berapa biaya?</h3>
-	<p>Paket harga kami untuk jasa iklan TikTok di Bali adalah sebagai berikut:</p>
-	<ul>
-		<li>Basic: Rp 1.000.000</li>
-		<li>Standart: Rp 1.600.000</li>
-		<li>Business: Rp 3.750.000</li>
-	</ul>
-	<h3>Berapa lama setup?</h3>
-	<p>Waktu setup untuk jasa iklan TikTok di Bali biasanya membutuhkan waktu 1-2 minggu, tergantung pada kompleksitas kampanye dan ketersediaan sumber daya.</p>
-	<h3>Akses akun?</h3>
-	<p>Kami akan memberikan akses akun TikTok yang lengkap kepada pelanggan kami untuk memantau hasil kampanye dan melakukan evaluasi.</p>
-	<h3>Laporan?</h3>
-	<p>Kami akan menyediakan laporan hasil kampanye yang detail dan akurat untuk membantu pelanggan kami membuat keputusan yang tepat.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-tiktok/bali/" content={cityContentMap["jasa-iklan-tiktok/bali/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

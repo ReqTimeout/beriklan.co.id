@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Apa bedanya landing page dengan website biasa?", "a": "Land
 const whyFeatures = [{"icon": "🎨", "title": "Design-First", "desc": "BUKAN template. Setiap landing page didesain khusus sesuai brand dan pesan Anda."}, {"icon": "📱", "title": "Mobile-Optimized", "desc": "75%+ traffic Indonesia dari mobile. Landing page di-optimized untuk mobile experience."}, {"icon": "⚡", "title": "Fast Loading", "desc": "Loading time < 3 detik. Setiap detik keterlambatan = 7% konversi hilang."}];
 const howSteps = [{"num": "01", "tag": "HARI 1-2", "title": "Brief & Research", "desc": "Diskusi objective, target audience, dan unique selling proposition Anda."}, {"num": "02", "tag": "HARI 3-5", "title": "Wireframe & Copy", "desc": "Layout dirancang, copy disusun. Anda melihat mockup sebelum design final."}, {"num": "03", "tag": "HARI 6-9", "title": "Design & Build", "desc": "Visual high-fidelity + integrasi tracking pixel + payment form."}, {"num": "04", "tag": "HARI 10+", "title": "Launch & Optimize", "desc": "Go-live, monitoring, training tim Anda untuk manage sendiri."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,42 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<body>
-  <h2>Mengapa Bisnis di Yogyakarta Butuh Jasa Landing Page</h2>
-  <p>Yogyakarta dikenal sebagai kota pendidikan dan pariwisata yang maju, dengan lebih dari 130.000 Usaha Mikro, Kecil, dan Menengah (UMKM) yang beroperasi di kota ini. Namun, masih banyak UMKM yang belum berhasil meningkatkan penjualan dan meningkatkan visibilitas bisnis mereka secara efektif. Hal ini disebabkan oleh kurangnya strategi pemasaran yang efektif dan efisien. Oleh karena itu, jasa landing page menjadi sangat penting bagi bisnis di Yogyakarta untuk meningkatkan penjualan dan meningkatkan visibilitas bisnis mereka.</p>
-  <p>Landing page yang efektif dapat membantu bisnis di Yogyakarta meningkatkan penjualan dengan meningkatkan visibilitas bisnis mereka di internet. Selain itu, landing page juga dapat membantu bisnis di Yogyakarta meningkatkan kepercayaan pelanggan dengan menyajikan informasi yang akurat dan jelas tentang produk atau jasa mereka.</p>
-  <p>Di Yogyakarta, sektor UMKM yang dominan adalah industri kreatif, kuliner, dan jasa edukasi. Namun, masih banyak UMKM yang belum berhasil meningkatkan penjualan dan meningkatkan visibilitas bisnis mereka secara efektif. Oleh karena itu, jasa landing page menjadi sangat penting bagi bisnis di Yogyakarta untuk meningkatkan penjualan dan meningkatkan visibilitas bisnis mereka.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-pembuatan-landing-page/yogyakarta/" content={cityContentMap["jasa-pembuatan-landing-page/yogyakarta/"]} cityName={city.name} serviceName={service.name} />
 
-  <h2>Tantangan Jasa Landing Page di Pasar Yogyakarta</h2>
-  <p>Jasa landing page di Yogyakarta memiliki beberapa tantangan, yaitu kurangnya kesadaran akan pentingnya strategi pemasaran yang efektif dan efisien. Selain itu, masih banyak UMKM yang belum memiliki kemampuan untuk membuat landing page yang efektif dan efektif.</p>
-  <p>Tanpa strategi pemasaran yang efektif dan efisien, bisnis di Yogyakarta dapat mengalami penurunan penjualan dan meningkatkan biaya pemasaran. Oleh karena itu, penting bagi bisnis di Yogyakarta untuk memiliki jasa landing page yang efektif dan efektif untuk meningkatkan penjualan dan meningkatkan visibilitas bisnis mereka.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Yogyakarta</h2>
-  <p>Tim beriklan kami di Yogyakarta memiliki kemampuan untuk membuat landing page yang efektif dan efektif. Berikut adalah cara kerja tim beriklan kami:</p>
-  <ul>
-    <li>Langkah 1: Membuat analisis pasar dan target pengguna</li>
-    <li>Langkah 2: Membuat konsep landing page yang efektif dan efektif</li>
-    <li>Langkah 3: Membuat desain landing page yang menarik dan efektif</li>
-    <li>Langkah 4: Membuat konten landing page yang efektif dan efektif</li>
-  </ul>
-
-  <h2>FAQ Jasa Landing Page di Yogyakarta</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Biaya jasa landing page kami di Yogyakarta mulai dari Rp 1.999.000 untuk paket landing page + Google Ads.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Waktu setup landing page kami di Yogyakarta dapat berupa 1-3 hari tergantung pada kompleksitas proyek.</p>
-  <h3>Akses akun?</h3>
-  <p>Pelanggan kami memiliki akses penuh ke akun landing page mereka.</p>
-  <h3>Laporan?</h3>
-  <p>Kami menyediakan laporan yang lengkap dan akurat tentang kinerja landing page.</p>
-</body>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

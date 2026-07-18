@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan YouTube di Beriklan?", "a": "Biaya 
 const whyFeatures = [{"icon": "🎬", "title": "Visual Storytelling", "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."}, {"icon": "🎯", "title": "Affinity Targeting", "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."}, {"icon": "📊", "title": "Brand Lift Measurement", "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Video Audit", "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup Targeting", "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."}, {"num": "04", "tag": "ONGOING", "title": "Refresh & Optimize", "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,37 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Medan Butuh Jasa Iklan YouTube</h2>
-<p>Medan, sebagai kota yang berada di Sumatera Utara, merupakan salah satu pusat pertumbuhan e-commerce di Indonesia. Menurut data, pertumbuhan e-commerce di Medan mencapai 40% per tahun, yang merupakan angka yang sangat menarik bagi para pemilik bisnis. Dengan populasi penduduk yang mencapai 2,4 juta orang, Medan menawarkan ruang yang luas untuk mempromosikan produk dan jasa. Oleh karena itu, bisnis di Medan perlu memilih jasa iklan yang tepat untuk meningkatkan visibilitas dan penjualan.</p>
-<p>Melansir data dari UMKM lokal Medan, lebih dari 70% bisnis di Medan menggunakan media sosial untuk mempromosikan produk mereka. Namun, hanya 20% di antaranya yang memiliki strategi iklan yang efektif. Dengan demikian, jasa iklan YouTube dapat membantu bisnis di Medan untuk meningkatkan penjualan dan meningkatkan kehadiran di pasar.</p>
-<p>Medan juga merupakan pusat distribusi F&B, retail, dan jasa profesional, sehingga bisnis yang ingin masuk ke pasar ini perlu memilih jasa iklan yang tepat untuk meningkatkan visibilitas dan penjualan.</p>
-
-<h2>Tantangan Jasa Iklan YouTube di Pasar Medan</h2>
-<p>Menjalankan jasa iklan YouTube di pasar Medan tidaklah mudah. Risiko yang paling besar adalah tanpa strategi yang jelas, iklan tidak akan efektif dalam meningkatkan penjualan dan visibilitas. Selain itu, pasar Medan yang sangat kompetitif juga dapat membuat bisnis sulit untuk berdiri. Oleh karena itu, bisnis di Medan perlu memilih jasa iklan yang memiliki strategi yang tepat dan pengalaman dalam menjalankan iklan di pasar Medan.</p>
-<p>Tanpa strategi yang jelas, bisnis di Medan juga dapat mengalami kerugian yang besar karena biaya iklan yang tidak efektif. Oleh karena itu, perlu memilih jasa iklan yang memiliki pengalaman dan pengetahuan yang cukup dalam menjalankan iklan di pasar Medan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Medan</h2>
-<p>Tim Beriklan di Medan memiliki pengalaman yang luas dalam menjalankan iklan di pasar Medan. Berikut adalah cara kerja tim kami:</p>
-<ul>
-<li>Step 1: Analisis Target Pasar - Tim kami akan menganalisis target pasar yang sesuai dengan bisnis Anda.</li>
-<li>Step 2: Strategi Iklan - Kami akan membuat strategi iklan yang tepat untuk meningkatkan penjualan dan visibilitas.</li>
-<li>Step 3: Pembuatan Konten - Kami akan membuat konten yang menarik dan relevan dengan target pasar.</li>
-<li>Step 4: Pengelolaan Iklan - Kami akan mengelola iklan Anda secara efektif untuk meningkatkan penjualan dan visibilitas.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan YouTube di Medan</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami adalah sebagai berikut: Basic Rp 1.250.000, Starter Rp 2.500.000, Standart Rp 3.750.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup iklan kami dapat diselesaikan dalam waktu 3-5 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun iklan Anda kepada tim kami untuk mengelola iklan secara efektif.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan iklan secara teratur untuk membantu Anda memantau performa iklan.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-youtube/medan/" content={cityContentMap["jasa-iklan-youtube/medan/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -250,7 +222,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

@@ -1,0 +1,354 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import LocalSchema from '../../../components/LocalSchema.astro';
+import PricingCards from '../../../components/PricingCards.svelte';
+import FeatureGrid from '../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../components/StepGrid.svelte';
+import FaqAccordion from '../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
+
+const city = {"slug": "bandung", "name": "Bandung", "alt_names": ["bandung"], "province": "Jawa Barat", "tier": 1, "country": "ID", "lat": -6.9175, "lng": 107.6191, "umkm_count": 350000, "local_facts": ["Bandung creative hub dengan 1.5jt UMKM, dominan fashion & kuliner", "30+ startup digital Bandung adopsi Meta & TikTok Ads", "2.4jt penduduk, mobile penetration 95%"], "is_international": false};
+const service = {"slug": "jasa-kelola-tiktok", "name": "Jasa Kelola TikTok", "category": "organic", "description": "Jasa Kelola TikTok dari Beriklan (Bandung, sejak 2016). Tim online respon 1 jam, laporan rutin, konsultasi awal 15 menit gratis.", "faqs": [{"q": "Berapa biaya Jasa Kelola TikTok bulanan?", "a": "Paket mulai Rp 2,5jt/bulan untuk 12 video pendek. Paket Growth Rp 4,5jt include live session dan community management. Premium Rp 7,5jt include produksi on-location."}, {"q": "Berapa video per minggu?", "a": "3-5 video per minggu tergantung paket. Untuk akun baru, kami rekomendasikan 3×/minggu konsisten selama 60 hari pertama untuk melatih algoritma."}, {"q": "Apakah perlu tampil di depan kamera?", "a": "Tidak wajib. Kami bisa produksi konten tanpa wajah (text-on-screen, B-roll, voiceover, atau AI avatar). Tapi konten dengan wajah asli biasanya perform 2-3× lebih baik."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan: total views, watch-time rata-rata, top 5 video, follower growth, dan rekomendasi strategi bulan depan."}, {"q": "Berapa lama sampai viral?", "a": "Tidak ada jaminan viral. Tapi dengan ritme posting konsisten + pattern yang teruji, mayoritas akun kami mencapai 100K+ views/bulan di bulan ke-2 atau ke-3."}], "active": true, "order": 7, "tiers": [{"name": "Starter", "priceLabel": "2.500.000", "duration": "30 hari", "tagline": "Untuk akun baru yang ingin mulai viral di FYP dengan konten yang relevan.", "features": ["12 video pendek (15-30 detik)", "Script writing + hashtag research", "Editing dengan caption & sound trending", "Posting 3-4×/minggu", "Laporan bulanan via WhatsApp"], "priceNote": "belum termasuk talent fee / shooting on-location", "disclaimer": "Minimum 3 bulan."}, {"name": "Growth", "priceLabel": "4.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk akun aktif yang target masuk FYP dan membangun komunitas organik.", "features": ["16 video pendek + 4× live session", "Riset trending sound + format mingguan", "Reply komentar + DM community management", "Kolaborasi dengan kreator lokal (opsional)", "Laporan mingguan dengan insight performa"], "priceNote": "belum termasuk talent fee opsional", "disclaimer": "Minimum 3 bulan."}, {"name": "Premium", "priceLabel": "7.500.000", "duration": "30 hari", "tagline": "Untuk brand yang butuh full production team + strategi TikTok end-to-end.", "features": ["20 video + 8× live session + shooting on-location 2×/bulan", "Dedicated content strategist", "TikTok Shop integration (opsional)", "Ads creative support", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Spark Ads", "disclaimer": "Minimum 3 bulan."}], "why_features": [{"icon": "🎬", "title": "FYP-First Content", "desc": "Konten dioptimasi untuk algoritma FYP TikTok: hook 3 detik, sound trending, dan pattern yang memicu watch-time."}, {"icon": "📊", "title": "Data-Driven Iteration", "desc": "Setiap video diukur (view, watch-time, share). Yang perform, di-boost. Yang tidak, di-recycle menjadi konten baru."}, {"icon": "🤝", "title": "Authentic Brand Voice", "desc": "TikTok audiens benci konten corporate. Kami bantu brand Anda terdengar manusia, bukan iklan berjalan."}], "how_steps": [{"num": "01", "tag": "MINGGU 1", "title": "Onboarding & Riset", "desc": "Analisis akun existing, kompetitor, dan trending topics di niche. Tentukan content pillars (3-5 tema inti)."}, {"num": "02", "tag": "MINGGU 2", "title": "Produksi Batch", "desc": "Shooting batch 8-12 video sekaligus (efisien). Edit + caption + sound selection."}, {"num": "03", "tag": "MINGGU 3+", "title": "Posting & Optimize", "desc": "Posting 3-5×/minggu di jam prime (11.00-13.00 & 19.00-22.00 WIB). Monitor performa 24 jam pertama."}, {"num": "04", "tag": "BULANAN", "title": "Review & Scale", "desc": "Identifikasi 3-5 video top performer. Buat pattern/template serupa untuk double down di bulan depan."}], "city_intro_template": "", "testimonials": []};
+const tiers = [{"name": "Starter", "priceLabel": "2.500.000", "duration": "30 hari", "tagline": "Untuk akun baru yang ingin mulai viral di FYP dengan konten yang relevan.", "features": ["12 video pendek (15-30 detik)", "Script writing + hashtag research", "Editing dengan caption & sound trending", "Posting 3-4×/minggu", "Laporan bulanan via WhatsApp"], "priceNote": "belum termasuk talent fee / shooting on-location", "disclaimer": "Minimum 3 bulan."}, {"name": "Growth", "priceLabel": "4.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk akun aktif yang target masuk FYP dan membangun komunitas organik.", "features": ["16 video pendek + 4× live session", "Riset trending sound + format mingguan", "Reply komentar + DM community management", "Kolaborasi dengan kreator lokal (opsional)", "Laporan mingguan dengan insight performa"], "priceNote": "belum termasuk talent fee opsional", "disclaimer": "Minimum 3 bulan."}, {"name": "Premium", "priceLabel": "7.500.000", "duration": "30 hari", "tagline": "Untuk brand yang butuh full production team + strategi TikTok end-to-end.", "features": ["20 video + 8× live session + shooting on-location 2×/bulan", "Dedicated content strategist", "TikTok Shop integration (opsional)", "Ads creative support", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Spark Ads", "disclaimer": "Minimum 3 bulan."}];
+const faqs = [{"q": "Berapa biaya Jasa Kelola TikTok bulanan?", "a": "Paket mulai Rp 2,5jt/bulan untuk 12 video pendek. Paket Growth Rp 4,5jt include live session dan community management. Premium Rp 7,5jt include produksi on-location."}, {"q": "Berapa video per minggu?", "a": "3-5 video per minggu tergantung paket. Untuk akun baru, kami rekomendasikan 3×/minggu konsisten selama 60 hari pertama untuk melatih algoritma."}, {"q": "Apakah perlu tampil di depan kamera?", "a": "Tidak wajib. Kami bisa produksi konten tanpa wajah (text-on-screen, B-roll, voiceover, atau AI avatar). Tapi konten dengan wajah asli biasanya perform 2-3× lebih baik."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan: total views, watch-time rata-rata, top 5 video, follower growth, dan rekomendasi strategi bulan depan."}, {"q": "Berapa lama sampai viral?", "a": "Tidak ada jaminan viral. Tapi dengan ritme posting konsisten + pattern yang teruji, mayoritas akun kami mencapai 100K+ views/bulan di bulan ke-2 atau ke-3."}];
+const whyFeatures = [{"icon": "🎬", "title": "FYP-First Content", "desc": "Konten dioptimasi untuk algoritma FYP TikTok: hook 3 detik, sound trending, dan pattern yang memicu watch-time."}, {"icon": "📊", "title": "Data-Driven Iteration", "desc": "Setiap video diukur (view, watch-time, share). Yang perform, di-boost. Yang tidak, di-recycle menjadi konten baru."}, {"icon": "🤝", "title": "Authentic Brand Voice", "desc": "TikTok audiens benci konten corporate. Kami bantu brand Anda terdengar manusia, bukan iklan berjalan."}];
+const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Onboarding & Riset", "desc": "Analisis akun existing, kompetitor, dan trending topics di niche. Tentukan content pillars (3-5 tema inti)."}, {"num": "02", "tag": "MINGGU 2", "title": "Produksi Batch", "desc": "Shooting batch 8-12 video sekaligus (efisien). Edit + caption + sound selection."}, {"num": "03", "tag": "MINGGU 3+", "title": "Posting & Optimize", "desc": "Posting 3-5×/minggu di jam prime (11.00-13.00 & 19.00-22.00 WIB). Monitor performa 24 jam pertama."}, {"num": "04", "tag": "BULANAN", "title": "Review & Scale", "desc": "Identifikasi 3-5 video top performer. Buat pattern/template serupa untuk double down di bulan depan."}];
+const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+---
+
+<Layout
+    title="Jasa Kelola TikTok di Bandung — Paket Profesional | Beriklan"
+    description="Jasa Kelola TikTok di Bandung dari agensi Beriklan (Bandung, sejak 2016). Konsultasi awal 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-kelola-tiktok/bandung/"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Jasa Kelola TikTok di Bandung · Meta & Google Partner
+            </div>
+            <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
+                <span class="anim-fade-up">Jasa Kelola TikTok</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Bandung, Mendorong</span><br/>
+                <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa iklan google untuk UMKM & bisnis menengah di Bandung. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <MessageCircle class="w-4 h-4" />
+                        Diskusi via WhatsApp
+                    </span>
+                </a>
+                <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket & Harga
+                    <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+            <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">9 tahun</strong> mengelola campaign iklan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Optimasi berbasis data, bukan tebakan</span></div>
+                <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Laporan <strong class="text-ink">setiap Senin pagi</strong>, bahasa yang mudah dipahami</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Bandung dari berbagai industri</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
+                    <span>F&amp;B</span><span class="text-white/30">·</span>
+                    <span>Skincare</span><span class="text-white/30">·</span>
+                    <span>Fashion</span><span class="text-white/30">·</span>
+                    <span>Edutech</span><span class="text-white/30">·</span>
+                    <span>Klinik</span><span class="text-white/30">·</span>
+                    <span>Properti</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-kelola-tiktok/bandung/" content={cityContentMap["jasa-kelola-tiktok/bandung/"]} cityName={city.name} serviceName={service.name} />
+
+
+    
+    <!-- ====================== WHY ====================== -->
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    3 Alasan Memilih Jasa Kelola TikTok
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Strategi yang terukur,<br/>
+                    <span class="text-accent">bukan jualan angka tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+            <div class="why-card group" style="animation-delay: 0ms;">
+                <div class="why-icon">🔍</div>
+                <h3 class="why-title">High Intent Traffic</h3>
+                <p class="why-desc">Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 100ms;">
+                <div class="why-icon">📍</div>
+                <h3 class="why-title">Page 1 in Minutes</h3>
+                <p class="why-desc">Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan.</p>
+            </div>
+            <div class="why-card group" style="animation-delay: 200ms;">
+                <div class="why-icon">💰</div>
+                <h3 class="why-title">Pay Per Click</h3>
+                <p class="why-desc">Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya.</p>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== HOW IT WORKS ====================== -->
+    
+    <!-- ====================== HOW IT WORKS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-6 h-px bg-accent"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Empat langkah dari brief<br/>
+                    <span class="text-accent">menuju iklan yang tayang optimal.</span>
+                </h2>
+            </div>
+            <StepGrid items={[{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}]} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== PRICING ====================== -->
+    
+    <!-- ====================== PRICING ====================== -->
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Paket Jasa Kelola TikTok di Bandung,<br/>
+                    <span class="text-accent">disesuaikan dengan objective Anda.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
+                </p>
+            </div>
+            <PricingCards tiers={[{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Kelola TikTok di Bandung" highlightIndex={1} client:only="svelte" />
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                                Konsultasi via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TRUST DARK ====================== -->
+    <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Mengapa Beriklan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Bukan agensi yang berjanji<br/>
+                    <span class="text-accent">angka fantastis tanpa dasar.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="trust-item-dark">
+                    <div class="trust-icon-dark">🔒</div>
+                    <h3 class="trust-title-dark">Akses penuh ke akun Anda</h3>
+                    <p class="trust-desc-dark">Seluruh akun iklan tetap di bawah kendali Anda. Bila sewaktu-waktu dibutuhkan, seluruh data historis berpindah tanpa hambatan.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 120ms;">
+                    <div class="trust-icon-dark">📊</div>
+                    <h3 class="trust-title-dark">Laporan setiap Senin pagi</h3>
+                    <p class="trust-desc-dark">Disusun dalam satu halaman dengan bahasa yang mudah dipahami. Anda mendapat kejelasan: mana yang berjalan optimal.</p>
+                </div>
+                <div class="trust-item-dark" style="animation-delay: 240ms;">
+                    <div class="trust-icon-dark">🔄</div>
+                    <h3 class="trust-title-dark">Tanpa minimum contract</h3>
+                    <p class="trust-desc-dark">Sistem kerja bulanan. Anda bebas memutuskan untuk lanjut atau berhenti setiap saat.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== TESTIMONIALS ====================== -->
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-20 md:py-28 bg-soft relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum deal pertama
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan yang sering muncul<br/>
+                    <span class="text-accent">sebelum deal pertama.</span>
+                </h2>
+            </div>
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <!-- ====================== RELATED SERVICES ====================== -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Bandung</p>
+            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/medan/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/medan/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/medan/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
+        </div>
+    </section>
+
+    <!-- ====================== FINAL CTA ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08] cta-grid"></div>
+        <div class="abs-radaial-2"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam (jam kerja)
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-6 mt-3">
+                    Satu keputusan kecil hari ini,<br/>
+                    <span class="text-accent">dampaknya terasa di kuartal depan.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Bandung.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Mulai Konsultasi via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+
+    <LocalSchema
+        type="city-service"
+        city={city}
+        service={service}
+        tiers={tiers}
+        faqs={faqs}
+        pageUrl="/jasa-iklan-google/medan/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Kelola TikTok", "/jasa-iklan-google/"], ["Medan", "/jasa-iklan-google/medan/"]]}
+    />
+</Layout>

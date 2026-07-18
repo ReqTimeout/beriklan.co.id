@@ -18,6 +18,8 @@ const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi 
 const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
 const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,37 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Yogyakarta Butuh Jasa Digital Marketing</h2>
-<p>Yogyakarta merupakan kota pendidikan dan pariwisata yang sangat populer di Indonesia, dengan lebih dari 130 ribu UMKM yang aktif di berbagai bidang, seperti kerajinan, kuliner, dan jasa edukasi. Namun, dalam menjalankan bisnis di Yogyakarta, membutuhkan strategi yang kuat untuk meningkatkan visibilitas dan penjualan. Jasa digital marketing dapat membantu bisnis di Yogyakarta untuk meningkatkan kinerja online dan mencapai target pasar yang lebih luas.</p>
-<p>Berdasarkan data, sekitar 70% UMKM di Yogyakarta masih belum memiliki strategi digital yang efektif, sehingga mereka masih sulit untuk meningkatkan penjualan dan kinerja bisnis. Dengan menggunakan jasa digital marketing, UMKM di Yogyakarta dapat meningkatkan visibilitas online, meningkatkan kunjungan situs web, dan meningkatkan penjualan.</p>
-<p>Sehingga, jasa digital marketing menjadi salah satu solusi yang tepat untuk membantu bisnis di Yogyakarta meningkatkan kinerja online dan mencapai target pasar yang lebih luas.</p>
-
-<h2>Tantangan Jasa Digital Marketing di Pasar Yogyakarta</h2>
-<p>Tantangan utama yang dihadapi jasa digital marketing di pasar Yogyakarta adalah risiko tidak memiliki strategi yang efektif, sehingga dapat menyebabkan kegagalan dalam meningkatkan kinerja online. Tanpa strategi yang tepat, bisnis di Yogyakarta dapat kehilangan kesempatan untuk meningkatkan visibilitas dan penjualan.</p>
-<p>Risiko lainnya adalah kurangnya pengetahuan dan pengalaman tentang digital marketing yang efektif, sehingga bisnis di Yogyakarta dapat sulit untuk meningkatkan kinerja online. Oleh karena itu, perlu adanya strategi yang kuat dan pengalaman yang cukup untuk meningkatkan kinerja online.</p>
-
-<h2>Cara Kerja Tim Beriklan di Yogyakarta</h2>
-<p>Tim beriklan kami memiliki pengalaman yang luas dalam menjalankan strategi digital marketing yang efektif di pasar Yogyakarta. Berikut adalah cara kerja kami:</p>
-<ul>
-<li>Step 1: Analisis Situasi - Kami akan melakukan analisis situasi terkait dengan bisnis Anda dan pasar Yogyakarta untuk mengetahui kebutuhan dan tantangan yang ada.</li>
-<li>Step 2: Pembuatan Strategi - Berdasarkan hasil analisis situasi, kami akan membuat strategi digital marketing yang efektif untuk meningkatkan kinerja online bisnis Anda.</li>
-<li>Step 3: Implementasi Strategi - Kami akan menerapkan strategi digital marketing yang telah dibuat, termasuk pengembangan situs web, membuat konten, dan meningkatkan visibilitas online.</li>
-<li>Step 4: Monitoring dan Evaluasi - Kami akan melakukan monitoring dan evaluasi terhadap kinerja online bisnis Anda untuk mengetahui hasil yang telah dicapai dan membuat perubahan yang diperlukan untuk meningkatkan kinerja online.</li>
-</ul>
-
-<h2>FAQ Jasa Digital Marketing di Yogyakarta</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa digital marketing kami sangat kompetitif dan terjangkau. Kami menawarkan tiga paket harga yang berbeda, yaitu Starter Rp 1.000.000, Growth Rp 5.500.000, dan Scale Rp 9.500.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa digital marketing kami dapat dilakukan dalam waktu yang relatif singkat, yaitu sekitar 1-2 minggu, tergantung pada kompleksitas proyek.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun kepada Anda sehingga Anda dapat melihat hasil kinerja online bisnis Anda secara langsung.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan bulanan tentang kinerja online bisnis Anda sehingga Anda dapat melihat hasil yang telah dicapai dan membuat perubahan yang diperlukan untuk meningkatkan kinerja online.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-digital-marketing/yogyakarta/" content={cityContentMap["jasa-digital-marketing/yogyakarta/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

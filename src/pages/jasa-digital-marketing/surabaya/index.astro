@@ -18,6 +18,8 @@ const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi 
 const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
 const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-    <h2>Mengapa Bisnis di Surabaya Butuh Jasa Digital Marketing</h2>
-    <p>Surabaya, kota bisnis terbesar di Jawa Timur, memiliki lebih dari 280 ribu UMKM yang beroperasi di kota ini. Dengan populasi penduduk hampir 2,8 juta orang, pasar Surabaya menawarkan peluang besar bagi bisnis untuk berkembang. Namun, kompetisi di pasar Surabaya sangat tinggi, sehingga bisnis harus memiliki strategi digital yang tepat untuk dapat bersaing. Dengan jasa digital marketing, bisnis di Surabaya dapat meningkatkan visibilitas, meningkatkan kesadaran merek, dan meningkatkan penjualan.</p>
-    <p>Keberadaan UMKM di Surabaya juga meningkatkan kesadaran akan pentingnya digital marketing. Mereka menyadari bahwa dengan adanya digital marketing, mereka dapat meningkatkan kesadaran merek dan meningkatkan penjualan. Oleh karena itu, bisnis di Surabaya yang ingin sukses harus memiliki strategi digital yang tepat.</p>
-    <p>Di Surabaya, kota bisnis terbesar di Jawa Timur, memiliki lebih dari 280 ribu UMKM yang beroperasi di kota ini. Dengan populasi penduduk hampir 2,8 juta orang, pasar Surabaya menawarkan peluang besar bagi bisnis untuk berkembang.</p>
-
-    <h2>Tantangan Jasa Digital Marketing di Pasar Surabaya</h2>
-    <p>Di pasar Surabaya, jasa digital marketing harus menghadapi beberapa tantangan, termasuk risiko kegagalan dalam meningkatkan visibilitas dan meningkatkan penjualan. Dengan kompetisi yang tinggi, bisnis harus memiliki strategi digital yang tepat untuk dapat bersaing. Jika tidak, mereka berisiko kehilangan pangsa pasar dan kehilangan pendapatan.</p>
-    <p>Tantangan lainnya adalah adanya keterbatasan sumber daya, seperti kekurangan anggaran dan kekurangan pengetahuan tentang digital marketing. Ini dapat membuat bisnis sulit untuk meningkatkan visibilitas dan meningkatkan penjualan.</p>
-
-    <h2>Cara Kerja Tim Beriklan di Surabaya</h2>
-    <p>Tim beriklan kami di Surabaya bekerja sama dengan bisnis untuk meningkatkan visibilitas dan meningkatkan penjualan. Berikut adalah langkah-langkah yang kami lakukan:</p>
-    <ul>
-        <li>Langkah 1: Analisis pasar dan target audiens</li>
-        <li>Langkah 2: Membuat strategi digital yang tepat</li>
-        <li>Langkah 3: Membuat konten yang menarik dan relevan</li>
-        <li>Langkah 4: Meningkatkan visibilitas dan meningkatkan penjualan</li>
-    </ul>
-
-    <h2>FAQ Jasa Digital Marketing di Surabaya</h2>
-    <h3>Berapa biaya?</h3>
-    <p>Kami menawarkan paket harga yang berbeda-beda, termasuk Starter (Rp 5.500.000), Growth (Rp 9.500.000), dan Scale (Rp 14.000.000).</p>
-    <h3>Berapa lama setup?</h3>
-    <p>Setup dapat dilakukan dalam waktu 1-2 minggu, tergantung pada kompleksitas proyek.</p>
-    <h3>Akses akun?</h3>
-    <p>Kami memberikan akses akun kepada klien untuk memantau kemajuan proyek.</p>
-    <h3>Laporan?</h3>
-    <p>Kami memberikan laporan bulanan tentang kemajuan proyek.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-digital-marketing/surabaya/" content={cityContentMap["jasa-digital-marketing/surabaya/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->
@@ -252,7 +222,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

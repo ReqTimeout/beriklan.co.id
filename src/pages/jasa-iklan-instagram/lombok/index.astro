@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Lombok Butuh Jasa Iklan Instagram</h2>
-<p>Lombok merupakan salah satu destinasi wisata terkemuka di Indonesia, dengan potensi besar bagi bisnis UMKM lokal. Dengan jumlah UMKM sekitar 35.000, Lombok memiliki peluang besar untuk berkembang sebagai sentra industri kecil yang berdaya saing. Namun, dalam persaingan yang ketat, banyak UMKM di Lombok yang masih belum optimal dalam mengembangkan strategi pemasaran, terutama di platform sosial media Instagram. Oleh karena itu, perlu adanya jasa iklan Instagram yang profesional untuk membantu mereka meningkatkan visibilitas dan penjualan.</p>
-<p>Jasa iklan Instagram dapat membantu bisnis di Lombok meningkatkan jumlah followers, meningkatkan engagement, dan meningkatkan penjualan. Dengan strategi pemasaran yang tepat dan konten yang kreatif, bisnis di Lombok dapat meningkatkan citra merek dan meningkatkan kepercayaan pelanggan.</p>
-<p>Dengan menggunakan jasa iklan Instagram, bisnis di Lombok dapat meningkatkan kesadaran merek, meningkatkan jumlah followers, dan meningkatkan penjualan. Hal ini dapat membantu bisnis di Lombok meningkatkan kompetitivitas dan meningkatkan kesuksesan.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-instagram/lombok/" content={cityContentMap["jasa-iklan-instagram/lombok/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Instagram di Pasar Lombok</h2>
-<p>Ada beberapa tantangan yang dihadapi oleh jasa iklan Instagram di pasar Lombok. Pertama, kurangnya pengetahuan dan kemampuan mengenai strategi pemasaran Instagram yang efektif. Kedua, kurangnya konten yang kreatif dan menarik. Ketiga, kurangnya interaksi dengan pelanggan dan komunitas. Keempat, kurangnya kemampuan analisis data dan evaluasi hasil.</p>
-<p>Jika tidak ada strategi pemasaran yang tepat, maka jasa iklan Instagram dapat gagal dalam mencapai tujuan. Risiko ini dapat meningkatkan biaya dan mengurangi kesuksesan. Oleh karena itu, sangat penting untuk memiliki strategi pemasaran yang efektif dan konten yang kreatif untuk meningkatkan kesuksesan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Lombok</h2>
-<p>Tim kami beriklan di Lombok memiliki pengalaman dan kemampuan yang luas dalam mengembangkan strategi pemasaran Instagram yang efektif. Kami memiliki tim yang terdiri dari kreatif, analis, dan strategis yang bekerja sama untuk mencapai tujuan.</p>
-<ul>
-  <li>Step 1: Analisis Tujuan dan Sasaran</li>
-  <li>Step 2: Mengembangkan Strategi Pemasaran Instagram</li>
-  <li>Step 3: Membuat Konten yang Kreatif dan Menarik</li>
-  <li>Step 4: Mengikuti dan Mempantau Hasil</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Lombok</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa iklan Instagram kami di Lombok adalah Rp 1.750.000 untuk paket standar dan Rp 3.750.000 untuk paket bisnis.</p>
-<h3>Berapa lama setup?</h3>
-<p>Proses setup jasa iklan Instagram kami di Lombok dapat diselesaikan dalam waktu 3-5 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami memberikan akses penuh kepada akun Instagram pelanggan kami.</p>
-<h3>Laporan?</h3>
-<p>Kami memberikan laporan bulanan kepada pelanggan kami tentang hasil jasa iklan Instagram.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

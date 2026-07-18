@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan YouTube di Beriklan?", "a": "Biaya 
 const whyFeatures = [{"icon": "🎬", "title": "Visual Storytelling", "desc": "YouTube adalah platform video #1 di Indonesia. 95jt+ pengguna aktif setiap bulan dengan rata-rata 40+ menit/hari."}, {"icon": "🎯", "title": "Affinity Targeting", "desc": "Target by interest seperti 'punya mobil baru', 'travel enthusiast', atau 'foodie' — beyond basic demographics."}, {"icon": "📊", "title": "Brand Lift Measurement", "desc": "YouTube adalah satu-satunya platform yang memberi brand lift survey untuk ukur efektivitas awareness campaign."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Video Audit", "desc": "Evaluasi video existing, identifikasi video dengan hook terbaik, dan tentukan creative direction."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup Targeting", "desc": "Konfigurasi affinity audiences, in-market, life event, custom intent. Set frequency cap untuk avoid ad fatigue."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multi-format tayang simultan. Shorts untuk Discovery, in-stream untuk reach, bumper untuk frequency."}, {"num": "04", "tag": "ONGOING", "title": "Refresh & Optimize", "desc": "Setiap 2-3 minggu ganti creative. Yang resonan (CTR tinggi, completion rate >30%) scale, yang mati ganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Palembang Butuh Jasa Iklan YouTube</h2>
-<p>Palembang, ibukota Sumatera Selatan, merupakan hub regional dengan lebih dari 95.000 UMKM yang beroperasi di kota ini. Mereka membutuhkan jasa iklan YouTube untuk meningkatkan visibilitas dan penjualan online. Dengan populasi yang padat dan ekonomi yang berkembang, Palembang merupakan pasar yang sangat potensial untuk bisnis online. Namun, banyak UMKM di Palembang yang masih belum memahami bagaimana cara meningkatkan penjualan online dengan efektif.</p>
-<p>Banyak UMKM di Palembang yang masih belum memiliki strategi yang tepat untuk meningkatkan penjualan online. Mereka mungkin telah mencoba mencari pelanggan melalui media sosial, tetapi belum berhasil meningkatkan penjualan. Dengan jasa iklan YouTube, UMKM di Palembang dapat meningkatkan visibilitas dan penjualan online dengan efektif.</p>
-<p>Kelebihan lainnya dari jasa iklan YouTube adalah dapat meningkatkan kesadaran merek dan meningkatkan kepercayaan pelanggan. Dengan demikian, UMKM di Palembang dapat meningkatkan penjualan dan keuntungan dengan lebih efektif.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-youtube/palembang/" content={cityContentMap["jasa-iklan-youtube/palembang/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan YouTube di Pasar Palembang</h2>
-<p>Jasa iklan YouTube di pasar Palembang memiliki beberapa tantangan utama. Pertama, banyak UMKM di Palembang yang masih belum memiliki pengalaman dalam membuat konten yang baik dan menarik. Hal ini dapat menyebabkan iklan yang tidak menarik dan tidak efektif dalam meningkatkan penjualan online.</p>
-<p>Kedua, pasar Palembang juga memiliki tingkat persaingan yang sangat tinggi. Banyak UMKM di Palembang yang telah memiliki strategi yang tepat untuk meningkatkan penjualan online, sehingga membuat sulit bagi UMKM lainnya untuk meningkatkan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Palembang</h2>
-<p>Tim beriklan kami di Palembang memiliki pengalaman yang luas dalam membuat konten yang baik dan menarik untuk meningkatkan penjualan online. Berikut adalah cara kerja kami:</p>
-<ul>
-    <li>Langkah 1: Menganalisis pasar dan target audiens</li>
-    <li>Langkah 2: Membuat konten yang baik dan menarik</li>
-    <li>Langkah 3: Membuat iklan yang efektif dan menarik</li>
-    <li>Langkah 4: Mengoptimalkan iklan dengan strategi yang tepat</li>
-</ul>
-
-<h2>FAQ Jasa Iklan YouTube di Palembang</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami untuk jasa iklan YouTube di Palembang adalah sebagai berikut: Basic Rp 1.250.000, Starter Rp 2.500.000, dan Standart Rp 3.750.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup untuk jasa iklan YouTube di Palembang dapat diselesaikan dalam waktu maksimal 3 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami memberikan akses akun penuh kepada klien untuk memantau kemajuan iklan.</p>
-<h3>Laporan?</h3>
-<p>Kami menyediakan laporan harian dan bulanan untuk memantau kemajuan iklan.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->

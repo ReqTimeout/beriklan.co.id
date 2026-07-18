@@ -18,6 +18,8 @@ const faqs = [{"q": "Apa bedanya landing page dengan website biasa?", "a": "Land
 const whyFeatures = [{"icon": "🎨", "title": "Design-First", "desc": "BUKAN template. Setiap landing page didesain khusus sesuai brand dan pesan Anda."}, {"icon": "📱", "title": "Mobile-Optimized", "desc": "75%+ traffic Indonesia dari mobile. Landing page di-optimized untuk mobile experience."}, {"icon": "⚡", "title": "Fast Loading", "desc": "Loading time < 3 detik. Setiap detik keterlambatan = 7% konversi hilang."}];
 const howSteps = [{"num": "01", "tag": "HARI 1-2", "title": "Brief & Research", "desc": "Diskusi objective, target audience, dan unique selling proposition Anda."}, {"num": "02", "tag": "HARI 3-5", "title": "Wireframe & Copy", "desc": "Layout dirancang, copy disusun. Anda melihat mockup sebelum design final."}, {"num": "03", "tag": "HARI 6-9", "title": "Design & Build", "desc": "Visual high-fidelity + integrasi tracking pixel + payment form."}, {"num": "04", "tag": "HARI 10+", "title": "Launch & Optimize", "desc": "Go-live, monitoring, training tim Anda untuk manage sendiri."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-  <h2>Mengapa Bisnis di Bali Butuh Jasa Landing Page</h2>
-  <p>Bali telah menjadi sebuah merek pariwisata global, menarik lebih dari 15 juta pengunjung setiap tahunnya. Dengan lebih dari 80.000 UMKM (Usaha Mikro, Kecil, dan Menengah) yang beroperasi di pulau ini, kompetisi di pasar Bali sangat ketat. Membuat keputusan strategis untuk meningkatkan visibilitas dan memenangkan konsumen menjadi sangat penting bagi bisnis di Bali.</p>
-  <p>Salah satu cara untuk meningkatkan visibilitas dan memenangkan konsumen adalah dengan membuat landing page yang efektif. Landing page yang baik dapat meningkatkan konversi, meningkatkan kesadaran merek, dan membantu bisnis di Bali untuk meningkatkan pendapatan.</p>
-  <p>Lebih dari 60% UMKM di Bali belum memiliki landing page yang efektif, sehingga mereka kehilangan kesempatan untuk meningkatkan visibilitas dan memenangkan konsumen. Dengan menggunakan jasa landing page, bisnis di Bali dapat meningkatkan kesempatan mereka untuk sukses di pasar yang kompetitif ini.</p>
-
-  <h2>Tantangan Jasa Landing Page di Pasar Bali</h2>
-  <p>Tanpa strategi yang tepat, jasa landing page di pasar Bali dapat mengalami beberapa tantangan. Salah satu tantangan utama adalah meningkatkan visibilitas dan memenangkan konsumen di pasar yang sangat kompetitif. Selain itu, jasa landing page juga harus dapat menyesuaikan diri dengan perubahan pasar yang cepat dan dinamis.</p>
-  <p>Risiko lainnya adalah bahwa jasa landing page yang tidak efektif dapat meningkatkan biaya pemasaran, mengurangi kepercayaan konsumen, dan bahkan menghancurkan reputasi bisnis di Bali.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Bali</h2>
-  <p>Kami memiliki tim beriklan yang berpengalaman dan profesional yang dapat membantu Anda membuat landing page yang efektif di Bali. Berikut adalah cara kerja kami:</p>
-  <ul>
-    <li><b>Step 1: Analisis Bisnis</b> - Kami akan menganalisis bisnis Anda untuk mengetahui kebutuhan dan tujuan Anda.</li>
-    <li><b>Step 2: Membuat Konsep</b> - Kami akan membuat konsep landing page yang sesuai dengan kebutuhan dan tujuan Anda.</li>
-    <li><b>Step 3: Desain dan Pengembangan</b> - Kami akan membuat desain dan pengembangan landing page yang efektif.</li>
-    <li><b>Step 4: Pengujian dan Optimasi</b> - Kami akan menguji dan mengoptimasi landing page untuk memastikan bahwa itu efektif.</li>
-  </ul>
-
-  <h2>FAQ Jasa Landing Page di Bali</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Biaya jasa landing page di Bali mulai dari Rp 1.999.000 untuk paket landing page + Google Ads hingga Rp 4.500.000 untuk paket funnel multi-page.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Waktu setup jasa landing page di Bali biasanya 1-3 hari kerja, tergantung pada kompleksitas proyek.</p>
-  <h3>Akses akun?</h3>
-  <p>Kami akan memberikan akses akun kepada Anda untuk memantau performa landing page dan melakukan optimasi.</p>
-  <h3>Laporan?</h3>
-  <p>Kami akan memberikan laporan bulanan tentang performa landing page, sehingga Anda dapat memantau kemajuan dan membuat keputusan yang tepat.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-pembuatan-landing-page/bali/" content={cityContentMap["jasa-pembuatan-landing-page/bali/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

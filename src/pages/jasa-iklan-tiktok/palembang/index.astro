@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,39 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-  <h2>Mengapa Bisnis di Palembang Butuh Jasa Iklan TikTok</h2>
-  <p>Palembang, ibukota Provinsi Sumatera Selatan, merupakan salah satu kota metropolitan di provinsi tersebut. Kota ini memiliki lebih dari 95 ribu usaha mikro, kecil, dan menengah (UMKM) yang beroperasi di berbagai sektor, seperti perdagangan, industri, dan jasa. Dengan demikian, Palembang memiliki potensi besar untuk berkembang sebagai kota bisnis yang maju.</p>
-  <p>Bagaimana pun, untuk mencapai visi ini, para pelaku UMKM di Palembang perlu berinovasi dan meningkatkan promosi mereka untuk meningkatkan kesadaran dan loyalitas pelanggan. Jasa iklan TikTok dapat menjadi pilihan yang tepat untuk meningkatkan visibilitas dan keberhasilan bisnis di Palembang.</p>
-  <p>Banyaknya UMKM di Palembang juga menunjukkan bahwa kota ini memiliki potensi besar dalam meningkatkan ekonomi lokal. Dengan menggunakan jasa iklan TikTok, para pelaku UMKM dapat meningkatkan penjualan dan pendapatan mereka, sehingga dapat meningkatkan kesejahteraan masyarakat Palembang.</p>
-
-  <h2>Tantangan Jasa Iklan TikTok di Pasar Palembang</h2>
-  <p>Tidak semua pelaku UMKM di Palembang memiliki keahlian dan sumber daya yang cukup untuk membuat iklan yang efektif dan menarik. Banyak dari mereka memiliki kesulitan dalam menciptakan konten yang berkualitas dan menarik, serta dalam mengoptimalkan iklan untuk mencapai target audiens yang tepat.</p>
-  <p>Bahkan, jika tidak dilakukan dengan benar, iklan TikTok dapat menjadi biaya yang tidak efektif bagi bisnis. Jika tidak diatur dan dipantau dengan baik, iklan dapat menjadi biaya yang tidak efektif dan tidak memberikan hasil yang diharapkan.</p>
-
-  <h2>Cara Kerja Tim Beriklan di Palembang</h2>
-  <p>Kami memiliki tim ahli yang berpengalaman dalam membuat iklan TikTok yang efektif dan menarik. Kami akan bekerja sama dengan Anda untuk memahami visi dan tujuan bisnis Anda, serta untuk menciptakan konten yang sesuai dengan kebutuhan Anda.</p>
-  <ul>
-    <li>Langkah 1: Analisis Audit Bisnis - Kami akan melakukan analisis audit bisnis Anda untuk memahami kekuatan dan kelemahan Anda.</li>
-    <li>Langkah 2: Membuat Konten yang Sesuai - Kami akan membuat konten yang sesuai dengan kebutuhan Anda dan target audiens Anda.</li>
-    <li>Langkah 3: Mengoptimalkan Iklan - Kami akan mengoptimalkan iklan Anda untuk mencapai target audiens yang tepat.</li>
-    <li>Langkah 4: Memantau Hasil - Kami akan memantau hasil iklan Anda dan membuat perubahan yang diperlukan untuk meningkatkan hasil.</li>
-  </ul>
-
-  <h2>FAQ Jasa Iklan TikTok di Palembang</h2>
-  <h3>Berapa biaya?</h3>
-  <p>Berikut adalah paket harga kami: Basic Rp 1.000.000, Standart Rp 1.600.000, dan Business Rp 3.750.000.</p>
-  <h3>Berapa lama setup?</h3>
-  <p>Setup dapat dilakukan dalam waktu 1-3 hari, tergantung pada kompleksitas proyek.</p>
-  <h3>Akses akun?</h3>
-  <p>Kami akan memberikan akses akun iklan yang dikelola oleh kami kepada Anda.</p>
-  <h3>Laporan?</h3>
-  <p>Kami akan memberikan laporan mingguan mengenai hasil iklan Anda.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-tiktok/palembang/" content={cityContentMap["jasa-iklan-tiktok/palembang/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

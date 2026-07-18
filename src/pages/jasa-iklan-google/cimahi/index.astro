@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,37 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Cimahi Butuh Jasa Iklan Google</h2>
-<p>Cimahi, sebuah kota yang terletak di Jawa Barat, dikenal sebagai sentra UMKM (Usaha Mikro, Kecil, dan Menengah) yang aktif dan berkembang pesat. Menurut data, ada sekitar 30.000 UMKM yang beroperasi di Cimahi, ini merupakan potensi besar bagi pengembangan ekonomi lokal. Namun, untuk meningkatkan kesadaran dan aksesibilitas bisnis di Cimahi, jasa iklan Google dapat menjadi solusi yang efektif.</p>
-<p>Bisnis di Cimahi memerlukan jasa iklan Google untuk meningkatkan visibilitas dan aksesibilitas produk atau jasa mereka ke pasar global. Dengan jasa iklan Google, bisnis dapat meningkatkan pengenalan merek, meningkatkan penjualan, dan meningkatkan keuntungan. Selain itu, jasa iklan Google dapat membantu bisnis di Cimahi untuk bersaing dengan bisnis lain di pasar.</p>
-<p>Tidak hanya itu, jasa iklan Google juga dapat membantu bisnis di Cimahi untuk meningkatkan aksesibilitas produk atau jasa mereka ke pasar lokal dan internasional. Dengan demikian, bisnis di Cimahi dapat meningkatkan kesadaran dan aksesibilitas produk atau jasa mereka, sehingga dapat meningkatkan penjualan dan keuntungan.</p>
-
-<h2>Tantangan Jasa Iklan Google di Pasar Cimahi</h2>
-<p>Tidak semua bisnis di Cimahi dapat meningkatkan kesadaran dan aksesibilitas produk atau jasa mereka dengan mudah. Ada beberapa tantangan yang perlu dihadapi, seperti risiko kehilangan kepercayaan pelanggan, risiko kehilangan saingan, dan risiko kehilangan keuntungan. Jika tidak ada strategi yang tepat, bisnis di Cimahi dapat mengalami kerugian besar.</p>
-<p>Bahkan, tanpa strategi yang tepat, bisnis di Cimahi dapat mengalami kerugian besar dalam jangka panjang. Maka dari itu, bisnis di Cimahi perlu memiliki strategi yang tepat untuk meningkatkan kesadaran dan aksesibilitas produk atau jasa mereka ke pasar. Dengan demikian, bisnis di Cimahi dapat meningkatkan penjualan dan keuntungan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Cimahi</h2>
-<p>Kami adalah tim beriklan yang profesional dan berpengalaman di Cimahi. Kami dapat membantu bisnis di Cimahi untuk meningkatkan kesadaran dan aksesibilitas produk atau jasa mereka ke pasar. Berikut adalah cara kerja kami:</p>
-<ul>
-  <li>Mengidentifikasi tujuan bisnis di Cimahi dan membuat strategi yang tepat</li>
-  <li>Membuat iklan yang menarik dan efektif di Google</li>
-  <li>Melakukan analisis dan evaluasi hasil iklan</li>
-  <li>Mengoptimalkan iklan untuk meningkatkan kesadaran dan aksesibilitas produk atau jasa</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Google di Cimahi</h2>
-<h3>Berapa biaya?</h3>
-<p>Kami menawarkan beberapa paket harga, yaitu Basic Rp 1.750.000, Standart Rp 3.750.000, dan Business Rp 6.000.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup waktu yang diperlukan untuk menyiapkan iklan di Google adalah 1-2 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun ke Anda untuk memantau hasil iklan.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan hasil iklan secara berkala untuk membantu Anda memantau kemajuan bisnis Anda.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-google/cimahi/" content={cityContentMap["jasa-iklan-google/cimahi/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

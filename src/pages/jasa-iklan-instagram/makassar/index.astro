@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,40 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Makassar Butuh Jasa Iklan Instagram</h2>
-<p>Makassar, salah satu kota besar di Indonesia Timur, memiliki lebih dari 230 ribu Usaha Mikro, Kecil, dan Menengah (UMKM) yang beragam, dari sektor F&B, retail, hingga properti. Dengan penduduk lebih dari 1,4 juta, kota ini memiliki potensi pasar yang besar dan adopsi teknologi mobile yang tinggi. Namun, dalam meningkatkan visibilitas dan penjualan, banyak UMKM di Makassar masih menghadapi tantangan. Oleh karena itu, jasa iklan Instagram menjadi salah satu pilihan untuk membantu meningkatkan kehadiran bisnis di pasar lokal.</p>
-<p>Di Makassar, jasa iklan Instagram dapat membantu meningkatkan visibilitas bisnis, meningkatkan penjualan, dan meningkatkan kredibilitas merek. Dengan strategi iklan yang tepat, bisnis dapat menjangkau target audiens yang tepat dan meningkatkan kesadaran merek di pasar lokal. Selain itu, jasa iklan Instagram juga dapat membantu bisnis meningkatkan interaksi dengan pelanggan, meningkatkan loyalitas pelanggan, dan meningkatkan keuntungan.</p>
-<p>Berdasarkan data, lebih dari 70% UMKM di Makassar memiliki potensi untuk meningkatkan penjualan dengan menggunakan jasa iklan Instagram. Oleh karena itu, jasa iklan Instagram menjadi salah satu pilihan yang tepat untuk membantu meningkatkan visibilitas dan penjualan bisnis di pasar lokal Makassar.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-iklan-instagram/makassar/" content={cityContentMap["jasa-iklan-instagram/makassar/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Iklan Instagram di Pasar Makassar</h2>
-<p>Tidak semua jasa iklan Instagram di Makassar dapat membantu meningkatkan visibilitas dan penjualan bisnis. Banyak jasa yang tidak memiliki strategi iklan yang tepat, sehingga tidak dapat meningkatkan kesadaran merek di pasar lokal. Selain itu, banyak jasa yang tidak memiliki hubungan yang baik dengan platform Instagram, sehingga tidak dapat meningkatkan visibilitas bisnis di platform tersebut.</p>
-<p>Tantangan lainnya adalah bahwa banyak jasa iklan Instagram di Makassar tidak memiliki pengalaman yang cukup dalam meningkatkan visibilitas dan penjualan bisnis di pasar lokal. Oleh karena itu, bisnis harus berhati-hati dalam memilih jasa iklan Instagram yang tepat untuk membantu meningkatkan visibilitas dan penjualan bisnis di pasar lokal Makassar.</p>
-
-<h2>Cara Kerja Tim Beriklan di Makassar</h2>
-<p>Kami adalah tim beriklan yang berpengalaman dalam meningkatkan visibilitas dan penjualan bisnis di pasar lokal Makassar. Kami memiliki strategi iklan yang tepat untuk membantu meningkatkan kesadaran merek di pasar lokal. Kami bekerja sama dengan Anda untuk menciptakan kampanye iklan yang efektif dan efisien.</p>
-<ul>
-<li>Langkah 1: Kami melakukan analisis pasar untuk mengetahui target audiens yang tepat dan strategi iklan yang efektif.</li>
-<li>Langkah 2: Kami menciptakan konten iklan yang menarik dan relevan untuk target audiens.</li>
-<li>Langkah 3: Kami mengatur iklan di platform Instagram dengan strategi yang tepat untuk meningkatkan visibilitas bisnis.</li>
-<li>Langkah 4: Kami melakukan monitoring dan evaluasi untuk mengetahui hasil kampanye iklan dan membuat perubahan yang diperlukan.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Makassar</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa iklan Instagram di Makassar adalah Rp 1.750.000 untuk paket standar dan Rp 3.750.000 untuk paket bisnis.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan Instagram di Makassar dapat dilakukan dalam waktu 3-5 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami tidak meminta akses akun Anda. Kami hanya akan mengatur iklan di platform Instagram dengan strategi yang tepat.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan hasil kampanye iklan secara teratur.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -252,7 +223,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Google di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🔍", "title": "High Intent Traffic", "desc": "Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat."}, {"icon": "📍", "title": "Page 1 in Minutes", "desc": "Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan."}, {"icon": "💰", "title": "Pay Per Click", "desc": "Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,37 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Jogja Butuh Jasa Iklan Google</h2>
-<p>Jogja dikenal sebagai salah satu kota yang memiliki pasar potensial besar untuk iklan digital. Dalam 12 bulan terakhir, pertumbuhan UMKM (Usaha Mikro, Kecil, dan Menengah) di Jogja mencapai angka yang signifikan, yaitu 25% dari total UMKM di Indonesia. Hal ini menunjukkan bahwa bisnis di Jogja memiliki peluang besar untuk berkembang dan meningkatkan penjualan.</p>
-<p>Menurut data dari Kementerian Perindustrian, hingga tahun 2022, terdapat lebih dari 200.000 UMKM di Jogja yang bergerak di berbagai sektor, seperti kuliner, pakaian, dan aksesoris. Dengan adanya jasa iklan Google, bisnis di Jogja dapat meningkatkan visibilitas dan aksesibilitasnya di pasar online, sehingga dapat meningkatkan penjualan dan pendapatan.</p>
-<p>Lebih dari 50% UMKM di Jogja masih belum memiliki strategi pemasaran yang efektif, sehingga tidak dapat meningkatkan penjualan dan pendapatan mereka. Dengan menggunakan jasa iklan Google, bisnis di Jogja dapat meningkatkan visibilitas dan aksesibilitasnya di pasar online, sehingga dapat meningkatkan penjualan dan pendapatan mereka.</p>
-
-<h2>Tantangan Jasa Iklan Google di Pasar Jogja</h2>
-<p>Jasa iklan Google di pasaran Jogja memiliki beberapa tantangan, seperti perbedaan strategi pemasaran yang efektif dan mengoptimalkan budget iklan. Tanpa strategi yang tepat, jasa iklan Google dapat menjadi biaya yang tidak efektif bagi bisnis di Jogja. Selain itu, risiko kegagalan iklan juga dapat terjadi jika tidak diikuti dengan strategi pemasaran yang tepat.</p>
-<p>Banyak bisnis di Jogja yang masih belum memahami bagaimana cara menggunakan jasa iklan Google dengan efektif, sehingga mereka tidak dapat meningkatkan visibilitas dan aksesibilitasnya di pasar online. Hal ini dapat menyebabkan biaya iklan menjadi tidak efektif dan tidak dapat meningkatkan penjualan dan pendapatan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Jogja</h2>
-<p>Tim beriklan di Jogja memiliki pengalaman yang luas dalam menggunakan jasa iklan Google untuk meningkatkan visibilitas dan aksesibilitas bisnis di pasar online. Mereka dapat membantu bisnis di Jogja meningkatkan penjualan dan pendapatan dengan menggunakan strategi pemasaran yang efektif.</p>
-<ul>
-<li>Step 1: Analisis Situasi - Tim beriklan di Jogja akan melakukan analisis situasi untuk memahami kebutuhan dan tujuan bisnis di Jogja.</li>
-<li>Step 2: Membuat Strategi Pemasaran - Tim beriklan di Jogja akan membuat strategi pemasaran yang efektif untuk meningkatkan visibilitas dan aksesibilitas bisnis di pasar online.</li>
-<li>Step 3: Mengoptimalkan Budget Iklan - Tim beriklan di Jogja akan mengoptimalkan budget iklan untuk meminimalkan biaya iklan dan meningkatkan efektivitas iklan.</li>
-<li>Step 4: Meningkatkan Visibilitas dan Aksesibilitas - Tim beriklan di Jogja akan meningkatkan visibilitas dan aksesibilitas bisnis di pasar online dengan menggunakan strategi pemasaran yang efektif.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Google di Jogja</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga jasa iklan Google di Jogja adalah sebagai berikut: Basic Rp 1.750.000, Standart Rp 3.750.000, Business Rp 6.000.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan Google di Jogja dapat dilakukan dalam waktu 1-3 hari kerja, tergantung pada kebutuhan dan tujuan bisnis.</p>
-<h3>Akses akun?</h3>
-<p>Bisnis di Jogja dapat memiliki akses akun iklan Google yang dapat digunakan untuk mengelola iklan dan melihat laporan hasil iklan.</p>
-<h3>Laporan?</h3>
-<p>Jasa iklan Google di Jogja akan menyediakan laporan hasil iklan yang dapat digunakan untuk meningkatkan visibilitas dan aksesibilitas bisnis di pasar online.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-google/jogja/" content={cityContentMap["jasa-iklan-google/jogja/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,46 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Denpasar Butuh Jasa Iklan TikTok</h2>
-Denpasar, ibukota Provinsi Bali, merupakan salah satu kota yang paling aktif dalam bidang pariwisata di Indonesia. Dengan jumlah UMKM yang mencapai 65.000, Denpasar sangat potensial untuk dikembangkan sebagai pusat ekonomi kreatif. Namun, kebanyakan UMKM di Denpasar masih menghadapi kesulitan dalam meningkatkan visibilitas dan penjualan melalui media sosial. Itulah mengapa jasa iklan TikTok menjadi sangat penting bagi bisnis di Denpasar.
-
-Dengan menggunakan jasa iklan TikTok, bisnis di Denpasar dapat meningkatkan kesadaran dan minat konsumen, serta meningkatkan penjualan secara signifikan. Selain itu, jasa iklan TikTok juga dapat membantu bisnis di Denpasar dalam membangun brand dan meningkatkan kepercayaan konsumen.
-
-Denpasar memiliki potensi besar dalam bidang pariwisata dan ekonomi kreatif, namun kebanyakan UMKM di kota ini masih menghadapi kesulitan dalam meningkatkan visibilitas dan penjualan melalui media sosial. Oleh karena itu, jasa iklan TikTok menjadi sangat penting bagi bisnis di Denpasar.
-
-<h2>Tantangan Jasa Iklan TikTok di Pasar Denpasar</h2>
-Jasa iklan TikTok di pasar Denpasar memiliki beberapa tantangan, yaitu:
-
-Jasa iklan TikTok di Denpasar harus bersaing dengan banyak agen iklan lainnya, sehingga bisnis harus memiliki strategi yang tepat untuk memenangkan kompetisi. Tanpa strategi yang tepat, bisnis dapat kehilangan kepercayaan konsumen dan meninggalkan kota.
-
-Selain itu, jasa iklan TikTok di Denpasar juga harus memahami tren dan kebutuhan pasar di kota ini. Jika tidak, jasa iklan TikTok dapat kehilangan keunggulan dan meninggalkan kota.
-
-<h2>Cara Kerja Tim Beriklan di Denpasar</h2>
-Berikut adalah cara kerja tim beriklan di Denpasar:
-
-<ul>
-  <li>Langkah 1: Analisis Target Pasar - Tim beriklan akan melakukan analisis target pasar untuk mengetahui kebutuhan dan tren pasarnya.</li>
-  <li>Langkah 2: Pembuatan Konten - Tim beriklan akan membuat konten yang menarik dan relevan untuk target pasar.</li>
-  <li>Langkah 3: Strategi Pemasaran - Tim beriklan akan membuat strategi pemasaran yang efektif untuk meningkatkan visibilitas dan penjualan.</li>
-  <li>Langkah 4: Monitoring Hasil - Tim beriklan akan melakukan monitoring hasil untuk mengetahui keefektifan strategi pemasaran.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan TikTok di Denpasar</h2>
-<h3>Berapa biaya?</h3>
-<p>Harga paket jasa iklan TikTok kami adalah sebagai berikut: <br> - Basic Rp 1.000.000 <br> - Standart Rp 1.600.000 <br> - Business Rp 3.750.000</p>
-
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan TikTok kami dapat selesai dalam waktu 5 hari kerja.</p>
-
-<h3>Akses akun?</h3>
-<p>Akses akun iklan TikTok dapat diberikan kepada Anda, namun dengan batasan tertentu untuk keamanan dan kepercayaan.</p>
-
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan hasil iklan TikTok setiap 1 minggu sekali untuk mengetahui keefektifan strategi pemasaran.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-tiktok/denpasar/" content={cityContentMap["jasa-iklan-tiktok/denpasar/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan TikTok di Beriklan?", "a": "Biaya b
 const whyFeatures = [{"icon": "🎬", "title": "Video-First Discovery", "desc": "TikTok FYP memberi organic reach lebih besar dari platform lain. Spark Ads amplifies organic post yang sudah viral."}, {"icon": "👥", "title": "Audiens Muda Indonesia", "desc": "127jt+ pengguna aktif di Indonesia, dominan Gen-Z dan Milenial urban yang jadi target utama brand masa kini."}, {"icon": "💰", "title": "CPM Lebih Murah", "desc": "CPM TikTok umumnya 40-60% lebih murah dari Meta. Cocok untuk bisnis dengan budget efisien."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Trend Research", "desc": "Riset 30-50 video trending di niche Anda, identifikasi format yang bekerja, dan brief content plan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Spark Ads Setup", "desc": "Pilih video organic yang perform, set sebagai Spark Ads, configure targeting untuk audiens yang bergerak di niche Anda."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Multiple Spark Ads tayang simultan. FYP算法 TikTok distribute ke ratusan ribu orang."}, {"num": "04", "tag": "ONGOING", "title": "Refresh Creative", "desc": "Tiap 1-2 minggu ganti creative. Yang resonan scale, yang mati ganti dengan hook baru."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,37 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <h2>Mengapa Bisnis di Pontianak Butuh Jasa Iklan TikTok</h2>
-<p>Pontianak, ibukota Kalimantan Barat, merupakan kota yang strategis dengan populasi UMKM mencapai 55.000. Dengan demikian, pasar potensial di kota ini sangat besar. Namun, tantangan yang dihadapi oleh UMKM di Pontianak adalah bagaimana meningkatkan visibilitas dan penjualan online. Hal ini dapat dicapai dengan menggunakan jasa iklan TikTok yang tepat. Dengan jumlah pengguna TikTok yang meningkat di Pontianak, jasa iklan ini dapat membantu meningkatkan kesadaran merek dan meningkatkan penjualan.</p>
-<p>Di Pontianak, UMKM seringkali menghadapi kesulitan dalam meningkatkan visibilitas online. Dengan menggunakan jasa iklan TikTok, UMKM dapat meningkatkan kesadaran merek dan meningkatkan penjualan secara efektif. Selain itu, jasa iklan TikTok juga dapat membantu UMKM dalam meningkatkan kualitas konten dan meningkatkan interaksi dengan pelanggan.</p>
-<p>Lebih dari itu, jasa iklan TikTok juga dapat membantu UMKM di Pontianak dalam meningkatkan efisiensi waktu dan biaya. Dengan menggunakan jasa iklan TikTok, UMKM dapat fokus pada kegiatan utama mereka dan meningkatkan produktivitas. Dengan demikian, UMKM di Pontianak dapat meningkatkan kesadaran merek dan meningkatkan penjualan secara efektif.</p>
-
-<h2>Tantangan Jasa Iklan TikTok di Pasar Pontianak</h2>
-<p>Tidak semua jasa iklan TikTok dapat membantu UMKM di Pontianak meningkatkan visibilitas dan penjualan online. Tanpa strategi yang tepat, jasa iklan TikTok dapat menjadi tidak efektif dan bahkan mengalami kegagalan. Risiko ini dapat terjadi jika jasa iklan TikTok tidak memiliki pengetahuan yang baik tentang pasar dan kebutuhan UMKM di Pontianak.</p>
-<p>Lebih dari itu, jasa iklan TikTok juga dapat mengalami kegagalan jika tidak memiliki tim yang berpengalaman dan berdedikasi. Tanpa tim yang tepat, jasa iklan TikTok tidak dapat meningkatkan kesadaran merek dan meningkatkan penjualan secara efektif. Dengan demikian, UMKM di Pontianak harus memilih jasa iklan TikTok yang tepat dan berpengalaman untuk meningkatkan kesadaran merek dan meningkatkan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Pontianak</h2>
-<p>Untuk meningkatkan kesadaran merek dan meningkatkan penjualan, tim beriklan kami di Pontianak bekerja sama dengan UMKM untuk memahami kebutuhan dan tujuan mereka. Setelah memahami kebutuhan dan tujuan UMKM, tim beriklan kami akan membuat strategi yang tepat untuk meningkatkan visibilitas dan penjualan online.</p>
-<ul>
-<li>Langkah 1: Analisis pasar dan kebutuhan UMKM</li>
-<li>Langkah 2: Membuat strategi yang tepat untuk meningkatkan visibilitas dan penjualan online</li>
-<li>Langkah 3: Membuat konten yang sesuai dengan kebutuhan UMKM</li>
-<li>Langkah 4: Mengelola akun TikTok UMKM dan meningkatkan interaksi dengan pelanggan</li>
-</ul>
-
-<h2>FAQ Jasa Iklan TikTok di Pontianak</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami di Pontianak adalah sebagai berikut: Basic Rp 1.000.000, Standart Rp 1.600.000, dan Business Rp 3.750.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Waktu setup kami di Pontianak adalah 3-5 hari kerja.</p>
-<h3>Akses akun?</h3>
-<p>Kami memberikan akses akun TikTok UMKM selama masa kontrak.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan laporan bulanan tentang performa iklan UMKM.</p>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-tiktok/pontianak/" content={cityContentMap["jasa-iklan-tiktok/pontianak/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

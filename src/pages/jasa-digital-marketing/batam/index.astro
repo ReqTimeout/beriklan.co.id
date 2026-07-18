@@ -18,6 +18,8 @@ const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi 
 const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
 const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,41 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <html>
-  <body>
-    <h2>Mengapa Bisnis di Batam Butuh Jasa Digital Marketing</h2>
-    <p>Sebagai kota kepulauan industri, Batam memiliki lebih dari 40.000 UMKM yang beroperasi di wilayahnya. Namun, mayoritas UMKM ini masih memiliki kesempatan yang terbatas untuk berkembang dan meningkatkan visibilitas mereka di pasar. Oleh karena itu, jasa digital marketing di Batam sangat diperlukan untuk membantu UMKM ini meningkatkan penjualan, meningkatkan brand awareness, dan meningkatkan posisi mereka di pasar.</p>
-    <p>Batam memiliki sumber daya alam yang melimpah dan posisi strategis di antara Singapura dan Malaysia. Namun, untuk mengembangkan bisnis yang sukses, UMKM di Batam harus memiliki strategi digital yang efektif untuk meningkatkan visibilitas mereka di pasar. Jasa digital marketing di Batam dapat membantu UMKM ini meningkatkan penjualan, meningkatkan brand awareness, dan meningkatkan posisi mereka di pasar.</p>
-    <p>Bagi UMKM di Batam, jasa digital marketing dapat membantu mereka meningkatkan visibilitas di pasar, meningkatkan penjualan, dan meningkatkan brand awareness. Dengan demikian, UMKM di Batam dapat meningkatkan keuntungan dan meningkatkan posisi mereka di pasar.</p>
-
-    <h2>Tantangan Jasa Digital Marketing di Pasar Batam</h2>
-    <p>Tantangan utama jasa digital marketing di pasar Batam adalah kesulitan untuk meningkatkan visibilitas di pasar yang sangat kompetitif. Banyak UMKM di Batam yang masih belum memiliki strategi digital yang efektif untuk meningkatkan visibilitas mereka di pasar. Risiko lainnya adalah tidak adanya kemampuan untuk mengukur efektivitas kampanye digital dan tidak adanya kemampuan untuk menyesuaikan dengan perubahan pasar.</p>
-    <p>Risiko lainnya adalah tidak adanya kemampuan untuk mengukur efektivitas kampanye digital dan tidak adanya kemampuan untuk menyesuaikan dengan perubahan pasar. Dengan demikian, UMKM di Batam harus sangat berhati-hati dalam memilih jasa digital marketing yang tepat untuk membantu mereka meningkatkan visibilitas di pasar.</p>
-
-    <h2>Cara Kerja Tim Beriklan di Batam</h2>
-    <p>Tim beriklan kami di Batam memiliki pengalaman yang luas dalam memberikan jasa digital marketing yang efektif kepada UMKM di wilayah ini. Kami memiliki strategi yang komprehensif untuk meningkatkan visibilitas di pasar, meningkatkan penjualan, dan meningkatkan brand awareness.</p>
-    <ul>
-      <li>Langkah 1: Analisis pasar dan analisis kebutuhan UMKM.</li>
-      <li>Langkah 2: Membuat strategi digital yang efektif untuk meningkatkan visibilitas di pasar, meningkatkan penjualan, dan meningkatkan brand awareness.</li>
-      <li>Langkah 3: Membuat konten digital yang kreatif dan efektif untuk meningkatkan visibilitas di pasar.</li>
-      <li>Langkah 4: Membuat kampanye digital yang efektif untuk meningkatkan penjualan dan meningkatkan brand awareness.</li>
-    </ul>
-
-    <h2>FAQ Jasa Digital Marketing di Batam</h2>
-    <h3>Berapa biaya?</h3>
-    <p>Kami menawarkan 3 paket harga yang berbeda: Starter Rp 1.000.000, Growth Rp 5.500.000, dan Scale Rp 9.500.000.</p>
-    <h3>Berapa lama setup?</h3>
-    <p>Setup kami biasanya memakan waktu 2-4 minggu, tergantung pada kompleksitas kampanye digital.</p>
-    <h3>Akses akun?</h3>
-    <p>Kami akan memberikan akses akun kepada UMKM untuk memantau kemajuan kampanye digital.</p>
-    <h3>Laporan?</h3>
-    <p>Kami akan memberikan laporan mingguan dan bulanan untuk memantau kemajuan kampanye digital.</p>
-  </body>
-</html>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-digital-marketing/batam/" content={cityContentMap["jasa-digital-marketing/batam/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

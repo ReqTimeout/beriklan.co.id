@@ -18,6 +18,8 @@ const faqs = [{"q": "Berapa biaya Jasa Iklan Instagram di Beriklan?", "a": "Biay
 const whyFeatures = [{"icon": "📱", "title": "Visual First", "desc": "Instagram adalah platform visual. Foto dan video berkualitas tinggi mengubah scroll menjadi percakapan."}, {"icon": "🎨", "title": "Reels Discovery", "desc": "Reels Instagram punya reach organik tertinggi — bahkan tanpa paid ads, video Anda bisa viral."}, {"icon": "💬", "title": "DM & WhatsApp", "desc": "Tombol CTA Instagram mengirim chat langsung ke WhatsApp — lebih cepat dari form."}];
 const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Content Audit", "desc": "Evaluasi content existing, identifikasi visual yang paling resonan, dan tentukan content plan iklan."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Creative Production", "desc": "Briefing untuk materi iklan + integrasi Meta Pixel untuk tracking konversi."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang di Feed, Stories, Reels + lookalike audience aktif dari minggu pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "A/B test visual + copy. Yang resonan di-scale, yang tidak diganti."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
+import cityContentMap from '../../../data/city-content.json';
 ---
 
 <Layout
@@ -87,43 +89,7 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            <body>
-<h2>Mengapa Bisnis di Solo Butuh Jasa Iklan Instagram</h2>
-<p>Daerah Surakarta, Jawa Tengah, terkenal dengan budaya dan UMKM yang kaya. Terdapat sekitar 60.000 UMKM yang beroperasi di kota ini, menunjukkan potensi besar bagi para pengusaha untuk meningkatkan visibilitas dan penjualan produk mereka melalui platform Instagram. Dengan jutaan pengguna aktif setiap hari, Instagram menjadi salah satu platform pemasaran yang paling efektif untuk meningkatkan kesadaran dan meningkatkan penjualan produk.</p>
-<p>Di Solo, UMKM yang beroperasi di bidangFashion, kuliner, dan kerajinan memiliki potensi besar untuk meningkatkan penjualan produk mereka melalui platform Instagram. Dengan menggunakan jasa iklan Instagram, UMKM dapat meningkatkan visibilitas dan meningkatkan kesadaran produk mereka di mata konsumen potensial. Selain itu, jasa iklan Instagram juga dapat membantu UMKM meningkatkan penjualan produk mereka dengan meningkatkan kunjungan ke situs web atau toko online.</p>
-<p>Menariknya, banyak UMKM di Solo yang masih belum memanfaatkan potensi platform Instagram untuk meningkatkan visibilitas dan penjualan produk mereka. Dengan demikian, menggunakan jasa iklan Instagram dapat menjadi langkah strategis untuk meningkatkan kesadaran dan meningkatkan penjualan produk UMKM di Solo.</p>
-
-<h2>Tantangan Jasa Iklan Instagram di Pasar Solo</h2>
-<p>Menjalankan jasa iklan Instagram di pasar Solo tidaklah mudah. Salah satu tantangan utama adalah menghadapi persaingan yang ketat dari para pengusaha lain yang juga menggunakan platform Instagram untuk meningkatkan visibilitas dan penjualan produk mereka. Selain itu, risiko tanpa strategi yang tepat juga sangat besar, sehingga dapat menyebabkan pengeluaran biaya yang tidak efektif.</p>
-<p>Salah satu risiko lainnya adalah risiko kehilangan akun Instagram karena tidak memenuhi kebijakan platform. Hal ini dapat menyebabkan kerugian besar bagi pengusaha yang telah menginvestasikan biaya untuk meningkatkan visibilitas dan penjualan produk mereka melalui platform Instagram.</p>
-
-<h2>Cara Kerja Tim Beriklan di Solo</h2>
-<p>Tim beriklan kami memiliki pengalaman luas dalam menjalankan jasa iklan Instagram di pasar Solo. Kami memiliki strategi yang efektif untuk meningkatkan visibilitas dan penjualan produk UMKM di Solo.</p>
-<ul>
-<li>Step 1: Membuat Rencana Strategis - Kami akan membuat rencana strategis yang efektif untuk meningkatkan visibilitas dan penjualan produk UMKM di Solo.</li>
-<li>Step 2: Membuat Konten yang Menarik - Kami akan membuat konten yang menarik dan efektif untuk meningkatkan kesadaran dan meningkatkan penjualan produk UMKM di Solo.</li>
-<li>Step 3: Mengelola Akun Instagram - Kami akan mengelola akun Instagram UMKM dengan efektif untuk meningkatkan visibilitas dan penjualan produk.</li>
-<li>Step 4: Membuat Laporan - Kami akan membuat laporan yang efektif untuk meningkatkan kesadaran dan meningkatkan penjualan produk UMKM di Solo.</li>
-</ul>
-
-<h2>FAQ Jasa Iklan Instagram di Solo</h2>
-<h3>Berapa biaya?</h3>
-<p>Paket harga kami adalah sebagai berikut:</p>
-<ul>
-<li>Paket Standart: Rp 1.750.000</li>
-<li>Paket Business: Rp 3.750.000</li>
-</ul>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa iklan Instagram kami dapat diselesaikan dalam waktu 3-7 hari.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan akses akun Instagram UMKM kepada tim beriklan kami untuk mengelola akun dengan efektif.</p>
-<h3>Laporan?</h3>
-<p>Kami akan membuat laporan yang efektif untuk meningkatkan kesadaran dan meningkatkan penjualan produk UMKM di Solo.</p>
-</body>
-        </div>
-    </section>
+    <CityContentBlock route="jasa-iklan-instagram/solo/" content={cityContentMap["jasa-iklan-instagram/solo/"]} cityName={city.name} serviceName={service.name} />
 
     
     <!-- ====================== WHY ====================== -->

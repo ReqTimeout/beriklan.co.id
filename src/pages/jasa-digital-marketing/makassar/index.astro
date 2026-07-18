@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import cityContentMap from '../../../data/city-content.json';
 import Navbar from '../../../components/Navbar.svelte';
 import Footer from '../../../components/Footer.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
@@ -18,6 +19,7 @@ const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi 
 const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
 const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
 const serviceTestimonials = [];
+import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
@@ -86,41 +88,9 @@ const serviceTestimonials = [];
         </div>
     </section>
 
-    <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <section class="py-20 md:py-28 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl prose-content">
-            ```html
-<h2>Mengapa Bisnis di Makassar Butuh Jasa Digital Marketing</h2>
-<p>Makassar merupakan salah satu kota yang paling strategis di Indonesia Timur, dengan populasi lebih dari 1,4 juta orang dan lebih dari 230 ribu Unit Mikro, Kecil, dan Menengah (UMKM) yang beroperasi di kota ini. Industri F&B, retail, dan properti adalah beberapa sektor yang paling dominan di kota ini. Namun, di tengah-tengah kesempatan ini, banyak bisnis yang masih belum dapat menembus pasar dan meningkatkan kesadaran merek mereka. Hal ini disebabkan oleh adopsi teknologi yang tidak efektif dan strategi pemasaran yang tidak tepat. Oleh karena itu, jasa digital marketing menjadi sangat penting bagi bisnis di Makassar.</p>
-<p>Sebagai kota yang sangat mobile-friendly, Makassar menawarkan peluang besar bagi bisnis untuk meningkatkan kesadaran merek dan meningkatkan penjualan melalui platform digital. Dengan demikian, jasa digital marketing dapat membantu bisnis di Makassar untuk meningkatkan visibilitas, meningkatkan kesadaran merek, dan meningkatkan penjualan.</p>
-<p>Di Makassar, bisnis yang tidak memiliki strategi digital marketing yang efektif akan kehilangan kesempatan untuk menembus pasar dan meningkatkan kesadaran merek mereka. Oleh karena itu, jasa digital marketing menjadi sangat penting bagi bisnis di Makassar untuk meningkatkan kesadaran merek dan meningkatkan penjualan.</p>
+        <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
+    <CityContentBlock route="jasa-digital-marketing/makassar/" content={cityContentMap["jasa-digital-marketing/makassar/"]} cityName={city.name} serviceName={service.name} />
 
-<h2>Tantangan Jasa Digital Marketing di Pasar Makassar</h2>
-<p>Bisnis di Makassar menghadapi beberapa tantangan ketika menggunakan jasa digital marketing, antara lain adalah risiko kehilangan kesempatan untuk menembus pasar dan meningkatkan kesadaran merek mereka. Jika tidak memiliki strategi digital marketing yang efektif, bisnis di Makassar dapat kehilangan kesempatan untuk meningkatkan visibilitas dan meningkatkan kesadaran merek mereka.</p>
-<p>Selain itu, bisnis di Makassar juga menghadapi tantangan dalam mengembangkan strategi digital marketing yang efektif. Mereka harus memiliki kemampuan untuk mengembangkan strategi digital marketing yang efektif dan dapat meningkatkan kesadaran merek dan meningkatkan penjualan.</p>
-
-<h2>Cara Kerja Tim Beriklan di Makassar</h2>
-<p>Tim beriklan kami di Makassar memiliki beberapa langkah yang harus dilakukan untuk meningkatkan visibilitas dan meningkatkan kesadaran merek bagi bisnis di kota ini. Berikut adalah beberapa langkah yang harus dilakukan:</p>
-<ul>
-    <li>Mengidentifikasi tujuan dan target pasar</li>
-    <li>Mengembangkan strategi digital marketing yang efektif</li>
-    <li>Melakukan analisis pasar dan kompetitor</li>
-    <li>Mengembangkan konten yang berkualitas dan relevan</li>
-    <li>Meningkatkan visibilitas dan kesadaran merek melalui platform digital</li>
-</ul>
-
-<h2>FAQ Jasa Digital Marketing di Makassar</h2>
-<h3>Berapa biaya?</h3>
-<p>Biaya jasa digital marketing kami di Makassar tergantung pada paket yang dipilih. Kami menawarkan tiga paket harga, yaitu Starter dengan harga Rp 0, Growth dengan harga Rp 5.500.000, dan Scale dengan harga Rp 9.500.000.</p>
-<h3>Berapa lama setup?</h3>
-<p>Setup jasa digital marketing kami di Makassar dapat dilakukan dalam waktu singkat, yaitu dalam beberapa hari saja. Kami akan bekerja sama dengan kamu untuk mengidentifikasi tujuan dan target pasar, serta mengembangkan strategi digital marketing yang efektif.</p>
-<h3>Akses akun?</h3>
-<p>Kami akan memberikan kamu akses akun untuk melihat progres dan hasil dari jasa digital marketing kami di Makassar. Kamu dapat melihat laporan harian, mingguan, dan bulanan untuk melihat hasil dari jasa digital marketing kami.</p>
-<h3>Laporan?</h3>
-<p>Kami akan memberikan kamu laporan harian, mingguan, dan bulanan untuk melihat hasil dari jasa digital marketing kami di Makassar. Laporan ini dapat membantu kamu untuk melihat progres dan hasil dari jasa digital marketing kami.</p>
-```
-        </div>
-    </section>
 
     
     <!-- ====================== WHY ====================== -->
@@ -253,7 +223,59 @@ const serviceTestimonials = [];
     </section>
 
     <!-- ====================== TESTIMONIALS ====================== -->
-    
+    <section class="py-20 md:py-28 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Studi Kasus & Testimoni
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pengalaman mereka yang telah<br />
+                    <span class="text-accent">bekerja sama dengan Tim Beriklan.</span>
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto reveal-stagger">
+                <article class="tst-card" style="animation-delay: 0ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">ROAS kami meningkat dari 1.8x menjadi 4.5x dalam empat bulan. Yang paling kami apresiasi: laporan disusun dengan bahasa yang jelas dan setiap perubahan dapat kami pahami.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
+                        <div>
+                            <p class="tst-name">Andini Pratiwi</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
+                            <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 100ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Setiap Senin pagi selalu ada laporan dalam bahasa yang mudah dipahami — bukan hanya deretan CPM dan CTR, tetapi apa yang perlu diubah dan mengapa.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
+                        <div>
+                            <p class="tst-name">Rizky Maulana</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
+                            <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="tst-card" style="animation-delay: 200ms;">
+                    <div class="tst-quote-mark">"</div>
+                    <p class="tst-body">Karakteristik funnel B2B berbeda signifikan dari FMCG. Beriklan memahami hal ini dan menyusun strategi yang relevan. Qualified leads naik 180% di Q3.</p>
+                    <div class="tst-author">
+                        <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
+                        <div>
+                            <p class="tst-name">Sarah Nathania</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
+                            <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <!-- ====================== FAQ ====================== -->
     

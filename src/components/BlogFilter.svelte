@@ -1,30 +1,60 @@
 <script>
-    import { Filter, X, Calendar, Clock, ArrowRight } from 'lucide-svelte';
+    import { Filter, X, Calendar, Clock, ArrowRight, ArrowLeft } from 'lucide-svelte';
     import { onMount } from 'svelte';
+    import { getFeaturedImage } from '../utils/featured_image.js';
 
     let activeCategory = 'all';
     let allPosts = [];
     let loaded = false;
 
-    // Unsplash fallback images by category (per /UNSPLASH-PHOTOS.md)
-    const unsplashByCategory = {
-        meta: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-        google: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
-        tiktok: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-        youtube: 'https://images.unsplash.com/photo-1611162617474-869b6795e3af?w=1200&q=80&fm=avif&fit=crop',
-        strategy: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&fm=avif&fit=crop',
-        'case-study': 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80&fm=avif&fit=crop',
+    // Cluster mode: when visited via /blog/?tag=<T>&service=<S> (pillar cluster links)
+    let clusterMode = false;
+    let clusterMeta = null;   // { tag, service, title, desc, pillarHref, serviceName }
+    let clusterPosts = [];
+
+    const SERVICE_NAME = {
+        'jasa-digital-marketing': 'Digital Marketing',
+        'jasa-iklan-facebook': 'Iklan Facebook',
+        'jasa-iklan-instagram': 'Iklan Instagram',
+        'jasa-iklan-tiktok': 'Iklan TikTok',
+        'jasa-iklan-google': 'Iklan Google Ads',
+        'jasa-iklan-youtube': 'Iklan YouTube',
+        'jasa-kelola-instagram': 'Kelola Instagram',
+        'jasa-kelola-tiktok': 'Kelola TikTok',
+        'jasa-pembuatan-website': 'Pembuatan Website',
+        'jasa-pembuatan-landing-page': 'Landing Page',
     };
-    const unsplashDefault = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&fm=avif&fit=crop';
 
     function getImage(post) {
-        if (post.featuredImage) return post.featuredImage;
-        if (post.category && unsplashByCategory[post.category]) return unsplashByCategory[post.category];
-        return unsplashDefault;
+        return getFeaturedImage(post);
     }
 
     onMount(async () => {
         try {
+            // Detect pillar cluster params
+            const params = new URLSearchParams(window.location.search);
+            const tag = params.get('tag');
+            const service = params.get('service');
+            if (tag && service) {
+                const res = await fetch('/data/clusters.json');
+                if (res.ok) {
+                    const clusters = await res.json();
+                    const cd = clusters[service] && clusters[service][tag];
+                    if (cd) {
+                        clusterMode = true;
+                        clusterMeta = {
+                            tag, service,
+                            title: cd.title || tag,
+                            desc: cd.desc || '',
+                            serviceName: SERVICE_NAME[service] || service,
+                            pillarHref: `/${service}/pilar/`,
+                        };
+                        clusterPosts = cd.posts || [];
+                        loaded = true;
+                        return;
+                    }
+                }
+            }
             const res = await fetch('/data/posts-index.json');
             if (res.ok) {
                 const data = await res.json();
@@ -54,6 +84,59 @@
 </script>
 
 <div>
+    {#if clusterMode && clusterMeta}
+        <!-- ====================== CLUSTER VIEW (pillar cluster) ====================== -->
+        <a href={clusterMeta.pillarHref} class="inline-flex items-center gap-1.5 text-sm font-bold text-muted hover:text-accent transition-colors mb-6">
+            <ArrowLeft class="w-4 h-4" />
+            Kembali ke Panduan {clusterMeta.serviceName}
+        </a>
+        <div class="mb-2 inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent text-[11px] font-bold uppercase tracking-wider rounded-full">
+            Cluster · {clusterMeta.serviceName}
+        </div>
+        <h1 class="font-display font-extrabold text-3xl md:text-4xl text-ink leading-[1.1] tracking-tight mb-3">
+            {clusterMeta.title}
+        </h1>
+        {#if clusterMeta.desc}
+            <p class="text-base md:text-lg text-muted leading-relaxed max-w-2xl mb-3">{clusterMeta.desc}</p>
+        {/if}
+        <p class="text-sm text-muted mb-8">
+            {clusterPosts.length} artikel terkait {clusterMeta.serviceName.toLowerCase()}. Semua dibahas dari pengalaman mengelola campaign sejak 2016.
+        </p>
+
+        {#if clusterPosts.length > 0}
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                {#each clusterPosts as post, i}
+                    <a href={`/blog/${post.slug}`} class="grid-card group" style={`animation-delay:${i * 60}ms;`}>
+                        <div class="p-6">
+                            <div class="flex items-center gap-3 text-[10px] text-muted mb-2">
+                                <span class="flex items-center gap-1"><Calendar class="w-3 h-3" /> {post.date}</span>
+                                <span class="flex items-center gap-1"><Clock class="w-3 h-3" /> {post.readTime}</span>
+                            </div>
+                            <h4 class="font-display font-bold text-base text-ink mb-2 leading-snug group-hover:text-accent transition-colors line-clamp-2">{post.title}</h4>
+                            <p class="text-xs text-muted leading-relaxed line-clamp-3">{post.excerpt}</p>
+                            <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-ink group-hover:text-accent transition-colors">
+                                Baca selengkapnya
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </span>
+                        </div>
+                    </a>
+                {/each}
+            </div>
+        {:else}
+            <div class="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
+                <p class="text-muted">Belum ada artikel khusus untuk cluster ini. Kembali ke panduan untuk topik lain.</p>
+            </div>
+        {/if}
+
+        <div class="mt-12 text-center">
+            <a href={clusterMeta.pillarHref} class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-3.5 rounded-full font-bold shadow-pop hover:shadow-lg transition-all">
+                <span class="flex items-center gap-2">
+                    Lihat Panduan Lengkap {clusterMeta.serviceName}
+                    <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+            </a>
+        </div>
+    {:else}
     <!-- Filter chips -->
     <div class="mb-10">
         <div class="flex items-center gap-2 mb-3">
@@ -129,6 +212,8 @@
         <div class="text-center py-12">
             <p class="text-muted">Tidak ada artikel dalam topik ini. Coba topik lain.</p>
         </div>
+    {/if}
+    <!-- /clusterMode else -->
     {/if}
 </div>
 

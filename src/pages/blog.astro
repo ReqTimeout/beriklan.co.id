@@ -9,7 +9,7 @@ import { MessageCircle, ArrowRight, BookOpen } from 'lucide-svelte';
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis";
 ---
 
-<Layout title="Blog Digital Marketing — Tips Iklan, Google Ads, Meta & TikTok | Beriklan" description="Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Pelajari Facebook Ads, Google Ads, TikTok Ads, Instagram, YouTube, dan strategi performance marketing lainnya." canonical="https://beriklan.co.id/blog/">
+<Layout title="Blog Digital Marketing — Tips Iklan, Google Ads, Meta & TikTok | Beriklan" description="Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Pelajari Facebook Ads, Google Ads, TikTok Ads, Instagram, YouTube, dan strategi performance marketing lainnya." canonical="https://beriklan.co.id/blog/" nextUrl="https://beriklan.co.id/blog/page/2/">
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -37,10 +37,15 @@ const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%2
         </div>
     </header>
 
-    <!-- ====================== BLOG FILTER ====================== -->
+    <!-- ====================== BLOG FILTER / CLUSTER VIEW ====================== -->
     <section class="py-16 md:py-20 bg-white">
         <div class="container mx-auto px-6">
             <BlogFilter client:only="svelte" />
+        </div>
+        <div class="container mx-auto px-6 mt-10 text-center">
+            <a href="/blog/page/2/" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold bg-ink text-white hover:bg-primary-2 transition-all">
+                Lihat artikel lainnya <ArrowRight class="w-4 h-4" />
+            </a>
         </div>
     </section>
 

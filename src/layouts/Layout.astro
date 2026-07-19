@@ -12,6 +12,8 @@ interface Props {
     ogImage?: string;
     schema?: 'service' | 'organization' | 'auto';
     noindex?: boolean;
+    prevUrl?: string;
+    nextUrl?: string;
     faq?: FAQItem[];
     breadcrumb?: BreadcrumbItem[];
     service?: ServiceData;
@@ -25,6 +27,8 @@ const {
     ogImage = 'https://beriklan.co.id/og-image.png',
     schema = 'auto',
     noindex = false,
+    prevUrl,
+    nextUrl,
     faq,
     breadcrumb,
     service,
@@ -49,6 +53,8 @@ const showOrganization = true;
 		<meta name="author" content="Beriklan.co.id" />
 
 		<link rel="canonical" href={canonical} />
+		{prevUrl && <link rel="prev" href={prevUrl} />}
+		{nextUrl && <link rel="next" href={nextUrl} />}
 
 		<!-- Open Graph Tags -->
 		<meta property="og:type" content="website" />

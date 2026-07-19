@@ -33,6 +33,9 @@ export default {
     if (path === "/api/cron/trending" || path === "/api/cron/trending/") {
       return await handleTrendingCron(request, env);
     }
+    if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
+      return await handleGscPullCron(request, env);
+    }
     if (path === "/api/batch4" || path === "/api/batch4/") {
       // P0.5 Rate limit: 30 req/jam per IP
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/batch4", 30, 3600);
@@ -1850,13 +1853,16 @@ async function ensureTrendingTables(env) {
 
 // ─── Indexing Pipeline (shared with /api/cron/indexing) ────────
 async function runIndexingPipeline(env, debug = false) {
-  const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
+  const INDEXNOW_KEY = "2f22c16be9437a90ad2285a4af043e10";
   const errors = [];
 
   let pending = [];
   try {
+    // CF Workers free tier allows max 50 subrequests per invocation.
+    // Google Indexing API = 1 subrequest/URL, so cap at 18 to leave headroom
+    // for IndexNow (2) + D1 writes + cron_log insert.
     const { results } = await env.DB.prepare(
-      `SELECT url FROM pending_indexing WHERE status='pending' ORDER BY created_at ASC LIMIT 200`
+      `SELECT url FROM pending_indexing WHERE status='pending' ORDER BY created_at ASC LIMIT 18`
     ).all();
     pending = results.map(r => r.url);
   } catch (e) { errors.push({stage: "d1_query", error: e.message}); }
@@ -1913,7 +1919,7 @@ async function runIndexingPipeline(env, debug = false) {
     const payload = {
       host: "beriklan.co.id",
       key: INDEXNOW_KEY,
-      keyLocation: `https://www.beriklan.co.id/${INDEXNOW_KEY}.txt`,
+      keyLocation: `https://beriklan.co.id/INDEXNOW_KEY.txt`,
       urlList,
     };
     for (const ep of ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"]) {
@@ -1949,6 +1955,157 @@ async function runIndexingPipeline(env, debug = false) {
     errors: debug ? errors : errors.length > 0 ? errors : undefined,
     had_errors: errors.length > 0,
   };
+}
+
+// ─── GSC Pull Cron (Search Analytics → gsc-stats.json) ──────
+async function handleGscPullCron(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) {
+    return new Response(JSON.stringify({ ok: false, error: "GSC_SERVICE_ACCOUNT_JSON not set" }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+  try {
+    const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+    const gscToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
+    const siteUrl = "https://www.beriklan.co.id";
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - 28 * 86400000);
+    const fmt = (d) => d.toISOString().slice(0, 10);
+
+    async function query(dimensions, rowLimit = 25) {
+      const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${gscToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startDate: fmt(startDate),
+          endDate: fmt(endDate),
+          dimensions,
+          rowLimit,
+        }),
+      });
+      if (!resp.ok) {
+        const t = await resp.text().catch(() => "");
+        throw new Error(`GSC query ${dimensions} failed: ${resp.status} ${t.slice(0, 200)}`);
+      }
+      return (await resp.json()).rows || [];
+    }
+
+    const totalsRows = await query([]);
+    const totalsRow = totalsRows[0] || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+    const totals = {
+      clicks: totalsRow.clicks || 0,
+      impressions: totalsRow.impressions || 0,
+      ctr: totalsRow.ctr || 0,
+      position: totalsRow.position || 0,
+    };
+    if (totals.impressions) totals.ctr = Math.round((totals.clicks / totals.impressions) * 10000) / 10000;
+
+    const pageRows = await query(["page"], 25);
+    const top_pages = pageRows.map(r => ({
+      url: r.keys[0],
+      clicks: r.clicks,
+      impressions: r.impressions,
+      ctr: Math.round(r.ctr * 10000) / 10000,
+      position: Math.round(r.position * 10) / 10,
+    }));
+
+    const queryRows = await query(["query"], 25);
+    const top_queries = queryRows.map(r => ({
+      query: r.keys[0],
+      clicks: r.clicks,
+      impressions: r.impressions,
+      ctr: Math.round(r.ctr * 10000) / 10000,
+      position: Math.round(r.position * 10) / 10,
+    }));
+
+    const countryRows = await query(["country"], 10);
+    const by_country = countryRows.map(r => ({ country: r.keys[0], clicks: r.clicks, impressions: r.impressions }));
+
+    const deviceRows = await query(["device"], 5);
+    const by_device = deviceRows.map(r => ({ device: r.keys[0], clicks: r.clicks, impressions: r.impressions }));
+
+    const dailyRows = await query(["date"], 28);
+    const daily = dailyRows.map(r => ({
+      date: r.keys[0],
+      clicks: r.clicks,
+      impressions: r.impressions,
+      ctr: Math.round(r.ctr * 10000) / 10000,
+      position: Math.round(r.position * 10) / 10,
+    }));
+
+    // Freshness alerts: week-over-week impression drop > 40% on top pages
+    let freshness_alerts = [];
+    try {
+      const wkEnd = new Date(endDate.getTime() - 7 * 86400000);
+      const wkStart = new Date(endDate.getTime() - 14 * 86400000);
+      const q = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${gscToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ startDate: fmt(wkStart), endDate: fmt(wkEnd), dimensions: ["page"], rowLimit: 25 }),
+      });
+      const prevRows = q.ok ? ((await q.json()).rows || []) : [];
+      const prevMap = Object.fromEntries(prevRows.map(r => [r.keys[0], r.impressions]));
+      freshness_alerts = top_pages
+        .map(p => {
+          const prev = prevMap[p.url] || 0;
+          const drop = prev ? Math.round((1 - p.impressions / prev) * 100) : 0;
+          return prev > 50 && drop > 40 ? { url: p.url, last_week_impressions: prev, this_week_impressions: p.impressions, drop_pct: drop } : null;
+        })
+        .filter(Boolean);
+    } catch (e) { freshness_alerts = [{ error: e.message }]; }
+
+    const stats = {
+      generated_at: new Date().toISOString(),
+      period_days: 28,
+      site_url: siteUrl,
+      totals,
+      top_pages,
+      top_queries,
+      by_country,
+      by_device,
+      daily,
+      freshness_alerts,
+    };
+
+    // Persist to D1 (best-effort)
+    try {
+      await env.DB.prepare(
+        `INSERT OR REPLACE INTO gsc_sitemaps (siteUrl, sitemapPath, lastSubmitted, lastStatus) VALUES (?, ?, datetime('now'), ?)`
+      ).bind(siteUrl, "gsc-pull", 200).run();
+    } catch {}
+
+    // Push gsc-stats.json to GitHub (public/data/) via Contents API
+    let github = { pushed: false };
+    const ghToken = env.GITHUB_TOKEN || "";
+    if (ghToken) {
+      try {
+        const path = "public/data/gsc-stats.json";
+        const getResp = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO || "ReqTimeout/beriklan.co.id"}/contents/${path}`, {
+          headers: { "Authorization": `token ${ghToken}`, "User-Agent": "BeriklanWorker/1.0" },
+        });
+        const sha = getResp.ok ? (await getResp.json()).sha : undefined;
+        const body = JSON.stringify({
+          message: `chore(gsc): pull stats ${fmt(endDate)}`,
+          content: b64u(JSON.stringify(stats, null, 2)),
+          branch: "main",
+          ...(sha ? { sha } : {}),
+        });
+        const putResp = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO || "ReqTimeout/beriklan.co.id"}/contents/${path}`, {
+          method: "PUT",
+          headers: { "Authorization": `token ${ghToken}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+          body,
+        });
+        github = { pushed: putResp.ok, status: putResp.status };
+      } catch (e) { github = { pushed: false, error: e.message }; }
+    }
+
+    return new Response(JSON.stringify({ ok: true, timestamp: new Date().toISOString(), stats_summary: totals, freshness_alerts_count: freshness_alerts.length, github }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
 }
 
 // ─── Google JWT auth (RSASSA-PKCS1-v1_5) ────────────────────

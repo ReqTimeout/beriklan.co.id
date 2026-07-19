@@ -25,9 +25,9 @@ XLSX = os.path.join(ROOT, "data", "Master_Keyword_Plan_Beriklan.xlsx")
 POSTS = os.path.join(WEB, "src", "data", "posts.json")
 INDEX = os.path.join(WEB, "public", "data", "posts-index.json")
 
-GROQ_KEY = open(os.path.expanduser("~/.beriklan/groq-key")).read().strip()
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-8b-instant"
+ZEN_KEY = open(os.path.expanduser("~/.beriklan/zen-key")).read().strip()
+GROQ_URL = "https://opencode.ai/zen/v1/chat/completions"
+MODEL = "deepseek-v4-flash-free"
 
 GH_TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
 GH_OWNER = "ReqTimeout"
@@ -97,18 +97,23 @@ def call_groq(prompt, max_retries=5):
     payload = {
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 1200,
+        "max_tokens": 1800,
         "temperature": 0.7,
+        "thinking": {"type": "disabled"},
     }
     for attempt in range(max_retries):
         try:
             r = requests.post(
                 GROQ_URL,
-                headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
+                headers={"Authorization": f"Bearer {ZEN_KEY}", "Content-Type": "application/json"},
                 json=payload, timeout=60,
             )
             if r.status_code == 200:
-                return r.json()["choices"][0]["message"]["content"].strip()
+                msg = r.json()["choices"][0]["message"]
+                text = (msg.get("content") or "").strip()
+                if not text and msg.get("reasoning_content"):
+                    text = msg["reasoning_content"].strip()
+                return text or None
             if r.status_code == 429:
                 import time
                 time_sleep = 15 * (attempt + 1)

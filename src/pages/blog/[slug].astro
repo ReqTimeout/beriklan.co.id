@@ -90,13 +90,22 @@ const AUTHOR = {
     url: 'https://beriklan.co.id/tentang-kami/',
 };
 
+// Freshness layer (truthful). last_reviewed is set by scripts/freshness_engine.py:
+// it equals the publish date unless the post was genuinely re-edited (REFRESHED_SLUGS).
+const REFRESHED_SLUGS = {
+    // "slug-yang-direfresh": "2026-07-15T10:00:00",
+};
+const lastReviewed = post.last_reviewed || post.iso_date;
+const isRefreshed = post.slug in REFRESHED_SLUGS;
+const freshness = post.freshness || 'recent';
+
 const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
     datePublished: post.iso_date,
-    dateModified: post.iso_date,
+    dateModified: lastReviewed,
     author: {
         '@type': 'Person',
         name: AUTHOR.name,
@@ -156,7 +165,11 @@ const articleSchema = {
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted anim-fade-up" style="animation-delay: 180ms;">
                 <span class="flex items-center gap-1.5">
                     <Calendar class="w-3.5 h-3.5" />
-                    <time datetime={post.iso_date}>{post.date}</time>
+                    {isRefreshed ? (
+                        <time datetime={lastReviewed}>Diperbarui {post.date}</time>
+                    ) : (
+                        <time datetime={post.iso_date}>Dipublikasikan {post.date}</time>
+                    )}
                 </span>
                 <span class="flex items-center gap-1.5">
                     <Clock class="w-3.5 h-3.5" />
@@ -166,6 +179,12 @@ const articleSchema = {
                     <BookOpen class="w-3.5 h-3.5" />
                     Oleh {AUTHOR.name}
                 </span>
+                {freshness === 'recent' && !isRefreshed && (
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green/10 text-green font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green"></span>
+                        Konten terbaru
+                    </span>
+                )}
             </div>
         </div>
     </header>

@@ -12,20 +12,20 @@ import FaqAccordion from '../../../components/FaqAccordion.svelte';
 import RelatedServices from '../../../components/RelatedServices.svelte';
 import { MessageCircle, Sparkles, Check, ArrowRight } from 'lucide-svelte';
 
-const city = {"slug": "bandung", "name": "Makassar", "alt_names": ["bandung"], "province": "Jawa Barat", "tier": 1, "country": "ID", "lat": -6.9175, "lng": 107.6191, "umkm_count": 350000, "local_facts": ["Makassar creative hub dengan 1.5jt UMKM, dominan fashion & kuliner", "30+ startup digital Makassar adopsi Meta & TikTok Ads", "2.4jt penduduk, mobile penetration 95%"], "is_international": false};
-const service = {"slug": "jasa-digital-marketing", "name": "Jasa Digital Marketing", "category": "full-service", "description": "Jasa Digital Marketing Iklankan Perusahaan Anda di Google Ads Facebook Instagram dan TikTok Dapatkan Lebih Banyak Konsumen | Hubungi : 0811-919-328", "faqs": [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}], "active": true, "order": 10, "tiers": [{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}], "why_features": [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}], "how_steps": [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}], "city_intro_template": ""};
-const tiers = [{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}];
-const faqs = [{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}];
-const whyFeatures = [{"icon": "🎯", "title": "Multi-Channel", "desc": "Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy."}, {"icon": "📊", "title": "Data Integration", "desc": "Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel."}, {"icon": "⚡", "title": "Fast Iteration", "desc": "Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup."}];
-const howSteps = [{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}];
+const city = {"slug": "jakarta", "name": "Jakarta", "alt_names": ["jakarta"], "province": "DKI Jakarta", "tier": 1, "country": "ID", "lat": -6.2088, "lng": 106.8456, "umkm_count": 350000, "local_facts": ["Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi", "70% brand lokal Jakarta aktif di Meta dan Google Ads", "10.5jt penduduk, pasar paling matang untuk iklan digital"], "is_international": false};
+const service = {"slug": "jasa-kelola-tiktok", "name": "Jasa Kelola TikTok", "category": "organic", "description": "Jasa Kelola TikTok dari Beriklan (Bandung, sejak 2016). Tim online respon 1 jam, laporan rutin, konsultasi awal 15 menit gratis.", "faqs": [{"q": "Berapa biaya Jasa Kelola TikTok bulanan?", "a": "Paket mulai Rp 2,5jt/bulan untuk 12 video pendek. Paket Growth Rp 4,5jt include live session dan community management. Premium Rp 7,5jt include produksi on-location."}, {"q": "Berapa video per minggu?", "a": "3-5 video per minggu tergantung paket. Untuk akun baru, kami rekomendasikan 3×/minggu konsisten selama 60 hari pertama untuk melatih algoritma."}, {"q": "Apakah perlu tampil di depan kamera?", "a": "Tidak wajib. Kami bisa produksi konten tanpa wajah (text-on-screen, B-roll, voiceover, atau AI avatar). Tapi konten dengan wajah asli biasanya perform 2-3× lebih baik."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan: total views, watch-time rata-rata, top 5 video, follower growth, dan rekomendasi strategi bulan depan."}, {"q": "Berapa lama sampai viral?", "a": "Tidak ada jaminan viral. Tapi dengan ritme posting konsisten + pattern yang teruji, mayoritas akun kami mencapai 100K+ views/bulan di bulan ke-2 atau ke-3."}], "active": true, "order": 7, "tiers": [{"name": "Starter", "priceLabel": "2.500.000", "duration": "30 hari", "tagline": "Untuk akun baru yang ingin mulai viral di FYP dengan konten yang relevan.", "features": ["12 video pendek (15-30 detik)", "Script writing + hashtag research", "Editing dengan caption & sound trending", "Posting 3-4×/minggu", "Laporan bulanan via WhatsApp"], "priceNote": "belum termasuk talent fee / shooting on-location", "disclaimer": "Minimum 3 bulan."}, {"name": "Growth", "priceLabel": "4.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk akun aktif yang target masuk FYP dan membangun komunitas organik.", "features": ["16 video pendek + 4× live session", "Riset trending sound + format mingguan", "Reply komentar + DM community management", "Kolaborasi dengan kreator lokal (opsional)", "Laporan mingguan dengan insight performa"], "priceNote": "belum termasuk talent fee opsional", "disclaimer": "Minimum 3 bulan."}, {"name": "Premium", "priceLabel": "7.500.000", "duration": "30 hari", "tagline": "Untuk brand yang butuh full production team + strategi TikTok end-to-end.", "features": ["20 video + 8× live session + shooting on-location 2×/bulan", "Dedicated content strategist", "TikTok Shop integration (opsional)", "Ads creative support", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Spark Ads", "disclaimer": "Minimum 3 bulan."}], "why_features": [{"icon": "🎬", "title": "FYP-First Content", "desc": "Konten dioptimasi untuk algoritma FYP TikTok: hook 3 detik, sound trending, dan pattern yang memicu watch-time."}, {"icon": "📊", "title": "Data-Driven Iteration", "desc": "Setiap video diukur (view, watch-time, share). Yang perform, di-boost. Yang tidak, di-recycle menjadi konten baru."}, {"icon": "🤝", "title": "Authentic Brand Voice", "desc": "TikTok audiens benci konten corporate. Kami bantu brand Anda terdengar manusia, bukan iklan berjalan."}], "how_steps": [{"num": "01", "tag": "MINGGU 1", "title": "Onboarding & Riset", "desc": "Analisis akun existing, kompetitor, dan trending topics di niche. Tentukan content pillars (3-5 tema inti)."}, {"num": "02", "tag": "MINGGU 2", "title": "Produksi Batch", "desc": "Shooting batch 8-12 video sekaligus (efisien). Edit + caption + sound selection."}, {"num": "03", "tag": "MINGGU 3+", "title": "Posting & Optimize", "desc": "Posting 3-5×/minggu di jam prime (11.00-13.00 & 19.00-22.00 WIB). Monitor performa 24 jam pertama."}, {"num": "04", "tag": "BULANAN", "title": "Review & Scale", "desc": "Identifikasi 3-5 video top performer. Buat pattern/template serupa untuk double down di bulan depan."}], "city_intro_template": "", "testimonials": []};
+const tiers = [{"name": "Starter", "priceLabel": "2.500.000", "duration": "30 hari", "tagline": "Untuk akun baru yang ingin mulai viral di FYP dengan konten yang relevan.", "features": ["12 video pendek (15-30 detik)", "Script writing + hashtag research", "Editing dengan caption & sound trending", "Posting 3-4×/minggu", "Laporan bulanan via WhatsApp"], "priceNote": "belum termasuk talent fee / shooting on-location", "disclaimer": "Minimum 3 bulan."}, {"name": "Growth", "priceLabel": "4.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk akun aktif yang target masuk FYP dan membangun komunitas organik.", "features": ["16 video pendek + 4× live session", "Riset trending sound + format mingguan", "Reply komentar + DM community management", "Kolaborasi dengan kreator lokal (opsional)", "Laporan mingguan dengan insight performa"], "priceNote": "belum termasuk talent fee opsional", "disclaimer": "Minimum 3 bulan."}, {"name": "Premium", "priceLabel": "7.500.000", "duration": "30 hari", "tagline": "Untuk brand yang butuh full production team + strategi TikTok end-to-end.", "features": ["20 video + 8× live session + shooting on-location 2×/bulan", "Dedicated content strategist", "TikTok Shop integration (opsional)", "Ads creative support", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Spark Ads", "disclaimer": "Minimum 3 bulan."}];
+const faqs = [{"q": "Berapa biaya Jasa Kelola TikTok bulanan?", "a": "Paket mulai Rp 2,5jt/bulan untuk 12 video pendek. Paket Growth Rp 4,5jt include live session dan community management. Premium Rp 7,5jt include produksi on-location."}, {"q": "Berapa video per minggu?", "a": "3-5 video per minggu tergantung paket. Untuk akun baru, kami rekomendasikan 3×/minggu konsisten selama 60 hari pertama untuk melatih algoritma."}, {"q": "Apakah perlu tampil di depan kamera?", "a": "Tidak wajib. Kami bisa produksi konten tanpa wajah (text-on-screen, B-roll, voiceover, atau AI avatar). Tapi konten dengan wajah asli biasanya perform 2-3× lebih baik."}, {"q": "Bagaimana laporan bulanan?", "a": "Laporan via WhatsApp/email setiap awal bulan: total views, watch-time rata-rata, top 5 video, follower growth, dan rekomendasi strategi bulan depan."}, {"q": "Berapa lama sampai viral?", "a": "Tidak ada jaminan viral. Tapi dengan ritme posting konsisten + pattern yang teruji, mayoritas akun kami mencapai 100K+ views/bulan di bulan ke-2 atau ke-3."}];
+const whyFeatures = [{"icon": "🎬", "title": "FYP-First Content", "desc": "Konten dioptimasi untuk algoritma FYP TikTok: hook 3 detik, sound trending, dan pattern yang memicu watch-time."}, {"icon": "📊", "title": "Data-Driven Iteration", "desc": "Setiap video diukur (view, watch-time, share). Yang perform, di-boost. Yang tidak, di-recycle menjadi konten baru."}, {"icon": "🤝", "title": "Authentic Brand Voice", "desc": "TikTok audiens benci konten corporate. Kami bantu brand Anda terdengar manusia, bukan iklan berjalan."}];
+const howSteps = [{"num": "01", "tag": "MINGGU 1", "title": "Onboarding & Riset", "desc": "Analisis akun existing, kompetitor, dan trending topics di niche. Tentukan content pillars (3-5 tema inti)."}, {"num": "02", "tag": "MINGGU 2", "title": "Produksi Batch", "desc": "Shooting batch 8-12 video sekaligus (efisien). Edit + caption + sound selection."}, {"num": "03", "tag": "MINGGU 3+", "title": "Posting & Optimize", "desc": "Posting 3-5×/minggu di jam prime (11.00-13.00 & 19.00-22.00 WIB). Monitor performa 24 jam pertama."}, {"num": "04", "tag": "BULANAN", "title": "Review & Scale", "desc": "Identifikasi 3-5 video top performer. Buat pattern/template serupa untuk double down di bulan depan."}];
 const serviceTestimonials = [];
 import CityContentBlock from '../../../components/CityContentBlock.astro';
 ---
 
 <Layout
-    title="Jasa Digital Marketing di Makassar — Paket dari Rp Konsultasi | Beriklan"
-    description="Jasa Digital Marketing di Makassar — agensi Meta Business Partner sejak 2016. Konsultasi 15 menit gratis."
-    canonical="https://beriklan.co.id/jasa-digital-marketing/makassar/"
+    title="Jasa Kelola TikTok di Jakarta — Paket Profesional | Beriklan"
+    description="Jasa Kelola TikTok di Jakarta dari agensi Beriklan (Bandung, sejak 2016). Konsultasi awal 15 menit gratis."
+    canonical="https://beriklan.co.id/jasa-kelola-tiktok/jakarta/"
 >
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -41,18 +41,18 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
-                Jasa Digital Marketing di Makassar · Meta & Google Partner
+                Jasa Kelola TikTok di Jakarta · Meta & Google Partner
             </div>
             <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight mb-6">
-                <span class="anim-fade-up">Jasa Digital Marketing</span><br/>
-                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Makassar, Mendorong</span><br/>
+                <span class="anim-fade-up">Jasa Kelola TikTok</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">di Jakarta, Mendorong</span><br/>
                 <span class="anim-fade-up" style="animation-delay: 160ms;">Hasil Terukur.</span>
             </h1>
             <p class="text-base md:text-lg text-muted leading-relaxed mb-8 anim-fade-up" style="animation-delay: 240ms;">
-                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa digital marketing untuk UMKM & bisnis menengah di Makassar. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
+                Tim Beriklan (Meta Business Partner sejak 2016) mengelola campaign jasa iklan google untuk UMKM & bisnis menengah di Jakarta. Akses penuh ke akun iklan, dashboard real-time, laporan setiap Senin pagi.
             </p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center anim-fade-up" style="animation-delay: 320ms;">
-                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Makassar.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop btn-shine">
                     <span class="relative z-10 flex items-center gap-2">
                         <MessageCircle class="w-4 h-4" />
                         Diskusi via WhatsApp
@@ -75,7 +75,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
     <section class="py-7 bg-ink border-y border-white/5 relative overflow-hidden">
         <div class="container mx-auto px-6">
             <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Makassar dari berbagai industri</p>
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Dipercaya bisnis di Jakarta dari berbagai industri</p>
                 <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold trust-word">
                     <span>F&amp;B</span><span class="text-white/30">·</span>
                     <span>Skincare</span><span class="text-white/30">·</span>
@@ -89,7 +89,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
     </section>
 
         <!-- ====================== AI-GENERATED CITY CONTENT ====================== -->
-    <CityContentBlock route="jasa-digital-marketing/bandung/" content={cityContentMap["jasa-digital-marketing/makassar/"]} cityName={city.name} serviceName={service.name} />
+    <CityContentBlock route="jasa-iklan-google/medan/" content={cityContentMap["jasa-kelola-tiktok/jakarta/"]} cityName={city.name} serviceName={service.name} />
 
 
     
@@ -99,7 +99,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
             <div class="text-center max-w-2xl mx-auto mb-12 reveal">
                 <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
                     <span class="w-8 h-px bg-accent"></span>
-                    3 Alasan Memilih Jasa Digital Marketing
+                    3 Alasan Memilih Jasa Kelola TikTok
                     <span class="w-8 h-px bg-accent"></span>
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
@@ -109,19 +109,19 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
             </div>
             <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
             <div class="why-card group" style="animation-delay: 0ms;">
-                <div class="why-icon">🎯</div>
-                <h3 class="why-title">Multi-Channel</h3>
-                <p class="why-desc">Anda tidak perlu hire 4 agency berbeda. Satu tim mengorkestrasi Meta, Google, TikTok, organic jadi coherent strategy.</p>
+                <div class="why-icon">🔍</div>
+                <h3 class="why-title">High Intent Traffic</h3>
+                <p class="why-desc">Orang yang search di Google punya intensi tinggi — mereka aktif mencari solusi. Bukan被动 melihat.</p>
             </div>
             <div class="why-card group" style="animation-delay: 100ms;">
-                <div class="why-icon">📊</div>
-                <h3 class="why-title">Data Integration</h3>
-                <p class="why-desc">Semua channel dashboard dalam satu tempat. Lihat holistik performance, bukan sil per channel.</p>
+                <div class="why-icon">📍</div>
+                <h3 class="why-title">Page 1 in Minutes</h3>
+                <p class="why-desc">Google Ads muncul di halaman 1 SEARCH result dalam hitungan menit — vs SEO organik yang butuh bulan.</p>
             </div>
             <div class="why-card group" style="animation-delay: 200ms;">
-                <div class="why-icon">⚡</div>
-                <h3 class="why-title">Fast Iteration</h3>
-                <p class="why-desc">Strategy pivot dalam 1 minggu, bukan 1 bulan. Cocok untuk dynamic market dan growth-stage startup.</p>
+                <div class="why-icon">💰</div>
+                <h3 class="why-title">Pay Per Click</h3>
+                <p class="why-desc">Anda hanya bayar saat ada orang mengklik. Tidak ada click = tidak ada biaya.</p>
             </div>
             </div>
         </div>
@@ -143,7 +143,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                     <span class="text-accent">menuju iklan yang tayang optimal.</span>
                 </h2>
             </div>
-            <StepGrid items={[{"num": "01", "tag": "WEEK 1", "title": "Audit & Strategy", "desc": "Deep audit existing marketing stack, competitor analysis, dan cocokan dengan objective Anda."}, {"num": "02", "tag": "WEEK 2", "title": "Setup Multi-Channel", "desc": "Launch 2-4 platform iklan paralel, plus organic content production mulai jalan."}, {"num": "03", "tag": "WEEK 3+", "title": "30 Hari Pertama", "desc": "Fase learning. Iklan tayang, organic publish rutin, data mulai terkumpul."}, {"num": "04", "tag": "MONTHLY", "title": "Review & Pivot", "desc": "Setiap bulan: strategy review, budget reallocation, ekspansi winning channel."}]} client:visible />
+            <StepGrid items={[{"num": "01", "tag": "MINGGU 1", "title": "Keyword Research", "desc": "Riset 50-100 kata kunci, pilih yang high-intent + cost-effective sesuai niche Anda."}, {"num": "02", "tag": "MINGGU 1-2", "title": "Setup & Tracking", "desc": "Setup akun, conversion tracking, integrasi landing page. Iklan dengan copy yang strong."}, {"num": "03", "tag": "MINGGU 2+", "title": "Launch 30 Hari", "desc": "Tayang 24/7 di Google Search + Display. Data mulai terkumpul dari hari pertama."}, {"num": "04", "tag": "ONGOING", "title": "Optimasi Mingguan", "desc": "Negative keywords, bid adjustments, ad copy refresh. Yang tidak convert di-pause."}]} client:visible />
         </div>
     </section>
 
@@ -160,14 +160,14 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                     <span class="w-8 h-px bg-accent"></span>
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
-                    Paket Jasa Digital Marketing di Makassar,<br/>
+                    Paket Jasa Kelola TikTok di Jakarta,<br/>
                     <span class="text-accent">disesuaikan dengan objective Anda.</span>
                 </h2>
                 <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
                     Angka di bawah adalah biaya jasa pengelolaan campaign. Ad spend platform dibayar langsung ke Meta/Google/TikTok — tanpa markup, tanpa biaya tersembunyi.
                 </p>
             </div>
-            <PricingCards tiers={[{"name": "Starter", "priceLabel": "Konsultasi", "duration": "1 sesi 60 menit", "tagline": "Untuk bisnis baru di digital marketing yang butuh clarity strategi.", "features": ["1 sesi konsultasi via Zoom 60 menit", "Audit channel existing (ads + organic)", "Rekomendasi 3 channel prioritas", "Estimasi budget dan ROI projection", "Ringkasan strategi tertulis 5-7 halaman"], "priceNote": "", "disclaimer": "Sekali bayar, tidak ada kontrak."}, {"name": "Growth", "priceLabel": "5.500.000", "duration": "30 hari", "highlight": true, "tagline": "Untuk bisnis dengan budget iklan Rp 5-15jt/bulan dan butuh multi-channel.", "features": ["Manajemen 2 platform iklan", "Setup organic content 12 post + 30 story/bulan", "Weekly performance report", "A/B testing mingguan", "Monthly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Scale", "priceLabel": "9.500.000", "duration": "30 hari", "tagline": "Untuk bisnis serius yang butuh full-service agency + brand exposure.", "features": ["Manajemen 4+ platform iklan (Meta + Google + TikTok + YouTube)", "Full content production 20 post + 60 story + 8 video/bulan", "Dedicated account manager", "Custom landing page bulanan", "Bi-weekly strategy review"], "priceNote": "belum termasuk ad spend", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Digital Marketing di Makassar" highlightIndex={1} client:only="svelte" />
+            <PricingCards tiers={[{"name": "Basic", "priceLabel": "1.750.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis baru yang ingin mulai tertangkap di pencarian Google.", "features": ["10 kata kunci aktif (long-tail)", "10 iklan aktif per keyword", "Tayang di Google Search (halaman 1)", "Targeting lokasi Indonesia atau tertentu", "Iklan dapat diganti di tengah periode", "Laporan mingguan bahasa yang mudah dipahami", "Akses penuh ke akun Google Ads Anda"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Standart", "priceLabel": "3.750.000", "duration": "30 hari tayang", "highlight": true, "tagline": "Untuk bisnis dengan search volume sedang dan perlu variasi iklan.", "features": ["15-20 kata kunci aktif", "15 iklan aktif per keyword", "Tayang di Search + Display Network", "A/B testing iklan dan landing page", "Conversion tracking setup", "Laporan mingguan dengan rekomendasi iterasi"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}, {"name": "Business", "priceLabel": "6.000.000", "duration": "30 hari tayang", "tagline": "Untuk bisnis dengan search volume tinggi dan target agresif.", "features": ["25-30 kata kunci aktif", "20 iklan aktif per keyword", "Tayang di Search + Display + YouTube Ads", "Setup Smart Bidding + Conversion AI", "Analisa kompetitor keyword", "Optimasi bidding strategy", "Laporan mingguan + review bulanan video call"], "priceNote": "belum termasuk ad spend Google", "disclaimer": "Tanpa kontrak panjang."}]} pageSlug="Jasa Kelola TikTok di Jakarta" highlightIndex={1} client:only="svelte" />
             <div class="mt-10 max-w-2xl mx-auto reveal">
                 <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
                     <div class="flex items-start gap-3">
@@ -177,7 +177,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                         <div>
                             <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
                             <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
-                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Makassar.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
+                            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
                                 Konsultasi via WhatsApp
                                 <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                             </a>
@@ -244,7 +244,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                         <div class="tst-avatar bg-gradient-to-br from-amber-500 to-orange-500">🧴</div>
                         <div>
                             <p class="tst-name">Andini Pratiwi</p>
-                            <p class="tst-role">Owner · Brand Skincare, Makassar</p>
+                            <p class="tst-role">Owner · Brand Skincare, Bandung</p>
                             <p class="tst-metric">ROAS 1.8x → 4.5x dalam 4 bulan</p>
                         </div>
                     </div>
@@ -256,7 +256,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                         <div class="tst-avatar bg-gradient-to-br from-pink-500 to-rose-500">💆</div>
                         <div>
                             <p class="tst-name">Rizky Maulana</p>
-                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Makassar</p>
+                            <p class="tst-role">Marketing Manager · Klinik Kecantikan, Jakarta</p>
                             <p class="tst-metric">Lead konsisten 3x lipat dari bulan ke-2</p>
                         </div>
                     </div>
@@ -268,7 +268,7 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                         <div class="tst-avatar bg-gradient-to-br from-blue-500 to-indigo-500">💼</div>
                         <div>
                             <p class="tst-name">Sarah Nathania</p>
-                            <p class="tst-role">Head of Growth · SaaS B2B, Makassar</p>
+                            <p class="tst-role">Head of Growth · SaaS B2B, Jakarta</p>
                             <p class="tst-metric">Qualified leads +180% di Q3 2025</p>
                         </div>
                     </div>
@@ -293,15 +293,15 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                     <span class="text-accent">sebelum deal pertama.</span>
                 </h2>
             </div>
-            <FaqAccordion items={[{"q": "Apa yang termasuk Jasa Digital Marketing?", "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."}, {"q": "Berapa biaya keseluruhan?", "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."}, {"q": "Berapa lama komitmen kontrak?", "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."}, {"q": "Bagaimana jika belum pernah pakai iklan?", "a": "Sempurna. Kami handle dari setup akun ad platform, verification, pixel installation, hingga campaign launch. Anda tinggal setujui strategi."}, {"q": "Apakah ada garansi hasil?", "a": "Tidak ada garansi nominal karena hasil tergantung banyak faktor (niche, produk, harga, landing page). Tapi kami terukur, transparan, dan iteratif dengan laporan mingguan."}]} client:visible />
+            <FaqAccordion items={faqs} client:visible />
         </div>
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
     <section class="py-12 bg-white border-t border-gray-100">
         <div class="container mx-auto px-6 max-w-4xl">
-            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Makassar</p>
-            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/bandung/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/bandung/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/bandung/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3 text-center">Layanan Terkait di Jakarta</p>
+            <p class="text-center text-sm text-muted"><a href="/jasa-iklan-facebook/medan/" class="text-accent hover:underline">Jasa Iklan Facebook</a> · <a href="/jasa-iklan-instagram/medan/" class="text-accent hover:underline">Jasa Iklan Instagram</a> · <a href="/jasa-iklan-tiktok/medan/" class="text-accent hover:underline">Jasa Iklan TikTok</a></p>
         </div>
     </section>
 
@@ -323,10 +323,10 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
                     <span class="text-accent">dampaknya terasa di kuartal depan.</span>
                 </h2>
                 <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
-                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Makassar.
+                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di Jakarta.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Digital Marketing%20di%20Makassar.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                    <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20Jasa Kelola TikTok%20di%20Medan.%20Mau%20konsultasi%20awal." target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
                         <span class="relative z-10 flex items-center gap-2">
                             Mulai Konsultasi via WhatsApp
                             <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -348,8 +348,8 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
         service={service}
         tiers={tiers}
         faqs={faqs}
-        pageUrl="/jasa-digital-marketing/bandung/"
-        breadcrumbs={[["Beranda", "/"], ["Jasa Digital Marketing", "/jasa-digital-marketing/"], ["Makassar", "/jasa-digital-marketing/bandung/"]]}
+        pageUrl="/jasa-iklan-google/medan/"
+        breadcrumbs={[["Beranda", "/"], ["Jasa Kelola TikTok", "/jasa-iklan-google/"], ["Medan", "/jasa-iklan-google/medan/"]]}
         howSteps={howSteps}
         testimonials={serviceTestimonials}
     />

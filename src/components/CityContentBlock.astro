@@ -69,6 +69,9 @@ const readMinutes = Math.max(1, Math.round(wordCount / 200));
 const updated = lastUpdated || new Date().toISOString().split('T')[0];
 ---
 
+<!-- AdSense loader (city pages only — blog post loads its own) -->
+<script is:inline async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4438184351486735" crossorigin="anonymous"></script>
+
 <div class="city-content-block relative pt-12 md:pt-16" data-route={route}>
     <!-- Reading time + byline (compact, emoji + small text) -->
     <div class="container mx-auto px-6 max-w-3xl mb-10">

@@ -1,0 +1,255 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import Footer from '../components/Footer.svelte';
+import { TrendingUp, TrendingDown, MousePointerClick, Eye, BarChart3, Globe2, Smartphone, Monitor, AlertTriangle, Calendar, ArrowUpRight, Search } from 'lucide-svelte';
+import gsc from '../../public/data/gsc-stats.json';
+
+const fmt = (n) => new Intl.NumberFormat('id-ID').format(n);
+const pct = (n) => (n * 100).toFixed(2) + '%';
+
+function stripDomain(u) {
+    try { return new URL(u).pathname; } catch { return u; }
+}
+---
+<Layout title="GSC Monitoring · Beriklan" description="Live Google Search Console monitoring untuk beriklan.co.id — clicks, impressions, top queries, freshness alerts. Data otomatis di-refresh harian." canonical="https://beriklan.co.id/gsc-dashboard/" noindex={true}>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="hero relative pt-28 md:pt-36 pb-12 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="container mx-auto px-6 max-w-5xl relative z-10">
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green"></span>
+                </span>
+                Live · Google Search Console
+            </div>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6">
+                GSC Monitoring
+            </h1>
+            <p class="text-base md:text-lg text-muted leading-relaxed max-w-3xl">
+                Performa pencarian organik <strong class="text-ink">beriklan.co.id</strong> di Google Search Console — di-refresh harian via API. Window data: {gsc.window.start} s/d {gsc.window.end} ({28} hari).
+            </p>
+            <p class="text-xs text-muted mt-3">Last pulled: {new Date(gsc.last_pulled).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB</p>
+        </div>
+    </header>
+
+    <!-- =============== TOTALS =============== -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-soft rounded-2xl p-5 border border-gray-100">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                        <MousePointerClick class="w-3.5 h-3.5" /> Clicks
+                    </div>
+                    <div class="font-display font-extrabold text-3xl md:text-4xl text-ink tabular-nums">{fmt(gsc.totals.clicks)}</div>
+                    <div class="text-xs text-muted mt-1">28 hari terakhir</div>
+                </div>
+                <div class="bg-soft rounded-2xl p-5 border border-gray-100">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                        <Eye class="w-3.5 h-3.5" /> Impressions
+                    </div>
+                    <div class="font-display font-extrabold text-3xl md:text-4xl text-ink tabular-nums">{fmt(gsc.totals.impressions)}</div>
+                    <div class="text-xs text-muted mt-1">28 hari terakhir</div>
+                </div>
+                <div class="bg-soft rounded-2xl p-5 border border-gray-100">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                        <BarChart3 class="w-3.5 h-3.5" /> CTR
+                    </div>
+                    <div class="font-display font-extrabold text-3xl md:text-4xl text-ink tabular-nums">{pct(gsc.totals.ctr)}</div>
+                    <div class="text-xs text-muted mt-1">Avg across window</div>
+                </div>
+                <div class="bg-soft rounded-2xl p-5 border border-gray-100">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                        <TrendingUp class="w-3.5 h-3.5" /> Avg Pos
+                    </div>
+                    <div class="font-display font-extrabold text-3xl md:text-4xl text-ink tabular-nums">{gsc.totals.position.toFixed(1)}</div>
+                    <div class="text-xs text-muted mt-1">Rata-rata posisi</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =============== DAILY CHART =============== -->
+    <section class="py-12 md:py-16 bg-soft">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Tren Harian (28 hari)</h2>
+            <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="flex items-end gap-[3px] h-48 overflow-hidden">
+                    {gsc.daily.map((d, i) => {
+                        const max = Math.max(...gsc.daily.map(x => x.impressions));
+                        const h = max > 0 ? (d.impressions / max) * 100 : 0;
+                        return (
+                            <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                                <div class="w-full bg-gradient-to-t from-primary to-primary-2 rounded-t hover:from-accent hover:to-accent-2 transition-colors" style={`height: ${Math.max(h, 2)}%;`} title={`${d.date}: ${d.impressions} impr, ${d.clicks} clicks`}></div>
+                                <div class="text-[8px] text-muted absolute -bottom-4 whitespace-nowrap hidden md:block">{d.date.slice(5)}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div class="mt-8 text-xs text-muted">Impressions per hari. Hover bar untuk detail.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =============== TOP PAGES + QUERIES =============== -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- TOP PAGES -->
+                <div class="bg-soft rounded-2xl p-6 border border-gray-100">
+                    <h3 class="font-display font-bold text-lg mb-4 flex items-center gap-2"><Globe2 class="w-4 h-4 text-accent" /> Top Pages</h3>
+                    <div class="space-y-2 max-h-[500px] overflow-y-auto">
+                        {gsc.top_pages.map((p, i) => (
+                            <div class="flex items-start justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs text-muted">{i + 1}.</div>
+                                    <a href={p.url} target="_blank" rel="noopener" class="text-xs font-mono text-ink hover:text-accent truncate block">{stripDomain(p.url)}</a>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-sm font-bold text-ink tabular-nums">{p.clicks}</div>
+                                    <div class="text-[10px] text-muted">imp {fmt(p.impressions)} · pos {p.position.toFixed(0)}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <!-- TOP QUERIES -->
+                <div class="bg-soft rounded-2xl p-6 border border-gray-100">
+                    <h3 class="font-display font-bold text-lg mb-4 flex items-center gap-2"><Search class="w-4 h-4 text-accent" /> Top Queries</h3>
+                    <div class="space-y-2 max-h-[500px] overflow-y-auto">
+                        {gsc.top_queries.map((q, i) => (
+                            <div class="flex items-start justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs text-muted">{i + 1}.</div>
+                                    <div class="text-xs font-mono text-ink truncate">"{q.query}"</div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-sm font-bold text-ink tabular-nums">{q.clicks}</div>
+                                    <div class="text-[10px] text-muted">imp {fmt(q.impressions)} · pos {q.position.toFixed(0)}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =============== DEVICE + COUNTRY =============== -->
+    <section class="py-12 md:py-16 bg-soft">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                    <h3 class="font-display font-bold text-lg mb-4">By Device</h3>
+                    <div class="space-y-3">
+                        {gsc.by_device.map(d => {
+                            const total = gsc.by_device.reduce((s, x) => s + x.impressions, 0);
+                            const w = total > 0 ? (d.impressions / total) * 100 : 0;
+                            const Icon = d.device === 'DESKTOP' ? Monitor : d.device === 'MOBILE' ? Smartphone : Monitor;
+                            return (
+                                <div>
+                                    <div class="flex items-center justify-between text-sm mb-1">
+                                        <div class="flex items-center gap-2 font-bold text-ink"><Icon class="w-4 h-4" /> {d.device}</div>
+                                        <div class="text-muted text-xs">{fmt(d.clicks)} clicks · {fmt(d.impressions)} imp</div>
+                                    </div>
+                                    <div class="h-2 bg-soft rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-primary to-primary-2 rounded-full" style={`width: ${w}%;`}></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                    <h3 class="font-display font-bold text-lg mb-4">By Country</h3>
+                    <div class="space-y-2 max-h-[300px] overflow-y-auto">
+                        {gsc.by_country.slice(0, 10).map((c, i) => (
+                            <div class="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
+                                <div class="text-ink font-mono">{i + 1}. {c.country.toUpperCase()}</div>
+                                <div class="text-muted text-xs">{fmt(c.clicks)} clicks · {fmt(c.impressions)} imp</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =============== FRESHNESS ALERTS =============== -->
+    {gsc.freshness_alerts.length > 0 && (
+        <section class="py-12 md:py-16 bg-white">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-2 flex items-center gap-2">
+                    <AlertTriangle class="w-6 h-6 text-accent" /> Freshness Alerts
+                </h2>
+                <p class="text-sm text-muted mb-6">Halaman dengan penurunan impressions &gt; 40% week-over-week (butuh review / update konten).</p>
+                <div class="bg-soft rounded-2xl p-6 border border-gray-100">
+                    <div class="space-y-2">
+                        {gsc.freshness_alerts.map(a => (
+                            <div class="flex items-start justify-between gap-3 py-2 border-b border-gray-200 last:border-0">
+                                <a href={a.url} target="_blank" rel="noopener" class="flex-1 text-xs font-mono text-ink hover:text-accent truncate">{stripDomain(a.url)}</a>
+                                <div class="text-right shrink-0">
+                                    <div class="text-sm font-bold text-red-600 tabular-nums flex items-center gap-1">
+                                        <TrendingDown class="w-3 h-3" /> {a.drop_pct}%
+                                    </div>
+                                    <div class="text-[10px] text-muted">{fmt(a.last_week_impressions)} → {fmt(a.this_week_impressions)} imp</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- =============== LOW CTR (TITLE/META FIX TARGETS) =============== -->
+    {gsc.low_ctr && gsc.low_ctr.length > 0 && (
+        <section class="py-12 md:py-16 bg-soft">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-2 flex items-center gap-2">
+                    <MousePointerClick class="w-6 h-6 text-accent" /> Low CTR Candidates
+                </h2>
+                <p class="text-sm text-muted mb-6">Halaman dengan impressions tinggi tapi CTR &lt; 2% — biasanya butuh perbaikan title tag atau meta description.</p>
+                <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                    <div class="space-y-2">
+                        {gsc.low_ctr.map((p, i) => (
+                            <div class="flex items-start justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs text-muted">{i + 1}.</div>
+                                    <a href={p.url} target="_blank" rel="noopener" class="text-xs font-mono text-ink hover:text-accent truncate block">{stripDomain(p.url)}</a>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-sm font-bold text-red-600 tabular-nums">{pct(p.ctr)}</div>
+                                    <div class="text-[10px] text-muted">{fmt(p.impressions)} imp · pos {p.position.toFixed(1)}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- =============== FOOTER NOTE =============== -->
+    <section class="py-12 bg-soft">
+        <div class="container mx-auto px-6 max-w-3xl text-center text-xs text-muted">
+            <p>Data ini diambil langsung dari Google Search Console API via service account (read-only). Auto-refresh harian via cron. Last update: <strong>{new Date(gsc.last_pulled).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</strong>.</p>
+            <p class="mt-2">Refresh manual: <code class="font-mono bg-white px-2 py-0.5 rounded border border-gray-200">python3 scripts/gsc_pull.py</code></p>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    .hero-grid {
+        background-image: linear-gradient(rgba(15,30,61,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,30,61,.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+</style>

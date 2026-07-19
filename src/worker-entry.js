@@ -139,6 +139,9 @@ export default {
       }
       return await handleAdminKeys(request, env);
     }
+    if (path === "/api/admin/keywords" || path === "/api/admin/keywords/") {
+      return await handleKeywordDashboard(request, env);
+    }
     if (path === "/api/admin" || path === "/api/admin/") {
       // P0.4 Admin Dashboard HTML
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/admin/dashboard", 60, 3600);
@@ -923,7 +926,7 @@ function renderDashboard(stats) {
 <body>
 <div class="container">
   <h1>🚀 Beriklan.co.id Admin Dashboard</h1>
-  <p class="subtitle">Last updated: ${stats.timestamp} | Auto-refresh: <a href="">reload</a></p>
+  <p class="subtitle">Last updated: ${stats.timestamp} | <a href="/api/admin/keywords?token=" onclick="this.href+=new URLSearchParams(location.search).get('token')">🎯 Keyword Pipeline →</a> | Auto-refresh: <a href="">reload</a></p>
 
   <!-- Top metrics -->
   <div class="grid">
@@ -978,6 +981,153 @@ function renderDashboard(stats) {
 </div>
 </body>
 </html>`;
+}
+
+// ─── Keyword Pipeline Dashboard ─────────────────────────────────
+// /api/admin/keywords?token=... — keyword → artikel → publish → indexing
+async function handleKeywordDashboard(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  // 1. Build-time keyword stats (from repo data, exported at build)
+  let ks = null;
+  try {
+    const r = await env.ASSETS.fetch(new URL("https://assets/data/keyword-stats.json"));
+    if (r.ok) ks = await r.json();
+  } catch (e) { /* noop */ }
+
+  // 2. Live D1 indexing status
+  const idx = { pending: 0, submitted: 0, failed: 0, today: 0, recent: [] };
+  try {
+    const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status").all();
+    for (const row of (c.results || [])) idx[row.status] = row.n;
+    const t = await env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status='submitted' AND date(submitted_at)=date('now')").first();
+    idx.today = t ? t.n : 0;
+    const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 25").all();
+    idx.recent = rec.results || [];
+  } catch (e) {
+    idx.error = e.message;
+  }
+
+  const k = (ks && ks.keywords) || { total: 0, generated: 0, pending: 0, live_in_posts: 0, coverage: 0 };
+  const p = (ks && ks.posts) || { total: 0, generated: 0, by_service: {} };
+  const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
+
+  const svcRows = ((ks && ks.by_service) || []).map(s =>
+    `<tr><td><strong>${esc(s.key)}</strong></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${bar(s.coverage, '#f59e0b')} ${s.coverage}%</td></tr>`
+  ).join("");
+
+  const cityRows = ((ks && ks.by_city) || []).map(s =>
+    `<tr><td><strong>${esc(s.key)}</strong></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${bar(s.coverage, '#0ea5e9')} ${s.coverage}%</td></tr>`
+  ).join("");
+
+  const srcRows = ((ks && ks.by_source) || []).map(s =>
+    `<tr><td><code>${esc(s.key)}</code></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${s.coverage}%</td></tr>`
+  ).join("");
+
+  const recentRows = ((ks && ks.recent_generated) || []).map(r =>
+    `<tr><td>${esc(r.keyword)}</td><td>${esc(r.service || '-')}</td><td>${esc(r.city || '-')}</td><td>${r.live ? '<span class="badge green">live</span>' : '<span class="badge yellow">queued</span>'}</td><td><a href="${esc(r.url)}" target="_blank">buka ↗</a></td><td style="color:#999;">${esc(r.created_at)}</td></tr>`
+  ).join("");
+
+  const idxRows = idx.recent.map(r =>
+    `<tr><td style="word-break:break-all;"><a href="${esc(r.url)}" target="_blank">${esc(r.url.replace('https://beriklan.co.id', ''))}</a></td><td>${r.status === 'submitted' ? '<span class="badge green">submitted</span>' : r.status === 'failed' ? '<span class="badge red">failed</span>' : '<span class="badge yellow">pending</span>'}</td><td style="color:#999;">${esc(r.submitted_at || r.created_at || '')}</td></tr>`
+  ).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Keyword Pipeline — Beriklan Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.5; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card .metric { font-size: 30px; font-weight: 700; }
+    .card .sub { font-size: 12px; color: #666; margin-top: 4px; }
+    .card.warning { background: #fff3cd; border-left: 4px solid #f59e0b; }
+    .card.success { background: #d4edda; border-left: 4px solid #10b981; }
+    .card.info { background: #e0f2fe; border-left: 4px solid #0ea5e9; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+    th { background: #fafafa; color: #666; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #eee; color: #333; }
+    .badge.green { background: #d4edda; color: #155724; }
+    .badge.yellow { background: #fff3cd; color: #856404; }
+    .badge.red { background: #f8d7da; color: #721c24; }
+    a { color: #2563eb; text-decoration: none; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .section-title { font-size: 16px; font-weight: 700; margin: 32px 0 12px; }
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0 24px; font-size: 13px; }
+    .flow .step { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .flow .arrow { color: #9ca3af; font-weight: 700; }
+    .nav { margin-bottom: 16px; font-size: 13px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="nav"><a href="/api/admin?token=${esc(token)}">← Admin Dashboard</a></div>
+  <h1>🎯 Keyword Pipeline Dashboard</h1>
+  <p class="subtitle">Snapshot data: ${esc((ks && ks.generated_at) || 'n/a')} · Indexing live dari D1 · <a href="">refresh</a></p>
+
+  <div class="flow">
+    <span class="step">⛏️ Miner + Google Suggest → <strong>${k.total} keyword</strong></span>
+    <span class="arrow">→</span>
+    <span class="step">🤖 AI generate → <strong>${k.generated} artikel</strong></span>
+    <span class="arrow">→</span>
+    <span class="step">📦 Publish (posts.json) → <strong>${k.live_in_posts} live</strong></span>
+    <span class="arrow">→</span>
+    <span class="step">🔍 Indexer → <strong>${idx.submitted} submitted</strong> (${idx.pending} antri)</span>
+  </div>
+
+  <div class="grid">
+    <div class="card info"><h2>Total Keyword</h2><div class="metric">${k.total}</div><div class="sub">semua layanan × kota (suggest + miner)</div></div>
+    <div class="card ${k.coverage < 10 ? 'warning' : 'success'}"><h2>Artikel Jadi</h2><div class="metric">${k.generated}</div><div class="sub">coverage ${k.coverage}% dari total keyword</div></div>
+    <div class="card"><h2>Pending Generate</h2><div class="metric">${k.pending}</div><div class="sub">menunggu di keyword queue</div></div>
+    <div class="card success"><h2>Live di posts.json</h2><div class="metric">${k.live_in_posts}</div><div class="sub">dari ${p.total} total artikel blog</div></div>
+    <div class="card ${idx.pending > 100 ? 'warning' : 'success'}"><h2>Indexing Queue</h2><div class="metric">${idx.pending}</div><div class="sub">submitted total: ${idx.submitted} · hari ini: ${idx.today}</div></div>
+  </div>
+
+  <h3 class="section-title">🧩 Per Layanan (keyword → artikel)</h3>
+  <table><thead><tr><th>Layanan</th><th>Total Keyword</th><th>Artikel Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${svcRows}</tbody></table>
+
+  <div class="two-col">
+    <div>
+      <h3 class="section-title">📍 Per Kota</h3>
+      <table><thead><tr><th>Kota</th><th>Keyword</th><th>Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${cityRows}</tbody></table>
+    </div>
+    <div>
+      <h3 class="section-title">⛏️ Sumber Keyword</h3>
+      <table><thead><tr><th>Sumber</th><th>Total</th><th>Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${srcRows}</tbody></table>
+
+      <h3 class="section-title">📦 Artikel per Layanan (posts.json)</h3>
+      <table><thead><tr><th>Layanan</th><th>Artikel</th></tr></thead><tbody>${Object.entries(p.by_service).map(([s, n]) => `<tr><td><code>${esc(s)}</code></td><td>${n}</td></tr>`).join('')}</tbody></table>
+    </div>
+  </div>
+
+  <h3 class="section-title">🔍 Indexing Activity (live D1, 25 terakhir)</h3>
+  <table><thead><tr><th>URL</th><th>Status</th><th>Waktu</th></tr></thead><tbody>${idxRows || '<tr><td colspan="3" style="color:#999;">belum ada aktivitas</td></tr>'}</tbody></table>
+
+  <h3 class="section-title">🆕 Artikel Terbaru dari Queue (40)</h3>
+  <table><thead><tr><th>Keyword</th><th>Layanan</th><th>Kota</th><th>Status</th><th>Link</th><th>Dibuat</th></tr></thead><tbody>${recentRows}</tbody></table>
+
+  <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
+</div>
+</body>
+</html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
 }
 
 // ─── P0.5 Rate Limit Middleware ──────────────────────────────────
@@ -1348,6 +1498,11 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
       }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 
+    // Internal-link CTA block → money page (critical for ranking + conversion)
+    if (!article.includes("<!-- internal-cta -->")) {
+      article += `\n<!-- internal-cta -->\n<hr/>\n<h2>Butuh Jasa Digital Marketing?</h2>\n<p>Tim Beriklan mengelola campaign sejak 2016 — transparan, terukur, dengan laporan mingguan dan akses penuh ke akun Anda. Sesi konsultasi awal 15 menit, gratis.</p>\n<ul>\n<li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing — harga &amp; fitur lengkap</a></li>\n<li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20membaca%20artikel%20Anda%20dan%20tertarik%20konsultasi%20digital%20marketing." rel="nofollow">Konsultasi via WhatsApp — respon dalam 1 jam (jam kerja)</a></li>\n</ul>`;
+    }
+
     // Step 4: Save to D1
     const slug = chosen.toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -1471,6 +1626,21 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
             if (commitResp.ok) {
               const data = await commitResp.json();
               commitSha = data.commit?.sha?.substring(0, 7);
+
+              // Auto-enqueue new trending article URL for IndexNow submission
+              try {
+                const newUrl = `https://beriklan.co.id/blog/${slug}/`;
+                const existing = await env.DB.prepare(
+                  "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted')"
+                ).bind(newUrl).first();
+                if (!existing) {
+                  await env.DB.prepare(
+                    "INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))"
+                  ).bind(newUrl).run();
+                }
+              } catch (e) {
+                errors.push({stage: "indexing_enqueue", error: e.message});
+              }
 
               // Also commit posts-index.json update (top 24 most recent)
               try {

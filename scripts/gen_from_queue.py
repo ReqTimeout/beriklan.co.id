@@ -15,6 +15,7 @@ import base64
 import json
 import os
 import re
+import sys
 import time
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -165,6 +166,10 @@ def make_post(item):
     content = clean_html(raw)
     if not content.startswith("<h2>"):
         content = "<h2>" + title + "</h2>\n" + content
+    # Internal-link CTA block (money pages) — reuse retrofit builder
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from retrofit_internal_links import build_block
+    content = content.rstrip() + "\n" + build_block({"service": svc, "city": city, "title": title})
     excerpt = content.replace("<", " <").replace(">", "> ").replace("\n", " ")
     excerpt = " ".join(excerpt.split())
     excerpt = excerpt[:180] + ("..." if len(excerpt) > 180 else "")

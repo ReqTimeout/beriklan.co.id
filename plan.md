@@ -54,6 +54,7 @@
 - [x] Topical clustering (§80)
 - [x] Pillar/cluster content model (§83)
 - [x] LocalBusiness NAP consistency (§84)
+- [x] Canonical chains paginated (§85)
 - [x] Content freshness engine (§81)
 - [ ] Rank tracker
 - [ ] AggregateRating / HowTo / VideoObject schema
@@ -148,7 +149,7 @@
 | **LocalBusiness NAP consistency** | ✅ Done (§84: NAPBlock in page body on all pages — mirrors footer NAP exactly) | High |
 | **Missing city pages** | ✅ Done (§82: jakarta/makassar/sidoarjo filled across all 10 services → 250+ city pages) | Medium |
 | **Hreflang (EN/ID)** | ⏭️ Skipped (NA — no EN content yet; revisit when EN pages launch) | Low |
-| **Canonical chains (paginated)** | ❌ Belum | Low-Medium |
+| **Canonical chains (paginated)** | ✅ Done (§85: 81 static /blog/page/N/ routes, self-canonical + rel=prev/next chain) | Low-Medium |
 | **Content freshness engine** | ✅ Done (§81: freshness_engine.py + truthful last_reviewed/dateModified + "Konten terbaru" badge + review queue) | High |
 | **Internal link optimizer** | ✅ Done (§79: build-time, 1030 posts linked to service/pillar, topical-relevance gated) | High |
 | **Per-city landing pages (full content)** | ⚠️ 242/300 pages exist, 58 missing | High |
@@ -6648,3 +6649,38 @@ to distribute PageRank and improve topical relevance (no manual editing of 1966 
 ### Files
 - `web/src/components/NAPBlock.astro` (new, committed)
 - `web/src/layouts/Layout.astro` (import + render NAPBlock, committed)
+
+---
+
+## 85. ✅ CANONICAL CHAINS — PAGINATED BLOG ARCHIVE (19 Jul 2026)
+
+### Context
+- Blog index (`/blog/`) only rendered 24 of 1966 posts with NO pagination. No
+  `rel=next`/`rel=prev`, no canonical chain. SEO gap: paginated archives missing.
+- Decision: build **static paginated archive pages** (`/blog/page/N/`) since the
+  blog is a static site and CF edge cache serves static best. Page size = 24 →
+  1966 posts = 82 pages → 81 archive pages (page 1 = `/blog/`).
+
+### Deliverable
+- **`src/pages/blog/page/[n].astro`** (new): `getStaticPaths` generates pages 2..82
+  (self-contained inside fn — Astro hoists gSP into separate scope). Each page:
+  - **self-canonical** `/blog/page/N/`
+  - `rel=prev` = `/blog/` (page 2) or `/blog/page/N-1/` (page ≥3)
+  - `rel=next` = `/blog/page/N+1/` (or omitted on last page)
+  - server-rendered 24-post grid (reuses `getFeaturedImage`), pagination nav
+    (Sebelumnya / Berikutnya + "Halaman N dari 82"), link back to `/blog/`.
+- **Layout.astro**: added `prevUrl` / `nextUrl` optional props → emits
+  `<link rel="prev">` / `<link rel="next">`.
+- **blog.astro** (page 1): added `nextUrl="/blog/page/2/"` (rel=next) + visible
+  "Lihat artikel lainnya" CTA → `/blog/page/2/`.
+
+### Verification (live)
+- `/blog/` → 200, `rel=next` = `/blog/page/2/`.
+- `/blog/page/2/` → 200, canonical `/blog/page/2/`, prev `/blog/`, next `/blog/page/3/`.
+- `/blog/page/82/` (last) → 200, canonical + prev `/blog/page/81/`, NO next.
+- All 81 archive pages build + deploy clean. Total build 7233 pages.
+
+### Files
+- `web/src/pages/blog/page/[n].astro` (new, committed)
+- `web/src/layouts/Layout.astro` (prevUrl/nextUrl props, committed)
+- `web/src/pages/blog.astro` (nextUrl + pagination CTA, committed)

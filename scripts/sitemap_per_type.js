@@ -105,7 +105,6 @@ const KNOWN_SERVICES = [
   "jasa-kelola-tiktok",
   "jasa-pembuatan-website",
   "jasa-pembuatan-landing-page",
-  "jasa-view-live",
 ];
 const cityEntries = [];
 for (const svc of KNOWN_SERVICES) {
@@ -117,6 +116,19 @@ for (const svc of KNOWN_SERVICES) {
     const indexPath = path.join(svcDir, city, "index.html");
     if (!fs.existsSync(indexPath)) continue;
     cityEntries.push(urlEntry(`${SITE}/${svc}/${city}/`, TODAY, "weekly", 0.85));
+  }
+}
+// jasa-view-live is 2 levels deep: /jasa-view-live/{platform}/{city}/
+const vllDir = path.join(DIST, "jasa-view-live");
+if (fs.existsSync(vllDir)) {
+  for (const platform of listDirs(vllDir)) {
+    const platDir = path.join(vllDir, platform);
+    if (!fs.statSync(platDir).isDirectory()) continue;
+    for (const city of listDirs(platDir)) {
+      const indexPath = path.join(platDir, city, "index.html");
+      if (!fs.existsSync(indexPath)) continue;
+      cityEntries.push(urlEntry(`${SITE}/jasa-view-live/${platform}/${city}/`, TODAY, "weekly", 0.85));
+    }
   }
 }
 fs.writeFileSync(path.join(DIST, "sitemap-city.xml"), sitemapXml(cityEntries));

@@ -1,0 +1,731 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import Navbar from '../../../../components/Navbar.svelte';
+import StickyCTA from '../../../../components/StickyCTA.svelte';
+import PricingCards from '../../../../components/PricingCards.svelte';
+import FaqAccordion from '../../../../components/FaqAccordion.svelte';
+import RelatedServices from '../../../../components/RelatedServices.svelte';
+import FeatureGrid from '../../../../components/FeatureGrid.svelte';
+import StepGrid from '../../../../components/StepGrid.svelte';
+import Footer from '../../../../components/Footer.svelte';
+import { MessageCircle, ArrowRight, Radio, Sparkles, Users, Shield, Clock, TrendingUp, Check, Smartphone, Heart, Music, Disc, PlayCircle, Eye, Volume2 } from 'lucide-svelte';
+
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20Instagram%20di%20Malang.%20Mohon%20info%20paket%20dan%20harga.";
+
+const tiers = [
+    { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up sebelum live utama biar algoritma notice Anda sejak awal.', features: ['20 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform (semua channel)', 'Cocok untuk live pendek atau tes', 'Tanpa risiko untuk akun IG'], priceNote: 'harga per sesi live', disclaimer: 'Viewers real account, no bot.' },
+    { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar Instagram algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk Instagram creator & streamer', 'Real account, no flag dari Instagram'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih Instagram user.', highlight: true },
+    { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam live', tagline: 'Sweet spot untuk seller Instagram yang mau boost ranking & konversi.', features: ['100 viewers riil stay selama live', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk seller Instagram', 'distribusi IG'], priceNote: 'Rp 450/viewer/jam', disclaimer: 'Cocok untuk live mingguan.' },
+    { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam live', tagline: 'Untuk launching produk baru & live event yang butuh distribusi FYP luas.', features: ['200 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching & event', 'Boost organik distribusi IG'], priceNote: 'Rp 400/viewer/jam', disclaimer: 'Repeat order diskon khusus.' },
+    { name: 'Bisnis', priceLabel: '115.000', duration: '300 viewers / 1 jam live', tagline: 'Untuk brand dan toko yang live commerce Instagram rutin setiap hari.', features: ['300 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live harian', 'Support prioritas + account manager'], priceNote: 'Rp 383/viewer/jam', disclaimer: 'Cocok untuk paket mingguan.' },
+    { name: 'Premium', priceLabel: '175.000', duration: '500 viewers / 1 jam live', tagline: 'Untuk launching event Instagram besar atau push viral dengan target viewers tinggi.', features: ['500 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching viral', 'Support 24/7 + flexible reschedule'], priceNote: 'Rp 350/viewer/jam', disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.' },
+];
+
+const features = [
+    { iconName: 'Sparkles', title: 'Boost IG Reach', desc: 'Instagram merekomendasikan live dengan viewers aktif. Boost viewers = boost reach di Explore & Reels.' },
+    { iconName: 'Users', title: 'Real Account IG', desc: 'Viewers dari kami akun Instagram aktif — bukan bot. Stay, react, dan share ke Story natural.' },
+    { iconName: 'TrendingUp', title: 'Masuk Gradual 5-15 Menit', desc: 'Viewers join gradual sejak menit pertama. IG algorithm notice live Anda sebagai live yang sedang trending.' },
+    { iconName: 'Shield', title: 'Aman untuk Akun IG', desc: 'Viewers tidak like spam. Tidak ada aktivitas dari akun Anda. 1.200+ live IG tanpa masalah.' },
+    { iconName: 'Smartphone', title: 'Masuk Instagram Live + Lainnya', desc: 'Order untuk Instagram Live, tapi viewers juga bisa stay di platform lain yang sedang live bersamaan. Multi-platform, satu order.' },
+    { iconName: 'Clock', title: 'Start dalam 5 Menit', desc: 'IG Live Anda yang sudah jalan? Kami ikut real-time. Tidak perlu rekam ulang.' },
+];
+
+const steps = [
+    { num: '01', tag: 'HARI H', title: 'Kirim Detail Live Instagram', desc: 'Share username Instagram + tanggal/jam mulai live. Order dikonfirmasi max 30 menit setelah detail lengkap.' },
+    { num: '02', tag: 'HARI H', title: 'Pembayaran & Persiapan', desc: 'Transfer via QRIS/e-wallet. Invoice langsung dikirim. DP 50% untuk paket besar tersedia.' },
+    { num: '03', tag: 'LIVE', title: 'Viewers Join ke FYP', desc: 'Saat Instagram Live Anda mulai, viewers join gradual 5-15 menit. Algoritma Instagram notice live Anda sebagai trending.' },
+    { num: '04', tag: 'POST-LIVE', title: 'Evaluasi & Recurring', desc: 'Setelah live selesai, kami evaluasi performa FYP. Mau jadwal rutin 2-3x seminggu? Diskon 10-15% untuk paket berulang.' },
+];
+
+const faqs = [
+    { q: 'Apakah viewers-nya bot atau akun asli Instagram?', a: 'Akun asli Instagram, no automation. Mereka user aktif yang stay sesuai durasi live. Interaksi natural, no flag dari Instagram algorithm.' },
+    { q: 'Apakah aman untuk akun Instagram saya?', a: 'Sangat aman. Viewers tidak like/comment spam yang bisa trigger shadow ban. Tidak ada aktivitas dari akun Anda. Sudah 1.200+ live Instagram tanpa satu pun kena masalah.' },
+    { q: 'Berapa lama viewers muncul setelah live Instagram mulai?', a: '5-15 menit setelah live Anda mulai. Tidak tiba-tiba — gradual seperti live Instagram normal pada umumnya.' },
+    { q: 'Apakah membantu algorithm Instagram?', a: 'Ya. Algorithm Instagram memprioritaskan live dengan viewers aktif. Boost viewers = boost distribusi sampai 5x lebih luas.' },
+    { q: 'Bisa order untuk viewers lebih dari 500 atau paket mingguan/bulanan?', a: 'Bisa. Untuk 500+ viewers atau paket harian/mingguan dengan jadwal tetap, chat dulu via WA untuk harga terbaik. Recurring 2-3x seminggu bisa diskon 10-15%.' },
+    { q: 'Apakah viewers stay selama durasi live Instagram?', a: 'Ya. Viewers dari kami stay sesuai durasi live yang Anda pesan. Kalau Anda live 1 jam, viewers stay 1 jam. Tidak ada yang tiba-tiba pergi di tengah live.' },
+    { q: 'Bagaimana jika Instagram memberi flag setelah order?', a: 'Belum pernah terjadi. Viewers interaksi natural — like, comment, dan share sesuai pattern akun normal. Tidak ada pattern bot.' },
+];
+
+const relatedItems = [
+    { icon: '🛍️', label: 'Jasa View Live Shopee', desc: 'Untuk seller Shopee Live yang fokus ke konversi produk.', href: '/jasa-view-live/shopee' },
+    { icon: '🎬', label: 'Jasa View Live YouTube', desc: 'Untuk channel YouTube yang boost watch time & rekomendasi.', href: '/jasa-view-live/youtube' },
+    { icon: '📡', label: 'Jasa View Live Multi-Platform', desc: 'Satu order, semua platform live.', href: '/jasa-view-live' },
+];
+---
+
+<Layout title="Jasa View Live Instagram di Malang | Boost Viewers IG Reach — Beriklan" description="Boost viewers live streaming Instagram di Malang agar FYP algorithm notice live Anda. Real account, no bot, aman. Mulai Rp 12.000." canonical="https://beriklan.co.id/jasa-view-live/instagram/malang/"
+    faq={[
+            { question: 'Apakah viewers-nya akun asli Instagram?', answer: 'Akun real Instagram, no automation. User aktif yang stay dan interaksi natural.' },
+            { question: 'Apakah aman untuk akun Instagram saya?', answer: 'Sangat aman. Viewers tidak spam yang trigger Instagram shadow ban. Sudah dipakai 600+ live Instagram tanpa masalah.' },
+            { question: 'Berapa lama viewers muncul setelah live Instagram mulai?', answer: '5-15 menit setelah live. Gradual seperti live normal. Instagram algorithm akan boost live Anda ke explore.' },
+            { question: 'Apakah membantu reach Instagram?', answer: 'Ya. Instagram boost live dengan viewers aktif ke explore + Reels suggestion. Reach bisa 2-3x lebih luas dari live biasa.' },
+            { question: 'Bisa order untuk viewers lebih dari 200 atau paket harian?', answer: 'Bisa. Chat dulu via WA untuk harga terbaik. Recurring 2-3x seminggu diskon 10-15%.' },
+            { question: 'Apakah viewers stay selama durasi live?', answer: 'Ya. 1 jam live = 1 jam viewers stay. Interaksi natural dengan konten live Anda.' },
+            { question: 'Bagaimana jika Instagram memberi flag setelah order?', answer: 'Belum pernah terjadi. Viewers interaksi natural, no pattern bot.' }
+        ]}
+    service={{
+        name: "Jasa View Live Instagram",
+        description: "Jasa viewers live streaming untuk Jasa View Live Instagram. Real account, no bot, aman untuk platform. Mulai dari Rp 12.000 untuk 20 viewers.",
+        url: "https://www.beriklan.co.id/jasa-view-live/instagram/",
+        priceRange: "Rp 12.000 - Rp 175.000",
+        serviceType: "Live Viewers Service",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+
+    faq={[
+            { question: 'Apakah viewers-nya akun asli Instagram?', answer: 'Akun real Instagram, no automation. User aktif yang stay dan interaksi natural.' },
+            { question: 'Apakah aman untuk akun Instagram saya?', answer: 'Sangat aman. Viewers tidak spam yang trigger Instagram shadow ban. Sudah dipakai 600+ live Instagram tanpa masalah.' },
+            { question: 'Berapa lama viewers muncul setelah live Instagram mulai?', answer: '5-15 menit setelah live. Gradual seperti live normal. Instagram algorithm akan boost live Anda ke explore.' },
+            { question: 'Apakah membantu reach Instagram?', answer: 'Ya. Instagram boost live dengan viewers aktif ke explore + Reels suggestion. Reach bisa 2-3x lebih luas dari live biasa.' },
+            { question: 'Bisa order untuk viewers lebih dari 200 atau paket harian?', answer: 'Bisa. Chat dulu via WA untuk harga terbaik. Recurring 2-3x seminggu diskon 10-15%.' },
+            { question: 'Apakah viewers stay selama durasi live?', answer: 'Ya. 1 jam live = 1 jam viewers stay. Interaksi natural dengan konten live Anda.' },
+            { question: 'Bagaimana jika Instagram memberi flag setelah order?', answer: 'Belum pernah terjadi. Viewers interaksi natural, no pattern bot.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa View Live", url: "https://www.beriklan.co.id/jasa-view-live/" },
+        { name: "Jasa View Live Instagram", url: "https://www.beriklan.co.id/jasa-view-live/instagram/" }
+    ]}
+    service={{
+        name: "Jasa View Live Instagram",
+        description: "Jasa viewers live streaming untuk Jasa View Live Instagram. Real account, no bot, aman untuk platform. Mulai dari Rp 12.000 untuk 20 viewers.",
+        url: "https://www.beriklan.co.id/jasa-view-live/instagram/",
+        priceRange: "Rp 12.000 - Rp 175.000",
+        serviceType: "Live Viewers Service",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>>
+
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-24 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045]"></div>
+        <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 48px 48px;"></div>
+
+        <!-- Floating Instagram logo blur (background) -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20 blur-3xl" style="background: conic-gradient(from 0deg, #ff0050, #00f2ea, #ff0050); animation: spin 30s linear infinite; border-radius: 50%;" will-change: transform; transform: translateZ(0); contain: paint;></div>
+
+        <!-- Floating music notes animation -->
+        <div class="absolute top-20 left-10 text-pink-400 opacity-20 music-note" style="animation-delay: 0s;">♪</div>
+        <div class="absolute top-40 right-20 text-purple-400 opacity-20 music-note" style="animation-delay: 0.5s;">♫</div>
+        <div class="absolute bottom-40 left-1/4 text-pink-400 opacity-20 music-note" style="animation-delay: 1s;">♪</div>
+        <div class="absolute top-1/2 right-1/4 text-purple-400 opacity-20 music-note" style="animation-delay: 1.5s;">♬</div>
+
+        <div class="container mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+            <div class="space-y-7 text-center lg:text-left">
+                <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-full text-xs tracking-wider uppercase">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-400"></span>
+                    </span>
+                    <span class="opacity-0 anim-fade-in text-pink-50">Jasa View Live Instagram · Boost IG Reach</span>
+                </div>
+
+                <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-white leading-[1.05] tracking-tight">
+                    <span class="anim-fade-up">Live Instagram Sepi di Malang,</span><br/>
+                    <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400" style="animation-delay: 80ms;">Reach Tidak Naik.</span><br/>
+                    <span class="anim-fade-up" style="animation-delay: 160ms;">— Algorithm Butuh Viewers.</span>
+                </h1>
+
+                <p class="hero-sub text-base md:text-lg text-white/80 leading-relaxed max-w-xl mx-auto lg:mx-0 anim-fade-up" style="animation-delay: 240ms;">
+                    Instagram memprioritaskan live dengan viewers aktif. 100+ viewers = 5x lebih besar jangkauan. Viewer riil dari kami join gradual sejak menit pertama — bikin algorithm Instagram notice live Anda, tanpa flag, tanpa bot, tanpa risiko shadow ban. Untuk seller dan streamer di Malang, tim kami standby support lokal Bahasa Indonesia.
+                </p>
+
+                <div class="hero-ctas flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2 anim-fade-up" style="animation-delay: 320ms;">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-white text-black px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop overflow-hidden btn-shine">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Order Viewers Instagram
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 group-hover:rotate-12 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-white border border-white/30 bg-white/5 backdrop-blur-sm hover:bg-white/15 transition-all">
+                        Lihat Paket & Harga
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </a>
+                </div>
+
+                <div class="hero-trust pt-6 border-t border-white/20 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80"><strong class="text-white">Mulai Rp 12.000</strong> untuk 20 viewers</span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80">Real account, <strong class="text-white">no bot</strong></span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80">Boost IG reach & Reels</span></div>
+                </div>
+            </div>
+
+            <!-- Instagram live mockup with real Instagram logo + platform-specific animations -->
+            <div class="relative flex justify-center lg:justify-end anim-fade-up" style="animation-delay: 400ms;">
+                <div class="relative w-full max-w-md mx-auto">
+                    <!-- Floating Instagram logo big behind -->
+                    <div class="absolute -top-12 -right-12 w-40 h-40 opacity-30 blur-2xl pointer-events-none" style="background: linear-gradient(135deg, #ff0050, #00f2ea); border-radius: 50%; animation: pulse 3s ease-in-out infinite;"></div>
+
+                    <!-- Music equalizer bars (Instagram style) -->
+                    <div class="absolute -left-8 top-1/3 flex flex-col gap-2 opacity-50">
+                        <div class="eq-bar w-1.5 bg-pink-400 rounded-full" style="height: 24px; animation: eq-bounce 1.2s ease-in-out infinite;"></div>
+                        <div class="eq-bar w-1.5 bg-pink-400 rounded-full" style="height: 36px; animation: eq-bounce 1.2s ease-in-out infinite 0.1s;"></div>
+                        <div class="eq-bar w-1.5 bg-purple-500 rounded-full" style="height: 48px; animation: eq-bounce 1.2s ease-in-out infinite 0.2s;"></div>
+                        <div class="eq-bar w-1.5 bg-pink-400 rounded-full" style="height: 32px; animation: eq-bounce 1.2s ease-in-out infinite 0.3s;"></div>
+                        <div class="eq-bar w-1.5 bg-purple-500 rounded-full" style="height: 40px; animation: eq-bounce 1.2s ease-in-out infinite 0.4s;"></div>
+                    </div>
+                    <div class="absolute -right-8 top-1/3 flex flex-col gap-2 opacity-50">
+                        <div class="eq-bar w-1.5 bg-purple-500 rounded-full" style="height: 40px; animation: eq-bounce 1.2s ease-in-out infinite 0.1s;"></div>
+                        <div class="eq-bar w-1.5 bg-pink-400 rounded-full" style="height: 56px; animation: eq-bounce 1.2s ease-in-out infinite 0.2s;"></div>
+                        <div class="eq-bar w-1.5 bg-purple-500 rounded-full" style="height: 32px; animation: eq-bounce 1.2s ease-in-out infinite 0.3s;"></div>
+                        <div class="eq-bar w-1.5 bg-pink-400 rounded-full" style="height: 44px; animation: eq-bounce 1.2s ease-in-out infinite 0.4s;"></div>
+                        <div class="eq-bar w-1.5 bg-purple-500 rounded-full" style="height: 28px; animation: eq-bounce 1.2s ease-in-out infinite 0.5s;"></div>
+                    </div>
+
+                    <!-- Phone frame with Instagram branding -->
+                    <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-black to-[#1a0a2e] border-4 border-white shadow-2xl aspect-[9/16] max-h-[560px] relative">
+                        <!-- Instagram-style top bar -->
+                        <div class="absolute top-0 left-0 right-0 p-3 flex items-center gap-2 bg-gradient-to-b from-black/95 to-transparent z-10">
+                            <div class="w-8 h-8 rounded-full bg-black border-2 border-pink-500 flex items-center justify-center overflow-hidden instagram-logo-spin">
+                                <img src="/tech/platforms/instagram.svg" alt="Instagram" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-white text-xs font-bold">brand_ig</p>
+                                <p class="text-white/70 text-[10px] flex items-center gap-1">
+                                    <span class="relative flex h-1.5 w-1.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-pink-400"></span>
+                                    </span>
+                                    LIVE · For You
+                                </p>
+                            </div>
+                            <div class="px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider instagram-pill-pulse">Instagram</div>
+                        </div>
+                        <!-- Viewer count -->
+                        <div class="absolute top-12 right-3 z-10 px-2 py-1 bg-black/60 backdrop-blur-md rounded-full text-white text-[10px] font-bold flex items-center gap-1 border border-white/20">
+                            <Users class="w-3 h-3 text-purple-400" />
+                            <span>500 viewers</span>
+                        </div>
+                        <!-- LIVE badge -->
+                        <div class="absolute top-12 left-3 z-10">
+                            <div class="flex items-center gap-1.5 bg-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-full instagram-live-blink">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                LIVE
+                            </div>
+                        </div>
+                        <!-- Chat overlay -->
+                        <div class="absolute bottom-12 left-3 right-3 space-y-1.5 z-10 max-h-32 overflow-hidden">
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-pink-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user1</span><span class="text-white text-[11px] drop-shadow">live IG mantap! 💜</span></div>
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-purple-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user2</span><span class="text-white text-[11px] drop-shadow">reels cocok ga kak?</span></div>
+                            <div class="flex items-start gap-1.5"><span class="px-1.5 py-0.5 bg-pink-500/80 backdrop-blur-sm text-white text-[10px] font-bold rounded">user3</span><span class="text-white text-[11px] drop-shadow">diskonn berapa kak?</span></div>
+                        </div>
+                        <!-- Product overlay -->
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-500/40 to-cyan-400/40 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center instagram-product-bounce">
+                                <div class="text-center">
+                                    <p class="text-white text-[10px] font-bold uppercase tracking-wider">Shopping</p>
+                                    <p class="text-white text-base font-bold">Instagram Live</p>
+                                    <p class="text-pink-300 text-sm font-extrabold">Rp 99K</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Cart button -->
+                        <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/95 to-transparent">
+                            <div class="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-center py-2 rounded-full text-xs font-bold flex items-center justify-center gap-1 instagram-cta-glow">
+                                <Heart class="w-3 h-3" fill="currentColor" />
+                                BELI SEKARANG
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Big Instagram logo overlay (rotating) -->
+                    <div class="absolute -bottom-12 -right-12 w-32 h-32 opacity-80 pointer-events-none instagram-logo-orbit">
+                        <img src="/tech/platforms/instagram.svg" alt="Instagram" class="w-full h-full" style="filter: brightness(0) invert(1) drop-shadow(0 0 30px #e1306c99) drop-shadow(0 0 30px #833ab499);" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================== TRUST BAR ====================== -->
+    <section class="py-7 bg-black/40 border-y border-white/5 relative overflow-hidden" cv-auto>
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+                <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-white/40">Optimal untuk Instagram</p>
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/70 text-sm font-semibold">
+                    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>IG Reach</span>
+                    <span class="text-white/30">·</span>
+                    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>IG Live</span>
+                    <span class="text-white/30">·</span>
+                    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>Instagram</span>
+                    <span class="text-white/30">·</span>
+                    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Reels & Explore</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================== WHY INSTAGRAM ====================== -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white relative overflow-hidden" cv-auto>
+        <div class="absolute inset-0 opacity-20 pointer-events-none" style="background: radial-gradient(circle at 30% 30%, #e1306c26 0%, transparent 50%), radial-gradient(circle at 70% 70%, #833ab426 0%, transparent 50%);"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-pink-400">
+                    <span class="w-8 h-px bg-gradient-to-r from-transparent to-pink-400"></span>
+                    Kenapa View Live Instagram
+                    <span class="w-8 h-px bg-gradient-to-l from-transparent to-cyan-400"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Apa algoritma IG satu hal:<br/>
+                    <span class="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">banyak viewers = reach lebih luas.</span>
+                </h2>
+                <p class="mt-4 text-white/70 max-w-xl mx-auto text-base leading-relaxed">
+                    IG memprioritaskan live dengan viewers aktif. Live dengan 100+ viewers muncul 4x lebih sering di Explore & Reels dibanding live sepi.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="instagram-why-card group">
+                    <div class="instagram-why-icon">
+                        <Sparkles class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="instagram-why-title">Boost IG Reach</h3>
+                    <p class="instagram-why-desc">Instagram merekomendasikan live dengan viewers aktif. Boost viewers = boost reach di Explore & Reels.</p>
+                </div>
+                <div class="instagram-why-card group" style="animation-delay: 100ms;">
+                    <div class="instagram-why-icon">
+                        <Shield class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="instagram-why-title">Aman untuk Akun</h3>
+                    <p class="instagram-why-desc">Viewers dari kami akun IG aktif. Tidak like spam. Tidak ada aktivitas dari akun Anda. 1.200+ live IG tanpa masalah.</p>
+                </div>
+                <div class="instagram-why-card group" style="animation-delay: 200ms;">
+                    <div class="instagram-why-icon">
+                        <Heart class="w-6 h-6" strokeWidth="2.2" fill="currentColor" />
+                    </div>
+                    <h3 class="instagram-why-title">Cocok untuk IG Shopping</h3>
+                    <p class="instagram-why-desc">Viewers aktif lihat produk lebih lama, share ke Story otomatis, conversion naik signifikan dari live biasa.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="fitur" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    6 Keunggulan Layanan
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Kenapa layanan kami berbeda<br/>
+                    <span class="text-accent">dari viewer bot biasa.</span>
+                </h2>
+            </div>
+
+            <FeatureGrid items={features} client:visible />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white relative overflow-hidden" cv-auto>
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-pink-400">
+                    <span class="w-6 h-px bg-pink-400"></span>
+                    Cara Kerja
+                    <span class="w-6 h-px bg-purple-500"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Dari order sampai FYP trending,<br/>
+                    <span class="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">kurang dari 30 menit.</span>
+                </h2>
+            </div>
+
+            <StepGrid items={steps} client:visible />
+        </div>
+    </section>
+
+    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
+        <div class="abs-blob abs-blob-3"></div>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Paket & Harga
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Enam paket, dari pemanasan<br/>
+                    <span class="text-accent">sampai launching akbar.</span>
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
+                    Semua paket sudah termasuk viewers riil (bukan bot), gradual entry, dan support via WhatsApp. Untuk paket mingguan/bulanan atau viewer 500+, chat dulu untuk harga khusus.
+                </p>
+            </div>
+
+            <PricingCards tiers={tiers} pageSlug="View Live Instagram" highlightIndex={1} columns={3} client:only="svelte" />
+
+            <div class="mt-10 max-w-2xl mx-auto reveal">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-pink-500/15 flex items-center justify-center shrink-0">
+                            <Check class="w-5 h-5 text-pink-500" strokeWidth="2.5" />
+                        </div>
+                        <div>
+                            <p class="font-display font-bold text-base text-ink mb-1">Butuh paket harian atau FYP campaign khusus?</p>
+                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan jadwal live dan target FYP Anda.</p>
+                            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-pink-500 hover:text-ink transition-colors group">
+                                Chat via WhatsApp
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white relative overflow-hidden" cv-auto>
+        <div class="absolute inset-0 opacity-30 pointer-events-none" style="background: radial-gradient(circle at 30% 30%, #e1306c26 0%, transparent 50%), radial-gradient(circle at 70% 70%, #833ab426 0%, transparent 50%);"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-pink-400">
+                    <span class="w-8 h-px bg-pink-400"></span>
+                    Bukti Nyata
+                    <span class="w-8 h-px bg-purple-500"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
+                    Sudah 1.200+<br/>
+                    <span class="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">live Instagram.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto reveal-stagger">
+                <div class="instagram-stat-card">
+                    <div class="instagram-stat-num">5x</div>
+                    <div class="instagram-stat-label">Boost IG reach</div>
+                    <div class="instagram-stat-bar"><span style="width: 100%"></span></div>
+                    <p class="instagram-stat-foot">rata-rata Explore</p>
+                </div>
+                <div class="instagram-stat-card" style="animation-delay: 80ms;">
+                    <div class="instagram-stat-num">0</div>
+                    <div class="instagram-stat-label">Akun kena flag</div>
+                    <div class="instagram-stat-bar"><span style="width: 5%"></span></div>
+                    <p class="instagram-stat-foot">sepanjang penggunaan</p>
+                </div>
+                <div class="instagram-stat-card" style="animation-delay: 160ms;">
+                    <div class="instagram-stat-num">3-4x</div>
+                    <div class="instagram-stat-label">Engagement boost</div>
+                    <div class="instagram-stat-bar"><span style="width: 70%"></span></div>
+                    <p class="instagram-stat-foot">rata-rata IG live</p>
+                </div>
+                <div class="instagram-stat-card" style="animation-delay: 240ms;">
+                    <div class="instagram-stat-num">15%</div>
+                    <div class="instagram-stat-label">Diskon rutin</div>
+                    <div class="instagram-stat-bar"><span style="width: 100%"></span></div>
+                    <p class="instagram-stat-foot">paket mingguan</p>
+                </div>
+            </div>
+
+            <div class="mt-14 grid md:grid-cols-3 gap-5 max-w-5xl mx-auto reveal-stagger">
+                <div class="instagram-trust-card">
+                    <div class="instagram-trust-icon">
+                        <Shield class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="instagram-trust-title">Aman untuk akun IG</h3>
+                    <p class="instagram-trust-desc">Viewers dari kami akun riil aktif. Interaksi natural, no flag. 1.200+ live Instagram tanpa satu pun kena shadow ban.</p>
+                </div>
+                <div class="instagram-trust-card" style="animation-delay: 120ms;">
+                    <div class="instagram-trust-icon">
+                        <Clock class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="instagram-trust-title">Masuk gradual 5-15 menit</h3>
+                    <p class="instagram-trust-desc">Viewers join gradual sejak menit pertama live. Tidak tiba-tiba, tidak mencurigakan — IG notice natural trending.</p>
+                </div>
+                <div class="instagram-trust-card" style="animation-delay: 240ms;">
+                    <div class="instagram-trust-icon">
+                        <TrendingUp class="w-6 h-6" strokeWidth="2.2" />
+                    </div>
+                    <h3 class="instagram-trust-title">Tanpa minimum order</h3>
+                    <p class="instagram-trust-desc">Order per sesi, bayar per order. Bebas order sesuai jadwal live Instagram Anda. Diskon 10-15% untuk paket berulang.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden" cv-auto>
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Sebelum order
+                    <span class="w-8 h-px bg-accent"></span>
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
+                    Pertanyaan tentang<br/>
+                    <span class="text-accent">live Instagram.</span>
+                </h2>
+            </div>
+
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <RelatedServices items={relatedItems} client:visible />
+
+    <section class="py-20 md:py-28 bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white relative overflow-hidden" cv-auto>
+        <div class="absolute inset-0 pointer-events-none opacity-[0.08]" style="background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px); background-size: 48px 48px;"></div>
+        <div class="absolute top-1/4 right-1/4 w-96 h-96 rounded-full pointer-events-none" style="background: radial-gradient(circle, #e1306c26 0%, transparent 60%); filter: blur(60px);"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-3xl mx-auto text-center reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-400"></span>
+                    </span>
+                    Tim online · respon dalam 1 jam pada jam kerja
+                </div>
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-white leading-[1.05] tracking-tight mb-6 mt-3">
+                    Live Instagram berikutnya<br/>
+                    <span class="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">naik reach & Reels.</span>
+                </h2>
+                <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
+                    Ceritakan tanggal live Instagram Anda via WhatsApp. Kami kirim rekomendasi paket & timeline. Tanpa komitmen — order hanya saat Anda siap live.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href={waLink} target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all instagram-cta-glow">
+                        <span class="relative z-10 flex items-center gap-2">
+                            <MessageCircle class="w-5 h-5" />
+                            Order via WhatsApp
+                            <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Paket & Harga
+                    </a>
+                </div>
+                <p class="text-white/50 text-xs mt-6">Paket mingguan/bulanan · diskon 10-15%</p>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>
+
+<style>
+    /* Instagram platform-specific animations */
+    .music-note {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        font-size: 3rem;
+        animation: float-y 4s ease-in-out infinite;
+    }
+    @keyframes float-y {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(15deg); }
+    }
+    .eq-bar {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        animation: eq-bounce 1.2s ease-in-out infinite;
+    }
+    @keyframes eq-bounce {
+        0%, 100% { transform: scaleY(0.5); }
+        50% { transform: scaleY(1.2); }
+    }
+    .instagram-logo-spin {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        animation: spin-soft 6s linear infinite;
+    }
+    @keyframes spin-soft {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .instagram-logo-orbit {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        animation: orbit 8s linear infinite;
+    }
+    @keyframes orbit {
+        0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+    }
+    .instagram-live-blink {
+        will-change: opacity;
+        animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    .instagram-pill-pulse {
+        will-change: box-shadow;
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 0 0 #e1306c80; }
+        50% { box-shadow: 0 0 20px 5px rgba(236, 72, 153, 0); }
+    }
+    .instagram-product-bounce {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        animation: product-bounce 3s ease-in-out infinite;
+    }
+    @keyframes product-bounce {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.05) rotate(-3deg); }
+    }
+    .instagram-cta-glow {
+        will-change: box-shadow;
+        position: relative;
+        overflow: hidden;
+    }
+    .instagram-cta-glow::before {
+        content: "";
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+        animation: shine 2.5s ease-in-out infinite;
+    }
+    @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 200%; }
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.05); opacity: 0.5; }
+    }
+
+    /* Why cards */
+    .instagram-why-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid #e1306c2e;
+        border-radius: 1.25rem;
+        padding: 1.75rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .instagram-why-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: #e1306c66;
+        transform: translateY(-4px);
+    }
+    .instagram-why-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #e1306c33, rgba(0,242,234,0.2));
+        color: #ff0050;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    .instagram-why-card:hover .instagram-why-icon { transform: scale(1.08) rotate(-4deg); }
+    .instagram-why-title { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 800; font-size: 1.125rem; color: white; margin-bottom: 0.5rem; }
+    .instagram-why-desc { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); line-height: 1.6; }
+
+    /* Stat cards */
+    .instagram-stat-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid #e1306c33;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .instagram-stat-card:hover {
+        border-color: rgba(236, 72, 153, 0.6);
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px -8px #e1306c4d;
+    }
+    .instagram-stat-num {
+        font-family: "Plus Jakarta Sans Variable", sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        line-height: 1;
+        background: linear-gradient(135deg, #e1306c 0%, #833ab4 100%);
+        -webkit-background-clip: text; background-clip: text;
+        color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .instagram-stat-label { font-size: 0.875rem; color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+    .instagram-stat-bar {
+        position: relative; height: 4px;
+        background: rgba(255, 255, 255, 0.08); border-radius: 9999px;
+        overflow: hidden; margin-top: 0.875rem;
+    }
+    .instagram-stat-bar span {
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, #e1306c, #833ab4);
+        border-radius: 9999px;
+        animation: bar-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+    }
+    @keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .instagram-stat-foot { margin-top: 0.5rem; font-size: 0.6875rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; }
+
+    /* Trust items dark */
+    .instagram-trust-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid #e1306c2e;
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .instagram-trust-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: #e1306c66;
+        transform: translateY(-4px);
+    }
+    .instagram-trust-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #e1306c2e, #833ab42e);
+        color: #ff0050;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 0.75rem;
+        transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .instagram-trust-card:hover .instagram-trust-icon { transform: scale(1.08) rotate(-4deg); background: #e1306c40; }
+    .instagram-trust-title { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 700; font-size: 1.0625rem; color: white; margin-bottom: 0.5rem; }
+    .instagram-trust-desc { font-size: 0.875rem; color: rgba(255, 255, 255, 0.65); line-height: 1.65; }
+
+    .check-icon {
+        width: 18px; height: 18px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, #ec4899, #f472b6);
+        position: relative; flex-shrink: 0;
+    }
+    .check-icon::after {
+        content: '';
+        position: absolute; top: 4px; left: 6px;
+        width: 4px; height: 8px;
+        border-right: 2px solid white;
+        border-bottom: 2px solid white;
+        transform: rotate(45deg);
+    }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.18) 50%, transparent 75%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    .btn-shine:hover::after { transform: translateX(100%); }
+
+    @keyframes anim-fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-fade-up { animation: anim-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards; }
+    .anim-fade-in { animation: fadeIn 0.6s ease 0.2s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    @media (prefers-reduced-motion: reduce) { .music-note, .eq-bar, .instagram-logo-spin, .instagram-logo-orbit, .instagram-live-blink, .instagram-pill-pulse, .instagram-product-bounce, .instagram-cta-glow, .instagram-stat-bar span, .instagram-stat-card, .instagram-trust-card, .instagram-why-card, .anim-fade-up, .anim-fade-in { animation: none; } }
+</style>

@@ -4,9 +4,10 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/embed_redirects.mjs && astro build && node scripts/sitemap_per_type.js",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "sitemap": "node scripts/sitemap_per_type.js"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

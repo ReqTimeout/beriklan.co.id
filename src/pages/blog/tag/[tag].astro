@@ -1,0 +1,234 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import { Calendar, Clock, ArrowRight, Tag, BookOpen, Sparkles, ArrowLeft } from 'lucide-svelte';
+import keywordMap from '../../../data/keyword-to-posts.json';
+import posts from '../../../data/posts.json';
+
+// One route per Excel keyword (1754 with posts only — was 4952; cut 3198 empty pages = 240MB dist savings)
+export function getStaticPaths() {
+    return Object.values(keywordMap).filter(k => k.has_posts && (k.post_slugs || []).length > 0).map(k => ({
+        params: { tag: k.slug },
+        props: {
+            keyword: k.keyword,
+            slug: k.slug,
+            service: k.service,
+            city: k.city,
+            intent: k.intent,
+            postSlugs: k.post_slugs || [],
+            hasPosts: k.has_posts,
+        },
+    }));
+}
+
+const { keyword, slug, service, city, intent, postSlugs, hasPosts } = Astro.props;
+
+// Resolve matched posts (with full data)
+const postBySlug = {};
+for (const p of posts) if (p.slug) postBySlug[p.slug] = p;
+const matchedPosts = postSlugs.map(s => postBySlug[s]).filter(Boolean).sort((a, b) =>
+    (b.iso_date || '').localeCompare(a.iso_date || ''));
+
+const count = matchedPosts.length;
+
+// Display name (capitalize words)
+const displayTag = keyword.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+// Service display name (cleaner than slug)
+const SERVICE_DISPLAY = {
+    'jasa-digital-marketing': 'Digital Marketing',
+    'jasa-iklan-facebook': 'Iklan Facebook',
+    'jasa-iklan-instagram': 'Iklan Instagram',
+    'jasa-iklan-tiktok': 'Iklan TikTok',
+    'jasa-iklan-google': 'Iklan Google',
+    'jasa-iklan-youtube': 'Iklan YouTube',
+    'jasa-kelola-instagram': 'Manajemen Instagram',
+    'jasa-kelola-tiktok': 'Manajemen TikTok',
+    'jasa-pembuatan-website': 'Pembuatan Website',
+    'jasa-pembuatan-landing-page': 'Landing Page',
+};
+const serviceName = SERVICE_DISPLAY[service] || service.replace(/^jasa-/, '').replace(/-/g, ' ');
+
+// City display
+const CITY_DISPLAY = {
+    aceh: "Banda Aceh", bali: "Denpasar", bandung: "Bandung", batam: "Batam",
+    bekasi: "Bekasi", bogor: "Bogor", cimahi: "Cimahi", denpasar: "Denpasar",
+    depok: "Depok", jogja: "Yogyakarta", lampung: "Bandar Lampung",
+    lombok: "Mataram", malang: "Malang", medan: "Medan", padang: "Padang",
+    palembang: "Palembang", pontianak: "Pontianak", semarang: "Semarang",
+    sidoarjo: "Sidoarjo", solo: "Solo", surabaya: "Surabaya",
+    tangerang: "Tangerang", yogyakarta: "Yogyakarta",
+};
+const cityName = CITY_DISPLAY[city] || city;
+
+// Intent detection (for tone)
+const INTENT_TONE = {
+    transactional: { tone: 'cara pesan / order', cta: 'Pesan Sekarang' },
+    informational: { tone: 'panduan / tutorial', cta: 'Pelajari Lebih' },
+    navigational: { tone: 'info kontak / lokasi', cta: 'Lihat Detail' },
+    commercial: { tone: 'rekomendasi / perbandingan', cta: 'Lihat Rekomendasi' },
+};
+const tone = INTENT_TONE[intent] || INTENT_TONE.informational;
+
+// Page meta (unique per keyword)
+const pageTitle = `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} — ${serviceName}${cityName ? ' ' + cityName : ''} | Beriklan`;
+const pageDesc = `Pelajari ${keyword.toLowerCase()} — ${tone.tone} dari tim Beriklan untuk UMKM & bisnis di Indonesia. Artikel pilihan, strategi, dan tips praktis untuk ${serviceName.toLowerCase()}${cityName ? ' di ' + cityName : ''}.`;
+const canonical = `https://www.beriklan.co.id/blog/tag/${slug}/`;
+
+// Related keywords (same service, any city) — pull from keywordMap
+const relatedKeywords = Object.values(keywordMap)
+    .filter(k => k.service === service && k.slug !== slug && k.has_posts)
+    .slice(0, 8);
+---
+<Layout title={pageTitle} description={pageDesc} canonical={canonical}>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <!-- Hero with keyword-specific H1 -->
+    <header class="relative pt-28 md:pt-40 pb-12 md:pb-16 bg-gradient-to-br from-white via-soft to-beige overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="container mx-auto px-6 max-w-4xl relative z-10">
+            <nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-up">
+                <a href="/" class="hover:text-accent transition">Beranda</a>
+                <span class="text-muted/40">›</span>
+                <a href="/blog" class="hover:text-accent transition">Blog</a>
+                <span class="text-muted/40">›</span>
+                <a href={`/${service}`} class="hover:text-accent transition capitalize">{serviceName}</a>
+                <span class="text-muted/40">›</span>
+                <span class="text-ink font-semibold">Tag</span>
+            </nav>
+
+            <div class="mb-5 flex items-center gap-2 anim-fade-up">
+                <Tag class="w-5 h-5 text-accent" />
+                <span class="text-xs font-bold uppercase tracking-wider text-muted">{intent || 'Informational'} · Tag</span>
+            </div>
+
+            <h1 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.05] tracking-tight mb-6 anim-fade-up" style="animation-delay: 60ms;">
+                {keyword.charAt(0).toUpperCase() + keyword.slice(1)}
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-8 max-w-2xl anim-fade-up" style="animation-delay: 120ms;">
+                {count > 0 ? (
+                    <>{count} artikel pilihan tentang <strong class="text-ink">{keyword.toLowerCase()}</strong> dari tim Beriklan — dikurasi khusus untuk {tone.tone} {serviceName.toLowerCase()}{cityName ? ` di ${cityName}` : ''}.</>
+                ) : (
+                    <>Topik <strong class="text-ink">{keyword.toLowerCase()}</strong> dari tim Beriklan. {tone.tone} tentang {serviceName.toLowerCase()}{cityName ? ` untuk bisnis di ${cityName}` : ''} akan kami bahas mendalam.</>
+                )}
+            </p>
+
+            <div class="flex flex-wrap gap-2 text-xs anim-fade-up" style="animation-delay: 180ms;">
+                {hasPosts && (
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200">
+                        <BookOpen class="w-3.5 h-3.5 text-accent" />
+                        <strong class="text-ink">{count}</strong> artikel
+                    </span>
+                )}
+                {service && (
+                    <a href={`/${service}${cityName ? '/' + city.toLowerCase().replace(/[^a-z0-9-]/g, '') : '/'}`} class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 hover:border-accent transition capitalize">
+                        <Sparkles class="w-3 h-3 text-accent" />
+                        {serviceName}{cityName ? ' ' + cityName : ''}
+                    </a>
+                )}
+                {hasPosts && matchedPosts[0] && (
+                    <a href={`/blog/${matchedPosts[0].slug}/`} class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink rounded-full font-bold hover:bg-orange-500 transition">
+                        Baca artikel utama <ArrowRight class="w-3 h-3" />
+                    </a>
+                )}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main: matched posts OR informational placeholder -->
+    {hasPosts && matchedPosts.length > 0 ? (
+        <section class="py-14 md:py-20 bg-white">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <h2 class="font-display font-bold text-xl text-ink mb-6 flex items-center gap-2">
+                    <BookOpen class="w-5 h-5 text-accent" />
+                    {count} Artikel tentang "{keyword}"
+                </h2>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {matchedPosts.slice(0, 12).map(post => (
+                        <a href={`/blog/${post.slug}/`} class="group block bg-white rounded-2xl border border-gray-100 hover:border-accent/40 hover:shadow-pop transition-all p-5">
+                            <span class="inline-block px-2 py-0.5 bg-soft text-accent text-[10px] font-bold uppercase tracking-wider rounded mb-3">
+                                {post.category || 'Strategy'}
+                            </span>
+                            <h3 class="font-display font-bold text-base text-ink leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">
+                                {post.title}
+                            </h3>
+                            <p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">{post.excerpt}</p>
+                            <div class="flex items-center gap-3 text-[10px] text-muted">
+                                <span class="flex items-center gap-1"><Calendar class="w-3 h-3" />{post.date}</span>
+                                <span class="flex items-center gap-1"><Clock class="w-3 h-3" />{post.readTime}</span>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+                {matchedPosts.length > 12 && (
+                    <p class="text-center text-sm text-muted mt-8">Menampilkan 12 dari {matchedPosts.length} artikel. Lihat semua di <a href="/blog" class="text-accent hover:underline">blog utama</a>.</p>
+                )}
+            </div>
+        </section>
+    ) : (
+        <section class="py-14 md:py-20 bg-white">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <div class="text-center py-12">
+                    <BookOpen class="w-12 h-12 text-accent/30 mx-auto mb-4" />
+                    <h2 class="font-display font-bold text-xl text-ink mb-3">Artikel tentang "{keyword}" sedang disiapkan</h2>
+                    <p class="text-sm text-muted leading-relaxed mb-6">
+                        Tim kami sedang menulis panduan lengkap tentang <strong>{keyword.toLowerCase()}</strong>.
+                        Untuk diskusi langsung dengan konsultan, klik WhatsApp di bawah atau lihat-lihat panduan tentang {serviceName.toLowerCase()}{cityName ? ' di ' + cityName : ''} di <a href={`/${service}${cityName ? '/' + city.toLowerCase().replace(/[^a-z0-9-]/g, '') : '/'}`} class="text-accent hover:underline">halaman layanan</a> kami.
+                    </p>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- Related tags: same service, different city (cross-link) -->
+    <section class="py-10 bg-soft">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <h3 class="font-display font-bold text-sm uppercase tracking-wider text-muted mb-4 text-center">Topik Serupa</h3>
+            <div class="flex flex-wrap gap-2 justify-center">
+                {relatedKeywords.map(rk => (
+                    <a href={`/blog/tag/${rk.slug}/`} class="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full text-xs font-semibold border border-gray-200 hover:border-accent hover:text-accent transition">
+                        <Tag class="w-3 h-3" />
+                        {rk.keyword}
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- AdSense Slot 3: After-article (autorelaxed) -->
+    <section class="py-10 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="p-5 bg-soft/30 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="autorelaxed"
+                     data-ad-client="ca-pub-4438184351486735"
+                     data-ad-slot="4505315237"></ins>
+                <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-16 md:py-20 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 relative">
+            <div class="max-w-2xl mx-auto text-center reveal">
+                <h3 class="font-display font-extrabold text-2xl md:text-3xl leading-tight mb-4">
+                    Mau diskusi spesifik soal {keyword.toLowerCase()}?
+                </h3>
+                <p class="text-white/70 text-sm mb-6">15 menit via WhatsApp — tanpa komitmen. Tim audit kondisi campaign {serviceName.toLowerCase()}{cityName ? ' untuk bisnis di ' + cityName : ''} Anda.</p>
+                <a href={`https://wa.me/62811919328?text=${encodeURIComponent(`Halo Beriklan, saya tertarik topik "${keyword}" untuk bisnis ${serviceName.toLowerCase()}${cityName ? ' di ' + cityName : ''}. Mohon info.`)}`} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-pop transition-all">
+                    Chat Tim Beriklan <ArrowRight class="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer client:only="svelte" />
+</Layout>

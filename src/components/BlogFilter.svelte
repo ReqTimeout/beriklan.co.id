@@ -28,6 +28,13 @@
     function getImage(post) {
         return getFeaturedImage(post);
     }
+    function imgFallback(slug) {
+        return `https://picsum.photos/seed/beriklan-f-${slug}/600/400`;
+    }
+    function onImgError(e, slug) {
+        e.target.onerror = null;
+        e.target.src = imgFallback(slug);
+    }
 
     onMount(async () => {
         try {
@@ -147,7 +154,7 @@
             {#each categories as cat}
                 <button
                     type="button"
-                    on:click={() => activeCategory = cat.id}
+                    onclick={() => activeCategory = cat.id}
                     class="px-4 py-2 rounded-full text-xs font-bold transition-all {activeCategory === cat.id ? 'bg-ink text-white' : 'bg-white text-ink border border-gray-200 hover:border-ink'}"
                 >
                     {cat.label}
@@ -164,7 +171,7 @@
                 {#each featuredPosts as post}
                     <a href="/blog/{post.slug}" class="featured-card group">
                         <div class="featured-thumb">
-                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror={(e) => onImgError(e, post.slug)} />
                             <div class="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent"></div>
                             <span class="absolute top-3 left-3 px-2 py-1 bg-accent text-ink text-[10px] font-bold uppercase tracking-wider rounded">Featured</span>
                         </div>
@@ -193,7 +200,7 @@
                         {#each gridPosts as post}
                             <a href="/blog/{post.slug}" class="grid-card group">
                                 <div class="grid-thumb">
-                                    <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                                    <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror={(e) => onImgError(e, post.slug)} />
                                 </div>
                         <div class="p-5">
                             <span class="inline-block px-2 py-0.5 bg-soft text-ink text-[10px] font-bold uppercase tracking-wider rounded mb-3">{categories.find(c => c.id === post.category)?.label}</span>

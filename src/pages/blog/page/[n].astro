@@ -68,7 +68,7 @@ function getImage(post) {
                 {pagePosts.map((post, i) => (
                     <a href={`/blog/${post.slug}`} class="grid-card group" style={`animation-delay:${i * 40}ms;`}>
                         <div class="grid-thumb">
-                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror={`this.onerror=null;this.src='https://picsum.photos/seed/beriklan-${post.slug}/600/400';`} />
                         </div>
                         <div class="p-5">
                             <span class="inline-block px-2 py-0.5 bg-soft text-ink text-[10px] font-bold uppercase tracking-wider rounded mb-3">{post.category}</span>

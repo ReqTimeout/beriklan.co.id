@@ -10,7 +10,7 @@ Pipeline:
      (IndexNow batch-submits URLs modified in last 7 days to Bing/Seznam/Naver)
 
 Usage:
-  CLOUDFLARE_API_TOKEN=cfut_... python3 scripts/cf_pages_deploy.py
+  CLOUDFLARE_API_TOKEN=your_cf_token python3 scripts/cf_pages_deploy.py
 or:
   python3 scripts/cf_pages_deploy.py
 (token read from .env or hardcoded)
@@ -23,7 +23,7 @@ UA = "Mozilla/5.0 (compatible; BeriklanBot/1.0; +https://beriklan.co.id/)"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN") or "cfut_REDACTED"
+TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN") or "REPLACE_WITH_CF_TOKEN"
 PROJECT = "beriklanweb"
 SITE = "https://www.beriklan.co.id"
 

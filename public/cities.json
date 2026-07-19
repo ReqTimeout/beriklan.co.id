@@ -1,0 +1,529 @@
+[
+  {
+    "slug": "bandung",
+    "name": "Bandung",
+    "alt_names": [
+      "bandung"
+    ],
+    "province": "Jawa Barat",
+    "tier": 1,
+    "country": "ID",
+    "lat": -6.9175,
+    "lng": 107.6191,
+    "umkm_count": 350000,
+    "local_facts": [
+      "Bandung creative hub dengan 1.5jt UMKM, dominan fashion & kuliner",
+      "30+ startup digital Bandung adopsi Meta & TikTok Ads",
+      "2.4jt penduduk, mobile penetration 95%"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "jakarta",
+    "name": "Jakarta",
+    "alt_names": [
+      "jakarta"
+    ],
+    "province": "DKI Jakarta",
+    "tier": 1,
+    "country": "ID",
+    "lat": -6.2088,
+    "lng": 106.8456,
+    "umkm_count": 350000,
+    "local_facts": [
+      "Jakarta sebagai pusat bisnis Indonesia dengan konsentrasi UMKM tertinggi",
+      "70% brand lokal Jakarta aktif di Meta dan Google Ads",
+      "10.5jt penduduk, pasar paling matang untuk iklan digital"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "makassar",
+    "name": "Makassar",
+    "alt_names": [
+      "makassar"
+    ],
+    "province": "Sulawesi Selatan",
+    "tier": 1,
+    "country": "ID",
+    "lat": -5.1477,
+    "lng": 119.4327,
+    "umkm_count": 230000,
+    "local_facts": [
+      "Makassar gateway Indonesia Timur dengan 230rb UMKM",
+      "F&B, retail, properti dominan",
+      "1.4jt penduduk, adopsi mobile tinggi"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "medan",
+    "name": "Medan",
+    "alt_names": [
+      "medan"
+    ],
+    "province": "Sumatera Utara",
+    "tier": 1,
+    "country": "ID",
+    "lat": 3.5952,
+    "lng": 98.6722,
+    "umkm_count": 350000,
+    "local_facts": [
+      "Medan hub Sumatera Utara dengan pertumbuhan e-commerce 40% YoY",
+      "Pusat distribusi F&B, retail, jasa profesional",
+      "2.4jt penduduk, naik kelas untuk iklan digital"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "surabaya",
+    "name": "Surabaya",
+    "alt_names": [
+      "surabaya"
+    ],
+    "province": "Jawa Timur",
+    "tier": 1,
+    "country": "ID",
+    "lat": -7.2575,
+    "lng": 112.7521,
+    "umkm_count": 350000,
+    "local_facts": [
+      "Surabaya kota bisnis Jawa Timur dengan 280rb UMKM",
+      "Pusat distribusi retail & F&B regional Jawa Timur",
+      "2.8jt penduduk, kompetisi iklan tinggi"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "bekasi",
+    "name": "Bekasi",
+    "alt_names": [
+      "bekasi"
+    ],
+    "province": "Jawa Barat",
+    "tier": 2,
+    "country": "ID",
+    "lat": -6.2383,
+    "lng": 106.9756,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Bekasi industri + residential, 180rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "bogor",
+    "name": "Bogor",
+    "alt_names": [
+      "bogor"
+    ],
+    "province": "Jawa Barat",
+    "tier": 2,
+    "country": "ID",
+    "lat": -6.595,
+    "lng": 106.8166,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Bogor hinterland Jakarta, 110rb UMKM, suburban market"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "depok",
+    "name": "Depok",
+    "alt_names": [
+      "depok"
+    ],
+    "province": "Jawa Barat",
+    "tier": 2,
+    "country": "ID",
+    "lat": -6.4025,
+    "lng": 106.7944,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Depok urban educated market, 95rb UMKM, jasa & edukasi"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "jogja",
+    "name": "Jogja",
+    "alt_names": [
+      "jogja"
+    ],
+    "province": "DI Yogyakarta",
+    "tier": 2,
+    "country": "ID",
+    "lat": -7.7956,
+    "lng": 110.3695,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Jogja pasar potensial untuk iklan digital",
+      "Pertumbuhan UMKM signifikan dalam 12 bulan terakhir"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "semarang",
+    "name": "Semarang",
+    "alt_names": [
+      "semarang"
+    ],
+    "province": "Jawa Tengah",
+    "tier": 2,
+    "country": "ID",
+    "lat": -6.9667,
+    "lng": 110.4167,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Semarang Jawa Tengah dengan 200rb UMKM, retail & manufaktur",
+      "Mobile penetration 92%, Meta Ads ROI tinggi"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "tangerang",
+    "name": "Tangerang",
+    "alt_names": [
+      "tangerang"
+    ],
+    "province": "Banten",
+    "tier": 2,
+    "country": "ID",
+    "lat": -6.1781,
+    "lng": 106.63,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Tangerang urban Jabodetabek, 200rb UMKM, retail modern"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "yogyakarta",
+    "name": "Yogyakarta",
+    "alt_names": [
+      "yogyakarta"
+    ],
+    "province": "DI Yogyakarta",
+    "tier": 2,
+    "country": "ID",
+    "lat": -7.7956,
+    "lng": 110.3695,
+    "umkm_count": 180000,
+    "local_facts": [
+      "Yogyakarta kota pendidikan & tourist, 130rb UMKM",
+      "Craft, kuliner, jasa edukasi dominan"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "bali",
+    "name": "Bali",
+    "alt_names": [
+      "bali"
+    ],
+    "province": "Bali",
+    "tier": 3,
+    "country": "ID",
+    "lat": -8.4095,
+    "lng": 115.1889,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Bali global tourism brand, 80rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "denpasar",
+    "name": "Denpasar",
+    "alt_names": [
+      "denpasar"
+    ],
+    "province": "Bali",
+    "tier": 3,
+    "country": "ID",
+    "lat": -8.6705,
+    "lng": 115.2126,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Denpasar Bali tourism + UMKM kreativitas, 65rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "malang",
+    "name": "Malang",
+    "alt_names": [
+      "malang"
+    ],
+    "province": "Jawa Timur",
+    "tier": 3,
+    "country": "ID",
+    "lat": -7.9666,
+    "lng": 112.6326,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Malang Jawa Timur education city, 75rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "palembang",
+    "name": "Palembang",
+    "alt_names": [
+      "palembang"
+    ],
+    "province": "Sumatera Selatan",
+    "tier": 3,
+    "country": "ID",
+    "lat": -2.9761,
+    "lng": 104.7754,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Palembang Sumatera Selatan hub regional, 95rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "pontianak",
+    "name": "Pontianak",
+    "alt_names": [
+      "pontianak"
+    ],
+    "province": "Kalimantan Barat",
+    "tier": 3,
+    "country": "ID",
+    "lat": -0.0263,
+    "lng": 109.3425,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Pontianak Kalimantan Barat perbatasan, 55rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "solo",
+    "name": "Solo",
+    "alt_names": [
+      "solo"
+    ],
+    "province": "Jawa Tengah",
+    "tier": 3,
+    "country": "ID",
+    "lat": -7.5704,
+    "lng": 110.8286,
+    "umkm_count": 120000,
+    "local_facts": [
+      "Solo Surakarta Jawa Tengah budaya & UMKM, 60rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "aceh",
+    "name": "Aceh",
+    "alt_names": [
+      "aceh"
+    ],
+    "province": "Aceh",
+    "tier": 4,
+    "country": "ID",
+    "lat": 5.5483,
+    "lng": 95.3238,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Aceh NAD emerging UMKM, 50rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "batam",
+    "name": "Batam",
+    "alt_names": [
+      "batam"
+    ],
+    "province": "Kepulauan Riau",
+    "tier": 4,
+    "country": "ID",
+    "lat": 1.0456,
+    "lng": 104.0305,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Batam kepulauan industri & UMKM, 40rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "cimahi",
+    "name": "Cimahi",
+    "alt_names": [
+      "cimahi"
+    ],
+    "province": "Jawa Barat",
+    "tier": 4,
+    "country": "ID",
+    "lat": -6.872,
+    "lng": 107.5427,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Cimahi Jawa Barat suburban UMKM, 30rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "lampung",
+    "name": "Lampung",
+    "alt_names": [
+      "lampung"
+    ],
+    "province": "Lampung",
+    "tier": 4,
+    "country": "ID",
+    "lat": -5.45,
+    "lng": 105.2667,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Lampung Sumatera UMKM berkembang, 65rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "lombok",
+    "name": "Lombok",
+    "alt_names": [
+      "lombok"
+    ],
+    "province": "Nusa Tenggara Barat",
+    "tier": 4,
+    "country": "ID",
+    "lat": -8.5833,
+    "lng": 116.1167,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Lombok tourism emerging, 35rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "padang",
+    "name": "Padang",
+    "alt_names": [
+      "padang"
+    ],
+    "province": "Sumatera Barat",
+    "tier": 4,
+    "country": "ID",
+    "lat": -0.9471,
+    "lng": 100.4172,
+    "umkm_count": 80000,
+    "local_facts": [
+      "Padang Sumatera Barat kuliner & UMKM, 55rb UMKM"
+    ],
+    "is_international": false
+  },
+  {
+    "slug": "brunei",
+    "name": "Brunei",
+    "alt_names": [
+      "brunei"
+    ],
+    "province": "Brunei",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 4.5353,
+    "lng": 114.7277,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Brunei Darussalam pasar kecil, English/Malay"
+    ],
+    "is_international": true
+  },
+  {
+    "slug": "kuala-lumpur",
+    "name": "Kuala Lumpur",
+    "alt_names": [
+      "kuala lumpur"
+    ],
+    "province": "Unknown",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 0.0,
+    "lng": 0.0,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Kuala Lumpur pasar potensial untuk iklan digital",
+      "Pertumbuhan UMKM signifikan dalam 12 bulan terakhir"
+    ],
+    "is_international": true
+  },
+  {
+    "slug": "malaysia",
+    "name": "Malaysia",
+    "alt_names": [
+      "malaysia"
+    ],
+    "province": "Malaysia",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 4.2105,
+    "lng": 101.9758,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Malaysia pasar internasional, English/Malay language"
+    ],
+    "is_international": true
+  },
+  {
+    "slug": "sidoarjo",
+    "name": "Sidoarjo",
+    "alt_names": [
+      "sidoarjo"
+    ],
+    "province": "Unknown",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 0.0,
+    "lng": 0.0,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Sidoarjo pasar potensial untuk iklan digital",
+      "Pertumbuhan UMKM signifikan dalam 12 bulan terakhir"
+    ],
+    "is_international": true
+  },
+  {
+    "slug": "singapore",
+    "name": "Singapore",
+    "alt_names": [
+      "singapore"
+    ],
+    "province": "Unknown",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 0.0,
+    "lng": 0.0,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Singapore pasar potensial untuk iklan digital",
+      "Pertumbuhan UMKM signifikan dalam 12 bulan terakhir"
+    ],
+    "is_international": true
+  },
+  {
+    "slug": "singapura",
+    "name": "Singapura",
+    "alt_names": [
+      "singapura"
+    ],
+    "province": "Unknown",
+    "tier": 5,
+    "country": "non-ID",
+    "lat": 0.0,
+    "lng": 0.0,
+    "umkm_count": 50000,
+    "local_facts": [
+      "Singapura pasar potensial untuk iklan digital",
+      "Pertumbuhan UMKM signifikan dalam 12 bulan terakhir"
+    ],
+    "is_international": true
+  }
+]

@@ -1,0 +1,139 @@
+---
+/**
+ * Schema.org structured data components
+ * P1: SEO boost via rich snippets
+ *
+ * - LocalBusiness (homepage + city pages)
+ * - FAQPage (pages with FAQ section)
+ * - BreadcrumbList (all non-homepage pages)
+ * - Service (service detail pages)
+ */
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+export interface ServiceData {
+  name: string;
+  description: string;
+  url: string;
+  priceRange?: string;
+  serviceType?: string;
+  areaServed?: string;
+  provider?: { name: string; url: string };
+}
+
+export interface LocalBusinessData {
+  name: string;
+  description: string;
+  url: string;
+  telephone: string;
+  email?: string;
+  address: {
+    street?: string;
+    city: string;
+    region: string;
+    postalCode?: string;
+    country: string;
+  };
+  geo?: { lat: number; lng: number };
+  openingHours?: string[];
+  priceRange?: string;
+  image?: string;
+  sameAs?: string[];
+}
+
+interface Props {
+  faq?: FAQItem[];
+  breadcrumb?: BreadcrumbItem[];
+  service?: ServiceData;
+  localBusiness?: LocalBusinessData;
+}
+
+const { faq, breadcrumb, service, localBusiness } = Astro.props as Props;
+---
+
+{faq && faq.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer
+      }
+    }))
+  })}></script>
+)}
+
+{breadcrumb && breadcrumb.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumb.map((item, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: item.name,
+      item: item.url
+    }))
+  })}></script>
+)}
+
+{service && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: service.name,
+    description: service.description,
+    url: service.url,
+    serviceType: service.serviceType || service.name,
+    areaServed: service.areaServed ? { '@type': 'Country', name: service.areaServed } : { '@type': 'Country', name: 'Indonesia' },
+    provider: service.provider ? {
+      '@type': 'Organization',
+      name: service.provider.name,
+      url: service.provider.url
+    } : undefined,
+    offers: service.priceRange ? {
+      '@type': 'Offer',
+      priceRange: service.priceRange,
+      priceCurrency: 'IDR'
+    } : undefined
+  })}></script>
+)}
+
+{localBusiness && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': localBusiness.url + '#business',
+    name: localBusiness.name,
+    description: localBusiness.description,
+    url: localBusiness.url,
+    telephone: localBusiness.telephone,
+    email: localBusiness.email,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: localBusiness.address.street,
+      addressLocality: localBusiness.address.city,
+      addressRegion: localBusiness.address.region,
+      postalCode: localBusiness.address.postalCode,
+      addressCountry: localBusiness.address.country
+    },
+    geo: localBusiness.geo ? {
+      '@type': 'GeoCoordinates',
+      latitude: localBusiness.geo.lat,
+      longitude: localBusiness.geo.lng
+    } : undefined,
+    openingHours: localBusiness.openingHours,
+    priceRange: localBusiness.priceRange,
+    image: localBusiness.image,
+    sameAs: localBusiness.sameAs
+  })}></script>
+)}

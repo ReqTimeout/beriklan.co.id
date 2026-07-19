@@ -120,7 +120,28 @@ const relatedItems = (relatedMap.services['jasa-iklan-youtube'] || []).map(item 
 }));
 ---
 
-<Layout title="Jasa Iklan YouTube Ads | Paket dari Rp 1.250.000 — Beriklan" description="Jasa iklan YouTube: brand awareness dan video views lewat platform video terbesar di Indonesia. Paket 14 hari Rp 1,25jt, 30 hari Rp 2,5jt / 3,75jt / 4,75jt." canonical="https://beriklan.co.id/jasa-iklan-youtube/">
+<Layout title="Jasa Iklan YouTube Ads | Paket dari Rp 1.250.000 — Beriklan" description="Jasa iklan YouTube: brand awareness dan video views lewat platform video terbesar di Indonesia. Paket 14 hari Rp 1,25jt, 30 hari Rp 2,5jt / 3,75jt / 4,75jt." canonical="https://beriklan.co.id/jasa-iklan-youtube/"
+    faq={[
+            { question: 'Berapa biaya YouTube Ads?', answer: 'Mulai dari Rp 1.750.000 per 30 hari. Sudah termasuk setup TrueView, Bumper Ads, dan optimasi.' },
+            { question: 'Format YouTube Ads apa saja?', answer: 'TrueView In-Stream (skippable setelah 5 detik), Bumper Ads (6 detik non-skippable), Discovery Ads (muncul di YouTube home).' },
+            { question: 'Apakah YouTube Ads untuk brand awareness?', answer: 'Sangat efektif. YouTube punya reach 50jt+ user Indonesia per bulan. Cocok untuk brand awareness + consideration.' },
+            { question: 'Berapa lama setup YouTube Ads?', answer: 'Setup 2-5 hari (perlu video assets). Iklan live setelah approval YouTube (1-3 hari).' },
+            { question: 'YouTube Ads cocok untuk industri apa?', answer: 'Semua industri. Terutama efektif untuk FMCG, tech, education, financial services, automotive.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan YouTube", url: "https://www.beriklan.co.id/jasa-iklan-youtube/" }
+    ]}
+    service={{
+        name: "Jasa Iklan YouTube",
+        description: "Jasa Jasa Iklan YouTube profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-youtube/",
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "YouTube Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -446,7 +467,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-youtube'] || []).map(item 
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-youtube/pilar/" pillarLabel="Panduan Lengkap Iklan Youtube" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

@@ -103,7 +103,28 @@ const relatedItems = (relatedMap.services['jasa-iklan-tiktok'] || []).map(item =
 }));
 ---
 
-<Layout title="Jasa Iklan TikTok Ads | Mulai Rp 1.000.000 — Views & Lead" description="Pasang iklan TikTok: brand awareness, traffic, dan lead. Paket 7 hari Rp 1jt, 14 hari Rp 1,6jt, 30 hari Rp 3,75jt. Estimasi hingga 75.000 views." canonical="https://beriklan.co.id/jasa-iklan-tiktok/">
+<Layout title="Jasa Iklan TikTok Ads | Mulai Rp 1.000.000 — Views & Lead" description="Pasang iklan TikTok: brand awareness, traffic, dan lead. Paket 7 hari Rp 1jt, 14 hari Rp 1,6jt, 30 hari Rp 3,75jt. Estimasi hingga 75.000 views." canonical="https://beriklan.co.id/jasa-iklan-tiktok/"
+    faq={[
+            { question: 'Berapa biaya TikTok Ads?', answer: 'Mulai dari Rp 1.750.000 per 30 hari. Sudah termasuk setup Spark Ads, In-Feed Ads, dan optimasi.' },
+            { question: 'Format TikTok Ads apa saja?', answer: 'In-Feed Ads (muncul di FYP), Spark Ads (boost organic content), TopView Ads (premium).' },
+            { question: 'Siapa target audience TikTok Ads?', answer: 'Gen Z (18-25) dan Milenial (26-35). 70% pengguna TikTok Indonesia di rentang usia ini. Cocok untuk F&B, fashion, beauty, entertainment.' },
+            { question: 'Apakah TikTok Ads untuk B2B?', answer: 'Bisa, tapi kurang efektif. Untuk B2B lebih cocok LinkedIn Ads atau Google Ads. TikTok optimal untuk B2C.' },
+            { question: 'Berapa lama setup TikTok Ads?', answer: 'Setup 1-3 hari. Video ads mulai tayang 24-48 jam setelah approval. Spark Ads bisa langsung boost dari organic.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan TikTok", url: "https://www.beriklan.co.id/jasa-iklan-tiktok/" }
+    ]}
+    service={{
+        name: "Jasa Iklan TikTok",
+        description: "Jasa Jasa Iklan TikTok profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-tiktok/",
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "TikTok Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -429,7 +450,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-tiktok'] || []).map(item =
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-tiktok/pilar/" pillarLabel="Panduan Lengkap Iklan Tiktok" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

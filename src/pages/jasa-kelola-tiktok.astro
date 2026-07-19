@@ -100,7 +100,28 @@ const relatedItems = (relatedMap.services['jasa-kelola-tiktok'] || []).map(item 
 }));
 ---
 
-<Layout title="Jasa Kelola TikTok | Paket dari Rp 1.500.000 — Beriklan" description="Jasa kelola TikTok: upload produk, edit foto, video pendek, riset musik, dan optimasi followers. Paket TikTok Shop, Basic Content, Business Content." canonical="https://beriklan.co.id/jasa-kelola-tiktok/">
+<Layout title="Jasa Kelola TikTok | Paket dari Rp 1.500.000 — Beriklan" description="Jasa kelola TikTok: upload produk, edit foto, video pendek, riset musik, dan optimasi followers. Paket TikTok Shop, Basic Content, Business Content." canonical="https://beriklan.co.id/jasa-kelola-tiktok/"
+    faq={[
+            { question: 'Berapa harga jasa kelola TikTok?', answer: 'Mulai dari Rp 1.500.000 per bulan. Sudah termasuk content creation, posting rutin, dan community management.' },
+            { question: 'Berapa video per minggu?', answer: '3-5 video pendek per minggu + 1-2 live streaming. Plus daily trend monitoring dan reply komentar.' },
+            { question: 'Bagaimana cara bikin konten yang viral?', answer: 'Tim kami monitor trending sounds, formats, dan topics. Kombinasikan dengan brand message untuk reach organik + paid boost.' },
+            { question: 'Apakah handle live streaming?', answer: 'Ya, bisa. Include dalam paket Business. Setup peralatan + script +主持人 untuk live session 1-2 jam.' },
+            { question: 'Berapa lama sampai viral?', answer: 'Tergantung niche. Beberapa video bisa viral dalam minggu pertama. Rata-rata akun baru FYP dalam 2-3 bulan.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Kelola TikTok", url: "https://www.beriklan.co.id/jasa-kelola-tiktok/" }
+    ]}
+    service={{
+        name: "Jasa Kelola TikTok",
+        description: "Jasa Jasa Kelola TikTok profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-kelola-tiktok/",
+        priceRange: "Rp 1.500.000 - Rp 3.000.000",
+        serviceType: "TikTok Management",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -426,7 +447,7 @@ const relatedItems = (relatedMap.services['jasa-kelola-tiktok'] || []).map(item 
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-kelola-tiktok/pilar/" pillarLabel="Panduan Lengkap Kelola Tiktok" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

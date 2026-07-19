@@ -106,7 +106,28 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-website'] || []).map(i
 }));
 ---
 
-<Layout title="Jasa Pembuatan Website | Paket dari Rp 999.000/tahun — Beriklan" description="Jasa pembuatan website profesional: landing page, company profile, dan e-commerce. Responsive, SEO-ready, fast load. Paket Basic 999rb/th, Professional & Business custom." canonical="https://beriklan.co.id/jasa-pembuatan-website/">
+<Layout title="Jasa Pembuatan Website | Paket dari Rp 999.000/tahun — Beriklan" description="Jasa pembuatan website profesional: landing page, company profile, dan e-commerce. Responsive, SEO-ready, fast load. Paket Basic 999rb/th, Professional & Business custom." canonical="https://beriklan.co.id/jasa-pembuatan-website/"
+    faq={[
+            { question: 'Berapa harga buat website?', answer: 'Mulai dari Rp 1.500.000 (company profile) dan Rp 3.500.000 (e-commerce basic). Custom design, mobile responsive, SEO ready.' },
+            { question: 'Berapa lama pengerjaan website?', answer: 'Company profile: 7-14 hari kerja. E-commerce: 14-21 hari kerja. Custom: 21-30 hari kerja (tergantung kompleksitas).' },
+            { question: 'Apakah termasuk domain + hosting?', answer: 'Ya, free domain .com/.id + hosting 1 tahun untuk paket Standart+. Setelah itu renewal Rp 350.000/tahun.' },
+            { question: 'CMS apa yang dipakai?', answer: 'WordPress (paling user-friendly untuk client update sendiri) atau Laravel (untuk custom logic). Diskusi dulu untuk pilih yang sesuai.' },
+            { question: 'Apakah termasuk SEO optimization?', answer: 'Ya, semua website kami SEO-friendly: meta tags, schema markup, sitemap, fast loading, mobile responsive.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Pembuatan Website", url: "https://www.beriklan.co.id/jasa-pembuatan-website/" }
+    ]}
+    service={{
+        name: "Jasa Pembuatan Website",
+        description: "Jasa Jasa Pembuatan Website profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-pembuatan-website/",
+        priceRange: "Rp 1.500.000 - Rp 5.000.000",
+        serviceType: "Web Development",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -453,7 +474,7 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-website'] || []).map(i
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-pembuatan-website/pilar/" pillarLabel="Panduan Lengkap Pembuatan Website" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

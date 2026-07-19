@@ -104,7 +104,49 @@ const relatedItems = (relatedMap.services['jasa-iklan-google'] || []).map(item =
 }));
 ---
 
-<Layout title="Jasa Iklan Google Ads / Search | Mulai Rp 1.750.000 — Beriklan" description="Jasa iklan Google Search Ads: muncul di halaman pertama saat calon customer mencari produk/layanan Anda. Paket Basic, Standart, Business dengan analisis keyword dan report bulanan." canonical="https://beriklan.co.id/jasa-iklan-google/">
+<Layout title="Jasa Iklan Google Ads / Search | Mulai Rp 1.750.000 — Beriklan" description="Jasa iklan Google Search Ads: muncul di halaman pertama saat calon customer mencari produk/layanan Anda. Paket Basic, Standart, Business dengan analisis keyword dan report bulanan." canonical="https://beriklan.co.id/jasa-iklan-google/"
+    faq={[
+            { question: 'Berapa biaya Google Ads?', answer: 'Mulai dari Rp 1 juta ad spend. Biaya jasa terpisah. Audit akun gratis 15 menit untuk estimate.' },
+            { question: 'Iklan muncul di mana saja?', answer: 'Google Search, Search Partners, Display Network, YouTube, dan Gmail. Targeting keyword presisi.' },
+            { question: 'Berapa lama Google Ads bisa live?', answer: 'Setup 1-3 hari kerja. Iklan muncul setelah proses review Google (1-24 jam setelah submit).' },
+            { question: 'Apakah Beriklan Google Partner?', answer: 'Ya, tim kami Google Partner dengan akses langsung ke support Google dan beta features.' },
+            { question: 'Bagaimana tracking conversion Google Ads?', answer: 'Google Tag Manager + GA4 + Conversion Tracking. Anda bisa lihat real-time dashboard.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan Google Ads", url: "https://www.beriklan.co.id/jasa-iklan-google/" }
+    ]}
+    service={{
+        name: "Jasa Iklan Google Ads",
+        description: "Jasa Jasa Iklan Google Ads profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-google/",
+        priceRange: "Rp 1.000.000 - Rp 5.000.000",
+        serviceType: "Google Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+
+    faq={[
+            { question: 'Berapa biaya Google Ads?', answer: 'Mulai dari Rp 1 juta ad spend. Biaya jasa terpisah. Audit akun gratis 15 menit untuk estimate.' },
+            { question: 'Iklan muncul di mana saja?', answer: 'Google Search, Search Partners, Display Network, YouTube, dan Gmail. Targeting keyword presisi.' },
+            { question: 'Berapa lama Google Ads bisa live?', answer: 'Setup 1-3 hari kerja. Iklan muncul setelah proses review Google (1-24 jam setelah submit).' },
+            { question: 'Apakah Beriklan Google Partner?', answer: 'Ya, tim kami Google Partner dengan akses langsung ke support Google dan beta features.' },
+            { question: 'Bagaimana tracking conversion Google Ads?', answer: 'Google Tag Manager + GA4 + Conversion Tracking. Anda bisa lihat real-time dashboard.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan Google Ads", url: "https://www.beriklan.co.id/jasa-iklan-google/" }
+    ]}
+    service={{
+        name: "Jasa Iklan Google Ads",
+        description: "Jasa Jasa Iklan Google Ads profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-google/",
+        priceRange: "Rp 1.000.000 - Rp 5.000.000",
+        serviceType: "Google Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -430,7 +472,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-google'] || []).map(item =
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-google/pilar/" pillarLabel="Panduan Lengkap Iklan Google" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

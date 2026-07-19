@@ -1,9 +1,11 @@
 <script>
-    import { ArrowRight } from 'lucide-svelte';
+    import { ArrowRight, BookOpen } from 'lucide-svelte';
 
     export let items = [];
     export let title = 'Layanan yang sering dipilih bersamaan';
     export let subtitle = 'Bisnis yang efektif biasanya menjalankan iklan di 2-3 kanal sekaligus agar saling menguatkan.';
+    export let pillarHref = '';
+    export let pillarLabel = 'Panduan Lengkap';
 </script>
 
 <section class="py-20 md:py-24 bg-white relative overflow-hidden">
@@ -44,7 +46,27 @@
                         </div>
                     </div>
                 </a>
-            {/each}
+                {/each}
+
+                {#if pillarHref}
+                    <a
+                        href={pillarHref}
+                        class="group relative bg-gradient-to-br from-primary to-primary-2 rounded-2xl p-6 border border-white/10 hover:border-accent/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-pop overflow-hidden"
+                    >
+                        <div class="absolute -right-8 -top-8 w-32 h-32 bg-accent/10 rounded-full blur-2xl group-hover:bg-accent/20 transition-colors duration-500"></div>
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl mb-4 transition-colors">
+                                <BookOpen class="w-6 h-6 text-white" />
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-white mb-1.5">{pillarLabel}</h3>
+                            <p class="text-sm text-white/70 leading-relaxed">Strategi, format iklan, optimasi budget, dan cara ukur ROI — dibahas tuntas.</p>
+                            <div class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-accent group-hover:text-white transition-colors">
+                                Baca panduan
+                                <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                        </div>
+                    </a>
+                {/if}
+            </div>
         </div>
-    </div>
-</section>
+    </section>

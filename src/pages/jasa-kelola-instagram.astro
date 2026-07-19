@@ -100,7 +100,28 @@ const relatedItems = (relatedMap.services['jasa-kelola-instagram'] || []).map(it
 }));
 ---
 
-<Layout title="Jasa Kelola Instagram | Paket dari Rp 2.500.000 — Beriklan" description="Jasa kelola Instagram profesional: desain feed, story, video pendek, dan copywriting. Paket Basic 2,5jt, Standart 3,5jt, Business custom." canonical="https://beriklan.co.id/jasa-kelola-instagram/">
+<Layout title="Jasa Kelola Instagram | Paket dari Rp 2.500.000 — Beriklan" description="Jasa kelola Instagram profesional: desain feed, story, video pendek, dan copywriting. Paket Basic 2,5jt, Standart 3,5jt, Business custom." canonical="https://beriklan.co.id/jasa-kelola-instagram/"
+    faq={[
+            { question: 'Berapa harga jasa kelola Instagram?', answer: 'Mulai dari Rp 1.500.000 per bulan. Sudah termasuk 12-15 post, story harian, reels mingguan, dan laporan.' },
+            { question: 'Berapa post per minggu?', answer: '3-5 post feed, 5-7 story per hari, 1-2 reels per minggu. Sesuai paket dan target audiens.' },
+            { question: 'Apakah tim Beriklan handle caption + hashtag?', answer: 'Ya, kami handle content calendar, copywriting caption, hashtag strategy, dan visual design.' },
+            { question: 'Berapa lama sampai results terlihat?', answer: 'Engagement rate naik dalam 1-2 bulan. Follower growth konsisten di bulan ke-2. Optimal di bulan ke-3.' },
+            { question: 'Apakah ada laporan bulanan?', answer: 'Ya, IG Insight report bulanan: reach, impressions, engagement rate, follower growth, dan rekomendasi bulan depan.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Kelola Instagram", url: "https://www.beriklan.co.id/jasa-kelola-instagram/" }
+    ]}
+    service={{
+        name: "Jasa Kelola Instagram",
+        description: "Jasa Jasa Kelola Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-kelola-instagram/",
+        priceRange: "Rp 1.500.000 - Rp 3.000.000",
+        serviceType: "Instagram Management",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -426,7 +447,7 @@ const relatedItems = (relatedMap.services['jasa-kelola-instagram'] || []).map(it
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-kelola-instagram/pilar/" pillarLabel="Panduan Lengkap Kelola Instagram" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

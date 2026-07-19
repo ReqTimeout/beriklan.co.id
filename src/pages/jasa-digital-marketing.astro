@@ -100,7 +100,28 @@ const relatedItems = (relatedMap.services['jasa-digital-marketing'] || []).map(i
 }));
 ---
 
-<Layout title="Jasa Digital Marketing Indonesia | Meningkatkan Bisnis Anda — Beriklan" description="Jasa digital marketing terpadu: Facebook Ads, Instagram Ads, Google Ads, TikTok Ads, YouTube Ads, Landing Page. Konsultasi strategi tanpa biaya, tanpa kontrak panjang." canonical="https://beriklan.co.id/jasa-digital-marketing/">
+<Layout title="Jasa Digital Marketing Indonesia | Meningkatkan Bisnis Anda — Beriklan" description="Jasa digital marketing terpadu: Facebook Ads, Instagram Ads, Google Ads, TikTok Ads, YouTube Ads, Landing Page. Konsultasi strategi tanpa biaya, tanpa kontrak panjang." canonical="https://beriklan.co.id/jasa-digital-marketing/"
+    faq={[
+            { question: 'Berapa harga jasa digital marketing di Beriklan?', answer: 'Mulai dari Rp 2,5 juta per bulan. Paket sudah termasuk strategi, setup campaign multi-platform, dan laporan mingguan. Tidak ada kontrak minimum.' },
+            { question: 'Apa saja yang termasuk dalam layanan digital marketing?', answer: 'Setup campaign Facebook Ads, Instagram Ads, Google Ads, TikTok Ads. Optimasi mingguan, A/B testing creative, retargeting, dan laporan transparan.' },
+            { question: 'Berapa lama setup digital marketing?', answer: 'Setup awal 3-5 hari kerja. Campaign live dalam 1 minggu pertama. Optimasi rutin mingguan setelah launch.' },
+            { question: 'Apakah tim Beriklan bersertifikat?', answer: 'Ya, tim kami Meta Business Partner dan Google Partner bersertifikat. Akses langsung ke platform support.' },
+            { question: 'Bagaimana cara tracking hasil digital marketing?', answer: 'Kami setup GTM + GA4 + Meta Pixel di website. Anda bisa akses real-time dashboard + laporan mingguan via WhatsApp.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Digital Marketing", url: "https://www.beriklan.co.id/jasa-digital-marketing/" }
+    ]}
+    service={{
+        name: "Jasa Digital Marketing",
+        description: "Jasa Jasa Digital Marketing profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-digital-marketing/",
+        priceRange: "Rp 2.500.000 - Rp 10.000.000",
+        serviceType: "Digital Marketing",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -426,7 +447,7 @@ const relatedItems = (relatedMap.services['jasa-digital-marketing'] || []).map(i
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-digital-marketing/pilar/" pillarLabel="Panduan Lengkap Digital Marketing" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

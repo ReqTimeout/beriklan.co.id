@@ -86,7 +86,28 @@ const relatedItems = (relatedMap.services['jasa-iklan-instagram'] || []).map(ite
 }));
 ---
 
-<Layout title="Jasa Iklan Instagram Ads | Paket Rp 1.750.000 & Rp 3.750.000 — Beriklan" description="Jasa iklan Instagram: Stories, Feed, Reels placement. Paket 30 hari mulai Rp 1.750.000." canonical="https://beriklan.co.id/jasa-iklan-instagram/">
+<Layout title="Jasa Iklan Instagram Ads | Paket Rp 1.750.000 & Rp 3.750.000 — Beriklan" description="Jasa iklan Instagram: Stories, Feed, Reels placement. Paket 30 hari mulai Rp 1.750.000." canonical="https://beriklan.co.id/jasa-iklan-instagram/"
+    faq={[
+            { question: 'Berapa biaya Instagram Ads?', answer: 'Mulai dari Rp 1.750.000 per 30 hari. Sudah termasuk setup story ads, reels ads, feed ads, dan optimasi.' },
+            { question: 'Format iklan apa saja?', answer: 'Story Ads, Reels Ads, Feed Ads, Explore Ads, Shop Ads. Semua format Instagram tersedia.' },
+            { question: 'Target audience Instagram Ads yang ideal?', answer: 'Bisa custom interest, lookalike audience dari customer database, atau interest-based (fashion, beauty, fitness, dll).' },
+            { question: 'Apakah Instagram Ads efektif untuk UMKM?', answer: 'Sangat efektif. Instagram 80% pengguna Indonesia aktif di platform. Cocok untuk fashion, F&B, beauty, jasa profesional.' },
+            { question: 'Berapa lama hasil Instagram Ads?', answer: 'Story Ads mulai tayang 24 jam. Reels Ads bisa viral dalam 1-2 minggu. Lead optimal di bulan ke-2.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan Instagram", url: "https://www.beriklan.co.id/jasa-iklan-instagram/" }
+    ]}
+    service={{
+        name: "Jasa Iklan Instagram",
+        description: "Jasa Jasa Iklan Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-instagram/",
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "Instagram Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -412,7 +433,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-instagram'] || []).map(ite
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-instagram/pilar/" pillarLabel="Panduan Lengkap Iklan Instagram" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

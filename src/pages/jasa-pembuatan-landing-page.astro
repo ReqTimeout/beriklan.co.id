@@ -71,7 +71,28 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
 }));
 ---
 
-<Layout title="Landing Page + Google Ads | Paket Promo Rp 1.999.000 — Beriklan" description="Paket promo khusus: 1 landing page profesional + 1 bulan Google Ads. Copywriting, form kontak, integrasi ads, tracking & analisis. Cocok untuk Anda yang ingin langsung dapat leads dari hari pertama." canonical="https://beriklan.co.id/jasa-pembuatan-landing-page/">
+<Layout title="Landing Page + Google Ads | Paket Promo Rp 1.999.000 — Beriklan" description="Paket promo khusus: 1 landing page profesional + 1 bulan Google Ads. Copywriting, form kontak, integrasi ads, tracking & analisis. Cocok untuk Anda yang ingin langsung dapat leads dari hari pertama." canonical="https://beriklan.co.id/jasa-pembuatan-landing-page/"
+    faq={[
+            { question: 'Berapa harga landing page?', answer: 'Mulai dari Rp 1.000.000 (single page) atau Rp 1.500.000 (paket landing page + Google Ads setup).' },
+            { question: 'Berapa lama pengerjaan?', answer: '3-5 hari kerja untuk landing page sederhana. 7-10 hari untuk yang kompleks dengan copywriting dan A/B testing.' },
+            { question: 'Apakah termasuk copywriting?', answer: 'Ya, copywriter kami yang handle headline, body text, dan CTA. Anda tinggal review dan approve.' },
+            { question: 'Apakah ada A/B testing?', answer: 'Bisa. Setup 2-3 variasi headline/CTA, lalu test mana yang convert lebih tinggi.' },
+            { question: 'Apakah bisa integrasi dengan WhatsApp?', answer: 'Ya, default semua landing page kami ada WhatsApp button yang langsung chat ke nomor bisnis Anda.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Pembuatan Landing Page", url: "https://www.beriklan.co.id/jasa-pembuatan-landing-page/" }
+    ]}
+    service={{
+        name: "Jasa Pembuatan Landing Page",
+        description: "Jasa Jasa Pembuatan Landing Page profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-pembuatan-landing-page/",
+        priceRange: "Rp 1.000.000 - Rp 1.500.000",
+        serviceType: "Landing Page",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -397,7 +418,7 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-pembuatan-landing-page/pilar/" pillarLabel="Panduan Lengkap Pembuatan Landing Page" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

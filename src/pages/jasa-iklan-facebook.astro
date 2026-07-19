@@ -86,7 +86,52 @@ const relatedItems = (relatedMap.services['jasa-iklan-facebook'] || []).map(item
 }));
 ---
 
-<Layout title="Jasa Iklan Facebook Ads Indonesia | Paket dari Rp 1.750.000 — Beriklan" description="Jasa iklan Facebook profesional: targeting interest, remarketing, lead & chat WhatsApp. Paket Standart Rp 1.750.000 dan Business Rp 3.750.000 per 30 hari." canonical="https://beriklan.co.id/jasa-iklan-facebook/">
+<Layout
+    title="Jasa Iklan Facebook Ads Indonesia | Paket dari Rp 1.750.000 — Beriklan"
+    description="Jasa iklan Facebook profesional: targeting interest, remarketing, lead & chat WhatsApp. Paket Standart Rp 1.750.000 dan Business Rp 3.750.000 per 30 hari."
+    canonical="https://beriklan.co.id/jasa-iklan-facebook/"
+    faq={[
+        { question: "Berapa biaya iklan Facebook Ads?", answer: "Paket Beriklan mulai dari Rp 1.750.000 per 30 hari (Standart) dan Rp 3.750.000 per 30 hari (Business). Sudah termasuk biaya ad spend, setup campaign, dan optimasi rutin. Tidak ada kontrak minimum." },
+        { question: "Apa bedanya paket Standart dan Business?", answer: "Paket Standart cocok untuk UMKM dengan 1-2 campaign aktif dan targeting sederhana. Paket Business untuk bisnis yang butuh multiple campaigns (Facebook + Instagram), advanced audience targeting, A/B testing, dan laporan lebih detail mingguan." },
+        { question: "Berapa lama hasil iklan Facebook kelihatan?", answer: "Iklan mulai muncul dalam 24 jam setelah setup. Lead pertama biasanya masuk minggu pertama. Untuk hasil optimal, optimal campaign di bulan pertama, scale up di bulan ke-2." },
+        { question: "Apakah tim Beriklan Certified Meta Business Partner?", answer: "Ya. Tim kami Meta Business Partner bersertifikat, dengan akses langsung ke support Meta dan best practice terbaru dari platform." },
+        { question: "Bagaimana cara tracking leads dari Facebook Ads?", answer: "Kami setup Meta Pixel di website Anda, integrasi dengan WhatsApp button click, dan form submission tracking. Semua leads ter-record di dashboard Meta Ads Manager + laporan mingguan ke Anda." },
+    ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan Facebook", url: "https://www.beriklan.co.id/jasa-iklan-facebook/" }
+    ]}
+    service={{
+        name: "Jasa Iklan Facebook Ads",
+        description: "Jasa iklan Facebook profesional dengan Meta Business Partner. Target audiens presisi, retargeting pixel Facebook, lead generation untuk UMKM. Laporan mingguan.",
+        url: "https://www.beriklan.co.id/jasa-iklan-facebook/",
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "Digital Marketing",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+
+    faq={[
+            { question: 'Berapa biaya iklan Facebook Ads?', answer: 'Mulai dari Rp 1.750.000 per 30 hari (Standart) dan Rp 3.750.000 (Business). Sudah termasuk ad spend, setup, dan optimasi.' },
+            { question: 'Apa bedanya paket Standart dan Business?', answer: 'Standart untuk 1-2 campaign sederhana. Business untuk multiple campaigns, advanced targeting, A/B testing, dan laporan detail.' },
+            { question: 'Berapa lama hasil Facebook Ads?', answer: 'Iklan muncul 24 jam setelah setup. Lead pertama masuk minggu pertama. Optimal di bulan ke-2.' },
+            { question: 'Beriklan Certified Meta Business Partner?', answer: 'Ya, tim kami Meta Business Partner bersertifikat dengan akses langsung ke support Meta.' },
+            { question: 'Bagaimana tracking leads dari Facebook Ads?', answer: 'Meta Pixel di website + WhatsApp click tracking. Dashboard Meta Ads Manager + laporan mingguan.' }
+        ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Jasa Iklan Facebook Ads", url: "https://www.beriklan.co.id/jasa-iklan-facebook/" }
+    ]}
+    service={{
+        name: "Jasa Iklan Facebook Ads",
+        description: "Jasa Jasa Iklan Facebook Ads profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        url: "https://www.beriklan.co.id/jasa-iklan-facebook/",
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "Facebook Ads",
+        areaServed: "Indonesia",
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -412,7 +457,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-facebook'] || []).map(item
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} client:visible />
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-facebook/pilar/" pillarLabel="Panduan Lengkap Iklan Facebook" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

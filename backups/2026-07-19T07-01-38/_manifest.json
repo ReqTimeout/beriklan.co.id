@@ -1,0 +1,70 @@
+{
+  "backup_at": "2026-07-19T07-01-38",
+  "ok": true,
+  "files": [
+    {
+      "table": "batch4_queue",
+      "rows": 4202,
+      "path": "backups/2026-07-19T07-01-38/batch4_queue.json",
+      "github_status": 201,
+      "sha": "fad67639c4c29328a28fa8f21a15783b27ac720d"
+    },
+    {
+      "table": "batch4_articles",
+      "rows": 385,
+      "path": "backups/2026-07-19T07-01-38/batch4_articles.json",
+      "github_status": 201,
+      "sha": "12cc36e45f0a01dca8d6b7b464ac34cf776333dc"
+    },
+    {
+      "table": "city_content_queue",
+      "rows": 198,
+      "path": "backups/2026-07-19T07-01-38/city_content_queue.json",
+      "github_status": 201,
+      "sha": "1f1c8115e9bc650bb94b148a9f5346f593e37cdb"
+    },
+    {
+      "table": "city_content",
+      "rows": 95,
+      "path": "backups/2026-07-19T07-01-38/city_content.json",
+      "github_status": 201,
+      "sha": "48822f165cf5a4e886bfa5bad978235e6e686f9a"
+    },
+    {
+      "table": "pending_indexing",
+      "rows": 541,
+      "path": "backups/2026-07-19T07-01-38/pending_indexing.json",
+      "github_status": 201,
+      "sha": "fa401fbff764eb02f4c74f64e054b92401078d9f"
+    },
+    {
+      "table": "trending_articles",
+      "rows": 7,
+      "path": "backups/2026-07-19T07-01-38/trending_articles.json",
+      "github_status": 201,
+      "sha": "d22bec28c7b0b5e770744dd0cc0c9dad315baa47"
+    },
+    {
+      "table": "cron_logs",
+      "rows": 32,
+      "path": "backups/2026-07-19T07-01-38/cron_logs.json",
+      "github_status": 201,
+      "sha": "233d2804959a451d5258cf864b31ed76f261285c"
+    },
+    {
+      "table": "policy_audit_log",
+      "rows": 0,
+      "path": "backups/2026-07-19T07-01-38/policy_audit_log.json",
+      "github_status": 201,
+      "sha": "8982378909d68719e4cec96ce1915ed52c3f8c8c"
+    },
+    {
+      "table": "gsc_sitemaps",
+      "rows": 13,
+      "path": "backups/2026-07-19T07-01-38/gsc_sitemaps.json",
+      "github_status": 201,
+      "sha": "fd3a54039614e6a8ccca72aaec9fc42f3abf96b2"
+    }
+  ],
+  "errors": []
+}

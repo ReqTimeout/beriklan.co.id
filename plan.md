@@ -141,7 +141,7 @@
 | Item | Status | Impact |
 |------|--------|--------|
 | **Pillar/cluster content model** | ⚠️ Pillar pages ada, cluster belum | High |
-| **Topical clustering** | ❌ Belum | High |
+| **Topical clustering** | ✅ Done (§80: service→pillar hub-and-spoke closed via RelatedServices pillar CTA; pillar→blog cluster links already existed) | High |
 | **E-E-A-T signals** (author bio, credentials) | ✅ Done (§78: blog Person author + bio block; Service provider Org w/ foundingDate 2016 + sameAs) | High (YMYL) |
 | **LocalBusiness NAP consistency** | ⚠️ Schema NAP consistent (LocalBusiness); page-body NAP not yet standardized | High |
 | **Hreflang (EN/ID)** | ❌ Belum | Low (saat ini ID only) |
@@ -6454,3 +6454,36 @@ to distribute PageRank and improve topical relevance (no manual editing of 1966 
 ### Files
 - `web/scripts/internal_link_optimizer.py` (new)
 - `web/src/data/posts.json` (1030 posts enriched)
+
+---
+
+## 80. ✅ TOPICAL CLUSTERING — HUB-AND-SPOKE CLOSED (18 Jul 2026)
+
+### Context
+- Pillar pages (10) already existed as cluster hubs: breadcrumb (Home › Service › Pilar),
+  5 cluster cards linking to `/blog/?tag=...&service=...`, related services, FAQ, cities.
+- **Gap**: service pages had ZERO inbound link to their pillar (grep: 0 `pilar` refs in
+  jasa-iklan-facebook.astro). The hub-and-spoke loop was broken — leaves couldn't reach the hub.
+
+### Change (additive, low-risk)
+- Extended `RelatedServices.svelte` with optional `pillarHref` + `pillarLabel` props.
+  Renders a distinct "Panduan Lengkap [Service]" CTA card (gradient, BookOpen icon)
+  at the end of the related-services grid, linking to `/{service}/pilar/`.
+- Injected `pillarHref="/{service}/pilar/"` + natural label into all 10 service pages'
+  `<RelatedServices>` calls (uniform pattern, scripted).
+
+### Result — full hub-and-spoke silo per topic:
+- **Service page** → "Panduan Lengkap" card → **Pillar (hub)**
+- **Pillar (hub)** → 5 cluster cards → **Blog tag filter** (leaf articles)
+- **Pillar (hub)** → breadcrumb → Service (back-link)
+- All internal, topical, no orphaned hubs.
+
+### Verification (live)
+- `jasa-iklan-google/`: "Panduan Lengkap Iklan Google" card + `href="/jasa-iklan-google/pilar/"` live.
+- `jasa-iklan-instagram/`, `jasa-digital-marketing/`, `jasa-kelola-tiktok/` all show pillar link.
+- Pillar `jasa-iklan-google/pilar/` still emits 5 "Baca artikel cluster" → `/blog/?tag=` links.
+- All URLs HTTP 200. Build clean (7225 pages). Deployed via `cf_pages_deploy.py`.
+
+### Files
+- `web/src/components/RelatedServices.svelte` (pillarHref/pillarLabel props + CTA card)
+- 10 `src/pages/jasa-*.astro` (RelatedServices pillarHref injection)

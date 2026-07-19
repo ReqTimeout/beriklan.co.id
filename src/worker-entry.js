@@ -30,6 +30,9 @@ export default {
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);
     }
+    if (path === "/api/index-url" || path === "/api/index-url/") {
+      return await handleIndexUrl(request, env);
+    }
     if (path === "/api/cron/trending" || path === "/api/cron/trending/") {
       return await handleTrendingCron(request, env);
     }
@@ -1012,6 +1015,42 @@ async function checkRateLimit(env, ip, endpoint, maxRequests = 60, windowSeconds
   } catch (e) {
     // Fail open on DB error (better to allow than block)
     return { allowed: true, error: e.message, remaining: maxRequests };
+  }
+}
+
+// ─── Manual Enqueue URL for Indexing ────────────────────────────
+async function handleIndexUrl(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
+  }
+  try {
+    const body = await request.json();
+    const urls = Array.isArray(body.urls) ? body.urls : (body.url ? [body.url] : []);
+    if (urls.length === 0) {
+      return new Response(JSON.stringify({ error: "Provide url or urls[]" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
+    const inserted = [];
+    for (const u of urls.slice(0, 100)) {
+      const norm = String(u).trim();
+      if (!/^https?:\/\//.test(norm)) continue;
+      // de-dup: skip if already pending/submitted
+      const existing = await env.DB.prepare(
+        "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted')"
+      ).bind(norm).first();
+      if (existing) continue;
+      await env.DB.prepare(
+        "INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))"
+      ).bind(norm).run();
+      inserted.push(norm);
+    }
+    return new Response(JSON.stringify({ ok: true, inserted: inserted.length, urls: inserted }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

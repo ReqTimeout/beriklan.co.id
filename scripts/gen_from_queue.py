@@ -284,6 +284,31 @@ def main():
     json.dump(idx, open(INDEX, "w"), ensure_ascii=False, indent=2)
     print(f"DONE. Total posts: {len(posts_local)}")
 
+    # Auto-enqueue new article URLs to D1 pending_indexing for IndexNow crawl
+    enqueue_for_indexing(new_posts)
+
+
+def enqueue_for_indexing(new_posts):
+    """Push new blog post URLs to worker /api/index-url so the daily
+    indexing cron auto-submits them to IndexNow/Google."""
+    token = os.environ.get("ADMIN_TOKEN", "beriklan-admin-2026")
+    worker_base = os.environ.get("WORKER_BASE", "https://beriklan.co.id")
+    urls = [f"https://beriklan.co.id/blog/{p['slug']}/" for p in new_posts]
+    if not urls:
+        return
+    try:
+        r = requests.post(
+            f"{worker_base}/api/index-url?token={token}",
+            json={"urls": urls},
+            timeout=20,
+        )
+        if r.ok:
+            print(f"Enqueued {r.json().get('inserted', 0)} URLs for indexing")
+        else:
+            print(f"  ! index-url enqueue failed: {r.status_code} {r.text[:120]}")
+    except Exception as e:
+        print(f"  ! index-url enqueue error: {e}")
+
 
 if __name__ == "__main__":
     main()

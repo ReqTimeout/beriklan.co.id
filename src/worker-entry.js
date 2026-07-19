@@ -1247,22 +1247,21 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
     // Step 3: Generate article via Groq API (free tier, no daily limit)
     let article = null;
     let ai_used_model = null;
+    // Prefer OpenCode Zen (free deepseek-v4-flash), fallback Groq
+    const zenModels = ["deepseek-v4-flash-free"];
     const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
-    for (const model of groqModels) {
+    const aiEndpoints = [];
+    if (env.ZEN_API_KEY) aiEndpoints.push({ name: "zen", url: "https://opencode.ai/zen/v1/chat/completions", key: env.ZEN_API_KEY, models: zenModels, thinkingDisabled: true });
+    if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
+    if (aiEndpoints.length === 0) {
+      errors.push({stage: "ai_config", message: "No AI key set (ZEN_API_KEY or GROQ_API_KEY)"});
+    }
+    for (const ep of aiEndpoints) {
       if (article && article.length > 500) break;
-      if (!env.GROQ_API_KEY) {
-        errors.push({stage: "ai_config", message: "GROQ_API_KEY secret not set"});
-        break;
-      }
-      try {
-        const groqResp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${env.GROQ_API_KEY}`,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-          },
-          body: JSON.stringify({
+      for (const model of ep.models) {
+        if (article && article.length > 500) break;
+        try {
+          const payload = {
             model,
             messages: [{
               role: "user",
@@ -1270,24 +1269,34 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
             }],
             max_tokens: 4000,
             temperature: 0.7,
-          }),
-        });
-        if (groqResp.ok) {
-          const data = await groqResp.json();
-          const content = data.choices?.[0]?.message?.content || "";
-          // Strip markdown fences if present
-          let cleaned = content.trim();
-          if (cleaned.startsWith("```html")) cleaned = cleaned.slice(7);
-          if (cleaned.startsWith("```")) cleaned = cleaned.slice(3);
-          if (cleaned.endsWith("```")) cleaned = cleaned.slice(0, -3);
-          article = cleaned.trim();
-          ai_used_model = model;
-        } else {
-          const body = await groqResp.text();
-          errors.push({stage: "groq_api", model, status: groqResp.status, body: body.substring(0, 200)});
+          };
+          if (ep.thinkingDisabled) payload.thinking = { type: "disabled" };
+          const aiResp = await fetch(ep.url, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${ep.key}`,
+              "Content-Type": "application/json",
+              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            },
+            body: JSON.stringify(payload),
+          });
+          if (aiResp.ok) {
+            const data = await aiResp.json();
+            const content = data.choices?.[0]?.message?.content || "";
+            // Strip markdown fences if present
+            let cleaned = content.trim();
+            if (cleaned.startsWith("```html")) cleaned = cleaned.slice(7);
+            if (cleaned.startsWith("```")) cleaned = cleaned.slice(3);
+            if (cleaned.endsWith("```")) cleaned = cleaned.slice(0, -3);
+            article = cleaned.trim();
+            ai_used_model = `${ep.name}/${model}`;
+          } else {
+            const body = await aiResp.text();
+            errors.push({stage: "ai_api", endpoint: ep.name, model, status: aiResp.status, body: body.substring(0, 200)});
+          }
+        } catch (e) {
+          errors.push({stage: "ai_try", endpoint: ep.name, model, error: e.message});
         }
-      } catch (e) {
-        errors.push({stage: "groq_try", model, error: e.message});
       }
     }
 

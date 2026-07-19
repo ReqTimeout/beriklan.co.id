@@ -1,6 +1,9 @@
 ---
 import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
 import CookieConsent from '../components/CookieConsent.astro';
+import NAPBlock from '../components/NAPBlock.astro';
+import Schema from '../components/Schema.astro';
+import type { FAQItem, BreadcrumbItem, ServiceData, LocalBusinessData } from '../components/Schema.astro';
 
 interface Props {
     title?: string;
@@ -9,6 +12,10 @@ interface Props {
     ogImage?: string;
     schema?: 'service' | 'organization' | 'auto';
     noindex?: boolean;
+    faq?: FAQItem[];
+    breadcrumb?: BreadcrumbItem[];
+    service?: ServiceData;
+    localBusiness?: LocalBusinessData;
 }
 
 const {
@@ -18,6 +25,10 @@ const {
     ogImage = 'https://beriklan.co.id/og-image.png',
     schema = 'auto',
     noindex = false,
+    faq,
+    breadcrumb,
+    service,
+    localBusiness,
 } = Astro.props as Props;
 
 // Auto-detect schema: ProfessionalService on all pages (sitewide), Organization always
@@ -101,6 +112,9 @@ const showOrganization = true;
 			})}></script>
 		)}
 
+		{/* P1: Additional structured data — FAQ, Breadcrumb, Service, LocalBusiness */}
+		<Schema faq={faq} breadcrumb={breadcrumb} service={service} localBusiness={localBusiness} />
+
 		<!-- Google Tag Manager -->
 		<script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -115,7 +129,9 @@ const showOrganization = true;
 			// Helper: derive event key + payload from any anchor or button
 			function bk_attr(el, key) { return el.getAttribute(key) || el.dataset[key] || ''; }
 			function bk_text(el) { return (el.textContent || '').trim().slice(0, 60); }
-			// WhatsApp click capture — covers wa.me links, telp links, all CTA
+			function pushDL(obj) { window.dataLayer.push(obj); }
+
+			// ========== CLICK TRACKER (wa, tel, cta, internal, outbound, file) ==========
 			document.addEventListener('click', function(e) {
 				var t = e.target;
 				while (t && t !== document.body) {
@@ -126,11 +142,14 @@ const showOrganization = true;
 				var href = (t.href || bk_attr(t, 'href') || '').toLowerCase();
 				var isWa = href.indexOf('wa.me/') !== -1 || href.indexOf('whatsapp') !== -1;
 				var isTel = href.indexOf('tel:') === 0;
-				if (isWa || isTel) {
-					window.dataLayer.push({
-						event: isWa ? 'whatsapp_click' : 'phone_click',
+				var isDownload = /\.(pdf|doc|docx|xls|xlsx|zip|rar|7z|jpg|png|webp|svg)$/i.test(href.split('?')[0].split('#')[0]);
+				var isOutbound = href && !href.startsWith(window.location.origin) && !href.startsWith('/') && !href.startsWith('#') && !isWa && !isTel;
+
+				if (isWa) {
+					pushDL({
+						event: 'whatsapp_click',
 						event_category: 'contact',
-						event_label: t.dataset.cta || bk_text(t) || (isWa ? 'whatsapp' : 'phone'),
+						event_label: t.dataset.cta || bk_text(t) || 'whatsapp',
 						page_location: window.location.pathname,
 						page_title: document.title,
 						service_slug: t.dataset.service || '',
@@ -139,10 +158,49 @@ const showOrganization = true;
 						cta_location: t.dataset.ctaLocation || '',
 						link_url: t.href || ''
 					});
+				} else if (isTel) {
+					pushDL({
+						event: 'phone_click',
+						event_category: 'contact',
+						event_label: bk_text(t) || 'phone',
+						link_url: t.href || '',
+						page_location: window.location.pathname
+					});
+				} else if (isDownload) {
+					var fname = href.split('/').pop().split('?')[0];
+					var ext = (fname.match(/\.([^.]+)$/) || ['','file'])[1];
+					pushDL({
+						event: 'file_download',
+						event_category: 'engagement',
+						event_label: fname,
+						file_name: fname,
+						file_extension: ext,
+						link_url: t.href || '',
+						page_location: window.location.pathname
+					});
+				} else if (isOutbound) {
+					pushDL({
+						event: 'outbound_click',
+						event_category: 'engagement',
+						event_label: bk_text(t) || t.hostname,
+						outbound_url: t.href || '',
+						page_location: window.location.pathname
+					});
+				} else if (t.hostname === window.location.hostname && t.pathname && t.pathname !== window.location.pathname) {
+					// Internal link click (different page on same site)
+					pushDL({
+						event: 'internal_link_click',
+						event_category: 'engagement',
+						event_label: bk_text(t),
+						internal_link_text: bk_text(t),
+						internal_link_url: t.href || '',
+						page_location: window.location.pathname
+					});
 				}
+
 				// Generic CTA tracking
 				if (t.dataset.cta) {
-					window.dataLayer.push({
+					pushDL({
 						event: 'cta_click',
 						event_category: 'engagement',
 						event_label: t.dataset.cta,
@@ -152,15 +210,16 @@ const showOrganization = true;
 					});
 				}
 			}, true);
-			// Pricing tier view (IntersectionObserver)
+
+			// ========== PRICING TIER VIEW (IntersectionObserver) ==========
 			(function() {
 				if (typeof IntersectionObserver === 'undefined') return;
 				var io = new IntersectionObserver(function(entries) {
 					entries.forEach(function(en) {
 						if (en.isIntersecting) {
 							var el = en.target;
-							window.dataLayer.push({
-								event: 'pricing_view',
+							pushDL({
+								event: 'view_pricing_tier',
 								event_category: 'engagement',
 								event_label: el.dataset.tier || el.id || 'tier',
 								package_name: el.dataset.tier || '',
@@ -175,12 +234,115 @@ const showOrganization = true;
 					document.querySelectorAll('[data-tier]').forEach(function(el) { io.observe(el); });
 				});
 			})();
-			// Form submission capture (OrderWizard + any <form data-track>)
+
+			// ========== SCROLL DEPTH (25/50/75/100%) ==========
+			(function() {
+				var fired = {};
+				function check() {
+					var h = document.documentElement;
+					var b = document.body;
+					var st = window.pageYOffset || h.scrollTop || b.scrollTop;
+					var sh = (h.scrollHeight || b.scrollHeight) - window.innerHeight;
+					if (sh <= 0) return;
+					var pct = Math.min(100, Math.round((st / sh) * 100));
+					[25, 50, 75, 100].forEach(function(mark) {
+						if (pct >= mark && !fired[mark]) {
+							fired[mark] = true;
+							pushDL({
+								event: 'scroll_' + mark,
+								event_category: 'engagement',
+								event_label: 'scroll_' + mark,
+								scroll_percent: mark,
+								page_location: window.location.pathname
+							});
+						}
+					});
+				}
+				var ticking = false;
+				window.addEventListener('scroll', function() {
+					if (!ticking) { requestAnimationFrame(function() { check(); ticking = false; }); ticking = true; }
+				}, { passive: true });
+				window.addEventListener('load', check);
+			})();
+
+			// ========== TIME ON PAGE (30/60/180s) ==========
+			(function() {
+				var startTime = Date.now();
+				var fired = {};
+				[30, 60, 180].forEach(function(s) {
+					setTimeout(function() {
+						if (fired[s]) return;
+						fired[s] = true;
+						pushDL({
+							event: 'time_' + s + 's',
+							event_category: 'engagement',
+							event_label: 'time_' + s + 's',
+							time_seconds: s,
+							page_location: window.location.pathname
+						});
+					}, s * 1000);
+				});
+			})();
+
+			// ========== BLOG READ COMPLETE (75% scroll on /blog/*) ==========
+			(function() {
+				if (window.location.pathname.indexOf('/blog/') !== 0) return;
+				var fired = false;
+				function checkRead() {
+					if (fired) return;
+					var h = document.documentElement;
+					var b = document.body;
+					var st = window.pageYOffset || h.scrollTop || b.scrollTop;
+					var sh = (h.scrollHeight || b.scrollHeight) - window.innerHeight;
+					if (sh <= 0) return;
+					var pct = Math.min(100, Math.round((st / sh) * 100));
+					if (pct >= 75) {
+						fired = true;
+						pushDL({
+							event: 'blog_read_complete',
+							event_category: 'engagement',
+							event_label: 'read_75pct',
+							page_location: window.location.pathname,
+							page_title: document.title
+						});
+					}
+				}
+				var ticking = false;
+				window.addEventListener('scroll', function() {
+					if (!ticking) { requestAnimationFrame(function() { checkRead(); ticking = false; }); ticking = true; }
+				}, { passive: true });
+				window.addEventListener('load', checkRead);
+			})();
+
+			// ========== FORM START (first focus on form field) ==========
+			(function() {
+				var fired = false;
+				document.addEventListener('focusin', function(e) {
+					if (fired) return;
+					var t = e.target;
+					if (!t) return;
+					if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') {
+						var f = t.closest('form');
+						if (f) {
+							fired = true;
+							pushDL({
+								event: 'form_start',
+								event_category: 'engagement',
+								event_label: f.dataset.track || f.id || 'form',
+								form_name: f.dataset.track || f.id || 'form',
+								page_location: window.location.pathname
+							});
+						}
+					}
+				});
+			})();
+
+			// ========== FORM SUBMIT ==========
 			document.addEventListener('submit', function(e) {
 				var f = e.target;
 				if (!f || f.tagName !== 'FORM') return;
 				if (f.dataset.track) {
-					window.dataLayer.push({
+					pushDL({
 						event: 'form_submit',
 						event_category: 'conversion',
 						event_label: f.dataset.track,
@@ -189,8 +351,9 @@ const showOrganization = true;
 					});
 				}
 			}, true);
-			// Page view (manual SPA-style push as backup to GTM container's own trigger)
-			window.dataLayer.push({
+
+			// ========== PAGE VIEW (manual + GTM own) ==========
+			pushDL({
 				event: 'page_view',
 				page_location: window.location.pathname,
 				page_title: document.title
@@ -204,6 +367,7 @@ const showOrganization = true;
 		<!-- End Google Tag Manager (noscript) -->
 
 		<slot />
+		<NAPBlock />
 	<FloatingWhatsApp client:only="svelte" />
 	<CookieConsent />
 
@@ -370,6 +534,40 @@ const showOrganization = true;
 			transition: none !important;
 		}
 	}
+
+	/* ===== Testimonial cards (global, used by all service + city pages) ===== */
+	.tst-card {
+		background: white;
+		border-radius: 1.5rem;
+		padding: 2rem 1.75rem;
+		border: 1px solid #f1f3f8;
+		box-shadow: 0 1px 2px rgba(15,30,61,.04), 0 8px 24px rgba(15,30,61,.06);
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
+	}
+	.tst-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15); }
+	.tst-quote-mark {
+		position: absolute; top: -20px; right: 20px;
+		font-family: serif; font-size: 6rem; line-height: 1;
+		color: rgba(245,158,11,0.15);
+		pointer-events: none;
+	}
+	.tst-body { font-size: 0.9375rem; color: #5b6478; line-height: 1.7; margin-bottom: 1.5rem; }
+	.tst-author { display: flex; align-items: center; gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid #f1f3f8; }
+	.tst-avatar { width: 2.75rem; height: 2.75rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0; }
+	.tst-name { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 700; font-size: 0.875rem; color: #0b1426; }
+	.tst-role { font-size: 0.75rem; color: #5b6478; margin-top: 0.125rem; }
+	.tst-metric { font-size: 0.75rem; color: #f59e0b; font-weight: 700; margin-top: 0.25rem; }
+
+	/* ===== City content meta bar (no top margin crash) ===== */
+	.city-content-block { padding-top: 3rem; }
+	@media (min-width: 768px) { .city-content-block { padding-top: 4rem; } }
+
+	/* ===== FAQ trigger text visibility fix (was faint due to CSS override) ===== */
+	.faq-trigger span { color: #0f1e3d !important; }
+	.faq-trigger span:hover { color: #f59e0b !important; }
+	.faq-item { background: white !important; }
 
 </style>
 

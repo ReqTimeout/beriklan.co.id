@@ -1,0 +1,63 @@
+---
+// NAPBlock.astro — canonical Name/Address/Phone business info block.
+// Single source of truth for NAP (used in page body for local SEO E-E-A-T).
+// Mirrors the footer NAP exactly to avoid inconsistency.
+const NAP = {
+    name: "Beriklan Digital Agency",
+    address: "Jl. Arcamanik Endah No.76, Bandung 40195",
+    phone: "+62 81.1919.328",
+    phoneHref: "tel:+62811919328",
+    wa: "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis",
+    email: "info@beriklan.co.id",
+    emailHref: "mailto:info@beriklan.co.id",
+    maps: "https://www.google.com/maps/search/?api=1&query=Jl.+Arcamanik+Endah+No.76+Bandung",
+};
+---
+
+<section class="py-12 md:py-16 bg-soft border-t border-gray-100" aria-label="Informasi kontak kantor">
+    <div class="container mx-auto px-6 max-w-4xl">
+        <div class="text-center mb-8">
+            <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
+                <span class="w-8 h-px bg-accent"></span>
+                Kantor & Kontak
+                <span class="w-8 h-px bg-accent"></span>
+            </p>
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink">{NAP.name}</h2>
+            <p class="text-sm text-muted mt-1">Agensi performance marketing · berdiri sejak 2016 · Bandung, Indonesia</p>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <a href={NAP.maps} target="_blank" rel="noopener" class="group flex flex-col items-center text-center gap-2 bg-white rounded-2xl p-5 border border-gray-100 hover:border-accent/40 transition-all hover:-translate-y-1 hover:shadow-pop">
+                <span class="w-10 h-10 rounded-xl bg-soft group-hover:bg-accent/15 flex items-center justify-center text-lg">📍</span>
+                <span class="text-xs font-bold text-ink uppercase tracking-wider">Alamat</span>
+                <span class="text-sm text-muted leading-snug">{NAP.address}</span>
+            </a>
+            <a href={NAP.phoneHref} class="group flex flex-col items-center text-center gap-2 bg-white rounded-2xl p-5 border border-gray-100 hover:border-accent/40 transition-all hover:-translate-y-1 hover:shadow-pop">
+                <span class="w-10 h-10 rounded-xl bg-soft group-hover:bg-accent/15 flex items-center justify-center text-lg">📞</span>
+                <span class="text-xs font-bold text-ink uppercase tracking-wider">Telepon</span>
+                <span class="text-sm text-muted leading-snug">{NAP.phone}</span>
+            </a>
+            <a href={NAP.emailHref} class="group flex flex-col items-center text-center gap-2 bg-white rounded-2xl p-5 border border-gray-100 hover:border-accent/40 transition-all hover:-translate-y-1 hover:shadow-pop">
+                <span class="w-10 h-10 rounded-xl bg-soft group-hover:bg-accent/15 flex items-center justify-center text-lg">✉️</span>
+                <span class="text-xs font-bold text-ink uppercase tracking-wider">Email</span>
+                <span class="text-sm text-muted leading-snug">{NAP.email}</span>
+            </a>
+        </div>
+
+        <div class="text-center mt-6">
+            <a href={NAP.wa} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                <span class="relative z-10">Konsultasi via WhatsApp</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .btn-shine-accent { position: relative; overflow: hidden; }
+    .btn-shine-accent::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(110deg, transparent 25%, rgba(15,30,61,0.15) 50%, transparent 75%);
+        transform: translateX(-100%); transition: transform 0.6s ease;
+    }
+    .btn-shine-accent:hover::after { transform: translateX(100%); }
+</style>

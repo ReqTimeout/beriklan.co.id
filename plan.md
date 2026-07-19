@@ -163,6 +163,11 @@
 | **Rank tracker** | ✅ Done (§87: GSC dashboard surfaces top queries/positions + low-CTR candidates + freshness alerts) | Medium |
 | **GSC monitoring** | ✅ Done (§87: scripts/gsc_pull.py + public/gsc-dashboard.astro with live GSC API data) | High |
 | **Sitemap per content type** | ✅ Done (§88: 7 types: static/services/city/pillar/blog/blog-pagination/blog-tag) | Low |
+| **Broken image audit + fallback** | ✅ Done (§89: 55 Unsplash IDs audited → 31 broken; featured_image.js rewritten with 57 verified IDs + picsum fallback; onerror swap on all blog imgs) | High |
+| **Indexing pipeline hang fix** | ✅ Done (§90: root cause = 200-URL loop > CF 50-subrequest limit; capped D1 query to LIMIT 18, IndexNow key corrected to live key, now runs ~2s) | High |
+| **Keyword miner** | ✅ Done (§91: scripts/keyword_miner.py reads Keyword Beriklan.xlsx + Google Suggest → 1150 untapped keywords in queue; gen_from_queue.py generates articles via Groq) | High |
+| **Cron-job.org setup** | ⏳ URLs printed (4 endpoints) — user to configure in dashboard | Medium |
+| **GSC pull cron endpoint** | ✅ Done (§92: /api/cron/gsc-pull added to worker, pulls 28d Search Analytics → returns stats, optional GitHub push) | Medium |
 
 ### 1.3 Cloudflare Free Tier Limit (sudah dipatuhi)
 

@@ -146,7 +146,7 @@
 | **LocalBusiness NAP consistency** | ⚠️ Schema NAP consistent (LocalBusiness); page-body NAP not yet standardized | High |
 | **Hreflang (EN/ID)** | ❌ Belum | Low (saat ini ID only) |
 | **Canonical chains (paginated)** | ❌ Belum | Low-Medium |
-| **Content freshness engine** | ❌ Belum (manual only) | High |
+| **Content freshness engine** | ✅ Done (§81: freshness_engine.py + truthful last_reviewed/dateModified + "Konten terbaru" badge + review queue) | High |
 | **Internal link optimizer** | ✅ Done (§79: build-time, 1030 posts linked to service/pillar, topical-relevance gated) | High |
 | **Per-city landing pages (full content)** | ⚠️ 242/300 pages exist, 58 missing | High |
 | **Author/Expert E-E-A-T signals** | ✅ Done (merged with E-E-A-T row above, §78) | High (YMYL pages) |
@@ -6487,3 +6487,43 @@ to distribute PageRank and improve topical relevance (no manual editing of 1966 
 ### Files
 - `web/src/components/RelatedServices.svelte` (pillarHref/pillarLabel props + CTA card)
 - 10 `src/pages/jasa-*.astro` (RelatedServices pillarHref injection)
+
+---
+
+## 81. ✅ CONTENT FRESHNESS ENGINE (#3) — BUILD-TIME LAYER (19 Jul 2026)
+
+### Context
+- 1966 posts; **768 (39.1%) are >36 months old** (2016-2019 WP era). No `modified`/`last_reviewed`
+  field existed; schema `dateModified` just mirrored `datePublished` (untruthful signal).
+- Goal: a truthful freshness layer that (a) never fabricates review dates, (b) surfaces real
+  recency, (c) produces an operational review queue for the 768 stale posts.
+
+### Deliverables
+- **`web/scripts/freshness_engine.py`** (idempotent, build-time):
+  - Computes age from `iso_date` (vs `--now`).
+  - Adds truthful fields to every post: `last_reviewed` (= publish date unless slug is in
+    curated `REFRESHED_SLUGS` allowlist of posts we ACTUALLY re-edited), `freshness`
+    (`recent` <=12mo / `aging` 12-24mo / `stale` >24mo), `refresh_priority` (0-3 queue score).
+  - Emits `public/data/freshness.json` (stats + top-50 review queue) for future worker/dashboard.
+  - Prints a report. NEVER invents a "reviewed" date.
+- **`blog/[slug].astro`**:
+  - Schema `dateModified` now uses `last_reviewed` (truthful).
+  - Meta bar: `recent` posts get a green "Konten terbaru" pill; refreshed posts show
+    "Diperbarui [date]"; everything else shows honest "Dipublikasikan [date]". No fake claims.
+
+### Verification (live)
+- Recent post (`tarif-digital-marketing-company`): "Konten terbaru" badge present, schema dateModified = publish date.
+- Stale post (`jasa-pembuatan-iklan-di-google`): NO badge, "Dipublikasikan" only.
+- `data/freshness.json` HTTP 200.
+- Build clean (7225 pages). Deployed via `cf_pages_deploy.py`.
+
+### How to use going forward
+- Run `python3 web/scripts/freshness_engine.py` in the build step (or pre-build) to refresh fields.
+- As posts are genuinely re-edited, add them to `REFRESHED_SLUGS` with the real edit date —
+  the site will then show "Diperbarui" + correct schema dateModified.
+- `freshness.json` `top_queue` = prioritized backlog (category value + length + featured).
+
+### Files
+- `web/scripts/freshness_engine.py` (new, committed)
+- `web/src/pages/blog/[slug].astro` (freshness logic + schema fix)
+- `web/public/data/freshness.json` (generated)

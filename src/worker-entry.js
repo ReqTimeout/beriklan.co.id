@@ -1123,11 +1123,126 @@ async function handleKeywordDashboard(request, env) {
   <h3 class="section-title">🆕 Artikel Terbaru dari Queue (40)</h3>
   <table><thead><tr><th>Keyword</th><th>Layanan</th><th>Kota</th><th>Status</th><th>Link</th><th>Dibuat</th></tr></thead><tbody>${recentRows}</tbody></table>
 
+  ${renderRoadmap()}
+  ${renderCoverageGaps(ks)}
+  ${renderFreshness(ks)}
+  ${renderQuota(idx)}
+
   <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
 </div>
 </body>
 </html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
+}
+
+// ─── Roadmap Progress (static checklist, source: SEO-STRATEGY.md) ──────
+function renderRoadmap() {
+  const items = [
+    { phase: "P1", label: "Volume foundation — 5/jam auto-gen", status: "pending", note: "/api/cron/hourly-generate" },
+    { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "pending", note: "intent matrix + PAA + competitor" },
+    { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "pending", note: "crawl discovery cepat" },
+    { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },
+    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "pending", note: "Google Trends harian" },
+    { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
+    { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
+    { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
+    { phase: "P3", label: "Calculator tools (budget iklan)", status: "pending", note: "dwell time + backlink" },
+    { phase: "P4", label: "Google Business Profile + optimize", status: "pending", note: "WAJIB untuk local SEO" },
+    { phase: "P4", label: "Backlink 50 directory + 5 guest post", status: "pending", note: "DR boost" },
+    { phase: "P4", label: "YouTube channel + video embed", status: "pending", note: "double SERP exposure" },
+    { phase: "P4", label: "LinkedIn + TikTok brand entity", status: "pending", note: "off-page signals" },
+    { phase: "P5", label: "AggregateRating schema + reviews", status: "pending", note: "stars di SERP" },
+    { phase: "P5", label: "A/B testing title (CTR lift)", status: "pending", note: "+20-50% traffic" },
+    { phase: "P6", label: "Programmatic SEO (harga/cara/vs)", status: "pending", note: "ribuan URL baru" },
+  ];
+  const done = items.filter(i => i.status === "done").length;
+  const total = items.length;
+  const pct = Math.round(100 * done / total);
+  const rows = items.map(i =>
+    `<tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">${i.phase}</span></td>
+      <td>${i.label}</td>
+      <td><span class="badge ${i.status === 'done' ? 'green' : 'yellow'}">${i.status === 'done' ? '✅ done' : '❌ pending'}</span></td>
+      <td style="color:#666;font-size:12px;">${i.note}</td>
+    </tr>`
+  ).join("");
+  return `
+    <h3 class="section-title">🗺️ Roadmap Progress (${done}/${total} selesai · ${pct}%)</h3>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="background:#eee;border-radius:6px;height:14px;overflow:hidden;">
+        <div style="background:linear-gradient(90deg,#10b981,#0ea5e9);height:14px;width:${pct}%;transition:width 0.5s;"></div>
+      </div>
+      <p class="sub" style="margin-top:8px;">Lihat detail di <a href="https://github.com/ReqTimeout/beriklan.co.id/blob/main/SEO-STRATEGY.md" target="_blank">SEO-STRATEGY.md</a> · target: #1 SERP + AdSense scale + customer matching</p>
+    </div>
+    <table><thead><tr><th>Phase</th><th>Item</th><th>Status</th><th>Catatan</th></tr></thead><tbody>${rows}</tbody></table>
+  `;
+}
+
+// ─── Coverage Gaps (services dengan sedikit/zero generated articles) ─────
+function renderCoverageGaps(ks) {
+  if (!ks || !ks.by_service) return "";
+  // Services sorted by coverage ASC = biggest gaps first
+  const gaps = (ks.by_service || [])
+    .filter(s => !s.key.startsWith("Lainnya"))
+    .map(s => ({ ...s, coverage: s.coverage || 0 }))
+    .sort((a, b) => a.coverage - b.coverage);
+  const topGaps = gaps.slice(0, 6);
+  const rows = topGaps.map(g =>
+    `<tr>
+      <td><strong>${g.key}</strong></td>
+      <td>${g.total}</td>
+      <td><span class="badge yellow">${g.generated}</span></td>
+      <td><span class="badge red">${g.pending}</span></td>
+      <td>${bar(g.coverage, '#dc2626')} <strong style="color:#dc2626;">${g.coverage}%</strong></td>
+      <td style="color:#666;font-size:12px;">${g.coverage < 5 ? "🔴 prioritas tinggi" : g.coverage < 15 ? "🟡 perlu dipercepat" : "✅ OK"}</td>
+    </tr>`
+  ).join("");
+  return `
+    <h3 class="section-title">🚨 Coverage Gaps — layanan paling butuh artikel baru</h3>
+    <table><thead><tr><th>Layanan</th><th>Total Keyword</th><th>Generated</th><th>Pending</th><th>Coverage</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+  `;
+}
+
+// ─── Freshness Distribution (age buckets dari posts.json) ──────────────
+function renderFreshness(ks) {
+  if (!ks || !ks.posts) return "";
+  // We don't have full posts here, only stats. Show what we can.
+  const total = ks.posts.total || 0;
+  const generated = ks.posts.generated || 0;
+  const staleNote = "Hitung lengkap via /api/cron/freshness-audit (TBD)";
+  return `
+    <h3 class="section-title">⏰ Freshness & Volume</h3>
+    <div class="grid">
+      <div class="card"><h2>Total Posts</h2><div class="metric">${total.toLocaleString()}</div><div class="sub">di posts.json</div></div>
+      <div class="card info"><h2>Generated (AI)</h2><div class="metric">${generated.toLocaleString()}</div><div class="sub">via Zen / Groq</div></div>
+      <div class="card"><h2>Manual / Imported</h2><div class="metric">${(total - generated).toLocaleString()}</div><div class="sub">WordPress + manual</div></div>
+      <div class="card warning"><h2>Target 30 hari</h2><div class="metric">5.000</div><div class="sub">~5 artikel/jam × 24 jam × 30 = 3600/bulan</div></div>
+    </div>
+    <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
+      ⚠️ Detail freshness per post (recent/aging/stale) ada di <a href="https://beriklan.co.id/data/freshness.json" target="_blank">/data/freshness.json</a>.
+      ${staleNote}
+    </p>
+  `;
+}
+
+// ─── Quota Usage (IndexNow + GSC Indexing API daily) ──────────────────
+function renderQuota(idx) {
+  const indexnowToday = idx.today || 0;
+  const indexnowLimit = 10000; // IndexNow batch
+  const gscLimit = 200; // GSC Indexing API per day
+  const indexnowPct = Math.min(100, (indexnowToday / indexnowLimit * 100)).toFixed(1);
+  return `
+    <h3 class="section-title">⚡ Quota & API Usage (hari ini)</h3>
+    <div class="grid">
+      <div class="card"><h2>IndexNow submitted</h2><div class="metric">${indexnowToday}</div><div class="sub">limit: ${indexnowLimit.toLocaleString()} / batch</div></div>
+      <div class="card info"><h2>GSC Indexing API</h2><div class="metric">${indexnowToday}</div><div class="sub">limit: ${gscLimit} / hari <span class="badge yellow">❌ belum aktif</span></div></div>
+      <div class="card success"><h2>Pending indexing queue</h2><div class="metric">${idx.pending || 0}</div><div class="sub">menunggu submit</div></div>
+      <div class="card"><h2>Daily cron status</h2><div class="metric" style="font-size:14px;">${(idx.recent[0]?.submitted_at || 'belum ada')?.slice(0, 16) || 'never'}</div><div class="sub">last IndexNow batch</div></div>
+    </div>
+    <p class="sub" style="color:#666;font-size:12px;">
+      💡 <strong>GSC Indexing API</strong> (200/hari) memberi Google signal instant crawl — perlu setup service account JSON. Lihat <a href="https://github.com/ReqTimeout/beriklan.co.id/blob/main/SEO-STRATEGY.md" target="_blank">SEO-STRATEGY.md §E</a>.
+    </p>
+  `;
 }
 
 // ─── P0.5 Rate Limit Middleware ──────────────────────────────────

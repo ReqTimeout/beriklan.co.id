@@ -81,6 +81,7 @@
         if (typeof IntersectionObserver !== 'undefined') {
             requestAnimationFrame(() => {
                 const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
+                console.log('[BlogFilter] reveal observer setup, found', els.length, 'stagger groups');
                 if (!els.length) return;
                 const io = new IntersectionObserver((entries) => {
                     for (const e of entries) {

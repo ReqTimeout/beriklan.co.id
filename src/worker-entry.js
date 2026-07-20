@@ -1129,6 +1129,7 @@ async function handleKeywordDashboard(request, env) {
   <h3 class="section-title">🆕 Artikel Terbaru dari Queue (40)</h3>
   <table><thead><tr><th>Keyword</th><th>Layanan</th><th>Kota</th><th>Status</th><th>Link</th><th>Dibuat</th></tr></thead><tbody>${recentRows}</tbody></table>
 
+  ${await renderHourlyGenStatus(env)}
   ${renderRoadmap()}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
@@ -1141,10 +1142,63 @@ async function handleKeywordDashboard(request, env) {
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
 }
 
+// ─── Hourly Gen Status (recent drafts from /api/cron/hourly-generate) ──
+async function renderHourlyGenStatus(env) {
+  if (!env.DB) return "";
+  try {
+    const drafts = await env.DB.prepare(
+      `SELECT slug, title, service, city, status, created_at, committed_at
+       FROM generated_drafts ORDER BY id DESC LIMIT 10`
+    ).all();
+    const rows = (drafts.results || []);
+    if (rows.length === 0) {
+      return `
+        <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
+        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code>. Setup cron-job.org untuk trigger setiap 12 menit.</p></div>
+      `;
+    }
+    const table = rows.map(r => {
+      const statusBadge = r.status === 'committed'
+        ? '<span class="badge green">✅ committed</span>'
+        : '<span class="badge yellow">📝 draft (D1 only)</span>';
+      const link = r.status === 'committed'
+        ? `<a href="/blog/${esc(r.slug)}/" target="_blank">${esc(r.title.slice(0, 50))}</a>`
+        : esc(r.title.slice(0, 50));
+      return `<tr>
+        <td>${link}</td>
+        <td>${esc(r.service || '-')}</td>
+        <td>${esc(r.city || '-')}</td>
+        <td>${statusBadge}</td>
+        <td style="color:#999;font-size:12px;">${esc((r.committed_at || r.created_at || '').slice(0, 19))}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (10 terakhir)</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <p class="sub">
+          <strong>Endpoint:</strong> <code>GET /api/cron/hourly-generate?token=...&count=N</code>
+          <br/>
+          <strong>Setup cron-job.org:</strong> trigger setiap 12 menit dengan <code>count=1</code> untuk 5 artikel/jam.
+          <br/>
+          <strong>Generated (last 10):</strong> ${rows.length} · <strong>Status:</strong> ${rows.filter(r => r.status === 'committed').length} committed, ${rows.filter(r => r.status !== 'committed').length} draft.
+        </p>
+      </div>
+      <table><thead><tr><th>Title</th><th>Service</th><th>City</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${table}</tbody></table>
+    `;
+  } catch (e) {
+    return `
+      <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
+      <div class="card warning"><p class="sub">D1 table belum ready: ${esc(e.message)}</p></div>
+    `;
+  }
+}
+
 // ─── Roadmap Progress (static checklist, source: SEO-STRATEGY.md) ──────
 function renderRoadmap() {
   const items = [
-    { phase: "P1", label: "Volume foundation — 5/jam auto-gen", status: "pending", note: "/api/cron/hourly-generate" },
+    { phase: "P1", label: "Volume foundation — 5/jam auto-gen endpoint", status: "done", note: "/api/cron/hourly-generate + drafts D1 fallback" },
+    { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY di Worker secrets", status: "pending", note: "CF Dashboard → Workers → beriklanweb → Settings → Variables" },
+    { phase: "P1", label: "Setup cron-job.org trigger (12 min)", status: "pending", note: "URL: /api/cron/hourly-generate?count=1" },
     { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "pending", note: "intent matrix + PAA + competitor" },
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "pending", note: "crawl discovery cepat" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },
@@ -1887,9 +1941,23 @@ async function handleHourlyGenerate(request, env) {
       return new Response(JSON.stringify({ ok: true, generated: 0, message: "no pending keywords", log, errors }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // 2b. Pre-flight: validate GitHub token
-    if (!env.GITHUB_TOKEN) {
-      return new Response(JSON.stringify({ ok: false, error: "GITHUB_TOKEN not configured on Worker" }), { status: 503, headers: { "Content-Type": "application/json" } });
+    // 2b. Pre-flight: validate GitHub token + ensure generated_drafts table
+    let hasGitHub = !!env.GITHUB_TOKEN;
+    if (hasGitHub) {
+      try {
+        await env.DB.prepare(`CREATE TABLE IF NOT EXISTS generated_drafts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          slug TEXT UNIQUE NOT NULL,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          service TEXT,
+          city TEXT,
+          source TEXT,
+          status TEXT DEFAULT 'pending',
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          committed_at TEXT
+        )`).run();
+      } catch (e) { /* table may already exist */ }
     }
 
     // 3. For each pending keyword, generate article via Zen (fallback Groq)
@@ -1909,126 +1977,139 @@ async function handleHourlyGenerate(request, env) {
     log.push({ stage: "ai_generate", generated: newPosts.length });
 
     if (newPosts.length === 0) {
-      return new Response(JSON.stringify({ ok: false, error: "no articles generated", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: false, error: "no articles generated (check ZEN_API_KEY / GROQ_API_KEY)", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 
-    // 4. Fetch current posts.json from GitHub, append new posts, sort, PUT back
-    const owner = "ReqTimeout";
-    const repo = "beriklan.co.id";
-    const filePath = "src/data/posts.json";
+    let commitSha = null;
+    let committedToGitHub = false;
 
-    const getResp = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-      { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
-    );
-    if (!getResp.ok) {
-      errors.push({ stage: "github_get_posts", status: getResp.status });
-      return new Response(JSON.stringify({ ok: false, error: "github_get_posts failed", log, errors }), { status: 502, headers: { "Content-Type": "application/json" } });
-    }
-    const fileData = await getResp.json();
-    let postsContent = "";
-    if (fileData.content) {
-      postsContent = atob(fileData.content.replace(/\n/g, ""));
-    } else if (fileData.download_url) {
-      const dlResp = await fetch(fileData.download_url, { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } });
-      if (dlResp.ok) postsContent = await dlResp.text();
-    }
-    if (!postsContent) {
-      errors.push({ stage: "github_empty", message: "posts.json content empty" });
-      return new Response(JSON.stringify({ ok: false, error: "posts.json empty", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
-    }
-    let posts = [];
-    try { posts = JSON.parse(postsContent); } catch (e) {
-      errors.push({ stage: "parse_posts", error: e.message });
-      return new Response(JSON.stringify({ ok: false, error: "parse_posts failed", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
-    }
-    log.push({ stage: "github_get_posts", current_posts: posts.length });
+    if (hasGitHub) {
+      // 4. Fetch current posts.json from GitHub, append new posts, sort, PUT back
+      const owner = "ReqTimeout";
+      const repo = "beriklan.co.id";
+      const filePath = "src/data/posts.json";
 
-    // Dedupe by slug
-    const existingSlugs = new Set(posts.map(p => p.slug));
-    const toAdd = newPosts.filter(p => !existingSlugs.has(p.slug));
-    log.push({ stage: "dedupe", new_after_dedupe: toAdd.length });
+      const getResp = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+        { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+      );
+      if (!getResp.ok) {
+        errors.push({ stage: "github_get_posts", status: getResp.status });
+      } else {
+        const fileData = await getResp.json();
+        let postsContent = "";
+        if (fileData.content) {
+          postsContent = atob(fileData.content.replace(/\n/g, ""));
+        } else if (fileData.download_url) {
+          const dlResp = await fetch(fileData.download_url, { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } });
+          if (dlResp.ok) postsContent = await dlResp.text();
+        }
+        if (postsContent) {
+          let posts = [];
+          try { posts = JSON.parse(postsContent); } catch (e) {
+            errors.push({ stage: "parse_posts", error: e.message });
+          }
+          log.push({ stage: "github_get_posts", current_posts: posts.length });
 
-    if (toAdd.length === 0) {
-      return new Response(JSON.stringify({ ok: true, generated: 0, message: "all picked keywords already had posts", log, errors }), { headers: { "Content-Type": "application/json" } });
-    }
+          const existingSlugs = new Set(posts.map(p => p.slug));
+          const toAdd = newPosts.filter(p => !existingSlugs.has(p.slug));
+          log.push({ stage: "dedupe", new_after_dedupe: toAdd.length });
 
-    posts = posts.concat(toAdd);
-    posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+          if (toAdd.length > 0) {
+            posts = posts.concat(toAdd);
+            posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+            const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+            const commitResp = await fetch(
+              `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+              {
+                method: "PUT",
+                headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                body: JSON.stringify({
+                  message: `hourly: auto-generate +${toAdd.length} articles [${toAdd.map(p => p.slug).slice(0, 3).join(", ")}${toAdd.length > 3 ? "..." : ""}]`,
+                  content: updatedContent,
+                  sha: fileData.sha,
+                  branch: "main",
+                }),
+              }
+            );
+            if (commitResp.ok) {
+              commitSha = (await commitResp.json()).commit?.sha?.slice(0, 7);
+              committedToGitHub = true;
+              log.push({ stage: "github_commit_posts", ok: true, sha: commitSha });
+            } else {
+              errors.push({ stage: "github_commit_posts", status: commitResp.status, body: (await commitResp.text()).slice(0, 300) });
+            }
 
-    const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
-    const commitResp = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-      {
-        method: "PUT",
-        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({
-          message: `hourly: auto-generate +${toAdd.length} articles [${toAdd.map(p => p.slug).slice(0, 3).join(", ")}${toAdd.length > 3 ? "..." : ""}]`,
-          content: updatedContent,
-          sha: fileData.sha,
-          branch: "main",
-        }),
+            // Update keyword-queue.json (only if commit succeeded)
+            if (committedToGitHub) {
+              for (const p of toAdd) {
+                const q = queue.find(q => q.slug === p.slug);
+                if (q) { q.status = "generated"; q.has_post = true; q.generated_at = new Date().toISOString(); }
+              }
+              const queuePath = "src/data/keyword-queue.json";
+              const qGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
+                headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
+              });
+              if (qGet.ok) {
+                const qd = await qGet.json();
+                const qContent = btoa(unescape(encodeURIComponent(JSON.stringify(queue, null, 2))));
+                const qPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
+                  method: "PUT",
+                  headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                  body: JSON.stringify({ message: `queue: mark ${toAdd.length} generated`, content: qContent, sha: qd.sha, branch: "main" }),
+                });
+                log.push({ stage: "github_commit_queue", ok: qPut.ok });
+              }
+
+              // Refresh posts-index.json
+              const idx = posts.slice(0, 24).map(p => ({
+                slug: p.slug, title: p.title, excerpt: p.excerpt || "",
+                date: p.date, iso_date: p.iso_date, category: p.category || "strategy",
+                readTime: p.readTime || "5 min", featured: p.featured || false,
+                tags: (p.tags || []).slice(0, 5),
+              }));
+              const idxPath = "public/data/posts-index.json";
+              const idxGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
+                headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
+              });
+              if (idxGet.ok) {
+                const id = await idxGet.json();
+                const iContent = btoa(unescape(encodeURIComponent(JSON.stringify(idx, null, 2))));
+                const idxPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
+                  method: "PUT",
+                  headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                  body: JSON.stringify({ message: `index: refresh +${toAdd.length} new articles`, content: iContent, sha: id.sha, branch: "main" }),
+                });
+                log.push({ stage: "github_commit_index", ok: idxPut.ok });
+              }
+            }
+          }
+        }
       }
-    );
-    if (!commitResp.ok) {
-      const errBody = await commitResp.text();
-      errors.push({ stage: "github_commit_posts", status: commitResp.status, body: errBody.slice(0, 300) });
-      return new Response(JSON.stringify({ ok: false, error: "github_commit_posts failed", log, errors }), { status: 502, headers: { "Content-Type": "application/json" } });
-    }
-    log.push({ stage: "github_commit_posts", ok: true, sha: (await commitResp.json()).commit?.sha?.slice(0, 7) });
-
-    // 5. Update keyword-queue.json status → generated + has_post=true
-    for (const p of toAdd) {
-      const q = queue.find(q => q.slug === p.slug);
-      if (q) { q.status = "generated"; q.has_post = true; q.generated_at = new Date().toISOString(); }
-    }
-    const queuePath = "src/data/keyword-queue.json";
-    const qGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
-      headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
-    });
-    if (qGet.ok) {
-      const qd = await qGet.json();
-      const qContent = btoa(unescape(encodeURIComponent(JSON.stringify(queue, null, 2))));
-      const qPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
-        method: "PUT",
-        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({
-          message: `queue: mark ${toAdd.length} generated`,
-          content: qContent, sha: qd.sha, branch: "main",
-        }),
-      });
-      log.push({ stage: "github_commit_queue", ok: qPut.ok });
-      if (!qPut.ok) errors.push({ stage: "github_commit_queue", status: qPut.status });
+    } else {
+      log.push({ stage: "github_skipped", reason: "GITHUB_TOKEN not configured" });
     }
 
-    // 6. Refresh posts-index.json (24 most recent)
-    const idx = posts.slice(0, 24).map(p => ({
-      slug: p.slug, title: p.title, excerpt: p.excerpt || "",
-      date: p.date, iso_date: p.iso_date, category: p.category || "strategy",
-      readTime: p.readTime || "5 min", featured: p.featured || false,
-      tags: (p.tags || []).slice(0, 5),
-    }));
-    const idxPath = "public/data/posts-index.json";
-    const idxGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
-      headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
-    });
-    if (idxGet.ok) {
-      const id = await idxGet.json();
-      const iContent = btoa(unescape(encodeURIComponent(JSON.stringify(idx, null, 2))));
-      const idxPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
-        method: "PUT",
-        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({
-          message: `index: refresh +${toAdd.length} new articles`,
-          content: iContent, sha: id.sha, branch: "main",
-        }),
-      });
-      log.push({ stage: "github_commit_index", ok: idxPut.ok });
+    // Fallback: save drafts to D1 staging table (even if GH commit succeeded, for audit + recovery)
+    let draftsSaved = 0;
+    for (const p of newPosts) {
+      try {
+        await env.DB.prepare(
+          `INSERT INTO generated_drafts (slug, title, content, service, city, source, status, committed_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(slug) DO UPDATE SET title=excluded.title, content=excluded.content, status=excluded.status, committed_at=excluded.committed_at`
+        ).bind(p.slug, p.title, p.content, p.service, p.city || null, "hourly-generate",
+               committedToGitHub ? "committed" : "draft", committedToGitHub ? new Date().toISOString() : null).run();
+        draftsSaved++;
+      } catch (e) {
+        errors.push({ stage: "drafts_save", slug: p.slug, error: e.message });
+      }
     }
+    log.push({ stage: "drafts_save", count: draftsSaved });
 
     // 7. Enqueue new URLs in D1 pending_indexing (for IndexNow cron /api/cron/indexing)
     let enqueued = 0;
-    for (const p of toAdd) {
+    for (const p of newPosts) {
       try {
         const url = `https://beriklan.co.id/blog/${p.slug}/`;
         const exists = await env.DB.prepare(
@@ -2046,14 +2127,26 @@ async function handleHourlyGenerate(request, env) {
     }
     log.push({ stage: "indexing_enqueue", count: enqueued });
 
+    // 8. Log to D1 for dashboard
+    try {
+      await env.DB.prepare(
+        `INSERT INTO cron_logs (timestamp, urls_processed, google_ok, google_fail, indexnow_ok, indexnow_fail)
+         VALUES (datetime('now'), ?, ?, 0, 0, 0)`
+      ).bind(newPosts.length, draftsSaved).run();
+    } catch {}
+
     const elapsedMs = Date.now() - t0;
     return new Response(JSON.stringify({
       ok: true,
-      generated: toAdd.length,
-      slugs: toAdd.map(p => p.slug),
+      generated: newPosts.length,
+      slugs: newPosts.map(p => p.slug),
       models: aiModels,
+      committed_to_github: committedToGitHub,
+      commit_sha: commitSha,
+      drafts_saved_to_d1: draftsSaved,
       enqueued_for_indexing: enqueued,
       elapsed_ms: elapsedMs,
+      note: !hasGitHub ? "GITHUB_TOKEN not set — drafts saved to D1 only. Configure secret via CF Dashboard for full pipeline." : undefined,
       log: debug ? log : undefined,
       errors: errors.length ? errors : undefined,
     }, null, 2), { headers: { "Content-Type": "application/json" } });

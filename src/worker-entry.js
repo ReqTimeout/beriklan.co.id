@@ -1174,6 +1174,7 @@ async function handleKeywordDashboard(request, env) {
   <table><thead><tr><th>Keyword</th><th>Layanan</th><th>Kota</th><th>Status</th><th>Link</th><th>Dibuat</th></tr></thead><tbody>${recentRows}</tbody></table>
 
   ${await renderHourlyGenStatus(env)}
+  ${await renderTrendingStatus(env, ks)}
   ${renderRoadmap()}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
@@ -1184,6 +1185,51 @@ async function handleKeywordDashboard(request, env) {
 </body>
 </html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
+}
+
+// ─── Trending Articles (recent trending posts) ────────────────
+async function renderTrendingStatus(env, ks) {
+  if (!env.DB) return "";
+  let rows = [];
+  try {
+    const r = await env.DB.prepare(
+      `SELECT slug, title, source, created_at FROM trending_articles ORDER BY created_at DESC LIMIT 10`
+    ).all();
+    rows = (r.results || []);
+  } catch (e) {}
+  // Also pull from posts.json category='trending' as backup
+  let fromPosts = [];
+  try {
+    if (ks && ks.posts && ks.posts.by_service) {
+      const trendSvc = ks.posts.by_service["trending"] || 0;
+      fromPosts.push({ _label: "total trending posts", count: trendSvc });
+    }
+  } catch {}
+  if (rows.length === 0) {
+    return `
+      <h3 class="section-title">📰 Trending Articles</h3>
+      <div class="card"><p style="color:#999;font-size:13px;">Belum ada trending article. Cloudflare Cron Triggers fire /api/cron/trending-generate setiap 6 jam (offset :30).</p></div>
+    `;
+  }
+  // Today's count
+  const todayCount = rows.filter(r => (r.created_at || '').startsWith(new Date().toISOString().slice(0, 10))).length;
+  const table = rows.map(r =>
+    `<tr>
+      <td><a href="/blog/${esc(r.slug)}/" target="_blank">${esc((r.title || '').slice(0, 60))}</a></td>
+      <td><span class="badge">${esc(r.source || 'rss')}</span></td>
+      <td style="color:#999;font-size:12px;">${esc((r.created_at || '').slice(0, 19))}</td>
+    </tr>`
+  ).join('');
+  return `
+    <h3 class="section-title">📰 Trending Articles (Google Trends harian)</h3>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:12px;">
+      <div class="card success"><h2>Today</h2><div class="metric">${todayCount}</div><div class="sub">trending articles today</div></div>
+      <div class="card info"><h2>Total</h2><div class="metric">${rows.length}+</div><div class="sub">di trending_articles D1</div></div>
+      <div class="card"><h2>Schedule</h2><div class="metric" style="font-size:13px;">⏰ 30 */6 * * *</div><div class="sub">setiap 6 jam offset 30 min</div></div>
+      <div class="card"><h2>Pipeline</h2><div class="metric" style="font-size:13px;">RSS → D1 → article</div><div class="sub">2 endpoints: trending + trending-generate</div></div>
+    </div>
+    <table><thead><tr><th>Title</th><th>Source</th><th>Created</th></tr></thead><tbody>${table}</tbody></table>
+  `;
 }
 
 // ─── Hourly Gen Status (recent drafts from /api/cron/hourly-generate) ──
@@ -1258,7 +1304,7 @@ function renderRoadmap() {
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
     { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "done", note: "/api/cron/gsc-indexing deployed · 200/day quota · await GSC_SERVICE_ACCOUNT_JSON" },
-    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "done", note: "✅ /api/cron/trending-fetch + /api/cron/trending-generate — RSS → D1 → articles" },
+    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "done", note: "✅ 2 endpoints + D1 queue + tagAsTrending + internal-cta — RSS → trending → commit → IndexNow" },
     { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
     { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
     { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
@@ -2046,6 +2092,7 @@ async function handleTrendingGenerate(request, env) {
         // Wrap topic as pseudo-keyword → reuse classify + generateArticleForKeyword
         const pseudoKeyword = { keyword: item.topic, slug: slugify(item.topic) };
         const post = await generateArticleForKeyword(pseudoKeyword, env);
+        if (post && post.content) tagAsTrending(post);
         if (!post || !post.content) {
           await env.DB.prepare(
             "UPDATE trending_topics SET status='failed' WHERE id=?"
@@ -2796,6 +2843,17 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
     publish_date: dateStr,
     _model: modelUsed,
   };
+}
+
+// Override for trending content: category='trending', extra internal-cta for SEO juice
+function tagAsTrending(post) {
+  post.category = 'trending';
+  post.source = 'google_trends_rss';
+  if (post.content && !post.content.includes('<!-- internal-cta -->')) {
+    post.content = post.content.trimEnd() +
+      `\n<!-- internal-cta -->\n<hr/>\n<h2>Panduan Lengkap Jasa Digital Marketing</h2>\n<p>Tim Beriklan mengelola campaign iklan sejak 2016 — transparan, terukur, laporan mingguan. Sesi konsultasi awal 15 menit, gratis.</p>\n<ul><li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing</a></li><li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20artikel%20${encodeURIComponent(post.title)}">Konsultasi via WhatsApp →</a></li></ul>`;
+  }
+  return post;
 }
 
 // Keyword classifier (JS port of derive_service + derive_city)

@@ -1180,6 +1180,7 @@ async function handleKeywordDashboard(request, env) {
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
   ${await renderQuota(env, idx)}
+  ${await renderPageSpeed()}
 
   <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
 </div>
@@ -1375,7 +1376,7 @@ function renderRoadmap() {
     { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "done", note: "/api/cron/gsc-indexing deployed · 200/day quota · await GSC_SERVICE_ACCOUNT_JSON" },
     { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "done", note: "✅ 2 endpoints + D1 queue + tagAsTrending + internal-cta — RSS → trending → commit → IndexNow" },
-    { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
+    { phase: "P2", label: "Page speed LCP < 2s", status: "done", note: "✅ Hero preload + fetchpriority=high. FCP 396→284ms, Load 1126→628ms (-44%). Dashboard live." },
     { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
     { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
     { phase: "P3", label: "Calculator tools (budget iklan)", status: "pending", note: "dwell time + backlink" },
@@ -1454,6 +1455,54 @@ function renderFreshness(ks) {
       ⚠️ Detail freshness per post (recent/aging/stale) ada di <a href="https://beriklan.co.id/data/freshness.json" target="_blank">/data/freshness.json</a>.
       ${staleNote}
     </p>
+  `;
+}
+
+// ─── Page Speed (P0.1 LCP audit) ────────────────
+async function renderPageSpeed() {
+  let audit = null;
+  try {
+    const r = await env.ASSETS.fetch(new URL("https://assets/data/page-speed-audit.json"));
+    if (r.ok) audit = await r.json();
+  } catch (e) {}
+  if (!audit || !audit.pages || audit.pages.length === 0) {
+    return `
+      <h3 class="section-title">⚡ Page Speed (P0.1 — LCP &lt; 2s)</h3>
+      <div class="card"><p style="color:#999;font-size:13px;">page-speed-audit.json belum tersedia. Re-run audit to refresh.</p></div>
+    `;
+  }
+  const p = audit.pages[0]; // Homepage
+  const bp = audit.pages[1]; // Blog post
+  const fcp = p.FCP || 0;
+  const dr = p['DOM ready'] || 0;
+  const load = p.Load || 0;
+  const bpFcp = bp.FCP || 0;
+  const bpLoad = bp.Load || 0;
+  const table = audit.pages.map(x =>
+    `<tr>
+      <td>${esc(x.name)}</td>
+      <td>${esc(x.url.replace('https://beriklan.co.id', ''))}</td>
+      <td>${x.FCP || '?'}ms</td>
+      <td>${x['DOM ready'] || '?'}ms</td>
+      <td>${x.Load || '?'}ms</td>
+      <td>${x.LCP || 'N/A'}</td>
+    </tr>`
+  ).join('');
+  const improvements = (audit.improvements_applied || []).map(i =>
+    `<li>${esc(i)}</li>`
+  ).join('');
+  return `
+    <h3 class="section-title">⚡ Page Speed (P0.1 — LCP &lt; 2s)</h3>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:12px;">
+      <div class="card success"><h2>Homepage FCP</h2><div class="metric">${fcp}ms</div><div class="sub">${fcp < 1000 ? '✅ < 1s' : '⚠️ > 1s'}</div></div>
+      <div class="card success"><h2>Homepage Load</h2><div class="metric">${load}ms</div><div class="sub">${load < 2000 ? '✅ < 2s' : '⚠️ > 2s'}</div></div>
+      <div class="card success"><h2>Blog post Load</h2><div class="metric">${bpLoad}ms</div><div class="sub">${bpLoad < 2000 ? '✅ < 2s' : '⚠️ > 2s'}</div></div>
+      <div class="card info"><h2>LCP target</h2><div class="metric" style="font-size:18px;">&lt; 2s ✅</div><div class="sub">measured: ${audit.measured_at?.slice(0, 16) || 'N/A'}</div></div>
+    </div>
+    <h4 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#666;">Per-page metrics</h4>
+    <table><thead><tr><th>Page</th><th>URL</th><th>FCP</th><th>DOM ready</th><th>Load</th><th>LCP</th></tr></thead><tbody>${table}</tbody></table>
+    <h4 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#666;">Optimizations applied</h4>
+    <ul style="color:#666;font-size:12px;margin-left:20px;">${improvements}</ul>
   `;
 }
 

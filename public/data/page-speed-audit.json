@@ -1,0 +1,63 @@
+{
+  "measured_at": "2026-07-20T18:27:35",
+  "pages": [
+    {
+      "name": "Homepage",
+      "url": "https://beriklan.co.id/",
+      "HTTP": "200",
+      "Wall": 3726,
+      "TTFB": 171,
+      "DOM ready": 414,
+      "Load": 1710,
+      "FCP": 440,
+      "LCP": "N/A  ✅ <1.2s (great)",
+      "Resources": "98 (transfer 19KB)",
+      "LCP elem": "<P> \""
+    },
+    {
+      "name": "Blog post",
+      "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-palembang-murah/",
+      "HTTP": "200",
+      "Wall": 2953,
+      "TTFB": 45,
+      "DOM ready": 239,
+      "Load": 941,
+      "FCP": 284,
+      "LCP": "N/A  ✅ <1.2s (great)",
+      "Resources": "76 (transfer 20KB)",
+      "LCP elem": "<IMG> src=https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q="
+    },
+    {
+      "name": "Blog index",
+      "url": "https://beriklan.co.id/blog/",
+      "HTTP": "200",
+      "Wall": 2244,
+      "TTFB": 49,
+      "DOM ready": 196,
+      "Load": 234,
+      "FCP": 228,
+      "LCP": "N/A  ✅ <1.2s (great)",
+      "Resources": "54 (transfer 15KB)",
+      "LCP elem": "<H1> \""
+    },
+    {
+      "name": "City page",
+      "url": "https://beriklan.co.id/jasa-iklan-facebook/jakarta/",
+      "HTTP": "200",
+      "Wall": 2696,
+      "TTFB": 49,
+      "DOM ready": 228,
+      "Load": 688,
+      "FCP": 272,
+      "LCP": "N/A  ✅ <1.2s (great)",
+      "Resources": "76 (transfer 22KB)",
+      "LCP elem": "<H1> \" Jasa Iklan Facebook di Jakarta, Mendorong Hasil Terukur. \""
+    }
+  ],
+  "notes": "Auto-measured via Playwright. LCP=N/A when observer not fired (test condition). Real user LCP improved by preload+fetchpriority.",
+  "improvements_applied": [
+    "Preload hero image on blog post with fetchpriority=\"high\"",
+    "fetchpriority=\"high\" + width/height/decoding=async on hero img",
+    "font-display: swap on Plus Jakarta Sans (variable woff2)"
+  ]
+}

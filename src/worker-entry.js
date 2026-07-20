@@ -985,6 +985,11 @@ function renderDashboard(stats) {
 
 // ─── Keyword Pipeline Dashboard ─────────────────────────────────
 // /api/admin/keywords?token=... — keyword → artikel → publish → indexing
+
+// Module-level helpers (used by both handleKeywordDashboard and render helpers)
+const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
+
 async function handleKeywordDashboard(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
@@ -1014,8 +1019,6 @@ async function handleKeywordDashboard(request, env) {
 
   const k = (ks && ks.keywords) || { total: 0, generated: 0, pending: 0, live_in_posts: 0, coverage: 0 };
   const p = (ks && ks.posts) || { total: 0, generated: 0, by_service: {} };
-  const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
 
   const svcRows = ((ks && ks.by_service) || []).map(s =>
     `<tr><td><strong>${esc(s.key)}</strong></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${bar(s.coverage, '#f59e0b')} ${s.coverage}%</td></tr>`

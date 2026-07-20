@@ -303,24 +303,24 @@
     "keyword": "jasa viewers instagram pontianak murah",
     "keyword_normalized": "jasa viewers instagram pontianak murah",
     "slug": "jasa-viewers-instagram-pontianak-murah",
-    "has_post": true,
-    "priority_score": 70,
-    "source": "suggest+combo",
-    "status": "generated",
-    "rank": 0,
-    "created_at": "2026-07-19T21:12:14.259913",
-    "generated_at": "2026-07-20T04:44:10.915Z"
-  },
-  {
-    "keyword": "jasa penonton live tangerang murah",
-    "keyword_normalized": "jasa penonton live tangerang murah",
-    "slug": "jasa-penonton-live-tangerang-murah",
     "has_post": false,
     "priority_score": 70,
     "source": "suggest+combo",
     "status": "pending",
     "rank": 0,
     "created_at": "2026-07-19T21:12:14.259913"
+  },
+  {
+    "keyword": "jasa penonton live tangerang murah",
+    "keyword_normalized": "jasa penonton live tangerang murah",
+    "slug": "jasa-penonton-live-tangerang-murah",
+    "has_post": true,
+    "priority_score": 70,
+    "source": "suggest+combo",
+    "status": "generated",
+    "rank": 0,
+    "created_at": "2026-07-19T21:12:14.259913",
+    "generated_at": "2026-07-20T04:47:02.607Z"
   },
   {
     "keyword": "jasa iklan google solo murah",
@@ -332,7 +332,7 @@
     "status": "generated",
     "rank": 0,
     "created_at": "2026-07-19T21:12:14.259913",
-    "generated_at": "2026-07-20T05:05:12.828Z"
+    "generated_at": "2026-07-20T05:09:07.262Z"
   },
   {
     "keyword": "jasa iklan instagram bali murah",

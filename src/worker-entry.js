@@ -992,6 +992,7 @@ function renderDashboard(stats) {
 // Module-level helpers (used by both handleKeywordDashboard and render helpers)
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
+const escapeHtml = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 async function handleKeywordDashboard(request, env) {
   const url = new URL(request.url);
@@ -2066,7 +2067,68 @@ async function handleHourlyGenerate(request, env) {
                   headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
                   body: JSON.stringify({ message: `queue: mark ${toAdd.length} generated`, content: qContent, sha: qd.sha, branch: "main" }),
                 });
-                log.push({ stage: "github_commit_queue", ok: qPut.ok });
+log.push({ stage: "github_commit_queue", ok: qPut.ok });
+              }
+
+              // 3b. Auto-link: inject "Baca juga" section into 5 existing related posts
+              //     pointing to each new article (crawl discovery accelerator)
+              let linksInjected = 0;
+              try {
+                for (const newPost of toAdd) {
+                  // Find 5 existing posts that match service (and city if any)
+                  const related = posts
+                    .filter(p => p.slug !== newPost.slug && !p._retrofit_linked)  // exclude new + already linked this batch
+                    .map(p => {
+                      let score = 0;
+                      if (p.service === newPost.service) score += 10;
+                      if (newPost.city && p.city === newPost.city) score += 15;
+                      if (p.category === newPost.category) score += 3;
+                      return { ...p, _relScore: score };
+                    })
+                    .filter(p => p._relScore > 0)
+                    .sort((a, b) => b._relScore - a._relScore)
+                    .slice(0, 5);
+
+                  if (related.length === 0) continue;
+
+                  const linkBlock = `\n<hr/>\n<h2>Baca Juga: <a href="/blog/${newPost.slug}/">${escapeHtml(newPost.title)}</a></h2>\n<p>${newPost.excerpt}</p>`;
+                  let modified = false;
+                  for (const rel of related) {
+                    if (rel.content && !rel.content.includes(`/blog/${newPost.slug}/`)) {
+                      rel.content = rel.content.trimEnd() + linkBlock;
+                      rel._retrofit_linked = true;
+                      modified = true;
+                      linksInjected++;
+                    }
+                  }
+                  if (modified) {
+                    const updatedContent2 = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+                    const commitResp2 = await fetch(
+                      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                      {
+                        method: "PUT",
+                        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                        body: JSON.stringify({
+                          message: `link: ${newPost.slug} injected into ${related.length} related posts`,
+                          content: updatedContent2,
+                          sha: fileData.sha,  // Note: may fail if posts.json was modified mid-flight
+                          branch: "main",
+                        }),
+                      }
+                    );
+                    if (!commitResp2.ok) {
+                      // Likely sha mismatch (cron concurrent commit). Skip silently.
+                      log.push({ stage: "auto_link_sha_mismatch", slug: newPost.slug });
+                    } else {
+                      // Update sha for next iteration
+                      const data2 = await commitResp2.json();
+                      fileData.sha = data2.content?.sha || fileData.sha;
+                    }
+                  }
+                }
+                log.push({ stage: "auto_link", injected: linksInjected });
+              } catch (e) {
+                errors.push({ stage: "auto_link", error: e.message });
               }
 
               // Refresh posts-index.json

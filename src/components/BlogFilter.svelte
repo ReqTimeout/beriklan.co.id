@@ -75,11 +75,13 @@
             loaded = true;
         }
         // In-component reveal observer (BlogFilter is client:only, so the global
-        // observer in Layout.astro never sees these elements at page load)
+        // observer in Layout.astro never sees these elements at page load).
+        // Observe the .reveal-stagger CONTAINERS so the existing CSS rule
+        // `.reveal-stagger.revealed > *` can fade in their children.
         if (typeof IntersectionObserver !== 'undefined') {
             requestAnimationFrame(() => {
-                const els = rootEl?.querySelectorAll('.reveal-stagger, .reveal') || [];
-                if (els.length === 0) return;
+                const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
+                if (!els.length) return;
                 const io = new IntersectionObserver((entries) => {
                     for (const e of entries) {
                         if (e.isIntersecting) {
@@ -87,7 +89,7 @@
                             io.unobserve(e.target);
                         }
                     }
-                }, { threshold: 0.08, rootMargin: '-40px 0px' });
+                }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
                 els.forEach(el => io.observe(el));
             });
         }

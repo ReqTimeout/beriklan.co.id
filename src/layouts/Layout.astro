@@ -385,7 +385,10 @@ const showOrganization = true;
 	<script is:inline>
 		(function() {
 			if (typeof IntersectionObserver === 'undefined') return;
-			const items = document.querySelectorAll('[data-reveal], [data-reveal-stagger] > *');
+			// Observe BOTH single [data-reveal] elements AND the
+			// .reveal-stagger CONTAINERS (not their children — CSS rule is
+			// .reveal-stagger.revealed > *, so parent needs .revealed).
+			const items = document.querySelectorAll('[data-reveal], .reveal-stagger');
 			if (!items.length) return;
 			const io = new IntersectionObserver((entries) => {
 				entries.forEach(e => {
@@ -394,7 +397,7 @@ const showOrganization = true;
 						io.unobserve(e.target);
 					}
 				});
-			}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+			}, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
 			items.forEach(el => io.observe(el));
 		})();
 	</script>

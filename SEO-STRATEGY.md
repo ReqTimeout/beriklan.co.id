@@ -436,6 +436,183 @@ cron-job.org:
 
 ---
 
+
+## 📌 CATATAN OPERASIONAL (untuk referensi ke depan)
+
+### Cloudflare Cron Triggers — single source of truth
+
+**Tidak pakai cron-job.org / Hostinger cron / external scheduler.**
+Semua cron jobs dijalankan **native via Cloudflare Workers infrastructure**.
+
+Config di `web/wrangler.jsonc`:
+```json
+"triggers": [
+  { "cron": "0 * * * *" },      // hourly-generate (artikel baru)
+  { "cron": "0 */6 * * *" },   // gsc-indexing + trending-fetch
+  { "cron": "30 */6 * * *" }   // trending-generate
+]
+```
+
+Handler di `web/src/worker-entry.js`:
+- `async scheduled(event, env, ctx)` dispatch berdasarkan `event.cron`
+- Panggil HTTP handlers via `fakeRequest(path)` jadi single source of truth
+
+Jika ada perubahan:
+- ❌ JANGAN tambah cron-job.org job
+- ❌ JANGAN tambah Hostinger cron
+- ✅ Edit `wrangler.jsonc` triggers array + push ke GitHub
+- ✅ CF auto-deploy + auto-fire sesuai schedule
+
+**Verify cron firing**: 
+- CF Dashboard → Workers → `beriklanweb` → Logs
+- Filter: `[scheduled:hourly]`, `[scheduled:gsc-indexing]`, `[scheduled:trending-fetch]`, `[scheduled:trending-generate]`
+
+### HTTP Endpoints (untuk manual trigger / debugging)
+
+| Endpoint | Method | Token | Fungsi |
+|----------|--------|-------|--------|
+| `/api/health` | GET | no | Status check |
+| `/api/admin/keywords?token=...` | GET | yes | Pipeline dashboard (HTML) |
+| `/api/admin/keywords?token=...&count=1&debug=1` | - | yes | Test keyword pipeline |
+| `/api/cron/hourly-generate?token=...&count=N` | GET | yes | Generate N artikel dari queue |
+| `/api/cron/gsc-indexing?token=...&count=N` | GET | yes | Submit N URL ke GSC Indexing API |
+| `/api/cron/trending?token=...` | GET | yes | Fetch Google Trends RSS → D1 queue |
+| `/api/cron/trending-generate?token=...&count=N` | GET | yes | Process queue → artikel |
+| `/api/cron/indexing?token=...` | GET | yes | Daily IndexNow batch (legacy) |
+| `/api/ping-sitemap?token=...` | GET | yes | Submit sub-sitemaps to GSC |
+| `/api/health?token=...` | GET | yes | Detailed health stats |
+
+**ADMIN_TOKEN**: `beriklan-admin-2026` (set via wrangler.jsonc vars)
+**CF Zone ID**: `47f87944d6d690eb388e7be1143c14a2`
+**CF Account ID**: `766dfffa7e5dcd8ba246ebfa60bc10ba`
+
+### D1 Database
+- Name: `beriklan-seo`
+- Database ID: `0e71d6e3-231f-40a1-ac6b-6defc3976efd`
+- Tables: `pending_indexing`, `generated_drafts`, `cron_logs`, `trending_articles`, `trending_topics`, `gsc_sitemaps`, `gsc_stats`, `api_keys`, `api_key_usage`, `rate_limits`, `policy_audit_log`, `batch4_articles`, `batch4_queue`, `city_content`, `city_content_queue`
+
+### Secrets (di CF Dashboard → Workers → beriklanweb → Settings)
+- `ADMIN_TOKEN` (var) = `beriklan-admin-2026`
+- `GITHUB_TOKEN` (secret) = `[github PAT]` ⚠️ rotate setelah dipakai
+- `ZEN_API_KEY` (secret) = `[opencode.ai/zen key]`
+- `GROQ_API_KEY` (secret) = `[groq key 1]`
+- `GROQ_API_KEY_2` (secret) = `[groq key 2]`
+- `GROQ_API_KEY_3` (secret) = `[groq key 3]`
+- `GSC_SERVICE_ACCOUNT_JSON` (secret) = `[service account JSON]`
+
+### GitHub Repository
+- Repo: `https://github.com/ReqTimeout/beriklan.co.id`
+- Auto-deploy: push ke `main` → CF Workers auto-rebuild + deploy
+- ⚠️ **JANGAN commit tokens/secrets** (GitHub secret scanning akan block push)
+
+### Workers Plan
+- Workers Paid ($5/mo) — **ACTIVE** — untuk 30s CPU/wall time (perlu ini untuk count=5 hourly-generate)
+- Workers Free punya 10ms CPU limit → tidak cukup untuk keyword-queue.json (11MB) parse
+- Recommended: tetap di Paid ($5/bulan)
+
+---
+
+## 📊 CURRENT PROGRESS (per 2026-07-20)
+
+### ✅ DONE (verified working):
+1. ✅ Volume foundation: `/api/cron/hourly-generate` endpoint live
+2. ✅ Secrets configured: GITHUB_TOKEN, ZEN_API_KEY, GROQ_API_KEY
+3. ✅ Keyword expansion: 2,763 → **27,947 keywords** (intent matrix)
+4. ✅ Auto-link: new artikel di-link ke 5 related existing posts
+5. ✅ Cloudflare Cron Triggers: semua 4 jobs auto-fire (ganti cron-job.org/Hostinger)
+6. ✅ Workers Paid upgrade: 30s CPU budget aktif
+7. ✅ Multi-Groq-key support: GROQ_API_KEY_2/3/4/5 ready (untuk TPD quota)
+8. ✅ Rate-limit detection: keyword RATE_LIMITED di-keep pending untuk retry
+9. ✅ GSC Indexing API: `/api/cron/gsc-indexing` live, www.beriklan.co.id verified
+10. ✅ Trending pipeline: `/api/cron/trending` + `/api/cron/trending-generate` live
+11. ✅ Dashboard: 11 sections di `/api/admin/keywords`
+12. ✅ SEO-STRATEGY.md v3.0 + CLAUDE.md maintained
+13. ✅ Auto-link SHA robustness: re-fetch + retry on 409
+
+### 🚧 NEXT PRIORITIES (urutan eksekusi):
+
+#### 🔴 P0 — CRITICAL (minggu ini, blok ranking)
+
+| # | Item | Effort | Impact |
+|---|------|--------|--------|
+| **P0.1** | **Page speed audit + LCP < 2s** | 🎯 1 hari | Tanpa ini Google deprioritize ranking |
+| **P0.2** | **Google Business Profile setup + verify** | 🎯 1 hari | WAJIB untuk local SEO UMKM |
+| **P0.3** | **Add 2 Groq keys + add ZEN key as 2nd primary** | 🚀 10 menit | TPD quota 3× → 300K/hari |
+
+#### 🟡 P1 — HIGH (minggu depan, traffic naik)
+
+| # | Item | Effort | Impact |
+|---|------|--------|--------|
+| **P1.1** | **Backlink strategy — 50 directory submissions** | 🎯 3 hari | Domain authority |
+| **P1.2** | **Pillar page per service (5000 kata)** | 🎯 3 hari | Topical authority |
+| **P1.3** | **YouTube channel + video embed di artikel** | 🎯 1 minggu | Double SERP exposure |
+| **P1.4** | **People Also Ask (PAA) content extraction** | 🎯 3 hari | Slot #0 Google |
+| **P1.5** | **Featured snippet optimization** | 🎯 2 hari | Snippet ranking |
+
+#### 🟢 P2 — MEDIUM (bulan ini, conversion & scale)
+
+| # | Item | Effort | Impact |
+|---|------|--------|--------|
+| **P2.1** | **Calculator tools (budget iklan, ROAS, kalkulator ROI)** | 🎯 1 minggu | Dwell time + backlinks |
+| **P2.2** | **Programmatic SEO: `/harga-iklan-{platform}/{city}/`** | 🎯 1 minggu | Ribuan URL baru |
+| **P2.3** | **Original research / data survey industri iklan ID** | 🎯 1 minggu | Backlink magnet |
+| **P2.4** | **AggregateRating schema (real reviews)** | 🎯 1 hari | Stars di SERP |
+| **P2.5** | **A/B testing title (CTR optimization)** | 🎯 ongoing | Traffic +20-50% |
+| **P2.6** | **Email capture + drip campaign** | 🎯 1 minggu | Lead nurture |
+
+#### 🔵 P3 — LATER (kuartal ini, scale & defend)
+
+| # | Item | Effort | Impact |
+|---|------|--------|--------|
+| **P3.1** | **Guest posts 5 situs DR>50** | 🎯 2 minggu | Authority |
+| **P3.2** | **LinkedIn + TikTok brand entity** | 🎀 2 hari | B2B leads |
+| **P3.3** | **HARO / journalist outreach** | 🎯 ongoing | DR boost |
+| **P3.4** | **TikTok account cross-post** | 🎯 1 minggu | Brand entity |
+| **P3.5** | **Podcasts (3-5 episode)** | 💡 1 bulan | Brand awareness |
+| **P3.6** | **Multi-bahasa (English version)** | 💡 1 bulan | Global market |
+
+#### ⚪ NICE-TO-HAVE (backlog)
+
+| # | Item | Effort | Impact |
+|---|------|--------|--------|
+| **N.1** | **Auto-refresh content "aging"** | 🎯 ongoing | Freshness signal |
+| **N.2** | **News/jurnalistik content launches** | 🎯 ongoing | Backlink magnet |
+| **N.3** | **Infographics untuk shareability** | 🎯 ongoing | Social signals |
+| **N.4** | **Lead scoring** | 💡 ongoing | Quality lead |
+| **N.5** | **Retargeting pixel (FB/Google)** | 🎯 2 hari | Conversion lift |
+| **N.6** | **Testimonials + case studies** | 🎯 1 hari | Social proof |
+| **N.7** | **Competitor monitoring** | 🎯 ongoing | Defensive SEO |
+| **N.8** | **Cluster articles auto-link to pillar** | 🚀 2 jam | Internal SEO juice |
+
+---
+
+## 📊 KPI Tracker (target 6 bulan)
+
+| Metric | Current | Target 30d | Target 90d | Target 180d |
+|--------|---------|------------|------------|-------------|
+| Posts published | 2,042 | 3,000 | 6,000 | 12,000 |
+| Keywords ranked | ~few | 200 | 1,500 | 5,000 |
+| Organic traffic/bulan | ~10K | 30K | 100K | 300K |
+| AdSense/bulan | $20-50 | $100 | $400 | $1500 |
+| WA leads/bulan | ~10 | 30 | 100 | 300 |
+| Domain Rating | ~5 | 15 | 30 | 50 |
+| Index % posts | ~70% | 90% | 95% | 98% |
+
+---
+
+## 🔧 TROUBLESHOOTING (cek ini dulu kalau ada masalah)
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `/api/cron/*` returns HTTP 503 | Secret not set | Check CF Dashboard Variables |
+| GSC submit 403 PERMISSION_DENIED | URL form mismatch | Submit `https://www.beriklan.co.id/...` (with www) |
+| AI returns "Zen + Groq both empty" | Rate limit hit | Tunggu reset, atau tambah Groq key |
+| Posts.json tidak update | SHA race cron concurrent | Retry — auto-handled |
+| `daily_count` shows 0 | CF edge cache stale | `purge_cache` API |
+| Article tidak muncul di blog | post.slug duplicate | Cek existing posts.json |
+| `article.length < 500` | AI response stripped (markdown fences) | Auto-handled in code |
+
+
 ## 📚 REFERENCES
 
 - `web/scripts/gen_keyword_stats.py` — keyword stats generator (build-time)
@@ -453,6 +630,7 @@ cron-job.org:
 
 ## ✍️ VERSION HISTORY
 
+- **v4.0 (2026-07-20):** Auto-generation pipeline complete (Cloudflare Cron Triggers + 27,947 keywords + GSC Indexing + Trending). Roadmap di-restructure per priority P0-P3.
 - **v3.0 (2026-07-20):** Audit ulang dengan 7 gap baru (GBP, YouTube, E-E-A-T, programmatic, research, multimedia, brand)
 - **v2.0 (2026-07-19):** Tier 1 selesai (volume foundation + dashboard)
 - **v1.0 (2026-07-15):** Initial strategy document

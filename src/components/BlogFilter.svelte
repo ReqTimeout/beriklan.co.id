@@ -77,6 +77,7 @@
         // In-component reveal observer (BlogFilter is client:only, so the global
         // observer in Layout.astro never sees these elements at page load).
         if (typeof IntersectionObserver !== 'undefined') {
+            document.documentElement.classList.add('js-reveal-ready');
             const setup = () => {
                 const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
                 if (!els.length) return;
@@ -91,12 +92,11 @@
                 els.forEach(el => io.observe(el));
             };
             requestAnimationFrame(setup);
-            // Safety net: force-reveal everything after 800ms in case the
-            // observer fails to fire (Svelte hydration timing edge cases)
+            // Safety net: reveal everything after 1.2s in case observer never fires
             setTimeout(() => {
                 const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
                 els.forEach(el => el.classList.add('revealed'));
-            }, 800);
+            }, 1200);
         }
     });
 

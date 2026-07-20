@@ -385,9 +385,8 @@ const showOrganization = true;
 	<script is:inline>
 		(function() {
 			if (typeof IntersectionObserver === 'undefined') return;
-			// Observe BOTH single [data-reveal] elements AND the
-			// .reveal-stagger CONTAINERS (not their children — CSS rule is
-			// .reveal-stagger.revealed > *, so parent needs .revealed).
+			// Mark html so CSS only hides elements when JS observer is ready
+			document.documentElement.classList.add('js-reveal-ready');
 			const items = document.querySelectorAll('[data-reveal], .reveal-stagger');
 			if (!items.length) return;
 			const io = new IntersectionObserver((entries) => {
@@ -425,21 +424,28 @@ const showOrganization = true;
         display: none;
     }
     
-    /* === GLOBAL: smooth scroll-reveal animations === */
+    /* === GLOBAL: smooth scroll-reveal animations (progressive enhancement) ===
+       Content is visible by default. JS marks html.js-reveal-ready BEFORE the
+       observer runs, so reveal animation only hides content when JS is alive
+       and ready to reveal it. If JS / observer fails, content stays visible. */
     @media (prefers-reduced-motion: no-preference) {
-        .reveal {
+        html.js-reveal-ready .reveal {
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .reveal.revealed { opacity: 1; transform: translateY(0); }
+        html.js-reveal-ready .reveal.revealed { opacity: 1; transform: translateY(0); }
         
-        .reveal-stagger > * {
+        /* Reveal animation — progressive enhancement.
+           Children start visible by default; if JS marks .js-reveal-ready on
+           html, we hide them and the observer flips to .revealed on scroll.
+           This guarantees content is visible even if JS / observer fails. */
+        html.js-reveal-ready .reveal-stagger > * {
             opacity: 0;
             transform: translateY(16px);
             transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .reveal-stagger.revealed > * { opacity: 1; transform: translateY(0); }
+        html.js-reveal-ready .reveal-stagger.revealed > * { opacity: 1; transform: translateY(0); }
         .reveal-stagger.revealed > *:nth-child(1) { transition-delay: 0ms; }
         .reveal-stagger.revealed > *:nth-child(2) { transition-delay: 80ms; }
         .reveal-stagger.revealed > *:nth-child(3) { transition-delay: 160ms; }

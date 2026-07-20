@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-19T00:00:00",
-  "total_posts": 1966,
+  "generated_at": "2026-07-20T00:00:00",
+  "total_posts": 2027,
   "buckets": {
-    "recent": 1139,
+    "recent": 1200,
     "aging": 59,
     "stale": 768
   },
-  "stale_pct": 39.1,
+  "stale_pct": 37.9,
   "refreshed_count": 0,
   "review_queue_size": 768,
   "top_queue": [
@@ -22,7 +22,7 @@
       "slug": "jasa-pasang-iklan-facebook-ads-5",
       "title": "Jasa Pasang Iklan Facebook Ads",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -30,7 +30,7 @@
       "slug": "jasa-pasang-iklan-di-facebook-murah-2023",
       "title": "Jasa Pasang Iklan Di Facebook Murah",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -38,7 +38,7 @@
       "slug": "jasa-pasang-iklan-di-facebook-murah-11",
       "title": "Jasa Pasang Iklan Di Facebook Murah",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -46,7 +46,7 @@
       "slug": "jasa-pasang-iklan-facebook-8",
       "title": "Jasa Pasang Iklan Facebook",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -54,7 +54,7 @@
       "slug": "jasa-pasang-iklan-facebook-murah-14",
       "title": "Jasa Pasang Iklan Facebook Murah",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -62,7 +62,7 @@
       "slug": "pasang-iklan-facebook-dan-instagram",
       "title": "Pasang Iklan Facebook Dan Instagram",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -70,7 +70,7 @@
       "slug": "jasa-iklan-facebook-jakarta-murah",
       "title": "Jasa Iklan Facebook Jakarta",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -78,7 +78,7 @@
       "slug": "jasa-iklan-facebook-harian-murah",
       "title": "Jasa Iklan Facebook Harian",
       "category": "meta",
-      "age_months": 85.8,
+      "age_months": 85.9,
       "priority": 3,
       "refreshed": false
     },
@@ -86,7 +86,7 @@
       "slug": "iklan-facebook-murah",
       "title": "Iklan Facebook Murah",
       "category": "google",
-      "age_months": 62.9,
+      "age_months": 63.0,
       "priority": 3,
       "refreshed": false
     },
@@ -102,7 +102,7 @@
       "slug": "apa-itu-facebook-ads",
       "title": "Apa Itu Facebook Ads",
       "category": "meta",
-      "age_months": 61.5,
+      "age_months": 61.6,
       "priority": 3,
       "refreshed": false
     },
@@ -115,6 +115,14 @@
       "refreshed": false
     },
     {
+      "slug": "layanan-iklan-di-instagram-jogja",
+      "title": "Layanan Iklan di Instagram Jogja",
+      "category": "google",
+      "age_months": 59.3,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
       "slug": "cara-pasang-iklan-di-facebook-murah",
       "title": "Cara Pasang Iklan di Facebook",
       "category": "google",
@@ -123,10 +131,66 @@
       "refreshed": false
     },
     {
-      "slug": "layanan-iklan-di-instagram-jogja",
-      "title": "Layanan Iklan di Instagram Jogja",
+      "slug": "iklan-instagram-tertarget",
+      "title": "Iklan Instagram Tertarget",
       "category": "google",
-      "age_months": 59.2,
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "iklan-facebook-tertarget",
+      "title": "Iklan Facebook Tertarget",
+      "category": "google",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "jasa-iklan-instagram-bali",
+      "title": "Jasa Iklan Instagram Bali",
+      "category": "google",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "jasa-iklan-facebook-bandung",
+      "title": "Jasa Iklan Facebook Bandung",
+      "category": "google",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "jasa-iklan-facebook-bali",
+      "title": "Jasa Iklan Facebook Bali",
+      "category": "google",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "jasa-iklan-facebook-jakarta",
+      "title": "Jasa Iklan Facebook Jakarta",
+      "category": "google",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "cara-beriklan-di-instagram",
+      "title": "Cara Beriklan di Instagram",
+      "category": "meta",
+      "age_months": 45.4,
+      "priority": 3,
+      "refreshed": false
+    },
+    {
+      "slug": "jasa-iklan-fb-ads",
+      "title": "Jasa Iklan Fb Ads",
+      "category": "google",
+      "age_months": 45.4,
       "priority": 3,
       "refreshed": false
     },
@@ -267,66 +331,18 @@
       "refreshed": false
     },
     {
-      "slug": "iklan-instagram-tertarget",
-      "title": "Iklan Instagram Tertarget",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "iklan-facebook-tertarget",
-      "title": "Iklan Facebook Tertarget",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-iklan-instagram-bali",
-      "title": "Jasa Iklan Instagram Bali",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-iklan-facebook-bandung",
-      "title": "Jasa Iklan Facebook Bandung",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-iklan-facebook-bali",
-      "title": "Jasa Iklan Facebook Bali",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-iklan-facebook-jakarta",
-      "title": "Jasa Iklan Facebook Jakarta",
-      "category": "google",
-      "age_months": 45.3,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "cara-beriklan-di-instagram",
-      "title": "Cara Beriklan di Instagram",
+      "slug": "kenapa-harus-pasang-ads-di-instagram",
+      "title": "Kenapa Harus Pasang Ads Di Instagram ?",
       "category": "meta",
-      "age_months": 45.3,
+      "age_months": 40.9,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-iklan-fb-ads",
-      "title": "Jasa Iklan Fb Ads",
-      "category": "google",
-      "age_months": 45.3,
+      "slug": "jasa-membuat-iklan-di-instagram",
+      "title": "Jasa Membuat Iklan Di Instagram",
+      "category": "meta",
+      "age_months": 40.8,
       "priority": 3,
       "refreshed": false
     },
@@ -347,64 +363,48 @@
       "refreshed": false
     },
     {
-      "slug": "kenapa-harus-pasang-ads-di-instagram",
-      "title": "Kenapa Harus Pasang Ads Di Instagram ?",
-      "category": "meta",
-      "age_months": 40.8,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-digital-marketing-batam",
-      "title": "Jasa Digital Marketing Batam",
+      "slug": "digital-marketing-services-in-malaysia",
+      "title": "Digital Marketing Services in Malaysia",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-digital-marketing-pontianak",
-      "title": "Jasa Digital Marketing Pontianak",
+      "slug": "digital-marketing-services-in-kuala-lumpur",
+      "title": "Digital Marketing Services in Kuala Lumpur",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-digital-marketing-cimahi",
-      "title": "Jasa Digital Marketing Cimahi",
+      "slug": "jasa-digital-marketing-lampung",
+      "title": "Jasa Digital Marketing Lampung",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-digital-marketing-malang",
-      "title": "Jasa Digital Marketing Malang",
+      "slug": "jasa-digital-marketing-palembang",
+      "title": "Jasa Digital Marketing Palembang",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-digital-marketing-medan",
-      "title": "Jasa Digital Marketing Medan",
+      "slug": "jasa-digital-marketing-sidoarjo",
+      "title": "Jasa Digital Marketing Sidoarjo",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,
       "refreshed": false
     },
     {
-      "slug": "jasa-digital-marketing-aceh",
-      "title": "Jasa Digital Marketing Aceh",
-      "category": "strategy",
-      "age_months": 40.7,
-      "priority": 3,
-      "refreshed": false
-    },
-    {
-      "slug": "jasa-digital-marketing-padang",
-      "title": "Jasa Digital Marketing Padang",
+      "slug": "jasa-digital-marketing-surabaya",
+      "title": "Jasa Digital Marketing Surabaya",
       "category": "strategy",
       "age_months": 40.7,
       "priority": 3,

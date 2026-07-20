@@ -1175,6 +1175,7 @@ async function handleKeywordDashboard(request, env) {
 
   ${await renderHourlyGenStatus(env)}
   ${await renderTrendingStatus(env, ks)}
+  ${await renderDirectoryBacklinks(env)}
   ${renderRoadmap()}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
@@ -1185,6 +1186,75 @@ async function handleKeywordDashboard(request, env) {
 </body>
 </html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
+}
+
+// ─── Directory Backlinks (P1.1) ────────────────
+async function renderDirectoryBacklinks(env) {
+  // Read directory-progress.json from ASSETS
+  let prog = null;
+  try {
+    const r = await env.ASSETS.fetch(new URL("https://assets/data/directory-progress.json"));
+    if (r.ok) prog = await r.json();
+  } catch (e) {}
+  if (!prog || !prog.summary) {
+    return `
+      <h3 class="section-title">🔗 Directory Backlinks (P1.1)</h3>
+      <div class="card"><p style="color:#999;font-size:13px;">directory-progress.json belum tersedia. Run <code>python3 scripts/directory_tracker.py export</code>.</p></div>
+    `;
+  }
+  const s = prog.summary;
+  const items = prog.items || [];
+  // Top 10 high-priority pending
+  const topPending = items
+    .filter(x => x.status === "pending" && x.priority === "high")
+    .sort((a, b) => b.domain_rating - a.domain_rating)
+    .slice(0, 10);
+  // Recent submissions
+  const recentSubmitted = items
+    .filter(x => x.status === "submitted" || x.status === "live")
+    .sort((a, b) => (b.submitted_at || "").localeCompare(a.submitted_at || ""))
+    .slice(0, 10);
+
+  const pendingRows = topPending.map(x =>
+    `<tr>
+      <td>${esc(x.name)}</td>
+      <td><span class="badge">${esc(x.category)}</span></td>
+      <td>${x.domain_rating}</td>
+      <td><a href="${esc(x.submit_url)}" target="_blank">submit ↗</a></td>
+    </tr>`
+  ).join("");
+
+  const recentRows = recentSubmitted.map(x =>
+    `<tr>
+      <td>${esc(x.name)}</td>
+      <td><span class="badge ${x.status === 'live' ? 'green' : 'yellow'}">${x.status}</span></td>
+      <td>${x.domain_rating}</td>
+      <td>${x.live_url ? `<a href="${esc(x.live_url)}" target="_blank">profile ↗</a>` : '-'}</td>
+      <td style="color:#999;font-size:12px;">${esc((x.submitted_at || '').slice(0, 16))}</td>
+    </tr>`
+  ).join("");
+
+  return `
+    <h3 class="section-title">🔗 Directory Backlinks (P1.1 — Domain Authority)</h3>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:12px;">
+      <div class="card"><h2>Progress</h2><div class="metric">${s.progress_pct || 0}%</div><div class="sub">${s.submitted + s.live}/${s.total} done</div></div>
+      <div class="card success"><h2>Live Backlinks</h2><div class="metric">${s.live || 0}</div><div class="sub">confirmed live (backlink)</div></div>
+      <div class="card info"><h2>Avg DR (live)</h2><div class="metric">${s.avg_dr_live || 0}</div><div class="sub">higher = more SEO value</div></div>
+      <div class="card warning"><h2>Pending High-DR</h2><div class="metric">${(items || []).filter(x => x.status === 'pending' && x.priority === 'high').length}</div><div class="sub">submit these first</div></div>
+    </div>
+    ${topPending.length > 0 ? `
+      <h4 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#666;">Top 10 High-Priority Pending (submit these first)</h4>
+      <table><thead><tr><th>Directory</th><th>Category</th><th>DR</th><th>Link</th></tr></thead><tbody>${pendingRows}</tbody></table>
+    ` : ''}
+    ${recentSubmitted.length > 0 ? `
+      <h4 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#666;">Recent Submissions</h4>
+      <table><thead><tr><th>Directory</th><th>Status</th><th>DR</th><th>Live URL</th><th>Submitted</th></tr></thead><tbody>${recentRows}</tbody></table>
+    ` : ''}
+    <p class="sub" style="color:#666;font-size:12px;margin-top:12px;">
+      💡 Track via CLI: <code>python3 scripts/directory_tracker.py status clutch-co submitted</code>. Then <code>export</code> to refresh dashboard.
+      Full list: <code>directory_tracker.py list --priority high --dr-min 70</code>
+    </p>
+  `;
 }
 
 // ─── Trending Articles (recent trending posts) ────────────────
@@ -1310,7 +1380,7 @@ function renderRoadmap() {
     { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
     { phase: "P3", label: "Calculator tools (budget iklan)", status: "pending", note: "dwell time + backlink" },
     { phase: "P4", label: "Google Business Profile + optimize", status: "pending", note: "WAJIB untuk local SEO" },
-    { phase: "P4", label: "Backlink 50 directory + 5 guest post", status: "pending", note: "DR boost" },
+    { phase: "P4", label: "Backlink 50 directory + 5 guest post", status: "in-progress", note: "✅ 90 dirs curated, tracker + dashboard live. P1.1 = directory submission phase" },
     { phase: "P4", label: "YouTube channel + video embed", status: "pending", note: "double SERP exposure" },
     { phase: "P4", label: "LinkedIn + TikTok brand entity", status: "pending", note: "off-page signals" },
     { phase: "P5", label: "AggregateRating schema + reviews", status: "pending", note: "stars di SERP" },

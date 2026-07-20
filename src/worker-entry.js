@@ -1941,24 +1941,22 @@ async function handleHourlyGenerate(request, env) {
       return new Response(JSON.stringify({ ok: true, generated: 0, message: "no pending keywords", log, errors }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // 2b. Pre-flight: validate GitHub token + ensure generated_drafts table
+    // 2b. Pre-flight: ensure generated_drafts table exists (independent of GitHub)
     let hasGitHub = !!env.GITHUB_TOKEN;
-    if (hasGitHub) {
-      try {
-        await env.DB.prepare(`CREATE TABLE IF NOT EXISTS generated_drafts (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          slug TEXT UNIQUE NOT NULL,
-          title TEXT NOT NULL,
-          content TEXT NOT NULL,
-          service TEXT,
-          city TEXT,
-          source TEXT,
-          status TEXT DEFAULT 'pending',
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          committed_at TEXT
-        )`).run();
-      } catch (e) { /* table may already exist */ }
-    }
+    try {
+      await env.DB.prepare(`CREATE TABLE IF NOT EXISTS generated_drafts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT UNIQUE NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        service TEXT,
+        city TEXT,
+        source TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        committed_at TEXT
+      )`).run();
+    } catch (e) { /* table may already exist */ }
 
     // 3. For each pending keyword, generate article via Zen (fallback Groq)
     const newPosts = [];

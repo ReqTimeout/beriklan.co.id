@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 /* City-page AI content — blog-like typography (mirrors blog .prose) */
-.prose-content { color: #1f2937; font-size: 1rem; line-height: 1.8; }
+.prose-content { color: #1f2937; font-size: 1rem; line-height: 1.8; overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
+.prose-content a, .prose-content code { overflow-wrap: anywhere; word-break: break-word; }
 .prose-content h1 { font-size: 1.875rem; font-weight: 800; margin: 2rem 0 1rem; color: #0f1e3d; line-height: 1.2; }
 .prose-content h2 { font-size: 1.5rem; font-weight: 800; margin: 2.5rem 0 1rem; color: #0f1e3d; line-height: 1.25; }
 .prose-content h3 { font-size: 1.25rem; font-weight: 700; margin: 2rem 0 0.75rem; color: #0f1e3d; line-height: 1.3; }

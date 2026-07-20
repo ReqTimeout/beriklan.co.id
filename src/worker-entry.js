@@ -993,6 +993,16 @@ function renderDashboard(stats) {
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
 const escapeHtml = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// Multi-key support: GROQ_API_KEY, GROQ_API_KEY_2, GROQ_API_KEY_3, ...
+// Returns deduplicated list of non-empty Groq API keys from env.
+function getGroqKeys(env) {
+  const keys = [];
+  for (let i = 1; i <= 5; i++) {
+    const k = i === 1 ? env.GROQ_API_KEY : env[`GROQ_API_KEY_${i}`];
+    if (k && !keys.includes(k)) keys.push(k);
+  }
+  return keys;
+}
 
 async function handleKeywordDashboard(request, env) {
   const url = new URL(request.url);
@@ -1147,6 +1157,11 @@ async function handleKeywordDashboard(request, env) {
 async function renderHourlyGenStatus(env) {
   if (!env.DB) return "";
   try {
+    // Count rate-limit events (last 24h) for visibility
+    const rateLimitRow = await env.DB.prepare(
+      `SELECT COUNT(*) as n FROM cron_logs
+       WHERE urls_processed = 0 AND timestamp > datetime('now', '-24 hours')`
+    ).first();
     const drafts = await env.DB.prepare(
       `SELECT slug, title, service, city, status, created_at, committed_at
        FROM generated_drafts ORDER BY id DESC LIMIT 10`
@@ -1624,7 +1639,12 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
     const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
     const aiEndpoints = [];
     if (env.ZEN_API_KEY) aiEndpoints.push({ name: "zen", url: "https://opencode.ai/zen/v1/chat/completions", key: env.ZEN_API_KEY, models: zenModels, thinkingDisabled: true });
-    if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
+    if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq-1", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
+    // Additional Groq keys (round-robin via aiEndpoints)
+    const groqKeysAll = getGroqKeys(env);
+    for (let i = 1; i < groqKeysAll.length; i++) {
+      aiEndpoints.push({ name: `groq-${i + 1}`, url: "https://api.groq.com/openai/v1/chat/completions", key: groqKeysAll[i], models: groqModels, thinkingDisabled: false });
+    }
     if (aiEndpoints.length === 0) {
       errors.push({stage: "ai_config", message: "No AI key set (ZEN_API_KEY or GROQ_API_KEY)"});
     }
@@ -2353,34 +2373,54 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
     zenDiag = { skipped: "no ZEN_API_KEY" };
   }
 
-  // Fallback Groq
-  if (!article && env.GROQ_API_KEY) {
-    try {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 4000,
-          temperature: 0.7,
-        }),
-      });
-      groqDiag = { status: r.status, ok: r.ok };
-      if (r.ok) {
-        const data = await r.json();
-        article = (data.choices?.[0]?.message?.content || "").trim();
-        if (article.startsWith("```html")) article = article.slice(7);
-        if (article.startsWith("```")) article = article.slice(3);
-        if (article.endsWith("```")) article = article.slice(0, -3);
-        article = article.trim();
-        groqDiag.len = article.length;
-        groqDiag.model = data.model;
-        if (article.length > 500) modelUsed = `groq/llama-3.3-70b-versatile`;
-      } else {
-        try { groqDiag.body = (await r.text()).slice(0, 200); } catch {}
+  // Fallback Groq — try ALL configured keys until one succeeds or all 429
+  if (!article) {
+    const groqKeys = getGroqKeys(env);
+    if (groqKeys.length > 0) {
+      const groqResults = [];
+      for (let i = 0; i < groqKeys.length && !article; i++) {
+        const groqKey = groqKeys[i];
+        const keyLabel = `groq#${i + 1}`;
+        try {
+          const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "llama-3.3-70b-versatile",
+              messages: [{ role: "user", content: prompt }],
+              max_tokens: 4000,
+              temperature: 0.7,
+            }),
+          });
+          groqResults.push({ key: keyLabel, status: r.status, ok: r.ok });
+          if (r.ok) {
+            const data = await r.json();
+            const cand = (data.choices?.[0]?.message?.content || "").trim();
+            const cleaned = cand.replace(/^```html/, "").replace(/^```/, "").replace(/```$/, "").trim();
+            if (cleaned.length > 500) {
+              article = cleaned;
+              groqDiag = { key: keyLabel, status: 200, len: cleaned.length, model: data.model };
+              modelUsed = `groq/llama-3.3-70b-versatile (${keyLabel})`;
+              break;
+            }
+          } else {
+            try {
+              const body = await r.text();
+              groqResults[groqResults.length - 1].body = body.slice(0, 200);
+            } catch {}
+          }
+        } catch (e) {
+          groqResults.push({ key: keyLabel, error: String(e).slice(0, 100) });
+        }
       }
-    } catch (e) { /* fallthrough */ }
+      // If none succeeded, set groqDiag to first failure (representative)
+      if (!article) {
+        const first = groqResults[0] || {};
+        groqDiag = { tried: groqResults.length, results: groqResults, ...first };
+      }
+    } else {
+      groqDiag = { skipped: "no GROQ_API_KEY*" };
+    }
   }
 
   if (!article || article.length < 500) {
@@ -2536,17 +2576,24 @@ async function handleBatch4(request, env) {
       }
       const prompt = `Tulis artikel SEO Bahasa Indonesia untuk topik: "${q.keyword}". Konteks: layanan ${svcName}, lokasi ${city}, tipe ${intentWord}. Tone profesional, terukur. Format HTML mulai dari <h2>. Struktur: <h2>Pendahuluan</h2> (1 paragraf tentang ${q.keyword} di ${city}), <h2>Cara Kerja & Langkah Praktis</h2> (<ul> 4 langkah), <h2>Yang Perlu Dihindari</h2> (<ul>), <h2>Pertanyaan yang Sering Diajukan</h2> (3x <h3>+<p> FAQ lokal ${city}), <h2>Kesimpulan</h2> (1 paragraf + CTA WhatsApp). Target 400-550 kata. Sebut ${city} dan ${svcName} natural. JANGAN pakai: bikin, gak, nggak, pasti untung, garansi 100%. Output HANYA HTML mulai <h2>.`;
       let content = null;
-      if (env.GROQ_API_KEY) {
+      const groqKeys = getGroqKeys(env);
+      if (groqKeys.length > 0) {
         for (const mdl of ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]) {
-          try {
-            const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-              method: "POST",
-              headers: { "Authorization": `Bearer ${env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1200, temperature: 0.7 }),
-            });
-            if (gr.ok) { content = (await gr.json()).choices[0].message.content.trim(); break; }
-            errors.push({ slug: q.slug, model: mdl, status: gr.status });
-          } catch (e) { errors.push({ slug: q.slug, model: mdl, stage: "groq", error: e.message }); }
+          if (content) break;
+          for (const groqKey of groqKeys) {
+            try {
+              const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1200, temperature: 0.7 }),
+              });
+              if (gr.ok) {
+                const cand = (await gr.json()).choices[0].message.content.trim();
+                if (cand.length > 200) { content = cand; break; }
+              }
+              errors.push({ slug: q.slug, model: mdl, status: gr.status });
+            } catch (e) { errors.push({ slug: q.slug, model: mdl, stage: "groq", error: e.message }); }
+          }
         }
       }
       if (!content) { errors.push({ slug: q.slug, stage: "no_content" }); continue; }
@@ -2724,17 +2771,24 @@ async function handleCityEnrich(request, env) {
       }
       const prompt = buildCityPrompt(cityObj, q.service);
       let html = null;
-      if (env.GROQ_API_KEY) {
+      const groqKeys = getGroqKeys(env);
+      if (groqKeys.length > 0) {
         for (const mdl of ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]) {
-          try {
-            const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-              method: "POST",
-              headers: { "Authorization": `Bearer ${env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0.7 }),
-            });
-            if (gr.ok) { html = (await gr.json()).choices[0].message.content.trim(); break; }
-            errors.push({ route: q.route, model: mdl, status: gr.status });
-          } catch (e) { errors.push({ route: q.route, model: mdl, stage: "groq", error: e.message }); }
+          if (html) break;
+          for (const groqKey of groqKeys) {
+            try {
+              const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0.7 }),
+              });
+              if (gr.ok) {
+                const cand = (await gr.json()).choices[0].message.content.trim();
+                if (cand.length > 200) { html = cand; break; }
+              }
+              errors.push({ route: q.route, model: mdl, status: gr.status });
+            } catch (e) { errors.push({ route: q.route, model: mdl, stage: "groq", error: e.message }); }
+          }
         }
       }
       if (!html) { errors.push({ route: q.route, stage: "no_content" }); continue; }

@@ -1,24 +1,25 @@
 {
-  "generated_at": "2026-07-20T11:51:14",
+  "generated_at": "2026-07-20T13:31:04",
   "keywords": {
     "total": 27947,
-    "generated": 63,
-    "pending": 27884,
-    "live_in_posts": 100,
+    "generated": 67,
+    "pending": 27880,
+    "live_in_posts": 106,
     "coverage": 0.2
   },
   "posts": {
-    "total": 2031,
-    "generated": 1204,
+    "total": 2037,
+    "generated": 1210,
     "by_service": {
-      "jasa-digital-marketing": 571,
+      "jasa-digital-marketing": 574,
       "jasa-iklan-facebook": 311,
-      "jasa-iklan-google": 126,
+      "jasa-iklan-google": 127,
       "jasa-pembuatan-website": 81,
       "jasa-iklan-youtube": 33,
       "jasa-iklan-tiktok": 28,
       "jasa-iklan-instagram": 27,
-      "jasa-pembuatan-landing-page": 27
+      "jasa-pembuatan-landing-page": 27,
+      "jasa-view-live": 2
     }
   },
   "by_service": [
@@ -95,9 +96,9 @@
     {
       "key": "Jasa Digital Marketing",
       "total": 1477,
-      "generated": 8,
-      "pending": 1469,
-      "coverage": 0.5
+      "generated": 12,
+      "pending": 1465,
+      "coverage": 0.8
     },
     {
       "key": "Lainnya / Umum",
@@ -111,23 +112,23 @@
     {
       "key": "Jakarta",
       "total": 1066,
-      "generated": 6,
-      "pending": 1060,
-      "coverage": 0.6
+      "generated": 7,
+      "pending": 1059,
+      "coverage": 0.7
     },
     {
       "key": "Bandung",
       "total": 1061,
-      "generated": 5,
-      "pending": 1056,
-      "coverage": 0.5
+      "generated": 7,
+      "pending": 1054,
+      "coverage": 0.7
     },
     {
       "key": "Surabaya",
       "total": 1061,
-      "generated": 2,
-      "pending": 1059,
-      "coverage": 0.2
+      "generated": 3,
+      "pending": 1058,
+      "coverage": 0.3
     },
     {
       "key": "Yogyakarta",
@@ -309,8 +310,8 @@
     {
       "key": "expansion_v1",
       "total": 25184,
-      "generated": 1,
-      "pending": 25183,
+      "generated": 5,
+      "pending": 25179,
       "coverage": 0.0
     },
     {
@@ -334,9 +335,45 @@
       "slug": "harga-jasa-digital-marketing-di-jakarta-2026",
       "service": "Jasa Digital Marketing",
       "city": "Jakarta",
-      "live": true,
+      "live": false,
       "created_at": "2026-07-20T12:00:00",
       "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-jakarta-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Jakarta 2027",
+      "slug": "harga-jasa-digital-marketing-di-jakarta-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Jakarta",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-jakarta-2027/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Bandung 2026",
+      "slug": "harga-jasa-digital-marketing-di-bandung-2026",
+      "service": "Jasa Digital Marketing",
+      "city": "Bandung",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bandung-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Bandung 2027",
+      "slug": "harga-jasa-digital-marketing-di-bandung-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Bandung",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bandung-2027/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Surabaya 2026",
+      "slug": "harga-jasa-digital-marketing-di-surabaya-2026",
+      "service": "Jasa Digital Marketing",
+      "city": "Surabaya",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-surabaya-2026/"
     },
     {
       "keyword": "jasa iklan facebook depok murah",
@@ -652,42 +689,6 @@
       "live": true,
       "created_at": "2026-07-19T08:18:57",
       "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-profesional-untuk-pemula/"
-    },
-    {
-      "keyword": "jasa digital marketing terbaik",
-      "slug": "jasa-digital-marketing-terbaik",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-digital-marketing-terbaik/"
-    },
-    {
-      "keyword": "jasa pembuat website murah harga",
-      "slug": "jasa-pembuat-website-murah-harga",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuat-website-murah-harga/"
-    },
-    {
-      "keyword": "jasa pembuat website murah 2026",
-      "slug": "jasa-pembuat-website-murah-2026",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuat-website-murah-2026/"
-    },
-    {
-      "keyword": "jasa pembuatan website profesional terbaik",
-      "slug": "jasa-pembuatan-website-profesional-terbaik",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-profesional-terbaik/"
     }
   ]
 }

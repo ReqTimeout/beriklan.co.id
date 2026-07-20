@@ -267,12 +267,13 @@
     "keyword": "jasa pembuatan website palembang murah",
     "keyword_normalized": "jasa pembuatan website palembang murah",
     "slug": "jasa-pembuatan-website-palembang-murah",
-    "has_post": false,
+    "has_post": true,
     "priority_score": 70,
     "source": "suggest+combo",
-    "status": "pending",
+    "status": "generated",
     "rank": 0,
-    "created_at": "2026-07-19T21:12:14.259913"
+    "created_at": "2026-07-19T21:12:14.259913",
+    "generated_at": "2026-07-20T04:20:17.910Z"
   },
   {
     "keyword": "jasa iklan facebook padang murah",

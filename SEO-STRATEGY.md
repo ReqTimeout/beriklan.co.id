@@ -53,94 +53,11 @@
 
 ---
 
-## 📈 PHASE ROADMAP — 6 BULAN KE #1
+## 📈 PHASE ROADMAP — see CURRENT PROGRESS below
 
-### PHASE 1 (Minggu 1-2): **VOLUME FOUNDATION** ✅ ~80% done
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 1.1 | Keyword queue 2763 (Suggest + miner) | ✅ Done | - | Coverage dasar |
-| 1.2 | 1200+ artikel via Zen deepseek-v4-flash-free | ✅ Done | - | Konten awal |
-| 1.3 | `/api/index-url` enqueue auto-post | ✅ Done | - | Auto IndexNow |
-| 1.4 | 1.200 artikel retrofitted dengan internal-cta | ✅ Done | - | Money page link juice |
-| 1.5 | 130 per-city view-live pages (5×26) | ✅ Done | - | Local SEO coverage |
-| 1.6 | 3.250 cross-city internal links | ✅ Done | - | Crawl discovery |
-| 1.7 | Clamp future dates (freshness jujur) | ✅ Done | - | Trust signal |
-| 1.8 | Favicon orange "b" + cache-buster | ✅ Done | - | Brand recall |
-| 1.9 | Blog index mobile cards reveal fix | ✅ Done | - | UX |
-| 1.10 | `/api/admin/keywords` pipeline dashboard | ✅ Done | - | Visibility |
-| 1.11 | AdSense loader di blog + city pages | ✅ Done | - | Revenue |
-| 1.12 | **❌ Pending: `/api/cron/hourly-generate`** | ❌ Pending | 🚀 2 jam | 5 artikel/jam otomatis |
-| 1.13 | **❌ Pending: keyword expansion ke 7000+** | ❌ Pending | 🚀 1 jam | Coverage 2.5× |
-
-### PHASE 2 (Minggu 3-4): **CRAWL & INDEX SPEED**
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 2.1 | IndexNow submit per artikel baru | 🔄 Partial | 🚀 30m | Crawl minutes |
-| 2.2 | GSC Sitemap refresh harian | ✅ Done | - | Index coverage |
-| 2.3 | **❌ Pending: GSC Indexing API (instant request)** | ❌ Pending | 🚀 1 jam | Crawl hours, not days |
-| 2.4 | **❌ Pending: Auto-link artikel baru ke 3-5 related posts** | ❌ Pending | 🚀 1 jam | Crawl discovery |
-| 2.5 | Sitemap split 7 jenis | ✅ Done | - | Crawl budget efisien |
-| 2.6 | Mobile responsive + overflow fix | ✅ Done | - | Mobile UX |
-| 2.7 | **❌ Pending: Page speed audit + LCP < 2s** | ❌ Pending | 🎯 1 hari | Ranking signal |
-| 2.8 | **❌ Pending: Trending auto-generate (bukan 1×/cron)** | ❌ Pending | 🚀 4 jam | Google Trends harian → artikel |
-| 2.9 | **❌ Pending: Hub pages / pillar clusters per service** | ❌ Pending | 🎯 2 hari | Topical authority |
-
-### PHASE 3 (Bulan 2): **TOPICAL AUTHORITY & SNIPPETS**
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 3.1 | Service pages + FAQ schema | ✅ Done | - | Featured snippet |
-| 3.2 | BreadcrumbList schema | ✅ Done | - | Rich snippet |
-| 3.3 | Article schema | ✅ Done | - | News ranking |
-| 3.4 | **❌ Pending: People Also Ask (PAA) content di setiap artikel** | ❌ Pending | 🎯 3 hari | Slot #0 Google |
-| 3.5 | **❌ Pending: Featured snippet optimization (numbered list, table, definisi)** | ❌ Pending | 🎯 2 hari | Snippet ranking |
-| 3.6 | **❌ Pending: Pillar page per service (panduan lengkap 5000+ kata)** | ❌ Pending | 🎯 3 hari | Authority signal |
-| 3.7 | **❌ Pending: Cluster articles auto-link ke pillar** | ❌ Pending | 🚀 2 jam | Internal SEO juice |
-| 3.8 | **❌ Pending: Original research / data survey** | ❌ Pending | 🎯 1 minggu | Backlink magnet |
-| 3.9 | **❌ Pending: Calculator tools (budget iklan, ROAS, dll)** | ❌ Pending | 🎯 1 minggu | Dwell time + backlinks |
-
-### PHASE 4 (Bulan 3): **OFF-PAGE & BRAND**
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 4.1 | **❌ Pending: Google Business Profile setup + optimize** | ❌ Pending | 🎯 1 hari | **Local SEO WAJIB** |
-| 4.2 | **❌ Pending: Backlink strategy — 50 directory submissions** | ❌ Pending | 🎯 3 hari | Domain authority |
-| 4.3 | **❌ Pending: Guest posts 5 situs DR>50** | ❌ Pending | 🎯 2 minggu | Authority naik |
-| 4.4 | **❌ Pending: YouTube channel (video embed di setiap artikel)** | ❌ Pending | 🎯 1 minggu | Double SERP exposure |
-| 4.5 | **❌ Pending: TikTok account (cross-post short video)** | ❌ Pending | 🎯 1 minggu | Brand entity |
-| 4.6 | **❌ Pending: LinkedIn company page + thought leadership** | ❌ Pending | 🎀 2 hari | B2B leads |
-| 4.7 | **❌ Pending: HARO / journalist outreach untuk backlink** | ❌ Pending | 🎯 ongoing | DR boost |
-| 4.8 | **❌ Pending: Podcast appearance (3-5 episode)** | ❌ Pending | 💡 1 bulan | Brand awareness |
-
-### PHASE 5 (Bulan 4-5): **CONVERSION OPTIMIZATION**
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 5.1 | WA CTA dengan konteks (template per tier) | ✅ Done | - | Lead quality |
-| 5.2 | Pricing transparency di setiap service page | ✅ Done | - | Trust |
-| 5.3 | Testimonials + case studies | 🔄 Partial | 🎯 1 hari | Social proof |
-| 5.4 | **❌ Pending: AggregateRating schema (real reviews)** | ❌ Pending | 🎯 1 hari | Stars di SERP |
-| 5.5 | **❌ Pending: A/B testing title (CTR optimization)** | ❌ Pending | 🎯 ongoing | Traffic +20-50% |
-| 5.6 | **❌ Pending: Email capture + drip campaign** | ❌ Pending | 🎯 1 minggu | Lead nurture |
-| 5.7 | **❌ Pending: Lead scoring (which keyword → which customer quality)** | ❌ Pending | 💡 ongoing | Quality lead |
-| 5.8 | **❌ Pending: Retargeting pixel (FB/Google) untuk non-converter** | ❌ Pending | 🎯 2 hari | Conversion lift |
-
-### PHASE 6 (Bulan 6+): **SCALE & DEFEND**
-
-| # | Item | Status | Effort | Impact |
-|---|------|--------|--------|--------|
-| 6.1 | **❌ Pending: Programmatic SEO — `/harga-iklan-{platform}/`** | ❌ Pending | 🎯 1 minggu | Ribuan URL baru |
-| 6.2 | **❌ Pending: Programmatic SEO — `/cara-pasang-iklan/{platform}/{city}/`** | ❌ Pending | 🎯 1 minggu | Question keyword coverage |
-| 6.3 | **❌ Pending: Programmatic SEO — `/beriklan-vs-{competitor}/`** | ❌ Pending | 🎯 1 minggu | Comparison intent |
-| 6.4 | **❌ Pending: Multi-bahasa (English version)** | ❌ Pending | 💡 1 bulan | Global market |
-| 6.5 | **❌ Pending: Competitor monitoring (track their ranking)** | ❌ Pending | 🎯 ongoing | Defensive SEO |
-| 6.6 | **❌ Pending: Auto-refresh content yang "aging"** | 🔄 Partial | 🎯 ongoing | Freshness signal |
-| 6.7 | **❌ Pending: News/jurnalistik content (case study launches)** | ❌ Pending | 🎯 ongoing | Backlink magnet |
-| 6.8 | **❌ Pending: Infographics untuk shareability** | ❌ Pending | 🎯 ongoing | Social signals |
-
----
+For priority-ordered roadmap (P0-P3 + backlog) with effort + impact,
+see **## 📊 CURRENT PROGRESS** section. Phase 1-6 tables were
+consolidated into priority-ordered roadmap in v4.0.
 
 ## 🎯 KEYWORD STRATEGY — DEEP DIVE
 
@@ -630,6 +547,7 @@ Jika ada perubahan:
 
 ## ✍️ VERSION HISTORY
 
+- **v4.1 (2026-07-20):** Removed duplicate Phase 1-6 tables (replaced by single priority-ordered roadmap in CURRENT PROGRESS)
 - **v4.0 (2026-07-20):** Auto-generation pipeline complete (Cloudflare Cron Triggers + 27,947 keywords + GSC Indexing + Trending). Roadmap di-restructure per priority P0-P3.
 - **v3.0 (2026-07-20):** Audit ulang dengan 7 gap baru (GBP, YouTube, E-E-A-T, programmatic, research, multimedia, brand)
 - **v2.0 (2026-07-19):** Tier 1 selesai (volume foundation + dashboard)

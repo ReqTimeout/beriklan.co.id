@@ -76,12 +76,9 @@
         }
         // In-component reveal observer (BlogFilter is client:only, so the global
         // observer in Layout.astro never sees these elements at page load).
-        // Observe the .reveal-stagger CONTAINERS so the existing CSS rule
-        // `.reveal-stagger.revealed > *` can fade in their children.
         if (typeof IntersectionObserver !== 'undefined') {
-            requestAnimationFrame(() => {
+            const setup = () => {
                 const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
-                console.log('[BlogFilter] reveal observer setup, found', els.length, 'stagger groups');
                 if (!els.length) return;
                 const io = new IntersectionObserver((entries) => {
                     for (const e of entries) {
@@ -92,7 +89,14 @@
                     }
                 }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
                 els.forEach(el => io.observe(el));
-            });
+            };
+            requestAnimationFrame(setup);
+            // Safety net: force-reveal everything after 800ms in case the
+            // observer fails to fire (Svelte hydration timing edge cases)
+            setTimeout(() => {
+                const els = (rootEl ? rootEl.querySelectorAll('.reveal-stagger') : document.querySelectorAll('.reveal-stagger'));
+                els.forEach(el => el.classList.add('revealed'));
+            }, 800);
         }
     });
 

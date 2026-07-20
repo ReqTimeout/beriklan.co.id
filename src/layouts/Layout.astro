@@ -1,7 +1,7 @@
 ---
 import FloatingWhatsApp from '../components/FloatingWhatsApp.svelte';
 import CookieConsent from '../components/CookieConsent.astro';
-import NAPBlock from '../components/NAPBlock.astro';
+// (NAPBlock removed - Footer.svelte already has canonical NAP info)
 import Schema from '../components/Schema.astro';
 import type { FAQItem, BreadcrumbItem, ServiceData, LocalBusinessData } from '../components/Schema.astro';
 
@@ -391,7 +391,6 @@ const showOrganization = true;
 		<!-- End Google Tag Manager (noscript) -->
 
 		<slot />
-		<NAPBlock />
 	<FloatingWhatsApp client:only="svelte" />
 	<CookieConsent />
 

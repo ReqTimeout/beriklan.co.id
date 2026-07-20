@@ -8,11 +8,6 @@
     let loaded = false;
     let rootEl;
 
-    // Reveal observer bound to this component's root
-    function setRoot(node) {
-        rootEl = node;
-    }
-
     // Cluster mode: when visited via /blog/?tag=<T>&service=<S> (pillar cluster links)
     let clusterMode = false;
     let clusterMeta = null;   // { tag, service, title, desc, pillarHref, serviceName }
@@ -217,7 +212,7 @@
 
     <!-- Grid posts -->
     {#if gridPosts.length > 0}
-<div use:setRoot>
+<div bind:this={rootEl}>
             <h3 class="text-xs font-bold uppercase tracking-wider text-muted mb-4">Artikel Lainnya</h3>
                     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger" data-reveal-stagger>
                         {#each gridPosts as post}

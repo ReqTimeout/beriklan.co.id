@@ -36,6 +36,9 @@ export default {
     if (path === "/api/cron/trending" || path === "/api/cron/trending/") {
       return await handleTrendingCron(request, env);
     }
+    if (path === "/api/cron/trending-generate" || path === "/api/cron/trending-generate/") {
+      return await handleTrendingGenerate(request, env);
+    }
     if (path === "/api/cron/hourly-generate" || path === "/api/cron/hourly-generate/") {
       return await handleHourlyGenerate(request, env);
     }
@@ -1228,7 +1231,7 @@ function renderRoadmap() {
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
     { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "done", note: "/api/cron/gsc-indexing deployed · 200/day quota · await GSC_SERVICE_ACCOUNT_JSON" },
-    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "pending", note: "Google Trends harian" },
+    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "done", note: "✅ /api/cron/trending-fetch + /api/cron/trending-generate — RSS → D1 → articles" },
     { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
     { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
     { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
@@ -1613,6 +1616,24 @@ async function handleTrendingCron(request, env) {
       return true;
     });
 
+    // Save ALL fetched topics to D1 trending_topics (separate endpoint processes them)
+    let savedToQueue = 0;
+    if (env.DB) {
+      try {
+        for (const t of topics) {
+          await env.DB.prepare(
+            "INSERT OR IGNORE INTO trending_topics (topic, geo, status) VALUES (?, ?, 'pending')"
+          ).bind(t, "ID,MY,US").run();
+        }
+        const r = await env.DB.prepare(
+          "SELECT COUNT(*) as n FROM trending_topics WHERE status='pending'"
+        ).first();
+        savedToQueue = (r && r.n) || 0;
+      } catch (e) {
+        errors.push({stage: "trending_queue_save", error: e.message});
+      }
+    }
+
     // Step 2: Filter niche — strict include + exclude
     // INCLUDE: business, tech, digital marketing, AI, social platforms
     // EXCLUDE: sports, gambling, entertainment non-DM, news-sensitive
@@ -1939,6 +1960,157 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
       stack: e.stack?.split("\n").slice(0, 5).join("\n"),
     }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
+}
+
+// ─── Trending Generate (process trending_topics queue → articles) ─────
+// GET /api/cron/trending-generate?token=...&count=N
+//   Pulls top N pending topics from D1 trending_topics table (populated by
+//   /api/cron/trending RSS fetch), generates article for each, commits
+//   to posts.json + GitHub. Schedules via cron-job.org separately from
+//   the fetch cron to decouple I/O (fast) from AI generation (slow).
+async function handleTrendingGenerate(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 3)); // max 3 to stay within 30s wall time
+  const debug = url.searchParams.get("debug") === "1";
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+  const generated = [];
+
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB not bound" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  try {
+    // 1. Pull top N pending topics
+    let topics = [];
+    try {
+      const r = await env.DB.prepare(
+        `SELECT id, topic FROM trending_topics
+         WHERE status = 'pending'
+         ORDER BY priority DESC, fetched_at ASC
+         LIMIT ?`
+      ).bind(count).all();
+      topics = (r.results || []);
+      log.push({ stage: "topic_fetch", picked: topics.length, total_pending: "(see dashboard)" });
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "topic_fetch failed", e: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
+    if (topics.length === 0) {
+      return new Response(JSON.stringify({ ok: true, generated: 0, message: "no pending topics (run /api/cron/trending first)", log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2. For each topic, generate article via hourly-generate's classify + AI
+    for (const item of topics) {
+      try {
+        // Mark as processing
+        await env.DB.prepare(
+          "UPDATE trending_topics SET status='processing', processed_at=datetime('now') WHERE id=?"
+        ).bind(item.id).run();
+
+        // Wrap topic as pseudo-keyword → reuse classify + generateArticleForKeyword
+        const pseudoKeyword = { keyword: item.topic, slug: slugify(item.topic) };
+        const post = await generateArticleForKeyword(pseudoKeyword, env);
+        if (!post || !post.content) {
+          await env.DB.prepare(
+            "UPDATE trending_topics SET status='failed' WHERE id=?"
+          ).bind(item.id).run();
+          errors.push({ stage: "ai_generate", topic: item.topic, error: "empty article" });
+          continue;
+        }
+
+        // Commit to GitHub (append to posts.json)
+        if (env.GITHUB_TOKEN) {
+          const owner = "ReqTimeout";
+          const repo = "beriklan.co.id";
+          const filePath = "src/data/posts.json";
+          const getResp = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+            { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+          );
+          if (getResp.ok) {
+            const fileData = await getResp.json();
+            let postsContent = "";
+            if (fileData.content) postsContent = atob(fileData.content.replace(/\n/g, ""));
+            else if (fileData.download_url) {
+              const dl = await fetch(fileData.download_url, { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } });
+              if (dl.ok) postsContent = await dl.text();
+            }
+            if (postsContent) {
+              let posts = JSON.parse(postsContent);
+              if (!posts.find(p => p.slug === post.slug)) {
+                posts.unshift(post);
+                posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+                const commitResp = await fetch(
+                  `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                  {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                    body: JSON.stringify({
+                      message: `trending: AI-generated article '${post.slug}'`,
+                      content,
+                      sha: fileData.sha,
+                      branch: "main",
+                    }),
+                  }
+                );
+                if (commitResp.ok) {
+                  const sha = (await commitResp.json()).commit?.sha?.slice(0, 7);
+                  log.push({ stage: "github_commit", topic: item.topic, slug: post.slug, sha });
+                  // Save to trending_articles table (audit)
+                  await env.DB.prepare(
+                    `INSERT OR REPLACE INTO trending_articles (slug, title, content, source, created_at) VALUES (?, ?, ?, 'workers_ai', datetime('now'))`
+                  ).bind(post.slug, post.title, post.content).run();
+                  // Mark topic as done
+                  await env.DB.prepare(
+                    "UPDATE trending_topics SET status='done' WHERE id=?"
+                  ).bind(item.id).run();
+                  generated.push({ topic: item.topic, slug: post.slug });
+                } else {
+                  errors.push({ stage: "github_commit_failed", topic: item.topic, status: commitResp.status });
+                  await env.DB.prepare(
+                    "UPDATE trending_topics SET status='pending' WHERE id=?"
+                  ).bind(item.id).run();
+                }
+              } else {
+                // Already in posts.json — mark done
+                await env.DB.prepare(
+                  "UPDATE trending_topics SET status='done' WHERE id=?"
+                ).bind(item.id).run();
+                log.push({ stage: "already_published", topic: item.topic, slug: post.slug });
+              }
+            }
+          }
+        } else {
+          errors.push({ stage: "no_github_token", topic: item.topic });
+        }
+      } catch (e) {
+        errors.push({ stage: "topic_generate_exception", topic: item.topic, error: String(e).slice(0, 200) });
+      }
+    }
+
+    return new Response(JSON.stringify({
+      ok: true,
+      generated_count: generated.length,
+      generated,
+      elapsed_ms: Date.now() - t0,
+      log: debug ? log : undefined,
+      errors: errors.length ? errors : undefined,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// Simple slugify for trending topics
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
 // ─── Hourly Auto-Generate (cron-job.org trigger) ─────────────
@@ -2992,6 +3164,20 @@ async function ensureTrendingTables(env) {
         content TEXT,
         source TEXT DEFAULT 'workers_ai',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+    ).run();
+  } catch (e) {}
+  // Trending topics queue — fetched RSS topics, processed by trending-generate
+  try {
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS trending_topics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic TEXT NOT NULL UNIQUE,
+        geo TEXT,
+        priority INTEGER DEFAULT 0,
+        fetched_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        processed_at TEXT,
+        status TEXT DEFAULT 'pending'
       )`
     ).run();
   } catch (e) {}

@@ -174,7 +174,13 @@ def main():
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(stats, open(OUT, "w"), ensure_ascii=False, indent=2)
-    print(f"keyword-stats.json: {total} keywords ({generated} gen / {pending} pending), {len(posts)} posts")
+    # Also expose lightweight queue to Worker via ASSETS (so /api/cron/hourly-generate can read it)
+    import shutil
+    queue_public = os.path.join(WEB, "public", "data", "keyword-queue.json")
+    os.makedirs(os.path.dirname(queue_public), exist_ok=True)
+    shutil.copy(QUEUE, queue_public)
+    print(f"keyword-queue.json: {total} keywords ({generated} gen / {pending} pending), {len(posts)} posts")
+    print(f"  copied -> public/data/keyword-queue.json for Worker ASSETS access")
 
 
 if __name__ == "__main__":

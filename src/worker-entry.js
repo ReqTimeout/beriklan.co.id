@@ -36,6 +36,9 @@ export default {
     if (path === "/api/cron/trending" || path === "/api/cron/trending/") {
       return await handleTrendingCron(request, env);
     }
+    if (path === "/api/cron/hourly-generate" || path === "/api/cron/hourly-generate/") {
+      return await handleHourlyGenerate(request, env);
+    }
     if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
       return await handleGscPullCron(request, env);
     }
@@ -1842,6 +1845,397 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
     }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
+
+// ─── Hourly Auto-Generate (cron-job.org trigger) ─────────────
+// GET /api/cron/hourly-generate?token=...&count=N
+//   Generates N articles from top pending keywords (priority_score DESC).
+//   Commits posts.json + keyword-queue.json + posts-index.json via GitHub API.
+//   Enqueues new URLs in D1 pending_indexing for IndexNow submission.
+//   Triggers via cron-job.org: every 12 min for 5/jam, or count=5/cron.
+async function handleHourlyGenerate(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 5));
+  const debug = url.searchParams.get("debug") === "1";
+
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+
+  try {
+    // 1. Fetch keyword-queue.json from ASSETS (Worker cannot reach repo files directly)
+    let queue = [];
+    try {
+      const qr = await env.ASSETS.fetch(new URL("https://assets/data/keyword-queue.json"));
+      if (qr.ok) queue = await qr.json();
+    } catch (e) {
+      errors.push({ stage: "queue_fetch", error: e.message });
+      return new Response(JSON.stringify({ ok: false, error: "queue_fetch failed", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    log.push({ stage: "queue_fetch", count: queue.length });
+
+    // 2. Pick top N pending by priority_score DESC
+    const pending = queue
+      .filter(q => q.status === "pending" && !q.has_post)
+      .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))
+      .slice(0, count);
+    log.push({ stage: "queue_pick", picked: pending.length, total_pending: queue.filter(q => q.status === "pending").length });
+    if (pending.length === 0) {
+      return new Response(JSON.stringify({ ok: true, generated: 0, message: "no pending keywords", log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2b. Pre-flight: validate GitHub token
+    if (!env.GITHUB_TOKEN) {
+      return new Response(JSON.stringify({ ok: false, error: "GITHUB_TOKEN not configured on Worker" }), { status: 503, headers: { "Content-Type": "application/json" } });
+    }
+
+    // 3. For each pending keyword, generate article via Zen (fallback Groq)
+    const newPosts = [];
+    const aiModels = [];
+    for (const item of pending) {
+      try {
+        const post = await generateArticleForKeyword(item, env);
+        if (post) {
+          newPosts.push(post);
+          aiModels.push({ slug: post.slug, model: post._model || "unknown" });
+        }
+      } catch (e) {
+        errors.push({ stage: "ai_generate", slug: item.slug, error: String(e).slice(0, 200) });
+      }
+    }
+    log.push({ stage: "ai_generate", generated: newPosts.length });
+
+    if (newPosts.length === 0) {
+      return new Response(JSON.stringify({ ok: false, error: "no articles generated", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
+    // 4. Fetch current posts.json from GitHub, append new posts, sort, PUT back
+    const owner = "ReqTimeout";
+    const repo = "beriklan.co.id";
+    const filePath = "src/data/posts.json";
+
+    const getResp = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+      { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+    );
+    if (!getResp.ok) {
+      errors.push({ stage: "github_get_posts", status: getResp.status });
+      return new Response(JSON.stringify({ ok: false, error: "github_get_posts failed", log, errors }), { status: 502, headers: { "Content-Type": "application/json" } });
+    }
+    const fileData = await getResp.json();
+    let postsContent = "";
+    if (fileData.content) {
+      postsContent = atob(fileData.content.replace(/\n/g, ""));
+    } else if (fileData.download_url) {
+      const dlResp = await fetch(fileData.download_url, { headers: { "Authorization": `token ${env.GITHUB_TOKEN}` } });
+      if (dlResp.ok) postsContent = await dlResp.text();
+    }
+    if (!postsContent) {
+      errors.push({ stage: "github_empty", message: "posts.json content empty" });
+      return new Response(JSON.stringify({ ok: false, error: "posts.json empty", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    let posts = [];
+    try { posts = JSON.parse(postsContent); } catch (e) {
+      errors.push({ stage: "parse_posts", error: e.message });
+      return new Response(JSON.stringify({ ok: false, error: "parse_posts failed", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    log.push({ stage: "github_get_posts", current_posts: posts.length });
+
+    // Dedupe by slug
+    const existingSlugs = new Set(posts.map(p => p.slug));
+    const toAdd = newPosts.filter(p => !existingSlugs.has(p.slug));
+    log.push({ stage: "dedupe", new_after_dedupe: toAdd.length });
+
+    if (toAdd.length === 0) {
+      return new Response(JSON.stringify({ ok: true, generated: 0, message: "all picked keywords already had posts", log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    posts = posts.concat(toAdd);
+    posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+
+    const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+    const commitResp = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+      {
+        method: "PUT",
+        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({
+          message: `hourly: auto-generate +${toAdd.length} articles [${toAdd.map(p => p.slug).slice(0, 3).join(", ")}${toAdd.length > 3 ? "..." : ""}]`,
+          content: updatedContent,
+          sha: fileData.sha,
+          branch: "main",
+        }),
+      }
+    );
+    if (!commitResp.ok) {
+      const errBody = await commitResp.text();
+      errors.push({ stage: "github_commit_posts", status: commitResp.status, body: errBody.slice(0, 300) });
+      return new Response(JSON.stringify({ ok: false, error: "github_commit_posts failed", log, errors }), { status: 502, headers: { "Content-Type": "application/json" } });
+    }
+    log.push({ stage: "github_commit_posts", ok: true, sha: (await commitResp.json()).commit?.sha?.slice(0, 7) });
+
+    // 5. Update keyword-queue.json status → generated + has_post=true
+    for (const p of toAdd) {
+      const q = queue.find(q => q.slug === p.slug);
+      if (q) { q.status = "generated"; q.has_post = true; q.generated_at = new Date().toISOString(); }
+    }
+    const queuePath = "src/data/keyword-queue.json";
+    const qGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
+      headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
+    });
+    if (qGet.ok) {
+      const qd = await qGet.json();
+      const qContent = btoa(unescape(encodeURIComponent(JSON.stringify(queue, null, 2))));
+      const qPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${queuePath}`, {
+        method: "PUT",
+        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({
+          message: `queue: mark ${toAdd.length} generated`,
+          content: qContent, sha: qd.sha, branch: "main",
+        }),
+      });
+      log.push({ stage: "github_commit_queue", ok: qPut.ok });
+      if (!qPut.ok) errors.push({ stage: "github_commit_queue", status: qPut.status });
+    }
+
+    // 6. Refresh posts-index.json (24 most recent)
+    const idx = posts.slice(0, 24).map(p => ({
+      slug: p.slug, title: p.title, excerpt: p.excerpt || "",
+      date: p.date, iso_date: p.iso_date, category: p.category || "strategy",
+      readTime: p.readTime || "5 min", featured: p.featured || false,
+      tags: (p.tags || []).slice(0, 5),
+    }));
+    const idxPath = "public/data/posts-index.json";
+    const idxGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
+      headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" }
+    });
+    if (idxGet.ok) {
+      const id = await idxGet.json();
+      const iContent = btoa(unescape(encodeURIComponent(JSON.stringify(idx, null, 2))));
+      const idxPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${idxPath}`, {
+        method: "PUT",
+        headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({
+          message: `index: refresh +${toAdd.length} new articles`,
+          content: iContent, sha: id.sha, branch: "main",
+        }),
+      });
+      log.push({ stage: "github_commit_index", ok: idxPut.ok });
+    }
+
+    // 7. Enqueue new URLs in D1 pending_indexing (for IndexNow cron /api/cron/indexing)
+    let enqueued = 0;
+    for (const p of toAdd) {
+      try {
+        const url = `https://beriklan.co.id/blog/${p.slug}/`;
+        const exists = await env.DB.prepare(
+          "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted')"
+        ).bind(url).first();
+        if (!exists) {
+          await env.DB.prepare(
+            "INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))"
+          ).bind(url).run();
+          enqueued++;
+        }
+      } catch (e) {
+        errors.push({ stage: "indexing_enqueue", slug: p.slug, error: e.message });
+      }
+    }
+    log.push({ stage: "indexing_enqueue", count: enqueued });
+
+    const elapsedMs = Date.now() - t0;
+    return new Response(JSON.stringify({
+      ok: true,
+      generated: toAdd.length,
+      slugs: toAdd.map(p => p.slug),
+      models: aiModels,
+      enqueued_for_indexing: enqueued,
+      elapsed_ms: elapsedMs,
+      log: debug ? log : undefined,
+      errors: errors.length ? errors : undefined,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+
+  } catch (e) {
+    return new Response(JSON.stringify({
+      ok: false, error: String(e), stack: e.stack?.split("\n").slice(0, 5).join("\n"),
+      log, errors,
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── AI Article Generator (Worker port of gen_from_queue.py) ─────
+// Generates one blog post for a queued keyword using Zen (fallback Groq).
+async function generateArticleForKeyword(item, env) {
+  const kw = item.keyword;
+  const slug = item.slug;
+  const { svc, city } = classifyKeyword(kw);
+
+  // Build prompt (mirrors gen_from_queue.py build_prompt)
+  const svcName = SERVICE_NAMES[svc] || svc;
+  const title = kw.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  const intent = /\b(harga|biaya|tarif|murah|paket)\b/i.test(kw) ? "commercial"
+    : /\b(cara|tips|tutorial|langkah|strategi)\b/i.test(kw) ? "informational"
+    : /\b(apa itu|bagaimana|kenapa|berapa)\b/i.test(kw) ? "question"
+    : "consideration";
+
+  const prompt = `Kamu adalah SEO copywriter Indonesia senior untuk agency performance marketing Beriklan.co.id (https://beriklan.co.id).
+
+Tugas: Tulis artikel blog SEO Bahasa Indonesia untuk keyword: "${kw}"
+Intent: ${intent}
+Layanan: ${svcName}${city ? ` · Kota: ${city}` : ""}
+
+Struktur artikel (HTML, mulai dari <h2>, jangan <h1>):
+1. Pendahuluan (kenapa topik ini penting, 1 paragraf)
+2. Section utama dengan sub-heading (<h3>) + bullet/list + tabel bila relevan
+3. FAQ (3-4 pertanyaan + jawaban 1-2 kalimat)
+4. CTA WhatsApp dengan placeholder link: <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(svcName)}${city ? `%20di%20${encodeURIComponent(city)}` : ""}">Konsultasi via WhatsApp →</a>
+
+Aturan copy:
+- Tone profesional, terukur, percaya diri. Pakai "Anda" (kecuali hero moment).
+- Jangan pakai: bikin, gak, nggak, pasti untung, garansi 100%, dalam dunia.
+- Panjang: 700-1000 kata.
+- Pakai data konkret (%, Rp, contoh spesifik) bila relevan.
+- Brand voice: senior performance marketing partner, bukan sales.
+- Internal link 2-3 ke https://beriklan.co.id/{svc}/ dan /{svc}/{city}/ (bila city ada).
+
+Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
+
+  let article = null;
+  let modelUsed = null;
+
+  // Try Zen first (deepseek-v4-flash-free)
+  if (env.ZEN_API_KEY) {
+    try {
+      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({
+          model: "deepseek-v4-flash-free",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 4000,
+          thinking: { type: "disabled" },
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        article = (data.choices?.[0]?.message?.content || "").trim();
+        // Strip markdown fences
+        if (article.startsWith("```html")) article = article.slice(7);
+        if (article.startsWith("```")) article = article.slice(3);
+        if (article.endsWith("```")) article = article.slice(0, -3);
+        article = article.trim();
+        if (article.length > 500) modelUsed = `zen/deepseek-v4-flash-free`;
+      }
+    } catch (e) { /* fallthrough */ }
+  }
+
+  // Fallback Groq
+  if (!article && env.GROQ_API_KEY) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${env.GROQ_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 4000,
+          temperature: 0.7,
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        article = (data.choices?.[0]?.message?.content || "").trim();
+        if (article.startsWith("```html")) article = article.slice(7);
+        if (article.startsWith("```")) article = article.slice(3);
+        if (article.endsWith("```")) article = article.slice(0, -3);
+        article = article.trim();
+        if (article.length > 500) modelUsed = `groq/llama-3.3-70b-versatile`;
+      }
+    } catch (e) { /* fallthrough */ }
+  }
+
+  if (!article || article.length < 500) {
+    throw new Error("AI generation failed (Zen + Groq both returned empty)");
+  }
+
+  // Ensure starts with <h2>
+  if (!article.startsWith("<h2>")) {
+    article = "<h2>" + title + "</h2>\n" + article;
+  }
+
+  // Strip HTML tags for excerpt
+  const plainExcerpt = article.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 180) + "...";
+  const words = article.split(/\s+/).length;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " ");
+  const iso = now.toISOString();
+
+  return {
+    slug,
+    title,
+    excerpt: plainExcerpt,
+    content: article,
+    date: dateStr,
+    iso_date: iso,
+    category: "strategy",
+    readTime: `${Math.max(2, Math.round(words / 200))} min`,
+    tags: kw.toLowerCase().split(/\s+/).filter(w => w.length > 3).slice(0, 5),
+    featured: false,
+    generated: true,
+    service: svc,
+    city: city || null,
+    liveUrl: null,
+    publish_date: dateStr,
+    _model: modelUsed,
+  };
+}
+
+// Keyword classifier (JS port of derive_service + derive_city)
+function classifyKeyword(kw) {
+  const k = kw.toLowerCase();
+  // Order matters: view-live first (overlaps with platform names)
+  if (/view live|viewers live|penonton live|viewers tiktok|viewers instagram|viewers youtube|viewers shopee|jasa viewers|jasa penonton/.test(k)) {
+    return { svc: "jasa-view-live", city: extractCity(k) };
+  }
+  if (/jasa iklan facebook|iklan facebook|facebook ads|fb ads/.test(k)) return { svc: "jasa-iklan-facebook", city: extractCity(k) };
+  if (/jasa iklan instagram|iklan instagram|instagram ads|ig ads/.test(k)) return { svc: "jasa-iklan-instagram", city: extractCity(k) };
+  if (/jasa iklan tiktok|iklan tiktok|tiktok ads/.test(k)) return { svc: "jasa-iklan-tiktok", city: extractCity(k) };
+  if (/jasa iklan google|iklan google|google ads|adwords/.test(k)) return { svc: "jasa-iklan-google", city: extractCity(k) };
+  if (/jasa iklan youtube|iklan youtube|youtube ads/.test(k)) return { svc: "jasa-iklan-youtube", city: extractCity(k) };
+  if (/jasa kelola instagram|kelola instagram|manage instagram|admin instagram/.test(k)) return { svc: "jasa-kelola-instagram", city: extractCity(k) };
+  if (/jasa kelola tiktok|kelola tiktok|manage tiktok|admin tiktok/.test(k)) return { svc: "jasa-kelola-tiktok", city: extractCity(k) };
+  if (/jasa pembuatan website|jasa buat website|pembuatan website|jasa website|jasa pembuat website|jasa bikin website|jasa pembuat web|jasa bikin web|jasa buat web|jasa web|bikin website|buat website|pembuat website|jasa situs|website murah|web murah|desain website|jasa desain web|web site|pembuat web|pembuatan web|situs web|membuat web|tampilan web|tampilan website|desain web|situs website|web umkm|bikin web|buat web/.test(k)) return { svc: "jasa-pembuatan-website", city: extractCity(k) };
+  if (/landing page|landingpage/.test(k)) return { svc: "jasa-pembuatan-landing-page", city: extractCity(k) };
+  if (/digital marketing|internet marketing|digital agency|search engine marketer|konsultan marketing|agency digital/.test(k)) return { svc: "jasa-digital-marketing", city: extractCity(k) };
+  return { svc: "jasa-digital-marketing", city: extractCity(k) };
+}
+
+const KW_CITIES = ["jakarta","bandung","surabaya","yogyakarta","semarang","medan","makassar","denpasar","bekasi","depok","tangerang","bogor","malang","batam","palembang","pekanbaru","sidoarjo","solo","padang","manado","pontianak","banjarmasin","lampung","jambi","cimahi","balikpapan","aceh","samarinda","bali"];
+function extractCity(k) {
+  for (const c of KW_CITIES) {
+    const re = new RegExp(`(?:^|\\s|di )${c}(?:\\s|$)`);
+    if (re.test(k)) return c;
+  }
+  return null;
+}
+
+const SERVICE_NAMES = {
+  "jasa-digital-marketing": "Jasa Digital Marketing",
+  "jasa-iklan-facebook": "Jasa Iklan Facebook",
+  "jasa-iklan-instagram": "Jasa Iklan Instagram",
+  "jasa-iklan-tiktok": "Jasa Iklan TikTok",
+  "jasa-iklan-google": "Jasa Iklan Google",
+  "jasa-iklan-youtube": "Jasa Iklan YouTube",
+  "jasa-kelola-instagram": "Jasa Kelola Instagram",
+  "jasa-kelola-tiktok": "Jasa Kelola TikTok",
+  "jasa-pembuatan-website": "Jasa Pembuatan Website",
+  "jasa-pembuatan-landing-page": "Jasa Pembuatan Landing Page",
+  "jasa-view-live": "Jasa View Live",
+};
 
 // ─── Batch 4 (bulk Excel keywords → Groq → GitHub) ────────────
 const B4_SERVICE_NAMES = {

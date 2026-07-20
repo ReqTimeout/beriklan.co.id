@@ -18,6 +18,9 @@ interface Props {
     breadcrumb?: BreadcrumbItem[];
     service?: ServiceData;
     localBusiness?: LocalBusinessData;
+    heroImage?: string;
+    heroImageWidth?: number;
+    heroImageHeight?: number;
 }
 
 const {
@@ -33,6 +36,9 @@ const {
     breadcrumb,
     service,
     localBusiness,
+    heroImage,
+    heroImageWidth = 1200,
+    heroImageHeight = 675,
 } = Astro.props as Props;
 
 // Auto-detect schema: ProfessionalService on all pages (sitewide), Organization always
@@ -46,6 +52,14 @@ const showOrganization = true;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{title}</title>
+		{heroImage && (
+			<link
+				rel="preload"
+				as="image"
+				href={heroImage}
+				fetchpriority="high"
+			/>
+		)}
 		<meta name="description" content={description} />
 		<meta name="keywords" content="jasa digital marketing, agency digital marketing indonesia, facebook ads, google ads, tiktok ads, instagram ads, landing page, jasa iklan, agency iklan" />
 		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />

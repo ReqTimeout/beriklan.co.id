@@ -1985,6 +1985,9 @@ async function handleTrendingGenerate(request, env) {
     return new Response(JSON.stringify({ ok: false, error: "DB not bound" }), { status: 503, headers: { "Content-Type": "application/json" } });
   }
 
+  // Ensure tables exist (idempotent)
+  try { await ensureTrendingTables(env); } catch {}
+
   try {
     // 1. Pull top N pending topics
     let topics = [];

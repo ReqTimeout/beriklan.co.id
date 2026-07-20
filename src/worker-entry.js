@@ -1992,7 +1992,7 @@ async function handleHourlyGenerate(request, env) {
         }
         aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart });
       } catch (e) {
-        const msg = String(e.message || e).slice(0, 200);
+        const msg = e.message && e.message.includes("AI generation failed") ? e.message.slice(0, 1500) : String(e.message || e).slice(0, 200);
         errors.push({ stage: "ai_generate", slug: item.slug, error: msg, ms: Date.now() - aiStart });
         aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart, error: true });
       }

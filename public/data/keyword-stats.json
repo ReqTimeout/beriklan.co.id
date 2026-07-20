@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-19T23:21:15",
+  "generated_at": "2026-07-20T11:31:49",
   "keywords": {
-    "total": 2763,
+    "total": 27947,
     "generated": 60,
-    "pending": 2703,
-    "live_in_posts": 84,
-    "coverage": 2.2
+    "pending": 27887,
+    "live_in_posts": 96,
+    "coverage": 0.2
   },
   "posts": {
     "total": 2027,
@@ -24,17 +24,80 @@
   "by_service": [
     {
       "key": "Jasa View Live",
-      "total": 588,
+      "total": 4112,
       "generated": 9,
-      "pending": 579,
-      "coverage": 1.5
+      "pending": 4103,
+      "coverage": 0.2
     },
     {
       "key": "Jasa Pembuatan Website",
-      "total": 583,
+      "total": 2906,
       "generated": 30,
-      "pending": 553,
-      "coverage": 5.1
+      "pending": 2876,
+      "coverage": 1.0
+    },
+    {
+      "key": "Jasa Iklan Google",
+      "total": 2573,
+      "generated": 2,
+      "pending": 2571,
+      "coverage": 0.1
+    },
+    {
+      "key": "Jasa Iklan Facebook",
+      "total": 2433,
+      "generated": 4,
+      "pending": 2429,
+      "coverage": 0.2
+    },
+    {
+      "key": "Jasa Iklan Instagram",
+      "total": 2433,
+      "generated": 0,
+      "pending": 2433,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Iklan TikTok",
+      "total": 2353,
+      "generated": 2,
+      "pending": 2351,
+      "coverage": 0.1
+    },
+    {
+      "key": "Jasa Pembuatan Landing Page",
+      "total": 2352,
+      "generated": 2,
+      "pending": 2350,
+      "coverage": 0.1
+    },
+    {
+      "key": "Jasa Iklan YouTube",
+      "total": 2324,
+      "generated": 4,
+      "pending": 2320,
+      "coverage": 0.2
+    },
+    {
+      "key": "Jasa Kelola Instagram",
+      "total": 2322,
+      "generated": 0,
+      "pending": 2322,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Kelola TikTok",
+      "total": 2216,
+      "generated": 0,
+      "pending": 2216,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Digital Marketing",
+      "total": 1477,
+      "generated": 7,
+      "pending": 1470,
+      "coverage": 0.5
     },
     {
       "key": "Lainnya / Umum",
@@ -42,246 +105,190 @@
       "generated": 0,
       "pending": 446,
       "coverage": 0.0
-    },
-    {
-      "key": "Jasa Digital Marketing",
-      "total": 253,
-      "generated": 7,
-      "pending": 246,
-      "coverage": 2.8
-    },
-    {
-      "key": "Jasa Iklan Google",
-      "total": 143,
-      "generated": 2,
-      "pending": 141,
-      "coverage": 1.4
-    },
-    {
-      "key": "Jasa Pembuatan Landing Page",
-      "total": 132,
-      "generated": 2,
-      "pending": 130,
-      "coverage": 1.5
-    },
-    {
-      "key": "Jasa Iklan TikTok",
-      "total": 125,
-      "generated": 2,
-      "pending": 123,
-      "coverage": 1.6
-    },
-    {
-      "key": "Jasa Iklan Facebook",
-      "total": 101,
-      "generated": 4,
-      "pending": 97,
-      "coverage": 4.0
-    },
-    {
-      "key": "Jasa Iklan Instagram",
-      "total": 101,
-      "generated": 0,
-      "pending": 101,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa Kelola Instagram",
-      "total": 99,
-      "generated": 0,
-      "pending": 99,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa Kelola TikTok",
-      "total": 97,
-      "generated": 0,
-      "pending": 97,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa Iklan YouTube",
-      "total": 95,
-      "generated": 4,
-      "pending": 91,
-      "coverage": 4.2
     }
   ],
   "by_city": [
     {
       "key": "Jakarta",
-      "total": 71,
+      "total": 1066,
       "generated": 5,
-      "pending": 66,
-      "coverage": 7.0
+      "pending": 1061,
+      "coverage": 0.5
     },
     {
       "key": "Bandung",
-      "total": 65,
+      "total": 1061,
       "generated": 5,
-      "pending": 60,
-      "coverage": 7.7
+      "pending": 1056,
+      "coverage": 0.5
     },
     {
       "key": "Surabaya",
-      "total": 65,
+      "total": 1061,
       "generated": 2,
-      "pending": 63,
-      "coverage": 3.1
+      "pending": 1059,
+      "coverage": 0.2
+    },
+    {
+      "key": "Yogyakarta",
+      "total": 1059,
+      "generated": 2,
+      "pending": 1057,
+      "coverage": 0.2
+    },
+    {
+      "key": "Semarang",
+      "total": 1054,
+      "generated": 0,
+      "pending": 1054,
+      "coverage": 0.0
     },
     {
       "key": "Makassar",
-      "total": 64,
+      "total": 1016,
       "generated": 0,
-      "pending": 64,
+      "pending": 1016,
       "coverage": 0.0
     },
     {
       "key": "Pekanbaru",
-      "total": 64,
+      "total": 1016,
       "generated": 1,
-      "pending": 63,
-      "coverage": 1.6
-    },
-    {
-      "key": "Yogyakarta",
-      "total": 63,
-      "generated": 2,
-      "pending": 61,
-      "coverage": 3.2
+      "pending": 1015,
+      "coverage": 0.1
     },
     {
       "key": "Balikpapan",
-      "total": 62,
+      "total": 1014,
       "generated": 2,
-      "pending": 60,
-      "coverage": 3.2
+      "pending": 1012,
+      "coverage": 0.2
     },
     {
       "key": "Solo",
-      "total": 62,
+      "total": 1014,
       "generated": 1,
-      "pending": 61,
-      "coverage": 1.6
+      "pending": 1013,
+      "coverage": 0.1
     },
     {
       "key": "Banjarmasin",
-      "total": 61,
+      "total": 1013,
       "generated": 1,
-      "pending": 60,
-      "coverage": 1.6
+      "pending": 1012,
+      "coverage": 0.1
     },
     {
       "key": "Manado",
-      "total": 61,
+      "total": 1013,
       "generated": 0,
-      "pending": 61,
+      "pending": 1013,
       "coverage": 0.0
     },
     {
       "key": "Tangerang",
-      "total": 61,
+      "total": 1013,
       "generated": 0,
-      "pending": 61,
+      "pending": 1013,
       "coverage": 0.0
     },
     {
       "key": "Depok",
-      "total": 60,
+      "total": 1012,
       "generated": 1,
-      "pending": 59,
-      "coverage": 1.7
+      "pending": 1011,
+      "coverage": 0.1
     },
     {
       "key": "Jambi",
-      "total": 60,
+      "total": 1012,
       "generated": 0,
-      "pending": 60,
+      "pending": 1012,
       "coverage": 0.0
     },
     {
       "key": "Bekasi",
-      "total": 59,
+      "total": 1011,
       "generated": 0,
-      "pending": 59,
+      "pending": 1011,
       "coverage": 0.0
     },
     {
       "key": "Medan",
-      "total": 58,
+      "total": 1010,
       "generated": 0,
-      "pending": 58,
-      "coverage": 0.0
-    },
-    {
-      "key": "Semarang",
-      "total": 58,
-      "generated": 0,
-      "pending": 58,
+      "pending": 1010,
       "coverage": 0.0
     },
     {
       "key": "Sidoarjo",
-      "total": 58,
+      "total": 1010,
       "generated": 1,
-      "pending": 57,
-      "coverage": 1.7
+      "pending": 1009,
+      "coverage": 0.1
     },
     {
       "key": "Malang",
-      "total": 56,
+      "total": 1008,
       "generated": 2,
-      "pending": 54,
-      "coverage": 3.6
+      "pending": 1006,
+      "coverage": 0.2
     },
     {
       "key": "Bogor",
-      "total": 55,
+      "total": 1007,
       "generated": 0,
-      "pending": 55,
+      "pending": 1007,
       "coverage": 0.0
     },
     {
       "key": "Denpasar",
-      "total": 55,
+      "total": 1007,
       "generated": 1,
-      "pending": 54,
-      "coverage": 1.8
+      "pending": 1006,
+      "coverage": 0.1
     },
     {
       "key": "Palembang",
-      "total": 55,
+      "total": 1007,
       "generated": 1,
-      "pending": 54,
-      "coverage": 1.8
+      "pending": 1006,
+      "coverage": 0.1
     },
     {
       "key": "Pontianak",
-      "total": 55,
+      "total": 1007,
       "generated": 1,
-      "pending": 54,
-      "coverage": 1.8
+      "pending": 1006,
+      "coverage": 0.1
     },
     {
       "key": "Batam",
-      "total": 54,
+      "total": 1006,
       "generated": 1,
-      "pending": 53,
-      "coverage": 1.9
+      "pending": 1005,
+      "coverage": 0.1
     },
     {
       "key": "Lampung",
-      "total": 54,
+      "total": 1006,
       "generated": 0,
-      "pending": 54,
+      "pending": 1006,
       "coverage": 0.0
     },
     {
       "key": "Padang",
-      "total": 54,
+      "total": 1006,
       "generated": 0,
-      "pending": 54,
+      "pending": 1006,
       "coverage": 0.0
+    },
+    {
+      "key": "Cimahi",
+      "total": 1005,
+      "generated": 1,
+      "pending": 1004,
+      "coverage": 0.1
     },
     {
       "key": "Bali",
@@ -289,13 +296,6 @@
       "generated": 2,
       "pending": 51,
       "coverage": 3.8
-    },
-    {
-      "key": "Cimahi",
-      "total": 53,
-      "generated": 1,
-      "pending": 52,
-      "coverage": 1.9
     },
     {
       "key": "Samarinda",
@@ -306,6 +306,13 @@
     }
   ],
   "by_source": [
+    {
+      "key": "expansion_v1",
+      "total": 25184,
+      "generated": 0,
+      "pending": 25184,
+      "coverage": 0.0
+    },
     {
       "key": "suggest+combo",
       "total": 1613,

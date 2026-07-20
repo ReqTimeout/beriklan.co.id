@@ -1943,6 +1943,7 @@ async function handleHourlyGenerate(request, env) {
 
     // 2b. Pre-flight: ensure generated_drafts table exists (independent of GitHub)
     let hasGitHub = !!env.GITHUB_TOKEN;
+    // Ensure generated_drafts table exists. Don't swallow errors silently — surface them in log.
     try {
       await env.DB.prepare(`CREATE TABLE IF NOT EXISTS generated_drafts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1955,8 +1956,11 @@ async function handleHourlyGenerate(request, env) {
         status TEXT DEFAULT 'pending',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         committed_at TEXT
-      )`).run();
-    } catch (e) { /* table may already exist */ }
+      )`).all();
+      log.push({ stage: "ensure_table", ok: true });
+    } catch (e) {
+      log.push({ stage: "ensure_table", error: e.message });
+    }
 
     // 3. For each pending keyword, generate article via Zen (fallback Groq)
     const newPosts = [];

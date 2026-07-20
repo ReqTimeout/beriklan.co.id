@@ -1993,8 +1993,9 @@ async function handleHourlyGenerate(request, env) {
         aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart });
       } catch (e) {
         const msg = e.message && e.message.includes("AI generation failed") ? e.message.slice(0, 1500) : String(e.message || e).slice(0, 200);
-        errors.push({ stage: "ai_generate", slug: item.slug, error: msg, ms: Date.now() - aiStart });
-        aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart, error: true });
+        const isRateLimit = e.message && e.message.startsWith("RATE_LIMITED");
+        errors.push({ stage: isRateLimit ? "ai_rate_limited" : "ai_generate", slug: item.slug, error: msg, ms: Date.now() - aiStart });
+        aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart, error: true, rate_limited: isRateLimit });
       }
     }
     log.push({ stage: "ai_generate", generated: newPosts.length, timings: aiTimings });
@@ -2383,7 +2384,11 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
   }
 
   if (!article || article.length < 500) {
-    throw new Error(`AI generation failed | zen=${JSON.stringify(zenDiag)} | groq=${JSON.stringify(groqDiag)}`);
+    const zenLimited = zenDiag?.status === 429;
+    const groqLimited = groqDiag?.status === 429;
+    const rateLimited = zenLimited || groqLimited;
+    const baseMsg = `AI generation failed | zen=${JSON.stringify(zenDiag)} | groq=${JSON.stringify(groqDiag)}`;
+    throw new Error(rateLimited ? `RATE_LIMITED: ${baseMsg}` : baseMsg);
   }
 
   // Ensure starts with <h2>

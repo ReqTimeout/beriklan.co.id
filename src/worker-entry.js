@@ -1150,20 +1150,30 @@ async function renderHourlyGenStatus(env) {
       `SELECT slug, title, service, city, status, created_at, committed_at
        FROM generated_drafts ORDER BY id DESC LIMIT 10`
     ).all();
+    const totalRow = await env.DB.prepare(
+      `SELECT
+         COUNT(*) as total,
+         SUM(CASE WHEN status='committed' THEN 1 ELSE 0 END) as committed,
+         SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) as drafts
+       FROM generated_drafts`
+    ).first();
     const rows = (drafts.results || []);
-    if (rows.length === 0) {
+    const total = (totalRow && totalRow.total) || 0;
+    const committed = (totalRow && totalRow.committed) || 0;
+    const draftsCount = (totalRow && totalRow.drafts) || 0;
+    if (rows.length === 0 && total === 0) {
       return `
         <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
-        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code>. Setup cron-job.org untuk trigger setiap 12 menit.</p></div>
+        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code>. Setup cron-job.org untuk trigger.</p></div>
       `;
     }
     const table = rows.map(r => {
       const statusBadge = r.status === 'committed'
         ? '<span class="badge green">✅ committed</span>'
-        : '<span class="badge yellow">📝 draft (D1 only)</span>';
+        : '<span class="badge yellow">📝 draft</span>';
       const link = r.status === 'committed'
-        ? `<a href="/blog/${esc(r.slug)}/" target="_blank">${esc(r.title.slice(0, 50))}</a>`
-        : esc(r.title.slice(0, 50));
+        ? `<a href="/blog/${esc(r.slug)}/" target="_blank">${esc(r.title.slice(0, 55))}</a>`
+        : esc(r.title.slice(0, 55));
       return `<tr>
         <td>${link}</td>
         <td>${esc(r.service || '-')}</td>
@@ -1173,15 +1183,12 @@ async function renderHourlyGenStatus(env) {
       </tr>`;
     }).join('');
     return `
-      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (10 terakhir)</h3>
-      <div class="card" style="margin-bottom:12px;">
-        <p class="sub">
-          <strong>Endpoint:</strong> <code>GET /api/cron/hourly-generate?token=...&count=N</code>
-          <br/>
-          <strong>Setup cron-job.org:</strong> trigger setiap 12 menit dengan <code>count=1</code> untuk 5 artikel/jam.
-          <br/>
-          <strong>Generated (last 10):</strong> ${rows.length} · <strong>Status:</strong> ${rows.filter(r => r.status === 'committed').length} committed, ${rows.filter(r => r.status !== 'committed').length} draft.
-        </p>
+      <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:12px;">
+        <div class="card success"><h2>Total Generated</h2><div class="metric">${total}</div><div class="sub">artikel via /api/cron/hourly-generate</div></div>
+        <div class="card info"><h2>✅ Committed to GitHub</h2><div class="metric">${committed}</div><div class="sub">posts.json + queue + index</div></div>
+        <div class="card warning"><h2>📝 Drafts (D1 only)</h2><div class="metric">${draftsCount}</div><div class="sub">menunggu GitHub commit (set secret)</div></div>
+        <div class="card"><h2>Cron Status</h2><div class="metric" style="font-size:14px;">cron-job.org ⏰</div><div class="sub">external trigger per jam</div></div>
       </div>
       <table><thead><tr><th>Title</th><th>Service</th><th>City</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${table}</tbody></table>
     `;
@@ -1196,9 +1203,8 @@ async function renderHourlyGenStatus(env) {
 // ─── Roadmap Progress (static checklist, source: SEO-STRATEGY.md) ──────
 function renderRoadmap() {
   const items = [
-    { phase: "P1", label: "Volume foundation — 5/jam auto-gen endpoint", status: "done", note: "/api/cron/hourly-generate + drafts D1 fallback" },
-    { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY di Worker secrets", status: "pending", note: "CF Dashboard → Workers → beriklanweb → Settings → Variables" },
-    { phase: "P1", label: "Setup cron-job.org trigger (12 min)", status: "pending", note: "URL: /api/cron/hourly-generate?count=1" },
+    { phase: "P1", label: "Volume foundation — 5/jam auto-gen endpoint", status: "done", note: "/api/cron/hourly-generate + drafts D1 fallback ✅ verified" },
+    { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY + cron-job.org", status: "done", note: "✅ secrets set, cron hourly running, full pipeline verified" },
     { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "pending", note: "intent matrix + PAA + competitor" },
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "pending", note: "crawl discovery cepat" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },

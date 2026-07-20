@@ -39,6 +39,9 @@ export default {
     if (path === "/api/cron/hourly-generate" || path === "/api/cron/hourly-generate/") {
       return await handleHourlyGenerate(request, env);
     }
+    if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
+      return await handleGscIndexing(request, env);
+    }
     if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
       return await handleGscPullCron(request, env);
     }
@@ -1144,7 +1147,7 @@ async function handleKeywordDashboard(request, env) {
   ${renderRoadmap()}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
-  ${renderQuota(idx)}
+  ${await renderQuota(env, idx)}
 
   <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
 </div>
@@ -1224,7 +1227,7 @@ function renderRoadmap() {
     { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "done", note: "✅ matrix: 27,947 keywords (10× target)" },
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
     { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
-    { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },
+    { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "done", note: "/api/cron/gsc-indexing deployed · 200/day quota · await GSC_SERVICE_ACCOUNT_JSON" },
     { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "pending", note: "Google Trends harian" },
     { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
     { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
@@ -1309,21 +1312,31 @@ function renderFreshness(ks) {
 }
 
 // ─── Quota Usage (IndexNow + GSC Indexing API daily) ──────────────────
-function renderQuota(idx) {
+async function renderQuota(env, idx) {
   const indexnowToday = idx.today || 0;
   const indexnowLimit = 10000; // IndexNow batch
   const gscLimit = 200; // GSC Indexing API per day
   const indexnowPct = Math.min(100, (indexnowToday / indexnowLimit * 100)).toFixed(1);
+  const gscConfigured = !!env.GSC_SERVICE_ACCOUNT_JSON;
+  let submittedGsc = 0;
+  if (env.DB) {
+    try {
+      const r = await env.DB.prepare(
+        "SELECT COUNT(*) as n FROM pending_indexing WHERE gsc_submitted_at > datetime('now', '-1 day')"
+      ).first();
+      submittedGsc = (r && r.n) || 0;
+    } catch {}
+  }
   return `
     <h3 class="section-title">⚡ Quota & API Usage (hari ini)</h3>
     <div class="grid">
       <div class="card"><h2>IndexNow submitted</h2><div class="metric">${indexnowToday}</div><div class="sub">limit: ${indexnowLimit.toLocaleString()} / batch</div></div>
-      <div class="card info"><h2>GSC Indexing API</h2><div class="metric">${indexnowToday}</div><div class="sub">limit: ${gscLimit} / hari <span class="badge yellow">❌ belum aktif</span></div></div>
-      <div class="card success"><h2>Pending indexing queue</h2><div class="metric">${idx.pending || 0}</div><div class="sub">menunggu submit</div></div>
+      <div class="card ${gscConfigured ? 'info' : ''}"><h2>GSC Indexing API</h2><div class="metric">${submittedGsc}/${gscLimit}</div><div class="sub">submitted today <span class="badge ${gscConfigured ? 'green' : 'yellow'}">${gscConfigured ? '✅ configured' : '❌ setup needed'}</span></div></div>
+      <div class="card ${idx.pending > 100 ? 'warning' : 'success'}"><h2>Pending indexing queue</h2><div class="metric">${idx.pending || 0}</div><div class="sub">menunggu submit (IndexNow + GSC)</div></div>
       <div class="card"><h2>Daily cron status</h2><div class="metric" style="font-size:14px;">${(idx.recent[0]?.submitted_at || 'belum ada')?.slice(0, 16) || 'never'}</div><div class="sub">last IndexNow batch</div></div>
     </div>
     <p class="sub" style="color:#666;font-size:12px;">
-      💡 <strong>GSC Indexing API</strong> (200/hari) memberi Google signal instant crawl — perlu setup service account JSON. Lihat <a href="https://github.com/ReqTimeout/beriklan.co.id/blob/main/SEO-STRATEGY.md" target="_blank">SEO-STRATEGY.md §E</a>.
+      💡 <strong>GSC Indexing API</strong> (200/hari) memberi Google signal instant crawl — trigger via <code>/api/cron/gsc-indexing?count=20</code> setelah URL ter-enqueue. Setup butuh service account JSON di CF Dashboard.
     </p>
   `;
 }
@@ -2294,6 +2307,119 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
       ok: false, error: String(e), stack: e.stack?.split("\n").slice(0, 5).join("\n"),
       log, errors,
     }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── GSC Indexing API (instant crawl signal, 200 req/day free) ─────
+//   GET /api/cron/gsc-indexing?token=...&count=N
+//   Reads pending URLs from D1, submits each to GSC Indexing API,
+//   marks as 'gsc_submitted' on success. Re-submits are idempotent
+//   (GSC dedupes by URL), so cron can run multiple times per day.
+async function handleGscIndexing(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "20", 10), 200));
+  const debug = url.searchParams.get("debug") === "1";
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+  const submitted = [];
+
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) {
+    return new Response(JSON.stringify({
+      ok: false,
+      error: "GSC_SERVICE_ACCOUNT_JSON secret not set. Setup: create GSC service account in Google Cloud Console, add as Owner in GSC, paste JSON as CF secret.",
+      setup_url: "https://console.cloud.google.com/iam-admin/serviceaccounts",
+    }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  try {
+    // 1. Get access token
+    let accessToken;
+    try {
+      const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+      accessToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/indexing");
+      log.push({ stage: "auth", ok: true });
+    } catch (e) {
+      errors.push({ stage: "auth", error: String(e).slice(0, 200) });
+      return new Response(JSON.stringify({ ok: false, error: "auth_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2. Get pending URLs from D1 (skip already gsc_submitted today)
+    let urls = [];
+    try {
+      // First, ensure column exists (idempotent)
+      await env.DB.prepare(`ALTER TABLE pending_indexing ADD COLUMN gsc_submitted_at TEXT`).run().catch(() => {});
+      const r = await env.DB.prepare(
+        `SELECT id, url FROM pending_indexing
+         WHERE url LIKE 'https://beriklan.co.id/blog/%/'
+           AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-7 days'))
+         ORDER BY rowid ASC LIMIT ?`
+      ).bind(count).all();
+      urls = (r.results || []).map(row => ({ id: row.id, url: row.url }));
+      log.push({ stage: "queue_fetch", picked: urls.length });
+    } catch (e) {
+      errors.push({ stage: "queue_fetch", error: String(e).slice(0, 200) });
+      return new Response(JSON.stringify({ ok: false, error: "queue_fetch_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
+    if (urls.length === 0) {
+      return new Response(JSON.stringify({ ok: true, message: "no pending URLs", submitted: [], log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 3. Submit each URL to GSC Indexing API
+    for (const item of urls) {
+      try {
+        const r = await fetch(
+          "https://indexing.googleapis.com/v3/urlNotifications:publish",
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: item.url, type: "URL_UPDATED" }),
+          }
+        );
+        const result = { id: item.id, url: item.url, status: r.status, ok: r.ok };
+        if (r.ok) {
+          // Mark as gsc_submitted
+          await env.DB.prepare(
+            "UPDATE pending_indexing SET gsc_submitted_at = datetime('now'), status = 'gsc_submitted' WHERE id = ?"
+          ).bind(item.id).run();
+          submitted.push(item.url);
+        } else {
+          try { result.body = (await r.text()).slice(0, 150); } catch {}
+          errors.push({ stage: "gsc_submit", ...result });
+        }
+        log.push({ stage: "submit", ...result });
+      } catch (e) {
+        errors.push({ stage: "gsc_submit_exception", url: item.url, error: String(e).slice(0, 200) });
+      }
+    }
+
+    // 4. Log to cron_logs for dashboard
+    try {
+      await env.DB.prepare(
+        "INSERT INTO cron_logs (timestamp, urls_processed, google_ok, google_fail, indexnow_ok, indexnow_fail) VALUES (datetime('now'), ?, ?, 0, 0, 0)"
+      ).bind(submitted.length, submitted.length).run();
+    } catch {}
+
+    const elapsedMs = Date.now() - t0;
+    return new Response(JSON.stringify({
+      ok: true,
+      submitted_count: submitted.length,
+      submitted_urls: submitted,
+      failed_count: errors.length,
+      elapsed_ms: elapsedMs,
+      log: debug ? log : undefined,
+      errors: errors.length ? errors : undefined,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

@@ -1,0 +1,127 @@
+{
+  "company": {
+    "name_legal": "PT Beriklan Digital Indonesia",
+    "name_brand": "Beriklan",
+    "name_brand_alt": "Beriklan Digital Agency",
+    "tagline_short": "Performance marketing partner untuk UMKM & mid-market Indonesia",
+    "tagline_long": "Senior performance marketing partner managing Meta, Google, TikTok & YouTube campaigns for Indonesian businesses since 2016",
+    "description_50": "Performance marketing agency untuk UMKM & bisnis menengah Indonesia. Spesialis Meta Ads, Google Ads, TikTok Ads.",
+    "description_100": "Beriklan.co.id adalah agency performance marketing senior berbasis di Bandung, mengelola campaign Meta, Google, TikTok, dan YouTube untuk UMKM dan bisnis menengah Indonesia sejak 2016.",
+    "description_200": "Beriklan.co.id adalah agency performance marketing senior berbasis di Bandung, mengelola campaign iklan Meta (Facebook + Instagram), Google (Search + Display + YouTube + PMax), TikTok Ads, dan YouTube Ads untuk UMKM dan bisnis menengah Indonesia sejak 2016. Layanan mencakup strategi, targeting, creative production, A/B testing, dan optimasi ROAS mingguan dengan laporan transparan dan akses penuh ke akun klien.",
+    "description_300": "Beriklan.co.id adalah agency performance marketing senior berbasis di Bandung, mengelola campaign iklan Meta (Facebook + Instagram), Google (Search + Display + YouTube + PMax), TikTok Ads, dan YouTube Ads untuk UMKM dan bisnis menengah Indonesia sejak 2016. Pendiri tim memiliki sertifikasi Meta Business Partner dan Google Ads. Layanan mencakup konsultasi strategi, audience research, campaign setup, creative production (static + video), A/B testing, weekly ROAS optimization, dan reporting transparan. Setiap klien mendapat akses penuh ke akun iklan mereka — kein black box. Klien aktif dari eCommerce (fashion, beauty, F&B, electronics), SaaS, education, professional services, dan real estate.",
+    "founded_year": 2016,
+    "company_size": "5-10 orang",
+    "min_project_usd": 500,
+    "hourly_rate_usd": "25-49",
+    "team_size": 8
+  },
+  "contact": {
+    "email_primary": "admin@beriklan.co.id",
+    "email_sales": "sales@beriklan.co.id",
+    "phone_wa": "+62 81 1919 328",
+    "phone_intl": "+62 22 1234 5678",
+    "address_full": "Jl. Arcamanik Endah No.76, Arcamanik, Bandung 40195, Jawa Barat, Indonesia",
+    "address_short": "Jl. Arcamanik Endah No.76, Bandung 40195",
+    "city": "Bandung",
+    "province": "Jawa Barat",
+    "country": "Indonesia",
+    "country_code": "ID",
+    "postal": "40195",
+    "timezone": "Asia/Jakarta"
+  },
+  "web": {
+    "url_main": "https://beriklan.co.id",
+    "url_blog": "https://beriklan.co.id/blog",
+    "url_whatsapp": "https://wa.me/62811919328?text=Halo%20Beriklan",
+    "url_twitter": "https://x.com/beriklan_id",
+    "url_linkedin": "https://www.linkedin.com/company/beriklan",
+    "url_instagram": "https://www.instagram.com/beriklan.co.id",
+    "url_facebook": "https://www.facebook.com/beriklan",
+    "url_youtube": "https://www.youtube.com/@beriklan",
+    "url_medium": "https://medium.com/@beriklan",
+    "url_github": "https://github.com/ReqTimeout/beriklan.co.id",
+    "url_gitlab": "https://gitlab.com/beriklan",
+    "url_clutch": "https://clutch.co/profile/beriklan",
+    "url_behance": "https://www.behance.net/beriklan",
+    "url_dribbble": "https://dribbble.com/beriklan"
+  },
+  "social_handles": {
+    "twitter": "@beriklan_id",
+    "instagram": "@beriklan.co.id",
+    "linkedin_company": "beriklan",
+    "linkedin_personal": "tim.beriklan",
+    "facebook_page": "beriklan",
+    "youtube": "@beriklan",
+    "tiktok": "@beriklan.official",
+    "medium_publication": "beriklan",
+    "medium_personal": "@beriklan"
+  },
+  "industries": [
+    "eCommerce",
+    "Fashion & Apparel",
+    "Beauty & Cosmetics",
+    "Food & Beverage (F&B)",
+    "SaaS / Software",
+    "Education / EdTech",
+    "Professional Services",
+    "Real Estate",
+    "Health & Wellness",
+    "Travel & Hospitality"
+  ],
+  "services": {
+    "primary": [
+      "Meta Ads (Facebook & Instagram)",
+      "Google Ads (Search, Display, YouTube, PMax)",
+      "TikTok Ads",
+      "YouTube Ads",
+      "Performance Marketing Strategy"
+    ],
+    "secondary": [
+      "Landing Page Optimization",
+      "Creative Production (static + video)",
+      "A/B Testing",
+      "Conversion Tracking Setup",
+      "Analytics & Reporting",
+      "SEO (organic)"
+    ],
+    "split_pct": {
+      "PPC / Paid Media": 60,
+      "Social Media Marketing": 20,
+      "SEO": 15,
+      "Content Marketing": 5
+    }
+  },
+  "categories_for_directories": {
+    "general": ["Marketing & Advertising", "Digital Marketing", "Internet Services"],
+    "specific": ["PPC Agency", "Social Media Marketing", "SEO Services", "Performance Marketing"],
+    "indonesian": ["Digital Marketing Indonesia", "Jasa Iklan Online", "Agensi Periklanan", "Jasa Digital Marketing"]
+  },
+  "keywords": [
+    "performance marketing",
+    "digital agency Indonesia",
+    "Meta Ads partner",
+    "Google Ads partner",
+    "TikTok ads agency",
+    "UMKM marketing",
+    "Meta Business partner Indonesia",
+    "jasa iklan Facebook",
+    "jasa iklan Instagram",
+    "jasa iklan Google",
+    "jasa iklan TikTok"
+  ],
+  "social_proof": {
+    "founded": 2016,
+    "years_experience": 9,
+    "campaigns_managed": "500+",
+    "ad_spend_managed": "$2M+ annually",
+    "industries_served": 10,
+    "team_certifications": [
+      "Meta Business Partner (certified)",
+      "Google Ads Certified",
+      "TikTok Academy Certified"
+    ],
+    "client_testimonials_placeholder": "Available on request — multiple 5-star reviews from eCommerce, SaaS, F&B clients in Indonesia"
+  },
+  "submission_template_short": "Hi, I'd like to list Beriklan — a performance marketing agency based in Bandung, Indonesia. We've been managing Meta/Google/TikTok ad campaigns since 2016 for Indonesian UMKM and mid-market businesses. Let me know what info you need.",
+  "submission_template_long": "Hi team, I'd like to submit Beriklan (https://beriklan.co.id) — a performance marketing agency specializing in Meta Ads, Google Ads, and TikTok Ads for the Indonesian market. Founded in 2016, we manage 500+ campaigns annually with $2M+ in ad spend. Services: PPC (60%), Social Media (20%), SEO (15%), Content (5%). Industries: eCommerce, F&B, SaaS, Education, Real Estate. Team size: 8, with Meta Business Partner + Google Ads certifications. Based in Bandung, Indonesia. Please let me know what additional info you need. — Tim Beriklan, admin@beriklan.co.id"
+}

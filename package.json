@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "python3 scripts/gen_keyword_stats.py "build": "python3 scripts/gen_keyword_stats.py"build": "python3 scripts/gen_keyword_stats.py echo build && node scripts/embed_redirects.mjs && astro build && node scripts/sitemap_per_type.js",
+    "build": "python3 scripts/gen_keyword_stats.py && node scripts/embed_redirects.mjs && astro build && node scripts/sitemap_per_type.js",
     "preview": "astro preview",
     "astro": "astro",
     "sitemap": "node scripts/sitemap_per_type.js"

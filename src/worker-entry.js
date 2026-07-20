@@ -1206,8 +1206,9 @@ function renderRoadmap() {
   const items = [
     { phase: "P1", label: "Volume foundation — 5/jam auto-gen endpoint", status: "done", note: "/api/cron/hourly-generate + drafts D1 fallback ✅ verified" },
     { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY + cron-job.org", status: "done", note: "✅ secrets set, cron hourly running, full pipeline verified" },
-    { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "pending", note: "intent matrix + PAA + competitor" },
-    { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "pending", note: "crawl discovery cepat" },
+    { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "done", note: "✅ matrix: 27,947 keywords (10× target)" },
+    { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
+    { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "pending", note: "current 24/day → 120/day needs Workers Paid $5/mo for CPU" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },
     { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "pending", note: "Google Trends harian" },
     { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
@@ -2102,8 +2103,20 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
                     }
                   }
                   if (modified) {
+                    // Re-fetch latest posts.json sha (might have changed since initial fetch)
+                    let currentSha = fileData.sha;
+                    try {
+                      const refetch = await fetch(
+                        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                        { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+                      );
+                      if (refetch.ok) {
+                        const rd = await refetch.json();
+                        currentSha = rd.sha;
+                      }
+                    } catch {}
                     const updatedContent2 = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
-                    const commitResp2 = await fetch(
+                    let commitResp2 = await fetch(
                       `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
                       {
                         method: "PUT",
@@ -2111,16 +2124,37 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
                         body: JSON.stringify({
                           message: `link: ${newPost.slug} injected into ${related.length} related posts`,
                           content: updatedContent2,
-                          sha: fileData.sha,  // Note: may fail if posts.json was modified mid-flight
+                          sha: currentSha,
                           branch: "main",
                         }),
                       }
                     );
+                    // Retry once on 409 (concurrent commit race)
+                    if (!commitResp2.ok && commitResp2.status === 409) {
+                      const refetch2 = await fetch(
+                        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                        { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+                      );
+                      if (refetch2.ok) {
+                        const rd2 = await refetch2.json();
+                        commitResp2 = await fetch(
+                          `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                          {
+                            method: "PUT",
+                            headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                            body: JSON.stringify({
+                              message: `link: ${newPost.slug} injected into ${related.length} related posts`,
+                              content: updatedContent2,
+                              sha: rd2.sha,
+                              branch: "main",
+                            }),
+                          }
+                        );
+                      }
+                    }
                     if (!commitResp2.ok) {
-                      // Likely sha mismatch (cron concurrent commit). Skip silently.
-                      log.push({ stage: "auto_link_sha_mismatch", slug: newPost.slug });
+                      errors.push({ stage: "auto_link_commit_failed", slug: newPost.slug, status: commitResp2.status });
                     } else {
-                      // Update sha for next iteration
                       const data2 = await commitResp2.json();
                       fileData.sha = data2.content?.sha || fileData.sha;
                     }

@@ -2315,6 +2315,8 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
 
   let article = null;
   let modelUsed = null;
+  let zenDiag = null;
+  let groqDiag = null;
 
   // Try Zen first (deepseek-v4-flash-free)
   if (env.ZEN_API_KEY) {
@@ -2329,17 +2331,25 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
           thinking: { type: "disabled" },
         }),
       });
+      zenDiag = { status: r.status, ok: r.ok };
       if (r.ok) {
         const data = await r.json();
         article = (data.choices?.[0]?.message?.content || "").trim();
-        // Strip markdown fences
         if (article.startsWith("```html")) article = article.slice(7);
         if (article.startsWith("```")) article = article.slice(3);
         if (article.endsWith("```")) article = article.slice(0, -3);
         article = article.trim();
+        zenDiag.len = article.length;
+        zenDiag.model = data.model;
         if (article.length > 500) modelUsed = `zen/deepseek-v4-flash-free`;
+      } else {
+        try { zenDiag.body = (await r.text()).slice(0, 200); } catch {}
       }
-    } catch (e) { /* fallthrough */ }
+    } catch (e) {
+      zenDiag = { error: String(e).slice(0, 200) };
+    }
+  } else {
+    zenDiag = { skipped: "no ZEN_API_KEY" };
   }
 
   // Fallback Groq
@@ -2355,6 +2365,7 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
           temperature: 0.7,
         }),
       });
+      groqDiag = { status: r.status, ok: r.ok };
       if (r.ok) {
         const data = await r.json();
         article = (data.choices?.[0]?.message?.content || "").trim();
@@ -2362,13 +2373,17 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
         if (article.startsWith("```")) article = article.slice(3);
         if (article.endsWith("```")) article = article.slice(0, -3);
         article = article.trim();
+        groqDiag.len = article.length;
+        groqDiag.model = data.model;
         if (article.length > 500) modelUsed = `groq/llama-3.3-70b-versatile`;
+      } else {
+        try { groqDiag.body = (await r.text()).slice(0, 200); } catch {}
       }
     } catch (e) { /* fallthrough */ }
   }
 
   if (!article || article.length < 500) {
-    throw new Error("AI generation failed (Zen + Groq both returned empty)");
+    throw new Error(`AI generation failed | zen=${JSON.stringify(zenDiag)} | groq=${JSON.stringify(groqDiag)}`);
   }
 
   // Ensure starts with <h2>

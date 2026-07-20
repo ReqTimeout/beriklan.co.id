@@ -191,8 +191,35 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    console.log("[scheduled] disabled — use /api/cron/* endpoints with cron-job.org");
-    return;
+    const cron = event.cron;
+    const fakeReq = (path) => new Request(`https://beriklan.co.id${path}`, { method: "GET" });
+
+    const run = async (label, handler, path) => {
+      try {
+        const t0 = Date.now();
+        const res = await handler(fakeReq(path), env);
+        const data = await res.json().catch(() => ({}));
+        console.log(`[scheduled:${label}] ${res.status} ${Date.now() - t0}ms ok=${data.ok} ${JSON.stringify(data).slice(0, 400)}`);
+      } catch (e) {
+        console.error(`[scheduled:${label}] error:`, String(e).slice(0, 300));
+      }
+    };
+
+    console.log("[scheduled] cron:", cron);
+
+    if (cron === "0 * * * *") {
+      // Hourly: generate 1 article from top pending keyword
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=1"));
+    } else if (cron === "0 */6 * * *") {
+      // Every 6h at :00: GSC indexing (20 URLs) + trending-fetch (RSS to D1 queue)
+      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=20"));
+      ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026"));
+    } else if (cron === "30 */6 * * *") {
+      // Every 6h at :30: trending-generate (1 article from queue)
+      ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1"));
+    } else {
+      console.log("[scheduled] unknown cron, no-op");
+    }
   },
 };
 

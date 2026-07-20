@@ -1189,7 +1189,7 @@ async function renderHourlyGenStatus(env) {
         <div class="card success"><h2>Total Generated</h2><div class="metric">${total}</div><div class="sub">artikel via /api/cron/hourly-generate</div></div>
         <div class="card info"><h2>✅ Committed to GitHub</h2><div class="metric">${committed}</div><div class="sub">posts.json + queue + index</div></div>
         <div class="card warning"><h2>📝 Drafts (D1 only)</h2><div class="metric">${draftsCount}</div><div class="sub">menunggu GitHub commit (set secret)</div></div>
-        <div class="card"><h2>Cron Status</h2><div class="metric" style="font-size:14px;">cron-job.org ⏰</div><div class="sub">external trigger per jam</div></div>
+        <div class="card"><h2>Cron Setup</h2><div class="metric" style="font-size:13px;line-height:1.4;">⚡ Paid: count=5 @1 jam<br/>🆓 Free: 5 × count=1 @12 min</div><div class="sub"><a href="https://cron-job.org" target="_blank">cron-job.org</a> · Workers Paid $5/mo untuk 30s CPU</div></div>
       </div>
       <table><thead><tr><th>Title</th><th>Service</th><th>City</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${table}</tbody></table>
     `;
@@ -1208,7 +1208,7 @@ function renderRoadmap() {
     { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY + cron-job.org", status: "done", note: "✅ secrets set, cron hourly running, full pipeline verified" },
     { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "done", note: "✅ matrix: 27,947 keywords (10× target)" },
     { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
-    { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "pending", note: "current 24/day → 120/day needs Workers Paid $5/mo for CPU" },
+    { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
     { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "pending", note: "200 req/day quota" },
     { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "pending", note: "Google Trends harian" },
     { phase: "P2", label: "Page speed LCP < 2s", status: "pending", note: "ranking signal" },
@@ -1920,8 +1920,13 @@ async function handleHourlyGenerate(request, env) {
   if (token !== env.ADMIN_TOKEN) {
     return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   }
+  // Default count = 1 for Workers Free (10ms CPU budget per invocation).
+//   Override ?count=5 if running on Workers Paid (30s CPU budget).
+//   Wall time per article: ~3-5s with Zen/Groq fallback.
+//   Free tier alternative: schedule 5 cron-job.org triggers with count=1.
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 5));
   const debug = url.searchParams.get("debug") === "1";
+  const perArticleTimeoutMs = parseInt(url.searchParams.get("timeout") || "25000", 10);
 
   const t0 = Date.now();
   const log = [];
@@ -1973,18 +1978,26 @@ async function handleHourlyGenerate(request, env) {
     // 3. For each pending keyword, generate article via Zen (fallback Groq)
     const newPosts = [];
     const aiModels = [];
+    const aiTimings = [];
     for (const item of pending) {
+      const aiStart = Date.now();
       try {
-        const post = await generateArticleForKeyword(item, env);
+        const post = await Promise.race([
+          generateArticleForKeyword(item, env),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("ai_timeout")), perArticleTimeoutMs)),
+        ]);
         if (post) {
           newPosts.push(post);
           aiModels.push({ slug: post.slug, model: post._model || "unknown" });
         }
+        aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart });
       } catch (e) {
-        errors.push({ stage: "ai_generate", slug: item.slug, error: String(e).slice(0, 200) });
+        const msg = String(e.message || e).slice(0, 200);
+        errors.push({ stage: "ai_generate", slug: item.slug, error: msg, ms: Date.now() - aiStart });
+        aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart, error: true });
       }
     }
-    log.push({ stage: "ai_generate", generated: newPosts.length });
+    log.push({ stage: "ai_generate", generated: newPosts.length, timings: aiTimings });
 
     if (newPosts.length === 0) {
       return new Response(JSON.stringify({ ok: false, error: "no articles generated (check ZEN_API_KEY / GROQ_API_KEY)", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });

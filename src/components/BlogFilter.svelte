@@ -6,6 +6,12 @@
     let activeCategory = 'all';
     let allPosts = [];
     let loaded = false;
+    let rootEl;
+
+    // Reveal observer bound to this component's root
+    function setRoot(node) {
+        rootEl = node;
+    }
 
     // Cluster mode: when visited via /blog/?tag=<T>&service=<S> (pillar cluster links)
     let clusterMode = false;
@@ -73,6 +79,23 @@
             console.warn('Failed to load posts:', e);
             loaded = true;
         }
+        // In-component reveal observer (BlogFilter is client:only, so the global
+        // observer in Layout.astro never sees these elements at page load)
+        if (typeof IntersectionObserver !== 'undefined') {
+            requestAnimationFrame(() => {
+                const els = rootEl?.querySelectorAll('.reveal-stagger, .reveal') || [];
+                if (els.length === 0) return;
+                const io = new IntersectionObserver((entries) => {
+                    for (const e of entries) {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('revealed');
+                            io.unobserve(e.target);
+                        }
+                    }
+                }, { threshold: 0.08, rootMargin: '-40px 0px' });
+                els.forEach(el => io.observe(el));
+            });
+        }
     });
 
     const categories = [
@@ -111,7 +134,7 @@
         </p>
 
         {#if clusterPosts.length > 0}
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger" data-reveal-stagger>
                 {#each clusterPosts as post, i}
                     <a href={`/blog/${post.slug}`} class="grid-card group" style={`animation-delay:${i * 60}ms;`}>
                         <div class="p-6">
@@ -167,7 +190,7 @@
     {#if featuredPosts.length > 0}
         <div class="mb-10">
             <h3 class="text-xs font-bold uppercase tracking-wider text-muted mb-4">Featured</h3>
-            <div class="grid md:grid-cols-3 gap-5 reveal-stagger">
+            <div class="grid md:grid-cols-3 gap-5 reveal-stagger" data-reveal-stagger>
                 {#each featuredPosts as post}
                     <a href="/blog/{post.slug}" class="featured-card group">
                         <div class="featured-thumb">
@@ -194,9 +217,9 @@
 
     <!-- Grid posts -->
     {#if gridPosts.length > 0}
-        <div>
+<div use:setRoot>
             <h3 class="text-xs font-bold uppercase tracking-wider text-muted mb-4">Artikel Lainnya</h3>
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger" data-reveal-stagger>
                         {#each gridPosts as post}
                             <a href="/blog/{post.slug}" class="grid-card group">
                                 <div class="grid-thumb">

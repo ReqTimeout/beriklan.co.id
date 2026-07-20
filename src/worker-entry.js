@@ -2259,12 +2259,14 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
     log.push({ stage: "drafts_save", count: draftsSaved });
 
     // 7. Enqueue new URLs in D1 pending_indexing (for IndexNow cron /api/cron/indexing)
+    //    Use www.beriklan.co.id prefix to match the verified GSC property
+    //    (sitemap uses www. too — GSC Indexing API ownership check requires match)
     let enqueued = 0;
     for (const p of newPosts) {
       try {
-        const url = `https://beriklan.co.id/blog/${p.slug}/`;
+        const url = `https://www.beriklan.co.id/blog/${p.slug}/`;
         const exists = await env.DB.prepare(
-          "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted')"
+          "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted','gsc_submitted')"
         ).bind(url).first();
         if (!exists) {
           await env.DB.prepare(
@@ -2355,11 +2357,15 @@ async function handleGscIndexing(request, env) {
       await env.DB.prepare(`ALTER TABLE pending_indexing ADD COLUMN gsc_submitted_at TEXT`).run().catch(() => {});
       const r = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
-         WHERE url LIKE 'https://beriklan.co.id/blog/%/'
+         WHERE (url LIKE 'https://www.beriklan.co.id/blog/%/' OR url LIKE 'https://beriklan.co.id/blog/%/')
            AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-7 days'))
          ORDER BY rowid ASC LIMIT ?`
       ).bind(count).all();
-      urls = (r.results || []).map(row => ({ id: row.id, url: row.url }));
+      // Normalize URL to www.beriklan.co.id for GSC submission (matches verified property)
+      urls = (r.results || []).map(row => {
+        const normalized = row.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
+        return { id: row.id, url: normalized, original: row.url };
+      });
       log.push({ stage: "queue_fetch", picked: urls.length });
     } catch (e) {
       errors.push({ stage: "queue_fetch", error: String(e).slice(0, 200) });

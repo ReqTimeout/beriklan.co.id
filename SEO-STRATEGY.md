@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.6 (2026-07-21) — P2.1 + P2.2 + P2.3 + P2.6 done (15/18 · 83%)
+> **Versi:** 4.7 (2026-07-21) — Worker escapeHtml fix + N.1 refresh + N.4 rank tracker + N.6 D1 queue + N.8 page-1 boost + filter coring/judi/fashion + orphan 410 redirects + snippet optimizer (17/18 · 94%)
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 

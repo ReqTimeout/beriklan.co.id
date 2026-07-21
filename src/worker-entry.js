@@ -28,7 +28,7 @@ export default {
       return await handleEnvCheck(request, env);
     }
     if (path === "/api/_test_route" || path === "/api/_test_route/") {
-      return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-17", timestamp: new Date().toISOString() }), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-17", timestamp: new Date().toISOString(), env_check_route: "registered" }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);

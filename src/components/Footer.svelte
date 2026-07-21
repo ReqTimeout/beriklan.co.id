@@ -16,6 +16,7 @@
         { label: 'Metodologi', href: '/metodologi' },
         { label: 'Press & Media', href: '/press' },
         { label: 'Blog', href: '/blog' },
+        { label: 'Riset Industri', href: '/riset/laporan-industri-iklan-digital-indonesia-2026' },
         { label: 'Kontak', href: '/kontak' },
     ];
 </script>

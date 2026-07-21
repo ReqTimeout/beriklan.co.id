@@ -1,0 +1,470 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import Footer from '../../components/Footer.svelte'
+import AnimatedStat from '../../components/AnimatedStat.svelte'
+import { report } from '../../data/research-data.js'
+
+const d = report
+const breadcrumb = [
+  { name: 'Beranda', url: '/' },
+  { name: 'Riset', url: '/riset/' },
+  { name: d.title, url: d.url },
+]
+---
+
+<Layout
+  title="Laporan Industri Iklan Digital Indonesia 2026 — Data & Tren Terbaru | Beriklan"
+  description="Laporan komprehensif industri iklan digital Indonesia 2026: data belanja iklan USD 3,41 miliar, pangsa pasar platform, tren video & AI, social commerce, dan proyeksi 2031. Sumber: Mordor Intelligence, We Are Social, Dentsu."
+  canonical={d.url}
+  schema="auto"
+  {breadcrumb}
+  faq={d.faqs.map(f => ({ question: f.q, answer: f.a }))}
+>
+  <main class="bg-white">
+    <!-- HERO -->
+    <section class="bg-gradient-to-br from-primary via-primary-2 to-ink text-white overflow-hidden relative">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.12),transparent_70%)]" />
+      <div class="container mx-auto px-6 py-20 md:py-28 relative z-10">
+        <span class="hero-eyebrow inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white rounded-full px-4 py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+          </span>
+          Research · Industri Iklan ID · {d.year}
+        </span>
+        <h1 class="text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl font-display font-extrabold mt-6 leading-tight max-w-4xl">
+          {d.title}
+        </h1>
+        <p class="text-lg md:text-xl text-white/80 mt-4 max-w-3xl leading-relaxed">
+          {d.hero.subhead}
+        </p>
+        <div class="flex flex-wrap gap-3 mt-8">
+          <a
+            href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20Laporan%20Industri%20Iklan%20Digital%20Indonesia%202026."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-accent hover:bg-amber-600 text-primary font-bold text-sm rounded-full px-7 py-3.5 transition-all btn-shine"
+          >
+            Diskusi via WhatsApp
+          </a>
+        </div>
+        <p class="text-xs text-white/50 mt-4">Terakhir diperbarui: {d.lastUpdated}</p>
+      </div>
+    </section>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <section class="py-16 md:py-20 bg-soft">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow text-center">Executive Summary</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold text-center mt-2">Ringkasan Eksekutif</h2>
+        <p class="text-center text-muted mt-3 max-w-2xl mx-auto">
+          Data utama industri iklan digital Indonesia tahun 2026 dari berbagai sumber terpercaya.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-10">
+          {d.executiveSummary.map(stat => (
+            <AnimatedStat
+              client:only="svelte"
+              value={parseInt(stat.value.replace(/[.\s]/g, ''))}
+              suffix={stat.suffix}
+              label={stat.label}
+              source={stat.source}
+            />
+          ))}
+        </div>
+        <div class="flex justify-center gap-6 mt-8 text-xs text-muted flex-wrap">
+          <span>📊 Sumber: Mordor Intelligence, We Are Social, Dentsu, APJII</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLE OF CONTENTS -->
+    <section class="py-12 md:py-16 bg-white border-b border-gray-100">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Daftar Isi</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Navigasi Laporan</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-8 max-w-3xl">
+          {[
+            { href: '#market-overview', label: '1. Market Overview' },
+            { href: '#platform-landscape', label: '2. Platform Landscape' },
+            { href: '#digital-behavior', label: '3. Digital Behavior' },
+            { href: '#trends', label: '4. Tren Industri 2026' },
+            { href: '#challenges', label: '5. Tantangan & Peluang' },
+            { href: '#methodology', label: '6. Metodologi & Sumber' },
+          ].map(item => (
+            <a
+              href={item.href}
+              class="block p-4 rounded-xl border border-gray-200 hover:border-accent hover:shadow-soft transition-all text-sm font-medium text-primary"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: MARKET OVERVIEW -->
+    <section id="market-overview" class="py-16 md:py-24 bg-white">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Market Overview</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Pasar Iklan Digital Indonesia</h2>
+        <p class="text-muted mt-3 max-w-3xl leading-relaxed">
+          Pasar iklan digital Indonesia diperkirakan mencapai <strong>USD 3,41 miliar pada 2026</strong>
+          dan diproyeksikan tumbuh menjadi <strong>USD 4,51 miliar pada 2031</strong> dengan CAGR 5,70%.
+          Pertumbuhan ini didorong oleh adopsi smartphone, integrasi social commerce, dan konsumsi video yang terus meningkat.
+        </p>
+
+        <!-- Market size bar chart -->
+        <div class="mt-10 bg-soft rounded-2xl p-6 md:p-8">
+          <h3 class="text-lg font-display font-bold">Pertumbuhan Market Size (USD Miliar)</h3>
+          <div class="mt-6 space-y-3">
+            {d.marketSize.data.filter(row => row.year !== 2031).map(row => {
+              const pct = (row.value / 3.41) * 100
+              return (
+                <div class="flex items-center gap-4">
+                  <span class="text-sm text-muted w-12 shrink-0">{row.year}</span>
+                  <div class="flex-1 h-7 bg-white rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full bg-gradient-to-r from-accent to-accent-2 transition-all duration-700"
+                      style={`width: ${Math.min(pct, 100)}%`}
+                    ></div>
+                  </div>
+                  <span class="text-sm font-bold text-primary tabular-nums w-20 text-right">USD {row.value} M</span>
+                </div>
+              )
+            })}
+            <div class="flex items-center gap-4 opacity-70">
+              <span class="text-sm text-muted w-12 shrink-0">2031*</span>
+              <div class="flex-1 h-7 bg-white rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-teal to-blue-500" style="width: 100%"></div>
+              </div>
+              <span class="text-sm font-bold text-primary tabular-nums w-20 text-right">USD 4.51 M*</span>
+            </div>
+          </div>
+          <p class="text-xs text-muted/60 mt-4 italic">*Proyeksi. Sumber: {d.marketSize.source}</p>
+        </div>
+
+        <!-- Format composition -->
+        <div class="grid md:grid-cols-2 gap-6 mt-10">
+          <div class="bg-soft rounded-2xl p-6 md:p-8">
+            <h3 class="text-lg font-display font-bold">Berdasarkan Format Iklan</h3>
+            <div class="mt-5 space-y-4">
+              {d.formatShare.map(f => (
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">{f.label}</span>
+                    <span class="text-muted">{f.percentage}%</span>
+                  </div>
+                  <div class="h-3 bg-white rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-700" style={`width: ${f.percentage}%; background: ${f.color}`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p class="text-xs text-muted/60 mt-4 italic">Sumber: Mordor Intelligence 2026</p>
+          </div>
+          <div class="bg-soft rounded-2xl p-6 md:p-8">
+            <h3 class="text-lg font-display font-bold">Berdasarkan Perangkat</h3>
+            <div class="mt-5 space-y-4">
+              {d.deviceShare.map(f => (
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">{f.label}</span>
+                    <span class="text-muted">{f.percentage}%</span>
+                  </div>
+                  <div class="h-3 bg-white rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-700" style={`width: ${f.percentage}%; background: ${f.color}`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p class="text-xs text-muted/60 mt-4 italic">Sumber: Mordor Intelligence 2026</p>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4 mt-8">
+          <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl p-5 text-center">
+            <span class="text-3xl font-display font-extrabold text-accent tabular-nums">5,70%</span>
+            <p class="text-sm text-muted mt-1">CAGR 2026-2031</p>
+          </div>
+          <div class="bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-2xl p-5 text-center">
+            <span class="text-3xl font-display font-extrabold text-teal tabular-nums">68,1%</span>
+            <p class="text-sm text-muted mt-1">Belanja dari Mobile</p>
+          </div>
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-5 text-center">
+            <span class="text-3xl font-display font-extrabold text-blue-600 tabular-nums">+7pp</span>
+            <p class="text-sm text-muted mt-1">Pergeseran ke Digital (2023-2025)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: PLATFORM LANDSCAPE -->
+    <section id="platform-landscape" class="py-16 md:py-24 bg-soft">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Platform Landscape</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Lanskap Platform Digital</h2>
+        <p class="text-muted mt-3 max-w-3xl leading-relaxed">
+          Indonesia memiliki ekosistem media sosial yang sangat terfragmentasi — rata-rata pengguna aktif
+          di <strong>7,7 platform per bulan</strong>. Berikut perbandingan platform berdasarkan jumlah pengguna
+          dan durasi engagement harian.
+        </p>
+
+        <!-- Platform bar chart -->
+        <div class="grid md:grid-cols-2 gap-6 mt-10">
+          <div class="bg-white rounded-2xl p-6 md:p-8 shadow-soft">
+            <h3 class="text-lg font-display font-bold mb-5">Pengguna Aktif Bulanan (Juta)</h3>
+            <div class="space-y-4">
+              {d.platformUsers.map(p => (
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">{p.name}</span>
+                    <span class="text-muted">{p.users} Juta</span>
+                  </div>
+                  <div class="h-4 bg-soft rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-700"
+                      style={`width: ${(p.users / 187.4) * 100}%; background: ${p.color}`}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p class="text-xs text-muted/60 mt-4 italic">Sumber: Hashmeta, We Are Social 2025-2026</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 md:p-8 shadow-soft">
+            <h3 class="text-lg font-display font-bold mb-5">Waktu Harian per Pengguna (Menit)</h3>
+            <div class="space-y-4">
+              {d.dailyEngagement.map(p => (
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">{p.platform}</span>
+                    <span class="text-muted">{p.dailyMinutes} mnt/hari</span>
+                  </div>
+                  <div class="h-4 bg-soft rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-700"
+                      style={`width: ${(p.dailyMinutes / 113) * 100}%; background: ${p.color}`}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p class="text-xs text-muted/60 mt-4 italic">Sumber: We Are Social Digital 2026</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 md:p-8 shadow-soft mt-6">
+          <h3 class="text-lg font-display font-bold mb-3">Kanal Brand Discovery</h3>
+          <p class="text-sm text-muted mb-5">Persentase konsumen yang menemukan merek melalui setiap kanal</p>
+          <div class="space-y-4">
+            {d.brandDiscovery.map(b => {
+              const maxDisc = Math.max(...d.brandDiscovery.map(b => b.percentage))
+              return (
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium">{b.channel}</span>
+                    <span class="text-muted">{b.percentage}%</span>
+                  </div>
+                  <div class="h-3 bg-soft rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full bg-gradient-to-r from-accent to-accent-2 transition-all duration-700"
+                      style={`width: ${(b.percentage / maxDisc) * 100}%`}
+                    ></div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <p class="text-xs text-muted/60 mt-4 italic">Sumber: We Are Social Digital 2026</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DIGITAL BEHAVIOR -->
+    <section id="digital-behavior" class="py-16 md:py-24 bg-white">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Digital Behavior</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Perilaku Digital Indonesia</h2>
+
+        <div class="grid md:grid-cols-3 gap-6 mt-10">
+          <div class="bg-soft rounded-2xl p-6 md:p-8">
+            <div class="text-4xl font-display font-extrabold text-accent tabular-nums">3,1</div>
+            <p class="text-sm text-muted mt-1">Jam/hari di media sosial</p>
+            <hr class="my-4 border-gray-200" />
+            <p class="text-sm text-muted leading-relaxed">
+              Tersebar di rata-rata <strong>7,7 platform</strong> setiap bulan. Total 21 jam 50 menit per minggu.
+            </p>
+          </div>
+          <div class="bg-soft rounded-2xl p-6 md:p-8">
+            <div class="text-4xl font-display font-extrabold text-teal tabular-nums">78%</div>
+            <p class="text-sm text-muted mt-1">Konsumsi media sosial adalah video</p>
+            <hr class="my-4 border-gray-200" />
+            <p class="text-sm text-muted leading-relaxed">
+              Short-form video memiliki <strong>3,1x engagement</strong> lebih tinggi dibanding format lain.
+            </p>
+          </div>
+          <div class="bg-soft rounded-2xl p-6 md:p-8">
+            <div class="text-4xl font-display font-extrabold text-green tabular-nums">60%</div>
+            <p class="text-sm text-muted mt-1">Pengguna medsos utk riset merek</p>
+            <hr class="my-4 border-gray-200" />
+            <p class="text-sm text-muted leading-relaxed">
+              Tiga dari lima pengguna Indonesia menjadikan media sosial sebagai <strong>kanal utama</strong> riset merek.
+            </p>
+          </div>
+        </div>
+
+        <!-- Social Commerce highlight -->
+        <div class="bg-gradient-to-br from-amber-50 via-white to-teal-50 rounded-2xl p-7 md:p-10 mt-8 border border-amber-100">
+          <div class="grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-accent">Social Commerce</span>
+              <h3 class="text-2xl md:text-3xl font-display font-extrabold mt-2">
+                USD 14,8 Miliar transaksi social commerce
+              </h3>
+              <p class="text-muted mt-3 leading-relaxed">
+                Social commerce kini mencakup <strong>27% dari total e-commerce Indonesia</strong>
+                dan tumbuh 34% per tahun. TikTok Shop, Instagram Shopping, dan WhatsApp Business
+                menjadi pendorong utama transformasi ini.
+              </p>
+              <p class="text-xs text-muted/60 mt-3 italic">Sumber: Hashmeta / e-Conomy SEA 2025</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-white rounded-xl p-5 text-center shadow-soft">
+                <span class="text-3xl font-display font-extrabold text-accent">27%</span>
+                <p class="text-xs text-muted mt-1">Dari total e-commerce</p>
+              </div>
+              <div class="bg-white rounded-xl p-5 text-center shadow-soft">
+                <span class="text-3xl font-display font-extrabold text-teal">34%</span>
+                <p class="text-xs text-muted mt-1">Pertumbuhan tahunan</p>
+              </div>
+              <div class="bg-white rounded-xl p-5 text-center shadow-soft">
+                <span class="text-3xl font-display font-extrabold text-green">2,7x</span>
+                <p class="text-xs text-muted mt-1">Engagement konten Bahasa Indonesia</p>
+              </div>
+              <div class="bg-white rounded-xl p-5 text-center shadow-soft">
+                <span class="text-3xl font-display font-extrabold text-primary">86%</span>
+                <p class="text-xs text-muted mt-1">Smartphone ownership (2025)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: TRENDS -->
+    <section id="trends" class="py-16 md:py-24 bg-soft">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Tren 2026</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Tren Industri Iklan Digital 2026</h2>
+        <p class="text-muted mt-3 max-w-3xl leading-relaxed">
+          Lima tren utama yang membentuk industri iklan digital Indonesia tahun ini.
+        </p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
+          {d.trends.map(t => (
+            <div class="bg-white rounded-2xl p-6 md:p-7 shadow-soft hover:shadow-pop transition-all duration-300 border border-transparent hover:border-accent/20">
+              <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-lg mb-4">📈</div>
+              <h3 class="text-lg font-display font-bold">{t.title}</h3>
+              <p class="text-sm text-muted mt-2 leading-relaxed">{t.desc}</p>
+              <p class="text-[11px] text-muted/60 mt-3 italic">{t.source}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: CHALLENGES -->
+    <section id="challenges" class="py-16 md:py-24 bg-white">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">Challenges</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Tantangan & Peluang</h2>
+        <p class="text-muted mt-3 max-w-3xl leading-relaxed">
+          Empat tantangan utama yang dihadapi pengiklan dan pemasar di Indonesia tahun 2026.
+        </p>
+        <div class="grid md:grid-cols-2 gap-5 mt-10">
+          {d.challenges.map(c => (
+            <div class="bg-soft rounded-2xl p-6 md:p-7 border-l-4 border-accent">
+              <h3 class="text-lg font-display font-bold">{c.title}</h3>
+              <p class="text-sm text-muted mt-2 leading-relaxed">{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: METHODOLOGY -->
+    <section id="methodology" class="py-16 md:py-24 bg-gradient-to-br from-primary to-primary-2 text-white">
+      <div class="container mx-auto px-6">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent">Metodologi</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Sumber Data & Metodologi</h2>
+        <p class="text-white/70 mt-3 max-w-3xl leading-relaxed">
+          {d.methodology.notes}
+        </p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+          {d.methodology.sources.map(s => (
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <h3 class="text-sm font-bold">{s.name}</h3>
+              <p class="text-xs text-white/60 mt-1">{s.desc}</p>
+              {s.url && (
+                <a href={s.url} target="_blank" rel="noopener noreferrer" class="text-xs text-accent hover:underline mt-2 inline-block">
+                  Kunjungi sumber →
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-16 md:py-24 bg-soft">
+      <div class="container mx-auto px-6">
+        <p class="eyebrow">FAQ</p>
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold mt-2">Pertanyaan Umum</h2>
+        <div class="max-w-3xl mx-auto mt-8 space-y-3">
+          {d.faqs.map(f => (
+            <details class="bg-white rounded-xl shadow-soft group open:ring-1 open:ring-accent/20">
+              <summary class="flex items-center justify-between p-5 cursor-pointer font-medium text-sm md:text-base list-none">
+                {f.q}
+                <svg class="w-4 h-4 shrink-0 text-muted group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-muted leading-relaxed">{f.a}</div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-20 md:py-28 bg-gradient-to-br from-primary via-primary-2 to-ink text-white relative overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(245,158,11,0.1),transparent_60%)]" />
+      <div class="container mx-auto px-6 text-center relative z-10">
+        <h2 class="text-3xl md:text-5xl font-display font-extrabold">Butuh Bantuan Memahami Data Ini?</h2>
+        <p class="text-lg text-white/70 mt-4 max-w-2xl mx-auto leading-relaxed">
+          Tim Beriklan siap membantu Anda menyusun strategi iklan digital yang tepat sasaran.
+          Diskusikan kebutuhan campaign Anda dengan konsultan kami — gratis, tanpa tekanan.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+          <a
+            href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20ingin%20konsultasi%20strategi%20iklan%20digital%20setelah%20membaca%20Laporan%20Industri%202026."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 bg-accent hover:bg-amber-600 text-primary font-bold text-sm rounded-full px-8 py-4 transition-all btn-shine"
+          >
+            Konsultasi Gratis via WhatsApp
+          </a>
+          <a
+            href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20berpartisipasi%20dalam%20riset%20industri%20iklan%20digital."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 border border-white/20 hover:bg-white/10 text-white font-bold text-sm rounded-full px-8 py-4 transition-all"
+          >
+            Ikut Serta dalam Riset
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer client:only="svelte" />
+</Layout>

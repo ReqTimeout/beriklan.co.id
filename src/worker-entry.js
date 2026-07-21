@@ -69,6 +69,9 @@ export default {
     if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
       return await handleGscIndexing(request, env);
     }
+    if (path === "/api/cron/refresh" || path === "/api/cron/refresh/") {
+      return await handleRefreshContent(request, env);
+    }
     if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
       return await handleGscPullCron(request, env);
     }
@@ -241,6 +244,9 @@ export default {
     } else if (cron === "30 */6 * * *") {
       // Every 6h at :30: trending-generate (1 article from queue)
       ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1"));
+    } else if (cron === "0 0 1 * *") {
+      // Monthly on day 1: refresh aging content (N.1) — refresh 3 oldest commercial articles
+      ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3"));
     } else {
       console.log("[scheduled] unknown cron, no-op");
     }
@@ -2011,8 +2017,240 @@ async function handleIndexingCron(request, env) {
     return new Response(JSON.stringify({
       ok: false,
       error: String(e),
-     }), { status: 500, headers: { "Content-Type": "application/json" } });
+}), { status: 500, headers: { "Content-Type": "application/json" } });
   }
+}
+
+// ─── Content Refresh (N.1 — monthly aging content refresh) ─────────────
+//   Untuk artikel lama (180+ hari) yang commercial intent, refresh intro + conclusion
+//   dengan data/stats terbaru. Tambah `refreshed_at` field + commit ke GitHub.
+//   Schedule: cron-job.org monthly → /api/cron/refresh?token=...
+async function handleRefreshContent(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "2", 10), 3));
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+  const refreshed = [];
+
+  if (!env.GITHUB_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "GITHUB_TOKEN secret not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  // 1. Fetch posts.json + refresh-candidates.json
+  let posts = [];
+  let candidates = [];
+  try {
+    const pr = await env.ASSETS.fetch(new URL("https://assets/data/posts.json"));
+    if (pr.ok) posts = await pr.json();
+    log.push({ stage: "posts_fetch", count: posts.length });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "posts fetch failed: " + String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+  try {
+    const cr = await env.ASSETS.fetch(new URL("https://assets/data/refresh-candidates.json"));
+    if (cr.ok) candidates = await cr.json();
+    log.push({ stage: "candidates_fetch", count: candidates.length });
+  } catch (e) {
+    log.push({ stage: "candidates_fetch", skipped: true, reason: String(e) });
+  }
+
+  // 2. If candidates file empty, build inline from posts
+  if (candidates.length === 0) {
+    const now = Date.now();
+    const commercial_kw = /\b(harga|jasa|beli|murah|biaya|tarif|paket|order)\b/i;
+    candidates = posts
+      .filter(p => commercial_kw.test(p.title || "") || commercial_kw.test(p.slug || ""))
+      .filter(p => !p.refreshed_at || (now - new Date(p.refreshed_at).getTime()) > 90 * 86400000)
+      .map(p => ({ slug: p.slug, title: p.title, iso_date: p.iso_date, service: p.category, age_days: p.iso_date ? Math.floor((now - new Date(p.iso_date).getTime()) / 86400000) : 0 }))
+      .sort((a, b) => (b.age_days || 0) - (a.age_days || 0));
+    log.push({ stage: "candidates_inline", count: candidates.length });
+  }
+
+  // 3. Pick top N (oldest commercial first)
+  const selected = candidates.slice(0, count);
+  if (selected.length === 0) {
+    return new Response(JSON.stringify({ ok: true, message: "no candidates to refresh", refreshed: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // 4. For each candidate, generate refreshed intro + conclusion via AI
+  const updatedPosts = [];
+  for (const cand of selected) {
+    try {
+      const post = posts.find(p => p.slug === cand.slug);
+      if (!post) continue;
+
+      const refreshPrompt = `Kamu adalah SEO copywriter Indonesia senior. Tugas: rewrite intro paragraph (1 paragraf) + tambah "Update 2026:" callout di akhir artikel existing untuk keyword "${cand.title}".
+
+Artikel existing:
+${(post.content || post.excerpt || "").slice(0, 1500)}
+
+Format output JSON (WAJIB valid JSON):
+{
+  "intro_baru": "...",
+  "update_2026": "..."
+}
+
+Aturan:
+- Intro max 80 kata, tetap tone profesional Beriklan (tidak overclaim)
+- Update 2026: max 50 kata, sebut data/tren terkini (harga, tools, algorithm changes)
+- Pakai "Anda", bukan "kamu"
+- Jangan pakai: bikin, gak, pasti untung, garansi 100%
+- Jangan ubah H2/H3 existing
+- Output hanya JSON, no markdown`;
+
+      const aiText = await generateWithZenOrGroq(refreshPrompt, env);
+      if (!aiText) {
+        errors.push({ slug: cand.slug, error: "AI failed" });
+        continue;
+      }
+      const aiJson = extractJson(aiText);
+      if (!aiJson || !aiJson.intro_baru || !aiJson.update_2026) {
+        errors.push({ slug: cand.slug, error: "JSON parse failed", raw: String(aiText).slice(0, 200) });
+        continue;
+      }
+
+      // 5. Inject into content
+      const originalContent = post.content || "";
+      let newContent = originalContent;
+      const newIntroHtml = `<p class="bg-amber-50 border-l-4 border-accent p-4 my-6 text-sm italic"><strong>Update ${new Date().getFullYear()}:</strong> ${escapeHtml(aiJson.intro_baru)}</p>`;
+      const h2Match = newContent.match(/<h2[^>]*>/);
+      if (h2Match) {
+        newContent = newContent.slice(0, h2Match.index) + newIntroHtml + "\n" + newContent.slice(h2Match.index);
+      } else {
+        newContent = newIntroHtml + "\n" + newContent;
+      }
+      const updateHtml = `<aside class="bg-blue-50 border border-blue-200 rounded-xl p-5 my-6"><p class="font-bold text-ink mb-2">📌 Update 2026</p><p class="text-sm text-muted">${escapeHtml(aiJson.update_2026)}</p></aside>`;
+      newContent = newContent + "\n" + updateHtml;
+
+      // 6. Update post
+      post.content = newContent;
+      post.refreshed_at = new Date().toISOString();
+      post.refresh_count = (post.refresh_count || 0) + 1;
+
+      updatedPosts.push({ slug: post.slug, title: post.title, model: aiJson._model || "unknown" });
+      log.push({ stage: "refreshed", slug: post.slug, title: post.title });
+    } catch (e) {
+      errors.push({ slug: cand.slug, error: String(e).slice(0, 200) });
+    }
+  }
+
+  if (updatedPosts.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "no posts refreshed", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // 7. Commit posts.json to GitHub
+  const owner = "ReqTimeout";
+  const repo = "beriklan.co.id";
+  const branch = "main";
+
+  let commitSha = null;
+  try {
+    const pGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/src/data/posts.json?ref=${branch}`, {
+      headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0", Accept: "application/vnd.github.v3+json" },
+    });
+    if (!pGet.ok) throw new Error(`GitHub GET posts.json failed: ${pGet.status}`);
+    const pData = await pGet.json();
+    const postsContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 1))));
+    const pPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/src/data/posts.json`, {
+      method: "PUT",
+      headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+      body: JSON.stringify({
+        message: `refresh: content refresh +${updatedPosts.length} articles [${updatedPosts.map(p => p.slug).join(", ")}]`,
+        content: postsContent,
+        sha: pData.sha,
+        branch,
+      }),
+    });
+    if (!pPut.ok) throw new Error(`GitHub PUT posts.json failed: ${pPut.status} ${(await pPut.text()).slice(0, 200)}`);
+    const pPutData = await pPut.json();
+    commitSha = pPutData.commit?.sha || null;
+    log.push({ stage: "commit_posts", sha: commitSha, count: updatedPosts.length });
+  } catch (e) {
+    errors.push({ stage: "commit_posts", error: String(e).slice(0, 300) });
+  }
+
+  return new Response(JSON.stringify({
+    ok: true,
+    refreshed: updatedPosts.length,
+    posts: updatedPosts,
+    commit_sha: commitSha,
+    elapsed_ms: Date.now() - t0,
+    log,
+    errors,
+  }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Helper: extract JSON from AI response (handles code fences)
+function extractJson(s) {
+  if (!s) return null;
+  let str = String(s).trim();
+  str = str.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  try { return JSON.parse(str); } catch {}
+  const m = str.match(/\{[\s\S]*\}/);
+  if (m) {
+    try { return JSON.parse(m[0]); } catch {}
+  }
+  return null;
+}
+
+// Helper: Zen/Groq generation for refresh (lighter than full article)
+async function generateWithZenOrGroq(prompt, env) {
+  const maxTokens = 600;
+  if (env.ZEN_API_KEY) {
+    try {
+      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({
+          model: "deepseek-v4-flash-free",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: maxTokens,
+          thinking: { type: "disabled" },
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        return { _model: "zen/deepseek-v4-flash-free", text };
+      }
+    } catch (e) {}
+  }
+  const groqKeys = getGroqKeys(env);
+  for (let i = 0; i < groqKeys.length; i++) {
+    const key = groqKeys[i];
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: maxTokens,
+          temperature: 0.7,
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        return { _model: `groq/llama-3.3-70b-versatile (groq#${i + 1})`, text };
+      }
+    } catch (e) {}
+  }
+  return null;
 }
 
 // ─── Sitemap Ping (GSC + IndexNow) ──────────────────────────────

@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-07-21T19:54:00",
+  "generated_at": "2026-07-21T21:09:23",
   "keywords": {
     "total": 27947,
-    "generated": 76,
-    "pending": 27871,
-    "live_in_posts": 114,
+    "generated": 80,
+    "pending": 27867,
+    "live_in_posts": 118,
     "coverage": 0.3
   },
   "posts": {
-    "total": 2048,
-    "generated": 1221,
+    "total": 2052,
+    "generated": 1225,
     "by_service": {
-      "jasa-digital-marketing": 585,
+      "jasa-digital-marketing": 589,
       "jasa-iklan-facebook": 311,
       "jasa-iklan-google": 127,
       "jasa-pembuatan-website": 81,
@@ -96,9 +96,9 @@
     {
       "key": "Jasa Digital Marketing",
       "total": 1477,
-      "generated": 21,
-      "pending": 1456,
-      "coverage": 1.4
+      "generated": 25,
+      "pending": 1452,
+      "coverage": 1.7
     },
     {
       "key": "Lainnya / Umum",
@@ -210,9 +210,9 @@
     {
       "key": "Bekasi",
       "total": 1011,
-      "generated": 0,
-      "pending": 1011,
-      "coverage": 0.0
+      "generated": 2,
+      "pending": 1009,
+      "coverage": 0.2
     },
     {
       "key": "Medan",
@@ -245,9 +245,9 @@
     {
       "key": "Denpasar",
       "total": 1007,
-      "generated": 1,
-      "pending": 1006,
-      "coverage": 0.1
+      "generated": 3,
+      "pending": 1004,
+      "coverage": 0.3
     },
     {
       "key": "Palembang",
@@ -310,8 +310,8 @@
     {
       "key": "expansion_v1",
       "total": 25184,
-      "generated": 14,
-      "pending": 25170,
+      "generated": 18,
+      "pending": 25166,
       "coverage": 0.1
     },
     {
@@ -455,6 +455,42 @@
       "live": true,
       "created_at": "2026-07-20T12:00:00",
       "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2027/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Denpasar 2026",
+      "slug": "harga-jasa-digital-marketing-di-denpasar-2026",
+      "service": "Jasa Digital Marketing",
+      "city": "Denpasar",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-denpasar-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Denpasar 2027",
+      "slug": "harga-jasa-digital-marketing-di-denpasar-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Denpasar",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-denpasar-2027/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Bekasi 2026",
+      "slug": "harga-jasa-digital-marketing-di-bekasi-2026",
+      "service": "Jasa Digital Marketing",
+      "city": "Bekasi",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bekasi-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Bekasi 2027",
+      "slug": "harga-jasa-digital-marketing-di-bekasi-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Bekasi",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bekasi-2027/"
     },
     {
       "keyword": "jasa iklan facebook depok murah",
@@ -653,42 +689,6 @@
       "live": true,
       "created_at": "2026-07-19T21:12:14",
       "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-padang-murah/"
-    },
-    {
-      "keyword": "belajar jasa pembuatan website profesional",
-      "slug": "belajar-jasa-pembuatan-website-profesional",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/belajar-jasa-pembuatan-website-profesional/"
-    },
-    {
-      "keyword": "jasa pembuat website murah murah",
-      "slug": "jasa-pembuat-website-murah-murah",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuat-website-murah-murah/"
-    },
-    {
-      "keyword": "jasa pembuatan website profesional profesional",
-      "slug": "jasa-pembuatan-website-profesional-profesional",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-profesional-profesional/"
-    },
-    {
-      "keyword": "cara jasa pembuat website murah",
-      "slug": "cara-jasa-pembuat-website-murah",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/cara-jasa-pembuat-website-murah/"
     }
   ]
 }

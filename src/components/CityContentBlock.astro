@@ -69,8 +69,21 @@ const readMinutes = Math.max(1, Math.round(wordCount / 200));
 const updated = lastUpdated || new Date().toISOString().split('T')[0];
 ---
 
-<!-- AdSense loader (city pages only — blog post loads its own) -->
-<script is:inline async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4438184351486735" crossorigin="anonymous"></script>
+<!-- AdSense loader — lazy load on interaction or 3s timeout (city pages only) -->
+<script is:inline>
+    window.adsbygoogle = window.adsbygoogle || [];
+    window.__loadAdSense = function() {
+        if (window.__adSenseLoaded) return;
+        window.__adSenseLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4438184351486735';
+        s.crossOrigin = 'anonymous';
+        document.head.appendChild(s);
+    };
+    ['scroll','click','touchstart','keydown'].forEach(function(evt){ window.addEventListener(evt, window.__loadAdSense, {once:true, passive:true}); });
+    setTimeout(window.__loadAdSense, 3000);
+</script>
 
 <div class="city-content-block relative pt-12 md:pt-16" data-route={route}>
     <!-- Reading time + byline (compact, emoji + small text) -->

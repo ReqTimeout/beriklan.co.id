@@ -141,7 +141,24 @@ const articleSchema = {
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
 
-    <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
+    <script is:inline>
+        // Lazy load AdSense — only when user scrolls near ads or after 3s idle
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.__loadAdSense = function() {
+            if (window.__adSenseLoaded) return;
+            window.__adSenseLoaded = true;
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        };
+        // Trigger on user interaction or after timeout
+        ['scroll', 'click', 'touchstart', 'keydown'].forEach(function(evt) {
+            window.addEventListener(evt, window.__loadAdSense, { once: true, passive: true });
+        });
+        setTimeout(window.__loadAdSense, 3000);
+    </script>
 
     <script type="application/ld+json" set:html={JSON.stringify(articleSchema)}></script>
 

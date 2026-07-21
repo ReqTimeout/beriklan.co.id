@@ -10,13 +10,26 @@
         { label: 'Landing Page', href: '/jasa-pembuatan-landing-page' },
     ];
 
+    const harga = [
+        { label: 'Facebook Ads', href: '/harga-iklan-facebook/bandung' },
+        { label: 'Instagram Ads', href: '/harga-iklan-instagram/bandung' },
+        { label: 'Google Ads', href: '/harga-iklan-google/bandung' },
+        { label: 'TikTok Ads', href: '/harga-iklan-tiktok/bandung' },
+        { label: 'YouTube Ads', href: '/harga-iklan-youtube/bandung' },
+    ];
+
+    const tools = [
+        { label: 'Kalkulator Budget', href: '/kalkulator-budget-iklan' },
+        { label: 'Kalkulator ROAS', href: '/kalkulator-roas' },
+        { label: 'Kalkulator ROI', href: '/kalkulator-roi' },
+        { label: 'Riset Industri', href: '/riset/laporan-industri-iklan-digital-indonesia-2026' },
+    ];
+
     const company = [
         { label: 'Tentang Kami', href: '/tentang-kami' },
-        { label: 'Klien', href: '/klien' },
         { label: 'Metodologi', href: '/metodologi' },
         { label: 'Press & Media', href: '/press' },
         { label: 'Blog', href: '/blog' },
-        { label: 'Riset Industri', href: '/riset/laporan-industri-iklan-digital-indonesia-2026' },
         { label: 'Kontak', href: '/kontak' },
     ];
 </script>
@@ -46,7 +59,7 @@
             </div>
         </div>
 
-        <div class="grid md:grid-cols-4 gap-10 py-12">
+        <div class="grid md:grid-cols-5 gap-8 py-12">
             <div class="md:col-span-1">
                 <a href="/" class="flex items-center gap-2">
                     <img src="/logoweb.webp" alt="Beriklan.co.id" class="h-10 w-auto brightness-0 invert" />
@@ -68,8 +81,8 @@
             </div>
 
             <div>
-                <h4 class="font-bold text-sm uppercase tracking-wider text-white/50 mb-4">Layanan</h4>
-                <ul class="space-y-2.5">
+                <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Layanan</h4>
+                <ul class="space-y-2">
                     {#each services as item}
                         <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
                     {/each}
@@ -77,21 +90,29 @@
             </div>
 
             <div>
-                <h4 class="font-bold text-sm uppercase tracking-wider text-white/50 mb-4">Perusahaan</h4>
-                <ul class="space-y-2.5">
-                    {#each company as item}
+                <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Harga</h4>
+                <ul class="space-y-2">
+                    {#each harga as item}
                         <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
                     {/each}
                 </ul>
             </div>
 
             <div>
-                <h4 class="font-bold text-sm uppercase tracking-wider text-white/50 mb-4">Kontak</h4>
-                <ul class="space-y-2.5 text-sm text-white/80">
-                    <li>Jl. Arcamanik Endah No.76</li>
-                    <li>Bandung, Jawa Barat 40195</li>
-                    <li class="pt-2"><a href="tel:+62811919328" class="hover:text-accent transition">+62 81.1919.328</a></li>
-                    <li><a href="mailto:info@beriklan.co.id" class="hover:text-accent transition">info@beriklan.co.id</a></li>
+                <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Tools</h4>
+                <ul class="space-y-2">
+                    {#each tools as item}
+                        <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
+                    {/each}
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Perusahaan</h4>
+                <ul class="space-y-2">
+                    {#each company as item}
+                        <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
+                    {/each}
                 </ul>
             </div>
         </div>

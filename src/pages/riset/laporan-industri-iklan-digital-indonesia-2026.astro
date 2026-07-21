@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import Footer from '../../components/Footer.svelte'
+import Navbar from '../../components/Navbar.svelte'
 import AnimatedStat from '../../components/AnimatedStat.svelte'
 import { report } from '../../data/research-data.js'
 
@@ -20,6 +21,7 @@ const breadcrumb = [
   {breadcrumb}
   faq={d.faqs.map(f => ({ question: f.q, answer: f.a }))}
 >
+  <Navbar client:only="svelte" />
   <main class="bg-white">
     <!-- HERO -->
     <section class="bg-gradient-to-br from-primary via-primary-2 to-ink text-white overflow-hidden relative">

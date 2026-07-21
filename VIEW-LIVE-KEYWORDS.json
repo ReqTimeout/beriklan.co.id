@@ -1,0 +1,4271 @@
+{
+  "total_keywords": 322,
+  "generated_at": "2026-07-21",
+  "language": "id",
+  "method": "Google Suggest API (suggestqueries.google.com/complete/search)",
+  "filtering_notes": [
+    "Unique keywords only (case-insensitive).",
+    "Minimum keyword length: 4 characters.",
+    "Intent priority: transactional > commercial > informational.",
+    "Commercial value: high = jasa/beli + platform + qualifier/geo; medium = partial match; low = free/info.",
+    "Buyer journey stages: awareness, consideration, decision, evaluation.",
+    "Platforms detected: tiktok, shopee, youtube, instagram, twitch, facebook, live-streaming.",
+    "27 Indonesian cities detected (jakarta variants counted separately)."
+  ],
+  "stats": {
+    "by_value": {
+      "high": 83,
+      "medium": 1,
+      "low": 238
+    },
+    "by_intent": {
+      "transactional": 83,
+      "informational": 217,
+      "commercial": 22
+    },
+    "by_platform": {
+      "tiktok": 188,
+      "shopee": 63,
+      "youtube": 25,
+      "live-streaming": 34,
+      "instagram": 13,
+      "general": 3,
+      "facebook": 1
+    },
+    "by_category": {
+      "tiktok-live-boost": 183,
+      "shopee-live-boost": 63,
+      "youtube-live-boost": 25,
+      "live-streaming-service": 33,
+      "instagram-live-boost": 13,
+      "viewer-boost-general": 1,
+      "fyp-boost": 3,
+      "host-service": 1
+    },
+    "by_stage": {
+      "decision": 79,
+      "consideration": 169,
+      "evaluation": 1,
+      "awareness": 73
+    }
+  },
+  "top_10_recommended": [
+    {
+      "rank": 1,
+      "keyword": "apakah bisa beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on tiktok with decision-stage signal."
+    },
+    {
+      "rank": 2,
+      "keyword": "apakah jasa fyp tiktok aman",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on tiktok with decision-stage signal."
+    },
+    {
+      "rank": 3,
+      "keyword": "beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on tiktok with decision-stage signal."
+    },
+    {
+      "rank": 4,
+      "keyword": "beli viewers live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on shopee with decision-stage signal."
+    },
+    {
+      "rank": 5,
+      "keyword": "beli viewers live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on tiktok with decision-stage signal."
+    },
+    {
+      "rank": 6,
+      "keyword": "beli viewers live youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "youtube"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on youtube with decision-stage signal."
+    },
+    {
+      "rank": 7,
+      "keyword": "beli viewers shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on shopee with decision-stage signal."
+    },
+    {
+      "rank": 8,
+      "keyword": "beli viewers shopee video",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on shopee with decision-stage signal."
+    },
+    {
+      "rank": 9,
+      "keyword": "beli viewers tiktok live",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on tiktok with decision-stage signal."
+    },
+    {
+      "rank": 10,
+      "keyword": "beli viewers youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "youtube"
+      ],
+      "buyer_stage": "decision",
+      "reason": "Strong transactional intent on youtube with decision-stage signal."
+    }
+  ],
+  "first_50_prioritized": [
+    {
+      "rank": 1,
+      "keyword": "cara beli viewers tiktok di shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 2,
+      "keyword": "jasa live shopee dan tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 3,
+      "keyword": "jasa live shopee tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 4,
+      "keyword": "jasa live streaming tiktok dan shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 5,
+      "keyword": "jasa live tiktok dan shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 6,
+      "keyword": "jasa live streaming tiktok bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 7,
+      "keyword": "jasa live streaming tiktok jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 8,
+      "keyword": "jasa live tiktok bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 9,
+      "keyword": "jasa live tiktok jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 10,
+      "keyword": "jasa live tiktok jogja",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 11,
+      "keyword": "jasa live tiktok malang",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 12,
+      "keyword": "jasa live tiktok solo",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 13,
+      "keyword": "jasa live tiktok surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 14,
+      "keyword": "apakah bisa beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 15,
+      "keyword": "apakah jasa fyp tiktok aman",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 16,
+      "keyword": "beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 17,
+      "keyword": "beli viewers live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 18,
+      "keyword": "beli viewers tiktok live",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 19,
+      "keyword": "beli views tiktok indonesia",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 20,
+      "keyword": "beli views tiktok murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 21,
+      "keyword": "cara beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 22,
+      "keyword": "cara jasa fyp tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 23,
+      "keyword": "jasa fyp sound tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 24,
+      "keyword": "jasa fyp tiktok gratis",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 25,
+      "keyword": "jasa host live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 26,
+      "keyword": "jasa host live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 27,
+      "keyword": "jasa live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 28,
+      "keyword": "jasa live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 29,
+      "keyword": "jasa live tiktok murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 30,
+      "keyword": "jasa live tiktok shop",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 31,
+      "keyword": "jasa penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 32,
+      "keyword": "jasa setup live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 33,
+      "keyword": "jasa suntik views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 34,
+      "keyword": "jasa tambah penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 35,
+      "keyword": "jasa viewers live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 36,
+      "keyword": "jasa views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 37,
+      "keyword": "paket tiktok viewers",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 38,
+      "keyword": "beli views tiktok apakah aman",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "evaluation"
+    },
+    {
+      "rank": 39,
+      "keyword": "harga boost live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "consideration"
+    },
+    {
+      "rank": 40,
+      "keyword": "harga jasa live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "consideration"
+    },
+    {
+      "rank": 41,
+      "keyword": "harga views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "tiktok"
+      ],
+      "buyer_stage": "consideration"
+    },
+    {
+      "rank": 42,
+      "keyword": "jasa live shopee bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 43,
+      "keyword": "jasa live shopee bogor",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 44,
+      "keyword": "jasa live shopee jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 45,
+      "keyword": "jasa live shopee jogja",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 46,
+      "keyword": "jasa live shopee surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 47,
+      "keyword": "jasa live streaming shopee bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 48,
+      "keyword": "jasa live streaming shopee jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 49,
+      "keyword": "jasa live streaming shopee surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    },
+    {
+      "rank": 50,
+      "keyword": "beli viewers live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "platforms": [
+        "shopee"
+      ],
+      "buyer_stage": "decision"
+    }
+  ],
+  "keywords": [
+    {
+      "keyword": "apakah bisa beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "apakah jasa fyp tiktok aman",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli viewers live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "beli viewers live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli viewers live youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "beli viewers shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "beli viewers shopee video",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "beli viewers tiktok live",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli viewers youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "beli views tiktok indonesia",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli views tiktok murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara beli penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara beli viewers tiktok di shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara jasa fyp tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa fyp sound tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa fyp tiktok gratis",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa host live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa host live streaming",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa host live streaming shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa host live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa host live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live instagram",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee bogor",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "bogor"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee dan tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee jogja",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "jogja"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "surabaya"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live shopee tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming bali",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "bali"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming bogor",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "bogor"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming event",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming jogja",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "jogja"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming shopee bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming shopee jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming shopee surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [
+        "surabaya"
+      ],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "surabaya"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming terdekat",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming tiktok bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming tiktok dan shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming tiktok jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming wedding",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "jasa live streaming youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "jasa live streaming youtube jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok bandung",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok dan shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok",
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok jakarta",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "jakarta"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok jogja",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "jogja"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok malang",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "malang"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok shop",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok solo",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "solo"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa live tiktok surabaya",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "surabaya"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa menaikkan viewers youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "jasa penonton live",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "viewer-boost-general"
+    },
+    {
+      "keyword": "jasa penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa penonton live youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "jasa setup live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa suntik views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa tambah penonton live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa view live instagram",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "jasa viewers instagram",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "jasa viewers live shopee",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "jasa viewers live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "jasa views youtube",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "paket live streaming murah",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "paket tiktok viewers",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "ulasan jasa dokumentasi & jasa live streaming jakarta fiyu multimedia kota jakarta pusat",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "decision",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [
+        "jakarta pusat",
+        "jakarta"
+      ],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "harga boost live tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "harga jasa live streaming tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "harga views tiktok",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "beli views tiktok apakah aman",
+      "intent": "transactional",
+      "commercial_value": "high",
+      "buyer_stage": "evaluation",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok bandung",
+      "intent": "informational",
+      "commercial_value": "medium",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [
+        "bandung"
+      ],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "1 juta views youtube berapa rupiah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "alat live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "aplikasi penambah viewers tiktok gratis",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "berapa viewers tiktok agar fyp",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "berapa viewers youtube agar dapat uang",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari ini jam berapa",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok jam berapa",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "hp live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "kamera live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "laptop live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming shopee butuh berapa mbps",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok butuh berapa mbps",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok minimal berapa followers",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming wedding murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "mic live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "mixer live streaming murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "suntik views tiktok gratis",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "viewers dan like tiktok gratis",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "viewers live tiktok gratis",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "viewers tiktok gratis",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "viewers tiktok murah",
+      "intent": "commercial",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "algorithm tiktok live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "antecedents of viewers live streaming watching a perspective of social presence theory",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "apk penambah views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "aplikasi penambah viewers tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "aplikasi penambah viewers youtube",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "aplikasi viewers youtube",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "aplikasi views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "auto views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "auto views tiktok github",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar jadi host live streaming",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "belajar jualan live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar live di tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar live streaming",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "belajar live streaming tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar live streaming youtube",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "belajar live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar live tiktok pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "belajar tiktok live studio",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost fyp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "general"
+      ],
+      "cities": [],
+      "category": "fyp-boost"
+    },
+    {
+      "keyword": "boost fyp tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost live tiktok adalah",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost live tiktok bot",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost live tiktok free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost live viewers tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost tiktok live stream views free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost tv live streaming",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "boost viewers tiktok live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "boost views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "booster fyp tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "bot viewers tiktok live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "bot views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "bot views tiktok github",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp booster",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "general"
+      ],
+      "cities": [],
+      "category": "fyp-boost"
+    },
+    {
+      "keyword": "fyp tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari ini",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari jumat",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari kamis",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari rabu",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari selasa",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok hari senin",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "fyp tiktok minggu",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "gaji host live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "gaji host live shopee per jam",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "highest viewers on instagram live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "host live di tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "host live shopee adalah",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "host live shopee affiliate",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "host live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok adalah",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok entertainment",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok freelance",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok gaji",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok loker",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok part time",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "host live tiktok wfh",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "how to boost live streaming on facebook",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "facebook"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "instagram live viewers buy",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "instagram live viewers count",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "instagram live viewers free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "instagram live viewers record list",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "instagram viewers live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "jumlah viewers fyp tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kelas belajar live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kenapa live jualan tiktok sepi penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kenapa live shopee sekarang sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "kenapa live shopee sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "kenapa live shopee sepi penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "kenapa live shopee tiba tiba sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "kenapa live tiktok saya sepi penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kenapa live tiktok sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kenapa live tiktok sepi penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "kenapa live tiktok tiba tiba sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "konsultan live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live boost tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live boost tiktok c est quoi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live host shopee wfh",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live stream boost tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming boost",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee adalah",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee affiliate",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee cup",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee tanpa tatap muka",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming shopee tidak bisa dibuka",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok adalah",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok di obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok pakai obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok sebagai strategi komunikasi pemasaran pada brand skincare",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok shop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming tiktok studio",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live streaming viewers",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming viewers record",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming viewers world record",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "live streaming youtube dengan viewers terbanyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "live view boost tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "live viewers tiktok free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "loker host live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "menambah penonton live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "most viewers in instagram live in india",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "most viewers instagram live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "pelatihan host live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "host-service"
+    },
+    {
+      "keyword": "pelatihan host live streaming",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "pelatihan host live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "pelatihan live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok dibatasi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok disebut",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok menurun",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok sepi",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok stuck",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok terbanyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok terbanyak di dunia",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok terbanyak di indonesia",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "penonton live tiktok turun drastis",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "record viewers instagram live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "sembada belajar live streaming",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "live-streaming"
+      ],
+      "cities": [],
+      "category": "live-streaming-service"
+    },
+    {
+      "keyword": "strategi live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tambah viewers live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "teks host live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "tikfame fyp booster",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "general"
+      ],
+      "cities": [],
+      "category": "fyp-boost"
+    },
+    {
+      "keyword": "tiktok fyp booster free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live algorithm 2025",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live algorithm change",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live algorithm explained",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live algorithm reddit",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live strategic operations associate usds",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok live viewers boost app",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok livestream algorithm",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tiktok views bot",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tugas host live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "viewers live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "viewers tiktok free",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "viewers tiktok terbanyak di indonesia",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "youtube live streaming viewers",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "youtube live streaming viewers record",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "consideration",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara agar live game tiktok rame",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara agar live jualan tiktok rame",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara agar live tiktok rame",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara agar live tiktok rame penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara agar viewers live tiktok banyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara bikin live tiktok rame",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara blokir live streaming shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara boost live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara dapat banyak views tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara dapat duit dari viewers tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara dapat uang dari viewers tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara jualan live di tiktok pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live rame di shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live shopee rame",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live shopee rame penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming di shopee bagi pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee affiliate",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee di hp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming shopee pakai obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok 2 hp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok dengan obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok di hp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok di macbook",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok di obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok studio",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming tiktok tanpa 1000 followers",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube dengan obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube di hp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube di hp android",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube di ifp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube landscape",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube osn",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara live streaming youtube pertama kali",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "youtube"
+      ],
+      "cities": [],
+      "category": "youtube-live-boost"
+    },
+    {
+      "keyword": "cara melihat live streaming shopee di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara melihat viewers live instagram",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "instagram"
+      ],
+      "cities": [],
+      "category": "instagram-live-boost"
+    },
+    {
+      "keyword": "cara melihat viewers live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara menaikkan penonton live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara menaikkan viewers live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara menaikkan viewers shopee live",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara menambah penonton live shopee",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara menambah penonton live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara menambah penonton saat live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara menambah viewers live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara mengatasi live tiktok sepi penonton",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara nonton live streaming shopee di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "shopee"
+      ],
+      "cities": [],
+      "category": "shopee-live-boost"
+    },
+    {
+      "keyword": "cara penonton live tiktok banyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara viewers live tiktok banyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "cara viewers tiktok banyak",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "streamer vs viewers free tiktok live minecraft game tutorial",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial cara live streaming di tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live streaming di tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live streaming game di tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live streaming tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok 2 hp",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok bareng",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok berdua",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok di laptop",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok di pc",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok game",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok obs",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok pemula",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    },
+    {
+      "keyword": "tutorial live tiktok studio",
+      "intent": "informational",
+      "commercial_value": "low",
+      "buyer_stage": "awareness",
+      "platforms": [
+        "tiktok"
+      ],
+      "cities": [],
+      "category": "tiktok-live-boost"
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.6 (2026-07-21) — P2.1 + P2.2 + P2.3 done (14/18 · 78%)
+> **Versi:** 4.6 (2026-07-21) — P2.1 + P2.2 + P2.3 + P2.6 done (15/18 · 83%)
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -455,8 +455,9 @@ Jika ada perubahan:
 | 18 | **P2.1: Calculator tools** — BudgetCalculator, ROASCalculator, ROICalculator (3 Svelte components + 3 Astro pages) | 2026-07-21 | Dwell time + backlinks |
 | 19 | **P2.2: Programmatic SEO** — 120 `/harga-iklan-{platform}/{city}/` pages (5 platforms × 24 cities) | 2026-07-21 | Ribuan URL baru, long-tail keyword coverage |
 | 20 | **P2.3: Original research** — Laporan Industri Iklan Digital Indonesia 2026 di `/riset/laporan-industri-iklan-digital-indonesia-2026/` | 2026-07-21 | Backlink magnet |
+| 21 | **P2.6: Email capture + drip** — Form di Footer + D1 storage + admin endpoint. Drip sender tertunda. | 2026-07-21 | Lead nurture |
 
-**Roadmap Progress: 14/18 selesai · 78%** (was 12/18 · 67% after P2.1 + P2.2)
+**Roadmap Progress: 15/18 selesai · 83%** (was 14/18 · 78% after P2.3)
 
 ### 🚧 NEXT PRIORITIES (urutan eksekusi, by impact)
 
@@ -487,7 +488,7 @@ Jika ada perubahan:
 | **P2.3** | ~~Original research / data survey industri iklan ID~~ | 🎯 1 minggu | Backlink magnet | ✅ **DONE** — Laporan Industri Iklan Digital Indonesia 2026 live di `/riset/laporan-industri-iklan-digital-indonesia-2026/` |
 | **P2.4** | **AggregateRating schema (real reviews)** | 🎯 1 hari | Stars di SERP | ❌ pending |
 | **P2.5** | **A/B testing title (CTR optimization)** | 🎯 ongoing | Traffic +20-50% | ❌ pending |
-| **P2.6** | **Email capture + drip campaign** | 🎯 1 minggu | Lead nurture | ❌ pending |
+| **P2.6** | ~~Email capture + drip campaign~~ | 🎯 1 minggu | Lead nurture | ✅ **DONE** — Form + D1 storage + unsubscribe + admin endpoint. Drip sender tertunda (butuh email service). |
 
 #### 🔵 P3 — LATER (kuartal ini, scale & defend)
 

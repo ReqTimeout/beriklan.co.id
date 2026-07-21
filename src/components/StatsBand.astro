@@ -1,0 +1,26 @@
+---
+// StatsBand.astro — 3 angka utama untuk E-E-A-T dan trust signal.
+// Props: variant (default 'default', 'compact')
+const { variant = 'default' } = Astro.props;
+
+const stats = [
+    { value: '9', unit: 'tahun', label: 'Mengelola campaign iklan digital sejak 2016' },
+    { value: '250+', unit: 'audit', label: 'Campaign yang pernah kami review & optimize' },
+    { value: '<24', unit: 'jam', label: 'Respon WhatsApp di jam kerja (Senin–Sabtu)' },
+];
+---
+<section class={`py-12 md:py-16 bg-gradient-to-br from-primary to-primary-2 text-white ${variant === 'compact' ? 'py-10 md:py-12' : ''}`}>
+    <div class="container mx-auto px-6 max-w-5xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+            {stats.map(stat => (
+                <div class="text-center reveal">
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl md:text-6xl font-display font-extrabold text-accent tabular-nums">{stat.value}</span>
+                        <span class="text-base md:text-lg font-semibold text-white/80">{stat.unit}</span>
+                    </div>
+                    <p class="text-sm md:text-base text-white/90 mt-2 leading-snug">{stat.label}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+</section>

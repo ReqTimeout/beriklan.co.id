@@ -1,0 +1,44 @@
+---
+// AuthorBio.astro — E-E-A-T author section for pillar pages.
+// Shows "Tim Beriklan" credentials + facts.
+// Props: none (universal content)
+import { Award, Briefcase, ShieldCheck, Users } from 'lucide-svelte';
+---
+<section class="py-16 md:py-20 bg-soft" aria-label="Tentang Tim Beriklan">
+    <div class="container mx-auto px-6 max-w-5xl">
+        <div class="grid md:grid-cols-[auto_1fr] gap-8 md:gap-10 items-center">
+            <div class="flex-shrink-0">
+                <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-primary to-primary-2 flex items-center justify-center text-white shadow-soft">
+                    <span class="font-display font-extrabold text-3xl md:text-4xl">B</span>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">Ditulis oleh</p>
+                <h2 class="text-2xl md:text-3xl font-display font-extrabold text-ink mb-3">Tim Beriklan</h2>
+                <p class="text-base md:text-lg text-muted leading-relaxed mb-5">
+                    Tim performance marketing yang mengelola campaign iklan Meta, Google, TikTok, dan YouTube sejak 2016.
+                    Berpengalaman menangani lebih dari 250 audit campaign untuk UMKM dan bisnis menengah di Indonesia —
+                    dari retail, F&B, hingga jasa profesional. Pendekatan kami berbasis data: diagnosa dulu, baru susun strategi.
+                </p>
+                <div class="flex flex-wrap gap-4 md:gap-6">
+                    <div class="flex items-center gap-2">
+                        <Briefcase class="w-5 h-5 text-accent" aria-hidden="true" />
+                        <span class="text-sm font-semibold text-ink">9 tahun pengalaman</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Award class="w-5 h-5 text-accent" aria-hidden="true" />
+                        <span class="text-sm font-semibold text-ink">Sertifikasi Meta & Google</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Users class="w-5 h-5 text-accent" aria-hidden="true" />
+                        <span class="text-sm font-semibold text-ink">250+ campaign diaudit</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <ShieldCheck class="w-5 h-5 text-accent" aria-hidden="true" />
+                        <span class="text-sm font-semibold text-ink">Akses penuh akun klien</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

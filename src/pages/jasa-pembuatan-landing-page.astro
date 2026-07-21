@@ -9,6 +9,9 @@ import FaqAccordion from '../components/FaqAccordion.svelte';
 import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
+import StatsBand from '../components/StatsBand.astro';
+import ComparisonTable from '../components/ComparisonTable.astro';
+import AuthorBio from '../components/AuthorBio.astro';
 import Footer from '../components/Footer.svelte';
 import relatedMap from '../data/related-services.json';
 import { MessageCircle, ArrowRight, Target, Sparkles, Repeat, MapPin, Database, Users, Check, TrendingUp } from 'lucide-svelte';
@@ -171,6 +174,9 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
         </div>
     </section>
 
+    <!-- ====================== STATS BAND ====================== -->
+    <StatsBand />
+
     <!-- ====================== WHY FACEBOOK ADS ====================== -->
     <section class="py-20 md:py-28 bg-white relative overflow-hidden">
         <div class="container mx-auto px-6">
@@ -289,6 +295,9 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
             </div>
         </div>
     </section>
+
+    <!-- ====================== COMPARISON TABLE ====================== -->
+    <ComparisonTable serviceName="Landing Page" />
 
     <!-- ====================== STATS / TRUST ====================== -->
     <section class="py-20 md:py-28 bg-ink text-white relative overflow-hidden">
@@ -418,7 +427,10 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
-    <RelatedServices items={relatedItems} pillarHref="/jasa-pembuatan-landing-page/pilar/" pillarLabel="Panduan Lengkap Pembuatan Landing Page" client:visible />
+        <!-- ====================== AUTHOR BIO (E-E-A-T) ====================== -->
+    <AuthorBio />
+
+<RelatedServices items={relatedItems} pillarHref="/jasa-pembuatan-landing-page/pilar/" pillarLabel="Panduan Lengkap Pembuatan Landing Page" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

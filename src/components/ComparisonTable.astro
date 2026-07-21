@@ -1,0 +1,90 @@
+---
+// ComparisonTable.astro — Beriklan vs Kelola Sendiri comparison.
+// Generic component; service-specific overrides via props.
+import { Check, X } from 'lucide-svelte';
+
+const { serviceName = 'Iklan' } = Astro.props;
+
+const rows = [
+    {
+        feature: 'Setup akun iklan + pixel tracking',
+        diy: 'Risiko salah konversi event, pixel tidak merekam data',
+        agency: 'Setup sesuai best practice Meta/Google/TikTok, pixel terverifikasi sebelum launch'
+    },
+    {
+        feature: 'Riset audiens & targeting',
+        diy: 'Targeting melebar, budget habis tanpa hasil',
+        agency: 'Interest + lookalike + retargeting berlapis, berdasarkan riset audiens spesifik industri'
+    },
+    {
+        feature: 'Pembuatan iklan (copy + creative)',
+        diy: 'Iklan terasa generic, tidak stand-out di feed',
+        agency: '10+ variasi creative per periode, copy disesuaikan dengan pain point audiens'
+    },
+    {
+        feature: 'Optimasi harian',
+        diy: 'Cek mingguan, tidak tahu kapan harus pause atau scale',
+        agency: 'Monitoring harian, bid adjustment, creative refresh sesuai data real-time'
+    },
+    {
+        feature: 'Pelaporan & transparansi',
+        diy: 'Lihat di Ads Manager tanpa interpretasi',
+        agency: 'Laporan mingguan bahasa manusia + review bulanan via video call'
+    },
+    {
+        feature: 'Akses akun iklan',
+        diy: 'Penuh (tapi Anda sendiri yang pegang)',
+        agency: 'Penuh — Anda tetap owner, kami yang kelola'
+    },
+    {
+        feature: 'Waktu Anda',
+        diy: '5-10 jam/minggu belajar + eksekusi',
+        agency: 'Fokus bisnis, kami yang handle iklan'
+    },
+];
+---
+<section class="py-16 md:py-20 bg-white" aria-label="Perbandingan Beriklan vs Kelola Sendiri">
+    <div class="container mx-auto px-6 max-w-6xl">
+        <div class="text-center mb-10">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Perbandingan Jujur</p>
+            <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mb-3">Kelola {serviceName} Sendiri vs Beriklan</h2>
+            <p class="text-base md:text-lg text-muted max-w-2xl mx-auto">
+                Tidak ada jawaban benar atau salah — hanya berbeda prioritas waktu, budget, dan target hasil.
+                Berikut perbandingan apa yang Anda dapatkan di masing-masing opsi.
+            </p>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl shadow-soft border border-gray-100">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-ink text-white">
+                        <th class="text-left p-4 md:p-5 text-sm md:text-base font-bold">Aspek</th>
+                        <th class="text-left p-4 md:p-5 text-sm md:text-base font-bold">Kelola Sendiri</th>
+                        <th class="text-left p-4 md:p-5 text-sm md:text-base font-bold bg-accent text-ink">Dengan Beriklan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row, i) => (
+                        <tr class={i % 2 === 0 ? 'bg-white' : 'bg-soft'}>
+                            <td class="p-4 md:p-5 font-semibold text-ink text-sm md:text-base">{row.feature}</td>
+                            <td class="p-4 md:p-5 text-muted text-sm md:text-base">
+                                <X class="w-4 h-4 text-red-500 inline mr-2 flex-shrink-0" aria-hidden="true" />
+                                <span>{row.diy}</span>
+                            </td>
+                            <td class="p-4 md:p-5 text-ink text-sm md:text-base bg-amber-50/40">
+                                <Check class="w-4 h-4 text-green-600 inline mr-2 flex-shrink-0" aria-hidden="true" />
+                                <span>{row.agency}</span>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="text-sm text-muted text-center mt-6 max-w-3xl mx-auto">
+            Bukan untuk meyakinkan Anda — ini keputusan bisnis yang harus Anda buat sendiri.
+            Jika Anda punya waktu 5-10 jam/minggu untuk belajar Meta/Google Ads dan nyaman eksperimen, kelola sendiri sah-sah saja.
+            Jika ingin hasil terukur tanpa harus belajar platform, kami siap diskusi.
+        </p>
+    </div>
+</section>

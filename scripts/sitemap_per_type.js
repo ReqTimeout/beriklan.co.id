@@ -66,6 +66,10 @@ const staticPages = [
   { path: "/jasa-kelola-tiktok/", priority: 0.9, changefreq: "weekly" },
   { path: "/jasa-pembuatan-website/", priority: 0.9, changefreq: "weekly" },
   { path: "/jasa-pembuatan-landing-page/", priority: 0.9, changefreq: "weekly" },
+  { path: "/kalkulator-budget-iklan/", priority: 0.8, changefreq: "monthly" },
+  { path: "/kalkulator-roas/", priority: 0.8, changefreq: "monthly" },
+  { path: "/kalkulator-roi/", priority: 0.8, changefreq: "monthly" },
+  { path: "/riset/laporan-industri-iklan-digital-indonesia-2026/", priority: 0.9, changefreq: "weekly" },
 ];
 const staticEntries = staticPages.map(p => urlEntry(`${SITE}${p.path}`, TODAY, p.changefreq, p.priority));
 fs.writeFileSync(path.join(DIST, "sitemap-static.xml"), sitemapXml(staticEntries));
@@ -129,6 +133,23 @@ if (fs.existsSync(vllDir)) {
       if (!fs.existsSync(indexPath)) continue;
       cityEntries.push(urlEntry(`${SITE}/jasa-view-live/${platform}/${city}/`, TODAY, "weekly", 0.85));
     }
+  }
+}
+// Harga pages: /harga-iklan-{platform}/{city}/
+const HARGA_SERVICES = [
+  "harga-iklan-facebook",
+  "harga-iklan-instagram",
+  "harga-iklan-tiktok",
+  "harga-iklan-google",
+  "harga-iklan-youtube",
+];
+for (const hsvc of HARGA_SERVICES) {
+  const hsvcDir = path.join(DIST, hsvc);
+  if (!fs.existsSync(hsvcDir)) continue;
+  for (const city of listDirs(hsvcDir)) {
+    const indexPath = path.join(hsvcDir, city, "index.html");
+    if (!fs.existsSync(indexPath)) continue;
+    cityEntries.push(urlEntry(`${SITE}/${hsvc}/${city}/`, TODAY, "weekly", 0.7));
   }
 }
 fs.writeFileSync(path.join(DIST, "sitemap-city.xml"), sitemapXml(cityEntries));

@@ -81,8 +81,8 @@ all_urls = collect_url_dirs()
 
 # Categorize
 def is_static(u):
-    # Root + blog index + order + legal
-    return u in ('/', '/blog/', '/order/', '/privacy-policy/', '/terms-of-service/')
+    # Root + blog index + order + legal + calculator tools
+    return u in ('/', '/blog/', '/order/', '/privacy-policy/', '/terms-of-service/') or re.match(r'^/kalkulator-[\w-]+/$', u) is not None
 
 def is_service(u):
     # /jasa-*/ but not /jasa-*/something
@@ -98,6 +98,10 @@ def is_city(u):
 
 def is_pillar(u):
     return re.match(r'^/jasa-[\w-]+/pilar/$', u) is not None
+
+def is_harga(u):
+    # /harga-iklan-facebook/bandung/ etc.
+    return re.match(r'^/harga-iklan-[\w-]+/[\w-]+/$', u) is not None
 
 def is_blog_pagination(u):
     return re.match(r'^/blog/page/\d+/$', u) is not None
@@ -122,6 +126,7 @@ buckets = {
     'services': [],
     'city': [],
     'pillar': [],
+    'harga': [],
     'blog': [],
     'blog-pagination': [],
     'blog-tag': [],
@@ -132,6 +137,8 @@ for u in sorted(all_urls):
         buckets['static'].append(u)
     elif is_pillar(u):
         buckets['pillar'].append(u)
+    elif is_harga(u):
+        buckets['harga'].append(u)
     elif is_city(u):
         buckets['city'].append(u)
     elif is_service(u):
@@ -162,6 +169,7 @@ PRIORITY = {
     'services': '0.9',
     'pillar': '0.8',
     'city': '0.7',
+    'harga': '0.7',
     'blog': '0.6',
     'blog-pagination': '0.4',
     'blog-tag': '0.3',
@@ -172,6 +180,7 @@ CHANGEFREQ = {
     'services': 'weekly',
     'pillar': 'weekly',
     'city': 'weekly',
+    'harga': 'weekly',
     'blog': 'monthly',
     'blog-pagination': 'daily',
     'blog-tag': 'weekly',
@@ -194,7 +203,7 @@ def build_sitemap_xml(urls, key):
 def build_index_xml():
     parts = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    order = ['static', 'services', 'city', 'pillar', 'blog', 'blog-pagination', 'blog-tag']
+    order = ['static', 'services', 'city', 'pillar', 'harga', 'blog', 'blog-pagination', 'blog-tag']
     for k in order:
         if buckets[k]:
             parts.append('  <sitemap>')

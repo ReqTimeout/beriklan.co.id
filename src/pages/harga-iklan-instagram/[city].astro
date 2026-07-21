@@ -1,0 +1,133 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.svelte';
+import StickyCTA from '../../components/StickyCTA.svelte';
+import PricingCards from '../../components/PricingCards.svelte';
+import FaqAccordion from '../../components/FaqAccordion.svelte';
+import Footer from '../../components/Footer.svelte';
+
+import cities from '../../data/cities.json';
+import services from '../../data/services.json';
+
+export function getStaticPaths() {
+    const indonesianCities = cities.filter(c => !c.is_international);
+    return indonesianCities.map(city => ({
+        params: { city: city.slug },
+        props: { city },
+    }));
+}
+
+const service = services.find(s => s.slug === 'jasa-iklan-instagram');
+
+const { city } = Astro.props;
+const tiers = service?.tiers || [];
+const faqs = service?.faqs?.slice(0, 4) || [];
+
+const cityName = city.name;
+const slug = city.slug;
+const title = `Harga Iklan Instagram di ${cityName} — Biaya & Paket 2026 | Beriklan`;
+const description = `Lihat harga paket jasa iklan Instagram Ads di ${cityName}. Mulai Rp 1.750.000/30 hari. Tim bersertifikat, laporan mingguan, akses penuh akun. Konsultasi gratis.`;
+const canonical = `https://beriklan.co.id/harga-iklan-instagram/${slug}/`;
+const waLink = `https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20paket%20iklan%20Instagram%20di%20${encodeURIComponent(cityName)}.%20Mohon%20info%20lebih%20lanjut.`;
+---
+
+<Layout
+    title={title}
+    description={description}
+    canonical={canonical}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Harga Iklan Instagram", url: "https://www.beriklan.co.id/harga-iklan-instagram/" },
+        { name: cityName, url: canonical }
+    ]}
+    service={{
+        name: `Jasa Iklan Instagram di ${cityName}`,
+        description: `Jasa iklan Instagram Ads profesional di ${cityName}. Tim bersertifikat, laporan mingguan, akses penuh akun.`,
+        url: canonical,
+        priceRange: "Rp 1.750.000 - Rp 3.750.000",
+        serviceType: "Instagram Ads",
+        areaServed: cityName,
+        provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-semibold tracking-wider uppercase shadow-sm mb-5">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                Harga Iklan Instagram · {cityName}
+            </div>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-ink leading-[1.05] tracking-tight">
+                Harga Iklan Instagram di {cityName}
+            </h1>
+            <p class="mt-5 text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+                Cek biaya dan paket jasa iklan Instagram Ads di {cityName}. Mulai dari <strong class="text-ink">Rp 1.750.000</strong> per 30 hari untuk paket Standart, tayang di Feed, Stories, Reels, dan Explore.
+            </p>
+            <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-ink text-white px-7 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all">
+                    Konsultasi via WhatsApp
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </a>
+                <a href="#harga" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold border border-gray-200 bg-white hover:border-ink transition-all">
+                    Lihat Paket
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section id="harga" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight">
+                    Paket Iklan Instagram di {cityName}
+                </h2>
+                <p class="mt-4 text-muted max-w-xl mx-auto">Biaya management campaign. Ad spend Meta dibayar langsung oleh Anda — tanpa markup.</p>
+            </div>
+            <PricingCards tiers={tiers} pageSlug="Instagram Ads" highlightIndex={tiers.findIndex(t => t.highlight)} client:only="svelte" />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Biaya Iklan Instagram di {cityName}</h2>
+            <div class="space-y-4 text-muted text-base leading-relaxed">
+                <p>Biaya jasa pengelolaan iklan Instagram di {cityName} dari Beriklan mulai dari <strong class="text-ink">Rp 1.750.000 per 30 hari</strong> untuk paket Standart dan Rp 3.750.000 untuk paket Business. Angka tersebut adalah fee management — ad spend Meta dibayar terpisah langsung ke platform oleh klien.</p>
+                <p>Kami mengoptimalkan iklan Instagram untuk tayang di <strong class="text-ink">Feed, Stories, Reels, dan Explore</strong> — memastikan brand Anda terlihat di momen yang tepat oleh audiens di {cityName}.</p>
+            </div>
+            <div class="mt-8 p-6 bg-beige rounded-2xl">
+                <h3 class="font-display font-bold text-lg text-ink mb-2">Konsultasi Gratis 15 Menit</h3>
+                <p class="text-sm text-muted mb-4">Diskusikan kebutuhan iklan Instagram bisnis Anda di {cityName} dengan tim kami.</p>
+                <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-primary-2 transition">
+                    Mulai Konsultasi via WhatsApp →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-soft">
+        <div class="container mx-auto px-6 max-w-2xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-8 text-center">Pertanyaan Seputar Harga Iklan Instagram</h2>
+            <FaqAccordion items={faqs} client:visible />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white text-center">
+        <div class="container mx-auto px-6 max-w-2xl">
+            <h2 class="font-display font-extrabold text-3xl md:text-5xl leading-[1.1] tracking-tight mb-4">
+                Siap mulai iklan Instagram<br/>
+                <span class="text-accent">di {cityName}?</span>
+            </h2>
+            <p class="text-white/60 text-base mb-8">Tim kami siap membantu dari riset, setup, hingga optimasi campaign Anda.</p>
+            <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all">
+                Konsultasi Sekarang
+            </a>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>

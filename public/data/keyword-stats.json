@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-07-21T09:45:55",
+  "generated_at": "2026-07-21T11:21:42",
   "keywords": {
     "total": 27947,
-    "generated": 73,
-    "pending": 27874,
-    "live_in_posts": 112,
+    "generated": 75,
+    "pending": 27872,
+    "live_in_posts": 113,
     "coverage": 0.3
   },
   "posts": {
-    "total": 2045,
-    "generated": 1218,
+    "total": 2047,
+    "generated": 1220,
     "by_service": {
-      "jasa-digital-marketing": 582,
+      "jasa-digital-marketing": 584,
       "jasa-iklan-facebook": 311,
       "jasa-iklan-google": 127,
       "jasa-pembuatan-website": 81,
@@ -96,9 +96,9 @@
     {
       "key": "Jasa Digital Marketing",
       "total": 1477,
-      "generated": 18,
-      "pending": 1459,
-      "coverage": 1.2
+      "generated": 20,
+      "pending": 1457,
+      "coverage": 1.4
     },
     {
       "key": "Lainnya / Umum",
@@ -147,9 +147,9 @@
     {
       "key": "Makassar",
       "total": 1016,
-      "generated": 0,
-      "pending": 1016,
-      "coverage": 0.0
+      "generated": 1,
+      "pending": 1015,
+      "coverage": 0.1
     },
     {
       "key": "Pekanbaru",
@@ -217,9 +217,9 @@
     {
       "key": "Medan",
       "total": 1010,
-      "generated": 1,
-      "pending": 1009,
-      "coverage": 0.1
+      "generated": 2,
+      "pending": 1008,
+      "coverage": 0.2
     },
     {
       "key": "Sidoarjo",
@@ -310,9 +310,9 @@
     {
       "key": "expansion_v1",
       "total": 25184,
-      "generated": 11,
-      "pending": 25173,
-      "coverage": 0.0
+      "generated": 13,
+      "pending": 25171,
+      "coverage": 0.1
     },
     {
       "key": "suggest+combo",
@@ -428,6 +428,24 @@
       "live": true,
       "created_at": "2026-07-20T12:00:00",
       "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-medan-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Medan 2027",
+      "slug": "harga-jasa-digital-marketing-di-medan-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Medan",
+      "live": false,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-medan-2027/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Makassar 2026",
+      "slug": "harga-jasa-digital-marketing-di-makassar-2026",
+      "service": "Jasa Digital Marketing",
+      "city": "Makassar",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2026/"
     },
     {
       "keyword": "jasa iklan facebook depok murah",
@@ -671,24 +689,6 @@
       "live": true,
       "created_at": "2026-07-19T08:18:57",
       "url": "https://beriklan.co.id/blog/jasa-digital-marketing-profesional/"
-    },
-    {
-      "keyword": "manfaat jasa pembuatan website profesional",
-      "slug": "manfaat-jasa-pembuatan-website-profesional",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/manfaat-jasa-pembuatan-website-profesional/"
-    },
-    {
-      "keyword": "jasa pembuat website murah paket",
-      "slug": "jasa-pembuat-website-murah-paket",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-pembuat-website-murah-paket/"
     }
   ]
 }

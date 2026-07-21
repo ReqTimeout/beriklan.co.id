@@ -6,6 +6,7 @@ import StickyCTA from '../components/StickyCTA.svelte';
 import OmnichannelMap from '../components/OmnichannelMap.svelte';
 import PricingCards from '../components/PricingCards.svelte';
 import FaqAccordion from '../components/FaqAccordion.svelte';
+import PAASection from '../components/PAASection.astro';
 import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
@@ -459,7 +460,11 @@ const relatedItems = (relatedMap.services['jasa-digital-marketing'] || []).map(i
         <!-- ====================== AUTHOR BIO (E-E-A-T) ====================== -->
     <AuthorBio />
 
-<RelatedServices items={relatedItems} pillarHref="/jasa-digital-marketing/pilar/" pillarLabel="Panduan Lengkap Digital Marketing" client:visible />
+
+    <!-- ====================== PAA (People Also Ask) ====================== -->
+    <PAASection service="jasa-digital-marketing" pageUrl="https://beriklan.co.id/jasa-digital-marketing/" />
+
+    <RelatedServices items={relatedItems} pillarHref="/jasa-digital-marketing/pilar/" pillarLabel="Panduan Lengkap Digital Marketing" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

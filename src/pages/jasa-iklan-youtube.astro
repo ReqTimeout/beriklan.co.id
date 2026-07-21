@@ -6,6 +6,7 @@ import StickyCTA from '../components/StickyCTA.svelte';
 import YouTubePlayerMock from '../components/YouTubePlayerMock.svelte';
 import PricingCards from '../components/PricingCards.svelte';
 import FaqAccordion from '../components/FaqAccordion.svelte';
+import PAASection from '../components/PAASection.astro';
 import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
@@ -479,7 +480,11 @@ const relatedItems = (relatedMap.services['jasa-iklan-youtube'] || []).map(item 
         <!-- ====================== AUTHOR BIO (E-E-A-T) ====================== -->
     <AuthorBio />
 
-<RelatedServices items={relatedItems} pillarHref="/jasa-iklan-youtube/pilar/" pillarLabel="Panduan Lengkap Iklan Youtube" client:visible />
+
+    <!-- ====================== PAA (People Also Ask) ====================== -->
+    <PAASection service="jasa-iklan-youtube" pageUrl="https://beriklan.co.id/jasa-iklan-youtube/" />
+
+    <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-youtube/pilar/" pillarLabel="Panduan Lengkap Iklan Youtube" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

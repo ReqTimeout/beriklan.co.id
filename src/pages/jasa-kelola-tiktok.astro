@@ -6,6 +6,7 @@ import StickyCTA from '../components/StickyCTA.svelte';
 import InstagramCalendarMock from '../components/InstagramCalendarMock.svelte';
 import PricingCards from '../components/PricingCards.svelte';
 import FaqAccordion from '../components/FaqAccordion.svelte';
+import PAASection from '../components/PAASection.astro';
 import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
@@ -459,7 +460,11 @@ const relatedItems = (relatedMap.services['jasa-kelola-tiktok'] || []).map(item 
         <!-- ====================== AUTHOR BIO (E-E-A-T) ====================== -->
     <AuthorBio />
 
-<RelatedServices items={relatedItems} pillarHref="/jasa-kelola-tiktok/pilar/" pillarLabel="Panduan Lengkap Kelola Tiktok" client:visible />
+
+    <!-- ====================== PAA (People Also Ask) ====================== -->
+    <PAASection service="jasa-kelola-tiktok" pageUrl="https://beriklan.co.id/jasa-kelola-tiktok/" />
+
+    <RelatedServices items={relatedItems} pillarHref="/jasa-kelola-tiktok/pilar/" pillarLabel="Panduan Lengkap Kelola Tiktok" client:visible />
 
     <!-- ====================== FINAL CTA ====================== -->
     <section class="py-20 md:py-28 bg-gradient-to-br from-ink via-primary-2 to-ink text-white relative overflow-hidden">

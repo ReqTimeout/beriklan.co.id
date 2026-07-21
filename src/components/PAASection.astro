@@ -1,0 +1,63 @@
+---
+// PAASection.astro — "People Also Ask" section with FAQPage JSON-LD schema.
+// Renders as collapsible accordion. Designed for Featured Snippet capture:
+// - Question is H3 (with target keyword)
+// - Answer opens with declarative sentence (40-60 words optimal for snippet)
+// - Schema.org FAQPage JSON-LD for rich results
+//
+// Props:
+//   service: string — service slug key in paa-questions.json (e.g. "jasa-iklan-facebook")
+//   pageUrl: string — canonical URL for schema
+
+import paaData from '../data/paa-questions.json';
+import { ChevronDown } from 'lucide-svelte';
+
+const { service, pageUrl = "https://beriklan.co.id" } = Astro.props;
+const questions = paaData[service] || [];
+const sectionId = `paa-${service}`;
+---
+{questions.length > 0 && (
+    <>
+        <section id={sectionId} class="py-20 md:py-28 bg-white relative overflow-hidden" aria-label="Pertanyaan yang Sering Diajukan">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <div class="text-center mb-10">
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">People Also Ask</p>
+                    <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mb-3">Pertanyaan yang Sering Diajukan</h2>
+                    <p class="text-base md:text-lg text-muted">Jawaban langsung untuk pertanyaan yang paling sering ditanyakan calon klien kami.</p>
+                </div>
+
+                <div class="space-y-3">
+                    {questions.map((item, idx) => (
+                        <details class="group bg-soft border border-gray-100 rounded-xl overflow-hidden reveal">
+                            <summary class="flex items-start justify-between gap-4 p-5 cursor-pointer list-none hover:bg-white transition-colors">
+                                <h3 class="font-display font-bold text-base md:text-lg text-ink leading-snug pr-4">{item.q}</h3>
+                                <ChevronDown class="w-5 h-5 text-accent flex-shrink-0 mt-0.5 group-open:rotate-180 transition-transform" strokeWidth={2.5} aria-hidden="true" />
+                            </summary>
+                            <div class="px-5 pb-5 -mt-2">
+                                <p class="text-base text-muted leading-relaxed">{item.a}</p>
+                            </div>
+                        </details>
+                    ))}
+                </div>
+
+                <div class="mt-8 text-center">
+                    <p class="text-sm text-muted">Pertanyaan Anda belum terjawab? <a href="#konsultasi" class="text-accent font-semibold hover:underline">Diskusi via WhatsApp →</a></p>
+                </div>
+            </div>
+        </section>
+
+        <script type="application/ld+json" set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "url": pageUrl,
+            "mainEntity": questions.map(item => ({
+                "@type": "Question",
+                "name": item.q,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": item.a
+                }
+            }))
+        })} />
+    </>
+)}

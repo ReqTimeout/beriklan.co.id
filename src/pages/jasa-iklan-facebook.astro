@@ -6,6 +6,7 @@ import StickyCTA from '../components/StickyCTA.svelte';
 import MetaAdsPreview from '../components/MetaAdsPreview.svelte';
 import PricingCards from '../components/PricingCards.svelte';
 import FaqAccordion from '../components/FaqAccordion.svelte';
+import PAASection from '../components/PAASection.astro';
 import RelatedServices from '../components/RelatedServices.svelte';
 import FeatureGrid from '../components/FeatureGrid.svelte';
 import StepGrid from '../components/StepGrid.svelte';
@@ -466,6 +467,10 @@ const relatedItems = (relatedMap.services['jasa-iklan-facebook'] || []).map(item
     </section>
 
     <!-- ====================== RELATED SERVICES ====================== -->
+    
+    <!-- ====================== PAA (People Also Ask) ====================== -->
+    <PAASection service="jasa-iklan-facebook" pageUrl="https://beriklan.co.id/jasa-iklan-facebook/" />
+
     <RelatedServices items={relatedItems} pillarHref="/jasa-iklan-facebook/pilar/" pillarLabel="Panduan Lengkap Iklan Facebook" client:visible />
 
     <!-- ====================== AUTHOR BIO (E-E-A-T) ====================== -->

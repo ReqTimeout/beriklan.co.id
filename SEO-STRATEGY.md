@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.4 (2026-07-21) — P0.3 verified + env-check endpoint + purge_cache lesson
+> **Versi:** 4.5 (2026-07-21) — P1.4 + P1.5 PAA + Featured Snippet optimization (12/18 done · 67%)
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -451,8 +451,9 @@ Jika ada perubahan:
 | 14 | SEO-STRATEGY.md + DIRECTORY-SUBMISSION-GUIDE.md maintained | 2026-07-20 | Documentation complete |
 | 15 | **P1.2: Pillar enhancement** — StatsBand + ComparisonTable + AuthorBio di 10 service pages | 2026-07-21 | E-E-A-T signal + decision moment |
 | 16 | **P0.3: Multi-Groq-key verified** — GROQ_API_KEY + GROQ_API_KEY_2 + GROQ_API_KEY_3 = 3 keys aktif | 2026-07-21 | TPD quota 3× = 300K/hari |
+| 17 | **P1.4+P1.5: PAA + Featured Snippet optimization** — 100 Q&A di 10 service pages | 2026-07-21 | Slot #0 Google + rich results FAQ schema |
 
-**Roadmap Progress: 10/18 selesai · 56%** (was 9/18 · 50% after P0.3)
+**Roadmap Progress: 12/18 selesai · 67%** (was 10/18 · 56% after P1.4 + P1.5)
 
 ### 🚧 NEXT PRIORITIES (urutan eksekusi, by impact)
 
@@ -471,8 +472,8 @@ Jika ada perubahan:
 | **P1.1** | ~~Backlink strategy — 50 directory submissions~~ | 🎯 3 hari | Domain authority 5 → 30+ | 🔄 **in-progress** (tracker + 90 dirs ready, manual submission) |
 | **P1.2** | ~~Pillar page per service (5000 kata)~~ | 🎯 3 hari | Topical authority | ✅ **PARTIAL** — StatsBand + ComparisonTable + AuthorBio injected ke 10 service pages. Word count sudah 6K+ per page. |
 | **P1.3** | **YouTube channel + video embed di artikel** | 🎯 1 minggu | Double SERP exposure | ❌ pending |
-| **P1.4** | **People Also Ask (PAA) content extraction** | 🎯 3 hari | Slot #0 Google | ❌ pending |
-| **P1.5** | **Featured snippet optimization** | 🎯 2 hari | Snippet ranking | ❌ pending |
+| **P1.4** | ~~People Also Ask (PAA) content extraction~~ | 🎯 3 hari | Slot #0 Google | ✅ **DONE** — 100 PAA Q&A pairs (10 service × 10) di FAQPage JSON-LD schema |
+| **P1.5** | ~~Featured snippet optimization~~ | 🎯 2 hari | Snippet ranking | ✅ **DONE** — declarative answers 60-80 kata dengan specific numbers (snippet-friendly) |
 
 #### 🟢 P2 — MEDIUM (bulan ini, conversion & scale)
 
@@ -564,6 +565,9 @@ Jika ada perubahan:
 ---
 
 ## 📜 CHANGELOG (append-only, newest first)
+
+### 2026-07-21 (afternoon)
+- ✅ **P1.4 + P1.5 LIVE**: PAASection component dengan 100 PAA Q&A pairs (10 service × 10 questions). Snippet-optimized format: declarative answers 60-80 kata dengan specific numbers, accordion UX dengan native `<details>`, FAQPage JSON-LD schema untuk rich results. Injector: `web/scripts/inject_paa.py`. Verified live: all 10 service pages show "Pertanyaan yang Sering Diajukan" + 2 FAQPage schemas (existing FAQ + new PAA). Files: `web/src/components/PAASection.astro`, `web/src/data/paa-questions.json`.
 
 ### 2026-07-21 (midday)
 - ✅ **P0.3 VERIFIED DONE**: 3 Groq keys configured di CF Dashboard (`GROQ_API_KEY`, `GROQ_API_KEY_2`, `GROQ_API_KEY_3`). Added `/api/admin/env-check` endpoint (boolean-only, no values) untuk verifikasi future. TPD quota = 300K/hari. Rotation works silent (groq#1 selalu sukses → tidak perlu fallback).

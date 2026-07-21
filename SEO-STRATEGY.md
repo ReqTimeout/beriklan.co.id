@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.5 (2026-07-21) — P1.4 + P1.5 PAA + Featured Snippet optimization (12/18 done · 67%)
+> **Versi:** 4.6 (2026-07-21) — P2.1 + P2.2 + P2.3 done (14/18 · 78%)
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -452,8 +452,11 @@ Jika ada perubahan:
 | 15 | **P1.2: Pillar enhancement** — StatsBand + ComparisonTable + AuthorBio di 10 service pages | 2026-07-21 | E-E-A-T signal + decision moment |
 | 16 | **P0.3: Multi-Groq-key verified** — GROQ_API_KEY + GROQ_API_KEY_2 + GROQ_API_KEY_3 = 3 keys aktif | 2026-07-21 | TPD quota 3× = 300K/hari |
 | 17 | **P1.4+P1.5: PAA + Featured Snippet optimization** — 100 Q&A di 10 service pages | 2026-07-21 | Slot #0 Google + rich results FAQ schema |
+| 18 | **P2.1: Calculator tools** — BudgetCalculator, ROASCalculator, ROICalculator (3 Svelte components + 3 Astro pages) | 2026-07-21 | Dwell time + backlinks |
+| 19 | **P2.2: Programmatic SEO** — 120 `/harga-iklan-{platform}/{city}/` pages (5 platforms × 24 cities) | 2026-07-21 | Ribuan URL baru, long-tail keyword coverage |
+| 20 | **P2.3: Original research** — Laporan Industri Iklan Digital Indonesia 2026 di `/riset/laporan-industri-iklan-digital-indonesia-2026/` | 2026-07-21 | Backlink magnet |
 
-**Roadmap Progress: 12/18 selesai · 67%** (was 10/18 · 56% after P1.4 + P1.5)
+**Roadmap Progress: 14/18 selesai · 78%** (was 12/18 · 67% after P2.1 + P2.2)
 
 ### 🚧 NEXT PRIORITIES (urutan eksekusi, by impact)
 
@@ -479,9 +482,9 @@ Jika ada perubahan:
 
 | # | Item | Effort | Impact | Status |
 |---|------|--------|--------|--------|
-| **P2.1** | **Calculator tools (budget iklan, ROAS, kalkulator ROI)** | 🎯 1 minggu | Dwell time + backlinks | ❌ pending |
-| **P2.2** | **Programmatic SEO: `/harga-iklan-{platform}/{city}/`** | 🎯 1 minggu | Ribuan URL baru | ❌ pending |
-| **P2.3** | **Original research / data survey industri iklan ID** | 🎯 1 minggu | Backlink magnet | ❌ pending |
+| **P2.1** | ~~Calculator tools (budget iklan, ROAS, kalkulator ROI)~~ | 🎯 1 minggu | Dwell time + backlinks | ✅ **DONE** — 3 interactive Svelte components + 3 stand-alone pages |
+| **P2.2** | ~~Programmatic SEO: `/harga-iklan-{platform}/{city}/`~~ | 🎯 1 minggu | Ribuan URL baru | ✅ **DONE** — 120 pages (5 platforms × 24 cities) via 5 `[city].astro` files |
+| **P2.3** | ~~Original research / data survey industri iklan ID~~ | 🎯 1 minggu | Backlink magnet | ✅ **DONE** — Laporan Industri Iklan Digital Indonesia 2026 live di `/riset/laporan-industri-iklan-digital-indonesia-2026/` |
 | **P2.4** | **AggregateRating schema (real reviews)** | 🎯 1 hari | Stars di SERP | ❌ pending |
 | **P2.5** | **A/B testing title (CTR optimization)** | 🎯 ongoing | Traffic +20-50% | ❌ pending |
 | **P2.6** | **Email capture + drip campaign** | 🎯 1 minggu | Lead nurture | ❌ pending |

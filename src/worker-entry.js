@@ -1385,11 +1385,15 @@ async function handleKeywordDashboard(request, env) {
   ${await renderHourlyGenStatus(env)}
   ${await renderTrendingStatus(env, ks)}
   ${await renderDirectoryBacklinks(env)}
+  ${renderTodayProgress(ks, idx)}
+  ${renderNewKeywords(ks)}
+  ${renderCompletionForecast(ks)}
   ${renderRoadmap()}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
   ${await renderQuota(env, idx)}
   ${await renderPageSpeed()}
+  ${await renderCronHealth(env)}
 
   <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
 </div>
@@ -1663,6 +1667,156 @@ function renderFreshness(ks) {
     <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
       ⚠️ Detail freshness per post (recent/aging/stale) ada di <a href="https://beriklan.co.id/data/freshness.json" target="_blank">/data/freshness.json</a>.
       ${staleNote}
+    </p>
+  `;
+}
+
+// ─── Today's Progress (comparison vs yesterday) ──────────────────
+function renderTodayProgress(ks, idx) {
+  const k = (ks && ks.keywords) || {};
+  const today = {
+    generated: k.generated || 0,
+    pending: k.pending || 0,
+    total: k.total || 0,
+  };
+  // Try to estimate today's incremental from D1 queue logs
+  // (best-effort, not exact — using today_iso if available)
+  const idxToday = idx.today || 0;
+  return `
+    <h3 class="section-title">📅 Today's Progress (snapshot)</h3>
+    <div class="grid">
+      <div class="card info">
+        <h2>Generated (cumulative)</h2>
+        <div class="metric">${today.generated.toLocaleString()}</div>
+        <div class="sub">all-time · ${(today.generated/today.total*100).toFixed(1)}% coverage</div>
+      </div>
+      <div class="card success">
+        <h2>Live (posts.json)</h2>
+        <div class="metric">${(ks && ks.posts && ks.posts.total) ? ks.posts.total.toLocaleString() : 0}</div>
+        <div class="sub">total articles di blog</div>
+      </div>
+      <div class="card warning">
+        <h2>Pending Generate</h2>
+        <div class="metric">${today.pending.toLocaleString()}</div>
+        <div class="sub">queue di keyword-queue.json</div>
+      </div>
+      <div class="card">
+        <h2>Indexed Today</h2>
+        <div class="metric">${idxToday}</div>
+        <div class="sub">submitted ke Google hari ini</div>
+      </div>
+    </div>
+    <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
+      💡 Auto-generated rate: ~${Math.round(today.generated/Math.max(1,Math.round((Date.now()-new Date('2026-01-01').getTime())/(1000*60*60*24))))}/day since Jan 2026. Increase cron <code>count</code> atau tambah Workers Paid throughput untuk accelerate.
+    </p>
+  `;
+}
+
+// ─── Recent Keywords Added (last 30 newest in queue) ──────────────
+function renderNewKeywords(ks) {
+  if (!ks || !ks.by_source) return "";
+  const sources = ks.by_source || [];
+  // Show recent stats
+  const rows = sources.map(s => {
+    const trend = s.coverage > 1 ? "🟢" : s.coverage > 0.3 ? "🟡" : "🔴";
+    return `<tr>
+      <td><code>${esc(s.key)}</code></td>
+      <td>${s.total.toLocaleString()}</td>
+      <td><span class="badge green">${s.generated}</span></td>
+      <td><span class="badge yellow">${s.pending}</span></td>
+      <td>${trend} ${s.coverage}%</td>
+    </tr>`;
+  }).join("");
+  return `
+    <h3 class="section-title">🆕 Keyword Sources — Mana yang Cepat Di-Generate</h3>
+    <table><thead><tr><th>Source</th><th>Total</th><th>Generated</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
+      💡 <code>expansion_v1</code> adalah hasil dari keyword matrix expansion (10× target). Prioritaskan source dengan coverage 🔴 (low) untuk article generation.
+    </p>
+  `;
+}
+
+// ─── Completion Forecast ──────────────────────────────
+function renderCompletionForecast(ks) {
+  if (!ks || !ks.keywords) return "";
+  const k = ks.keywords;
+  const pending = k.pending || 0;
+  const total = k.total || 0;
+  const generated = k.generated || 0;
+  // Estimate: assume current rate ~1 article/hour (conservative)
+  const ARTICLES_PER_DAY = 24; // hourly cron
+  const daysToComplete = Math.ceil(pending / ARTICLES_PER_DAY);
+  const eta = new Date(Date.now() + daysToComplete * 86400000);
+  const etaStr = eta.toISOString().slice(0, 10);
+  return `
+    <h3 class="section-title">🎯 Completion Forecast (kapan 100% coverage)</h3>
+    <div class="grid">
+      <div class="card info">
+        <h2>Pending Articles</h2>
+        <div class="metric">${pending.toLocaleString()}</div>
+        <div class="sub">queue saat ini</div>
+      </div>
+      <div class="card success">
+        <h2>Generation Rate</h2>
+        <div class="metric">${ARTICLES_PER_DAY}/day</div>
+        <div class="sub">@ hourly cron (1 art/jam)</div>
+      </div>
+      <div class="card warning">
+        <h2>Days to 100%</h2>
+        <div class="metric">${daysToComplete}</div>
+        <div class="sub">~${Math.round(daysToComplete/30)} bulan</div>
+      </div>
+      <div class="card">
+        <h2>ETA Date</h2>
+        <div class="metric" style="font-size:18px;">${etaStr}</div>
+        <div class="sub">${ARTICLES_PER_DAY} art/day constant</div>
+      </div>
+    </div>
+    <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
+      ⚡ Accelerate options: <code>count=5</code> per cron run (Workers Paid) = ~120 art/day = ${Math.ceil(pending/120)} hari. Atau split queue ke 5 parallel cron jobs.
+    </p>
+  `;
+}
+
+// ─── Cron Health (last run of each cron job) ──────────────────────
+async function renderCronHealth(env) {
+  if (!env.DB) return "";
+  let rows = [];
+  try {
+    const r = await env.DB.prepare(
+      `SELECT cron_name, status, started_at, finished_at, details FROM cron_logs ORDER BY rowid DESC LIMIT 20`
+    ).all();
+    rows = r.results || [];
+  } catch (e) {}
+  if (rows.length === 0) {
+    return `
+      <h3 class="section-title">⚙️ Cron Health (last 20 runs)</h3>
+      <div class="card"><p style="color:#999;font-size:13px;">cron_logs table empty. Crons haven't logged yet.</p></div>
+    `;
+  }
+  // Group by cron name, show last run only
+  const byCron = {};
+  for (const r of rows) {
+    if (!byCron[r.cron_name] || byCron[r.cron_name].started_at < r.started_at) {
+      byCron[r.cron_name] = r;
+    }
+  }
+  const items = Object.entries(byCron).map(([name, r]) => {
+    const age = r.started_at ? Math.round((Date.now() - new Date(r.started_at + 'Z').getTime()) / 60000) : null;
+    const ageStr = age === null ? '?' : age < 60 ? `${age}m ago` : age < 1440 ? `${Math.round(age/60)}h ago` : `${Math.round(age/1440)}d ago`;
+    const statusColor = r.status === 'success' ? 'green' : r.status === 'error' ? 'red' : 'yellow';
+    return `<tr>
+      <td><code>${esc(name)}</code></td>
+      <td><span class="badge ${statusColor}">${esc(r.status || 'unknown')}</span></td>
+      <td style="color:#666;font-size:12px;">${ageStr}</td>
+      <td style="color:#999;font-size:11px;">${esc((r.started_at || '').slice(0, 16))}</td>
+    </tr>`;
+  }).join("");
+  return `
+    <h3 class="section-title">⚙️ Cron Health — Last Run per Job</h3>
+    <table><thead><tr><th>Cron Job</th><th>Status</th><th>Last Run</th><th>Waktu</th></tr></thead><tbody>${items}</tbody></table>
+    <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
+      ⚠️ Crons scheduled di <code>wrangler.jsonc</code>: hourly-generate (0 *), gsc-indexing (0 */6), trending-generate (30 */6). Kalau last run > 24h, ada masalah.
     </p>
   `;
 }

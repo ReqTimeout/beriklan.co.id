@@ -414,6 +414,58 @@ const showOrganization = true;
 		})();
 	</script>
 
+	<!-- Reveal observer (was: at end of file outside </html> — moved here) -->
+	<script>
+		(function() {
+			if (typeof IntersectionObserver === 'undefined') return;
+			const observer = new IntersectionObserver((entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('revealed');
+						observer.unobserve(entry.target);
+					}
+				}
+			}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+			const selector = '.reveal, .reveal-stagger, .reveal-lift, .reveal-left, .reveal-right';
+			const seen = new WeakSet();
+			function observeAll() {
+				document.querySelectorAll(selector).forEach((el) => {
+					if (!seen.has(el)) { seen.add(el); observer.observe(el); }
+				});
+			}
+			if (document.readyState !== 'loading') observeAll();
+			else document.addEventListener('DOMContentLoaded', observeAll);
+			document.addEventListener('astro:page-load', observeAll);
+			if (typeof MutationObserver !== 'undefined') {
+				const mo = new MutationObserver((mutations) => {
+					for (const m of mutations) {
+						for (const n of m.addedNodes) {
+							if (!(n instanceof Element)) continue;
+							if (n.matches && n.matches(selector)) {
+								if (!seen.has(n)) { seen.add(n); observer.observe(n); }
+							}
+							if (n.querySelectorAll) {
+								n.querySelectorAll(selector).forEach((el) => {
+									if (!seen.has(el)) { seen.add(el); observer.observe(el); }
+								});
+							}
+						}
+					}
+				});
+				const startObs = () => {
+					if (document.body) mo.observe(document.body, { childList: true, subtree: true });
+					else setTimeout(startObs, 50);
+				};
+				startObs();
+			}
+			let ticks = 0;
+			const id = setInterval(() => {
+				observeAll();
+				if (++ticks > 5) clearInterval(id);
+			}, 1500);
+		})();
+	</script>
+
 	<!-- Newsletter form handler (P2.6) -->
 	<script is:inline>
 		(function() {
@@ -658,71 +710,3 @@ const showOrganization = true;
 	.faq-item { background: white !important; }
 
 </style>
-
-<script>
-    (function() {
-        if (typeof IntersectionObserver === 'undefined') return;
-
-        const observer = new IntersectionObserver((entries) => {
-            for (const entry of entries) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                    observer.unobserve(entry.target);
-                }
-            }
-        }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-
-        const selector = '.reveal, .reveal-stagger, .reveal-lift, .reveal-left, .reveal-right';
-        const seen = new WeakSet();
-
-        function observeAll() {
-            document.querySelectorAll(selector).forEach((el) => {
-                if (!seen.has(el)) {
-                    seen.add(el);
-                    observer.observe(el);
-                }
-            });
-        }
-
-        // Initial pass
-        if (document.readyState !== 'loading') observeAll();
-        else document.addEventListener('DOMContentLoaded', observeAll);
-        document.addEventListener('astro:page-load', observeAll);
-
-        // Catch elements added later by Svelte components (client:visible / client:idle)
-        if (typeof MutationObserver !== 'undefined') {
-            const mo = new MutationObserver((mutations) => {
-                let added = false;
-                for (const m of mutations) {
-                    for (const n of m.addedNodes) {
-                        if (!(n instanceof Element)) continue;
-                        if (n.matches && n.matches(selector)) {
-                            if (!seen.has(n)) { seen.add(n); observer.observe(n); added = true; }
-                        }
-                        if (n.querySelectorAll) {
-                            n.querySelectorAll(selector).forEach((el) => {
-                                if (!seen.has(el)) { seen.add(el); observer.observe(el); added = true; }
-                            });
-                        }
-                    }
-                }
-                if (added) {
-                    // No-op; observer does the work
-                }
-            });
-            // Wait for body to exist before observing
-            const startObs = () => {
-                if (document.body) mo.observe(document.body, { childList: true, subtree: true });
-                else setTimeout(startObs, 50);
-            };
-            startObs();
-        }
-
-        // Periodic fallback (cheap): re-scan every 1.5s for first 8s to catch any missed
-        let ticks = 0;
-        const id = setInterval(() => {
-            observeAll();
-            if (++ticks > 5) clearInterval(id);
-        }, 1500);
-    })();
-</script>

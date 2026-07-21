@@ -27,6 +27,27 @@ export default {
     if (path === "/api/admin/env-check" || path === "/api/admin/env-check/") {
       return await handleEnvCheck(request, env);
     }
+    if (path === "/api/newsletter/subscribe" || path === "/api/newsletter/subscribe/") {
+      // P0.5 Rate limit: 5 req/jam per IP (anti-spam)
+      const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/newsletter/subscribe", 5, 3600);
+      if (!rl.allowed) {
+        return new Response(JSON.stringify({
+          ok: false,
+          error: "Terlalu banyak percobaan. Coba lagi nanti.",
+          retry_after: rl.resetAt - Math.floor(Date.now() / 1000),
+        }), {
+          status: 429,
+          headers: { "Content-Type": "application/json", "Retry-After": String(rl.resetAt - Math.floor(Date.now() / 1000)) },
+        });
+      }
+      return await handleNewsletterSubscribe(request, env);
+    }
+    if (path === "/api/newsletter/unsubscribe" || path === "/api/newsletter/unsubscribe/") {
+      return await handleNewsletterUnsubscribe(request, env);
+    }
+    if (path === "/api/newsletter/admin" || path === "/api/newsletter/admin/") {
+      return await handleNewsletterAdmin(request, env);
+    }
     if (path === "/api/_test_route" || path === "/api/_test_route/") {
       return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-17", timestamp: new Date().toISOString(), env_check_route: "registered" }), { headers: { "Content-Type": "application/json" } });
     }
@@ -269,6 +290,163 @@ async function handleEnvCheck(request, env) {
     groq_status: groqKeys.length >= 3 ? "OK (3+ keys for rotation)" : (groqKeys.length === 2 ? "PARTIAL (2 keys — add 1 more)" : (groqKeys.length === 1 ? "MINIMAL (1 key — add 2 more for TPD headroom)" : "MISSING")),
   };
   return new Response(JSON.stringify(result, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+// ─── Newsletter Subscribe (P2.6) ─────────────────────────────────
+async function handleNewsletterSubscribe(request, env) {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json", Allow: "POST" },
+    });
+  }
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB binding not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON body" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  }
+  const email = String(body.email || "").trim().toLowerCase();
+  const name = String(body.name || "").trim().slice(0, 100);
+  const page_url = String(body.page_url || "").slice(0, 200);
+  const source = String(body.source || "").slice(0, 200);
+  const honeypot = String(body.website || "");
+  // Honeypot: bots fill hidden field; treat as success (no save) to waste their time
+  if (honeypot) {
+    return new Response(JSON.stringify({ ok: true, already: true }), { headers: { "Content-Type": "application/json" } });
+  }
+  // Email validation
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
+    return new Response(JSON.stringify({ ok: false, error: "Format email tidak valid" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  }
+  try {
+    // Auto-create tables if missing
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      name TEXT,
+      page_url TEXT,
+      source TEXT,
+      status TEXT NOT NULL DEFAULT 'active',
+      drip_step INTEGER NOT NULL DEFAULT 0,
+      unsubscribed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_newsletter_status ON newsletter_subscribers (status)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_newsletter_drip ON newsletter_subscribers (status, drip_step)`).run();
+
+    // Upsert: if email exists & is active, say already. If unsubscribed, re-activate.
+    const existing = await env.DB.prepare(`SELECT id, status FROM newsletter_subscribers WHERE email = ?`).bind(email).first();
+    if (existing && existing.status === "active") {
+      return new Response(JSON.stringify({ ok: true, already: true }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (existing && existing.status === "unsubscribed") {
+      await env.DB.prepare(
+        `UPDATE newsletter_subscribers SET status='active', drip_step=0, unsubscribed_at=NULL, updated_at=CURRENT_TIMESTAMP WHERE id = ?`
+      ).bind(existing.id).run();
+      return new Response(JSON.stringify({ ok: true, reactivated: true }), { headers: { "Content-Type": "application/json" } });
+    }
+    // New subscriber
+    await env.DB.prepare(
+      `INSERT INTO newsletter_subscribers (email, name, page_url, source, status, drip_step) VALUES (?, ?, ?, ?, 'active', 0)`
+    ).bind(email, name, page_url, source).run();
+    return new Response(JSON.stringify({ ok: true, new: true }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Newsletter Unsubscribe ─────────────────────────────────────
+async function handleNewsletterUnsubscribe(request, env) {
+  let email = "";
+  if (request.method === "POST") {
+    try {
+      const body = await request.json();
+      email = String(body.email || "").trim().toLowerCase();
+    } catch {}
+  } else {
+    const url = new URL(request.url);
+    email = String(url.searchParams.get("email") || "").trim().toLowerCase();
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return new Response("Email tidak valid", { status: 400 });
+  }
+  if (!env.DB) {
+    return new Response("DB not available", { status: 503 });
+  }
+  try {
+    const r = await env.DB.prepare(
+      `UPDATE newsletter_subscribers SET status='unsubscribed', unsubscribed_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE email = ?`
+    ).bind(email).run();
+    // If HTML request (GET with email), show friendly page
+    if (request.method === "GET") {
+      const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Berhenti Berlangganan — Beriklan</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1e3d;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px}
+.card{background:rgba(255,255,255,0.05);border-radius:16px;padding:32px;max-width:480px;text-align:center;border:1px solid rgba(255,255,255,0.1)}
+h1{font-size:1.5rem;margin:0 0 12px}a{color:#f59e0b;text-decoration:none}</style></head><body><div class="card">
+<h1>Berhenti Berlangganan</h1>
+<p>Email <strong>${email}</strong> telah dihentikan dari newsletter kami.</p>
+<p>Anda bisa <a href="/">kembali ke beranda</a> kapan saja.</p></div></body></html>`;
+      return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    return new Response(JSON.stringify({ ok: true, removed: r.meta?.changes || 0 }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Newsletter Admin (token-protected) ──────────────────────────
+async function handleNewsletterAdmin(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  if (!env.ADMIN_TOKEN || token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB not available" }), { status: 503 });
+  }
+  // Auto-create tables
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, name TEXT, page_url TEXT, source TEXT,
+    status TEXT NOT NULL DEFAULT 'active', drip_step INTEGER NOT NULL DEFAULT 0, unsubscribed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`).run();
+  const format = url.searchParams.get("format") || "json";
+  const limit = Math.min(parseInt(url.searchParams.get("limit") || "100"), 1000);
+  const status = url.searchParams.get("status") || "active";
+
+  try {
+    const stats = await env.DB.prepare(
+      `SELECT status, COUNT(*) as count FROM newsletter_subscribers GROUP BY status`
+    ).all();
+    if (format === "csv") {
+      const rows = await env.DB.prepare(
+        `SELECT email, name, page_url, source, status, drip_step, created_at FROM newsletter_subscribers WHERE status = ? ORDER BY id DESC LIMIT ?`
+      ).bind(status, limit).all();
+      const lines = ["email,name,page_url,source,status,drip_step,created_at"];
+      for (const r of rows.results || []) {
+        lines.push(`"${(r.email || "").replace(/"/g, '""')}","${(r.name || "").replace(/"/g, '""')}","${(r.page_url || "").replace(/"/g, '""')}","${(r.source || "").replace(/"/g, '""')}","${r.status}",${r.drip_step},"${r.created_at}"`);
+      }
+      return new Response(lines.join("\n"), {
+        headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="newsletter-${status}-${Date.now()}.csv"` },
+      });
+    }
+    // JSON default
+    const subscribers = await env.DB.prepare(
+      `SELECT id, email, name, page_url, source, status, drip_step, created_at FROM newsletter_subscribers WHERE status = ? ORDER BY id DESC LIMIT ?`
+    ).bind(status, limit).all();
+    return new Response(JSON.stringify({
+      ok: true,
+      stats: stats.results || [],
+      total: (stats.results || []).reduce((s, r) => s + r.count, 0),
+      subscribers: subscribers.results || [],
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
 }
 
 // Sitemap status — show what D1 tracks for each sitemap

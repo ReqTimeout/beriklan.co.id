@@ -34,6 +34,8 @@
     ];
 </script>
 
+
+
 <footer class="bg-ink text-white pt-20 pb-10 relative overflow-hidden">
     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
     <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 90% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 40%), radial-gradient(circle at 10% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 40%);"></div>
@@ -50,12 +52,57 @@
             </div>
             <div class="flex flex-col sm:flex-row lg:justify-end gap-3 items-start lg:items-center">
                 <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink font-bold px-6 py-3 rounded-full hover:bg-accent-2 transition shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg>
                     Chat WhatsApp
                 </a>
                 <a href="mailto:info@beriklan.co.id" class="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/5 transition">
                     info@beriklan.co.id
                 </a>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 py-10 border-b border-white/10">
+            <div>
+                <h4 class="font-display font-bold text-xl md:text-2xl">Update Bulanan dari Tim Beriklan</h4>
+                <p class="text-white/60 mt-2 text-sm leading-relaxed max-w-md">
+                    Tips iklan Meta, Google, TikTok, YouTube + data industri. Dikirim 1× sebulan. Tanpa spam, berhenti kapan saja.
+                </p>
+            </div>
+            <div class="md:max-w-sm md:ml-auto md:w-full">
+                <form id="nl-form" class="space-y-2.5" novalidate>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Nama (opsional)"
+                        class="w-full px-3.5 py-2.5 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-white/40 focus:outline-none focus:border-accent focus:bg-white/10 transition"
+                    />
+                    <div class="flex gap-2">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="email@bisnis.com"
+                            class="flex-1 min-w-0 px-3.5 py-2.5 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-white/40 focus:outline-none focus:border-accent focus:bg-white/10 transition"
+                            required
+                        />
+                        <button
+                            type="submit"
+                            class="shrink-0 px-5 py-2.5 text-sm font-bold bg-accent text-ink rounded-full hover:bg-accent-2 transition disabled:opacity-50"
+                        >
+                            Daftar
+                        </button>
+                    </div>
+                    <input
+                        type="text"
+                        name="website"
+                        tabindex="-1"
+                        autocomplete="off"
+                        class="absolute opacity-0 pointer-events-none -left-[9999px]"
+                        aria-hidden="true"
+                    />
+                    <p class="nl-status text-[11px] text-white/40 leading-snug">
+                        Kami kirim 1 update/bulan. Berhenti kapan saja.
+                    </p>
+                </form>
             </div>
         </div>
 

@@ -413,6 +413,62 @@ const showOrganization = true;
 			items.forEach(el => io.observe(el));
 		})();
 	</script>
+
+	<!-- Newsletter form handler (P2.6) -->
+	<script is:inline>
+		(function() {
+			function attachNewsletter() {
+				var form = document.getElementById('nl-form');
+				if (!form || form.__attached) return;
+				form.__attached = true;
+				var status = form.querySelector('.nl-status');
+				var btn = form.querySelector('button[type="submit"]');
+				form.addEventListener('submit', async function(e) {
+					e.preventDefault();
+					if (btn.disabled) return;
+					var honeypot = form.querySelector('input[name="website"]').value;
+					if (honeypot) { status.textContent = 'Terima kasih!'; status.className = 'nl-status text-xs text-green-300'; return; }
+					var email = form.querySelector('input[name="email"]').value.trim().toLowerCase();
+					var name = form.querySelector('input[name="name"]').value.trim();
+					if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+						status.textContent = 'Format email tidak valid.';
+						status.className = 'nl-status text-xs text-red-300';
+						return;
+					}
+					btn.disabled = true;
+					btn.textContent = '...';
+					try {
+						var r = await fetch('/api/newsletter/subscribe', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								email: email, name: name,
+								page_url: location.pathname, source: document.referrer || ''
+							}),
+						});
+						var data = await r.json();
+						if (data.ok) {
+							status.textContent = data.already ? 'Anda sudah terdaftar.' : 'Terima kasih! Update akan kami kirim via email.';
+							status.className = 'nl-status text-xs text-green-300';
+							form.querySelector('input[name="email"]').value = '';
+							form.querySelector('input[name="name"]').value = '';
+						} else {
+							status.textContent = data.error || 'Gagal. Coba lagi.';
+							status.className = 'nl-status text-xs text-red-300';
+						}
+					} catch (err) {
+						status.textContent = 'Gagal menghubungi server.';
+						status.className = 'nl-status text-xs text-red-300';
+					}
+					btn.disabled = false;
+					btn.textContent = 'Daftar';
+				});
+			}
+			if (document.readyState !== 'loading') attachNewsletter();
+			else document.addEventListener('DOMContentLoaded', attachNewsletter);
+			document.addEventListener('astro:page-load', attachNewsletter);
+		})();
+	</script>
 	</body>
 </html>
 

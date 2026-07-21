@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import ROICalculator from '../components/ROICalculator.svelte';
+import Footer from '../components/Footer.svelte';
+---
+
+<Layout
+    title="Kalkulator ROI Iklan — Hitung Return on Investment Online | Beriklan"
+    description="Hitung ROI (Return on Investment) campaign iklan Anda secara online. Masukkan budget iklan, biaya produksi, management fee, dan revenue. Dapatkan persentase ROI + rekomendasi."
+    canonical="https://beriklan.co.id/kalkulator-roi/"
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Kalkulator ROI", url: "https://www.beriklan.co.id/kalkulator-roi/" }
+    ]}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-3xl mx-auto">
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl text-ink leading-[1.05] tracking-tight">
+                Kalkulator ROI Online
+            </h1>
+            <p class="mt-5 text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+                    ROI menghitung keuntungan bersih campaign Anda setelah dikurangi semua biaya — termasuk <strong class="text-ink">budget iklan, biaya produksi kreatif, dan management fee</strong>.
+            </p>
+        </div>
+    </header>
+
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-2xl">
+            <ROICalculator client:only="svelte" />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Apa itu ROI?</h2>
+            <div class="space-y-4 text-muted text-base leading-relaxed">
+                <p><strong class="text-ink">Return on Investment (ROI)</strong> mengukur keuntungan bersih campaign setelah dikurangi semua biaya. Berbeda dengan ROAS yang hanya menghitung belanja iklan, ROI memperhitungkan <strong class="text-ink">total biaya</strong> termasuk production dan management.</p>
+                <p>Rumus ROI: <strong class="text-ink">(Total Revenue - Total Biaya) ÷ Total Biaya × 100%</strong></p>
+                <p>Misalnya: Revenue Rp 20 juta, Total biaya Rp 10 juta → ROI = 100% (balik modal).</p>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>

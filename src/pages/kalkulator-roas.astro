@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import ROASCalculator from '../components/ROASCalculator.svelte';
+import Footer from '../components/Footer.svelte';
+---
+
+<Layout
+    title="Kalkulator ROAS — Hitung Return on Ad Spend Online | Beriklan"
+    description="Hitung ROAS (Return on Ad Spend) campaign iklan Anda secara online. Cukup masukkan total belanja iklan dan pendapatan, dapatkan skor ROAS + rekomendasi optimasi."
+    canonical="https://beriklan.co.id/kalkulator-roas/"
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Kalkulator ROAS", url: "https://www.beriklan.co.id/kalkulator-roas/" }
+    ]}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-3xl mx-auto">
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl text-ink leading-[1.05] tracking-tight">
+                Kalkulator ROAS Online
+            </h1>
+            <p class="mt-5 text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+                ROAS (Return on Ad Spend) mengukur seberapa efektif setiap rupiah yang Anda keluarkan untuk iklan. <strong class="text-ink">Masukkan data campaign Anda</strong> dan lihat skor ROAS beserta rekomendasi optimasi.
+            </p>
+        </div>
+    </header>
+
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-2xl">
+            <ROASCalculator client:only="svelte" />
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Apa itu ROAS?</h2>
+            <div class="space-y-4 text-muted text-base leading-relaxed">
+                <p>ROAS adalah metrik yang mengukur pendapatan yang dihasilkan untuk setiap rupiah yang dibelanjakan pada iklan. Rumusnya sederhana: <strong class="text-ink">Total Pendapatan ÷ Total Belanja Iklan</strong>.</p>
+                <p>Contoh: Jika Anda belanja iklan Rp 5 juta dan menghasilkan Rp 20 juta, ROAS Anda adalah 4x — artinya setiap Rp 1 menghasilkan Rp 4.</p>
+                <h3 class="font-display font-bold text-lg text-ink mt-8 mb-3">Patokan Skor ROAS</h3>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2"><span class="text-green-500 font-bold">🟢 4x+</span> <span>Sangat baik — scaling budget bisa dipertimbangkan.</span></li>
+                    <li class="flex items-start gap-2"><span class="text-accent font-bold">🟡 2x - 4x</span> <span>Cukup baik — masih ada ruang optimasi.</span></li>
+                    <li class="flex items-start gap-2"><span class="text-red-500 font-bold">🔴 &lt; 2x</span> <span>Perlu optimasi — evaluasi targeting, creative, atau landing page.</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>

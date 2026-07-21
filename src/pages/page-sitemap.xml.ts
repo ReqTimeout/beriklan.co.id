@@ -17,6 +17,9 @@ const pages = [
     { path: '/jasa-kelola-tiktok/', priority: '0.9', changefreq: 'monthly' },
     { path: '/jasa-pembuatan-website/', priority: '0.9', changefreq: 'monthly' },
     { path: '/jasa-pembuatan-landing-page/', priority: '0.9', changefreq: 'monthly' },
+    { path: '/kalkulator-budget-iklan/', priority: '0.8', changefreq: 'monthly' },
+    { path: '/kalkulator-roas/', priority: '0.8', changefreq: 'monthly' },
+    { path: '/kalkulator-roi/', priority: '0.8', changefreq: 'monthly' },
 ];
 
 export function GET() {

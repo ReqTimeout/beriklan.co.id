@@ -1,0 +1,54 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.svelte';
+import StickyCTA from '../components/StickyCTA.svelte';
+import BudgetCalculator from '../components/BudgetCalculator.svelte';
+import Footer from '../components/Footer.svelte';
+---
+
+<Layout
+    title="Kalkulator Budget Iklan Online — Estimasi Biaya Iklan Facebook, Google, TikTok | Beriklan"
+    description="Hitung estimasi budget iklan digital untuk Facebook Ads, Google Ads, TikTok, Instagram & YouTube. Masukkan target omzet + platform, dapatkan rekomendasi budget + biaya management."
+    canonical="https://beriklan.co.id/kalkulator-budget-iklan/"
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Kalkulator Budget Iklan", url: "https://www.beriklan.co.id/kalkulator-budget-iklan/" }
+    ]}
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <header class="relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-3xl mx-auto">
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl text-ink leading-[1.05] tracking-tight">
+                Kalkulator Budget Iklan Online
+            </h1>
+            <p class="mt-5 text-base md:text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+                Bingung menentukan berapa budget iklan yang tepat? Masukkan target omzet, pilih platform, dan dapatkan estimasi <strong class="text-ink">ad spend bulanan + biaya management</strong> yang sesuai.
+            </p>
+        </div>
+    </header>
+
+    <BudgetCalculator client:only="svelte" />
+
+    <section class="py-20 md:py-28 bg-white">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Cara menggunakan kalkulator budget iklan</h2>
+            <div class="space-y-4 text-muted text-base leading-relaxed">
+                <p><strong class="text-ink">1. Pilih platform</strong> — Pilih satu atau lebih platform iklan yang ingin Anda gunakan (Facebook, Instagram, TikTok, Google, atau YouTube).</p>
+                <p><strong class="text-ink">2. Tentukan tujuan</strong> — Apa goal utama campaign Anda? Leads, penjualan, brand awareness, atau traffic website?</p>
+                <p><strong class="text-ink">3. Target omzet</strong> — Perkirakan pendapatan bulanan yang ingin dicapai dari iklan.</p>
+                <p><strong class="text-ink">4. Dapatkan hasil</strong> — Kalkulator akan memberikan estimasi budget iklan + biaya management yang umum berlaku.</p>
+            </div>
+            <div class="mt-10 p-6 bg-beige rounded-2xl">
+                <h3 class="font-display font-bold text-lg text-ink mb-2">Butuh bantuan menentukan strategi?</h3>
+                <p class="text-sm text-muted mb-4">Tim Beriklan siap membantu Anda menyusun strategi iklan yang terukur — dari pemilihan platform hingga optimasi campaign.</p>
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20butuh%20bantuan%20menentukan%20strategi%20iklan%20setelah%20menggunakan%20kalkulator%20budget." target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-primary-2 transition">
+                    Konsultasi Gratis via WhatsApp →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+</Layout>

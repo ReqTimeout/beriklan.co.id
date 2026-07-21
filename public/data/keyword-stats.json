@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-07-21T11:21:42",
+  "generated_at": "2026-07-21T17:00:19",
   "keywords": {
     "total": 27947,
-    "generated": 75,
-    "pending": 27872,
-    "live_in_posts": 113,
+    "generated": 76,
+    "pending": 27871,
+    "live_in_posts": 114,
     "coverage": 0.3
   },
   "posts": {
-    "total": 2047,
-    "generated": 1220,
+    "total": 2048,
+    "generated": 1221,
     "by_service": {
-      "jasa-digital-marketing": 584,
+      "jasa-digital-marketing": 585,
       "jasa-iklan-facebook": 311,
       "jasa-iklan-google": 127,
       "jasa-pembuatan-website": 81,
@@ -96,8 +96,8 @@
     {
       "key": "Jasa Digital Marketing",
       "total": 1477,
-      "generated": 20,
-      "pending": 1457,
+      "generated": 21,
+      "pending": 1456,
       "coverage": 1.4
     },
     {
@@ -147,9 +147,9 @@
     {
       "key": "Makassar",
       "total": 1016,
-      "generated": 1,
-      "pending": 1015,
-      "coverage": 0.1
+      "generated": 2,
+      "pending": 1014,
+      "coverage": 0.2
     },
     {
       "key": "Pekanbaru",
@@ -310,8 +310,8 @@
     {
       "key": "expansion_v1",
       "total": 25184,
-      "generated": 13,
-      "pending": 25171,
+      "generated": 14,
+      "pending": 25170,
       "coverage": 0.1
     },
     {
@@ -446,6 +446,15 @@
       "live": true,
       "created_at": "2026-07-20T12:00:00",
       "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2026/"
+    },
+    {
+      "keyword": "Harga Jasa Digital Marketing Di Makassar 2027",
+      "slug": "harga-jasa-digital-marketing-di-makassar-2027",
+      "service": "Jasa Digital Marketing",
+      "city": "Makassar",
+      "live": true,
+      "created_at": "2026-07-20T12:00:00",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2027/"
     },
     {
       "keyword": "jasa iklan facebook depok murah",
@@ -680,15 +689,6 @@
       "live": true,
       "created_at": "2026-07-19T08:18:57",
       "url": "https://beriklan.co.id/blog/cara-jasa-pembuat-website-murah/"
-    },
-    {
-      "keyword": "jasa digital marketing profesional",
-      "slug": "jasa-digital-marketing-profesional",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-19T08:18:57",
-      "url": "https://beriklan.co.id/blog/jasa-digital-marketing-profesional/"
     }
   ]
 }

@@ -49,7 +49,7 @@ export default {
       return await handleNewsletterAdmin(request, env);
     }
     if (path === "/api/_test_route" || path === "/api/_test_route/") {
-      return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-17", timestamp: new Date().toISOString(), env_check_route: "registered" }), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-21", timestamp: new Date().toISOString(), env_check_route: "registered", worker_fix: "escapeHtml deduped, refresh AI result handling" }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);
@@ -71,6 +71,15 @@ export default {
     }
     if (path === "/api/cron/refresh" || path === "/api/cron/refresh/") {
       return await handleRefreshContent(request, env);
+    }
+    if (path === "/api/cron/rank-sync" || path === "/api/cron/rank-sync/") {
+      return await handleRankSync(request, env);
+    }
+    if (path === "/api/admin/rank-tracker" || path === "/api/admin/rank-tracker/") {
+      return await handleRankTracker(request, env);
+    }
+    if (path === "/api/cron/snippet-optimize" || path === "/api/cron/snippet-optimize/") {
+      return await handleSnippetOptimizer(request, env);
     }
     if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
       return await handleGscPullCron(request, env);
@@ -238,15 +247,19 @@ export default {
       // Hourly: generate 1 article from top pending keyword
       ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=1"));
     } else if (cron === "0 */6 * * *") {
-      // Every 6h at :00: GSC indexing (20 URLs) + trending-fetch (RSS to D1 queue)
+      // Every 6h at :00: GSC indexing (20 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4)
       ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=20"));
       ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026"));
+      ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1"));
     } else if (cron === "30 */6 * * *") {
       // Every 6h at :30: trending-generate (1 article from queue)
       ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1"));
     } else if (cron === "0 0 1 * *") {
       // Monthly on day 1: refresh aging content (N.1) — refresh 3 oldest commercial articles
       ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3"));
+    } else if (cron === "0 0 * * 1") {
+      // Weekly Monday 00:00: featured snippet optimizer (N.5) — rewrite top 3 position 4-7 articles
+      ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3"));
     } else {
       console.log("[scheduled] unknown cron, no-op");
     }
@@ -827,6 +840,32 @@ async function handleAdminMigrate(request, env) {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_api_key_usage_name_time ON api_key_usage (key_name, timestamp)`,
     `CREATE INDEX IF NOT EXISTS idx_api_key_usage_timestamp ON api_key_usage (timestamp)`,
+    // N.4 Rank Tracker — daily GSC sync
+    `CREATE TABLE IF NOT EXISTS keyword_ranks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      keyword TEXT NOT NULL,
+      page_url TEXT NOT NULL,
+      position REAL NOT NULL,
+      clicks INTEGER DEFAULT 0,
+      impressions INTEGER DEFAULT 0,
+      ctr REAL DEFAULT 0,
+      date TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(keyword, page_url, date)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_ranks_keyword ON keyword_ranks (keyword)`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_ranks_date ON keyword_ranks (date)`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_ranks_position ON keyword_ranks (position)`,
+    // N.4 Refresh log — track content refresh actions
+    `CREATE TABLE IF NOT EXISTS refresh_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT NOT NULL,
+      model TEXT,
+      commit_sha TEXT,
+      elapsed_ms INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_refresh_log_slug ON refresh_log (slug)`,
   ];
 
   const results = [];
@@ -1240,7 +1279,7 @@ function renderDashboard(stats) {
 // Module-level helpers (used by both handleKeywordDashboard and render helpers)
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
-const escapeHtml = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const escapeHtml = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 // Multi-key support: GROQ_API_KEY, GROQ_API_KEY_2, GROQ_API_KEY_3, ...
 // Returns deduplicated list of non-empty Groq API keys from env.
 function getGroqKeys(env) {
@@ -1400,6 +1439,7 @@ async function handleKeywordDashboard(request, env) {
   ${await renderQuota(env, idx)}
   ${await renderPageSpeed()}
   ${await renderCronHealth(env)}
+  ${await renderRankTracker(env)}
 
   <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
 </div>
@@ -1827,6 +1867,64 @@ async function renderCronHealth(env) {
   `;
 }
 
+// ─── Rank Tracker Summary (N.4) ────────────────
+async function renderRankTracker(env) {
+  if (!env.DB) return "";
+  try {
+    const pageOne = await env.DB.prepare(`
+      SELECT keyword, page_url, position, clicks, impressions FROM keyword_ranks
+      WHERE position <= 10 AND date = (SELECT MAX(date) FROM keyword_ranks kr2 WHERE kr2.keyword = keyword_ranks.keyword)
+      ORDER BY position ASC LIMIT 15
+    `).all();
+    const summary = await env.DB.prepare(`
+      SELECT COUNT(DISTINCT keyword) as kw, SUM(clicks) as clk, AVG(position) as avg_pos, MAX(date) as latest
+      FROM keyword_ranks WHERE date = (SELECT MAX(date) FROM keyword_ranks)
+    `).first();
+    const refreshLog = await env.DB.prepare(`
+      SELECT slug, model, commit_sha, created_at FROM refresh_log ORDER BY id DESC LIMIT 8
+    `).all();
+
+    const winners = pageOne.results || [];
+    const winnerRows = winners.map((r) => {
+      const badge = r.position <= 3 ? 'green' : r.position <= 7 ? 'yellow' : 'red';
+      return `<tr>
+        <td><strong>${esc(r.keyword)}</strong></td>
+        <td><span class="badge ${badge}">#${r.position.toFixed(1)}</span></td>
+        <td>${r.clicks || 0}</td>
+        <td>${(r.impressions || 0).toLocaleString()}</td>
+        <td style="word-break:break-all;font-size:11px;"><a href="${esc(r.page_url)}" target="_blank">${esc((r.page_url || '').replace('https://beriklan.co.id', '').slice(0, 40))}</a></td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="5" style="color:#999;">belum ada — sync GSC dulu via <code>/api/cron/rank-sync</code></td></tr>';
+
+    const refreshRows = (refreshLog.results || []).map((r) => `
+      <tr>
+        <td><code>${esc(r.slug)}</code></td>
+        <td style="font-size:11px;color:#666;">${esc((r.model || '').slice(0, 40))}</td>
+        <td style="font-size:11px;"><a href="https://github.com/ReqTimeout/beriklan.co.id/commit/${esc(r.commit_sha || '')}" target="_blank">${esc((r.commit_sha || '').slice(0, 7))}</a></td>
+        <td style="font-size:11px;color:#666;">${esc((r.created_at || '').slice(0, 16))}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="4" style="color:#999;">belum ada refresh</td></tr>';
+
+    const s = summary || {};
+    return `
+      <h3 class="section-title">📈 Rank Tracker — Page-1 Winners (${winners.length})</h3>
+      <p class="sub" style="color:#666;font-size:12px;margin-bottom:12px;">
+        ${s.kw || 0} keyword tracked · ${s.clk || 0} clicks · avg position #${(s.avg_pos || 0).toFixed(1)} · last sync ${esc((s.latest || 'n/a'))}
+        · <a href="/api/admin/rank-tracker?token=${esc(env.ADMIN_TOKEN)}">Full tracker ↗</a>
+      </p>
+      <table><thead><tr><th>Keyword</th><th>Position</th><th>Clicks</th><th>Impressions</th><th>URL</th></tr></thead><tbody>${winnerRows}</tbody></table>
+
+      <h3 class="section-title">🔄 Content Refresh Log (N.1 — last 8)</h3>
+      <p class="sub" style="color:#666;font-size:12px;margin-bottom:12px;">
+        Aging commercial articles yang sudah di-refresh via AI (intro + Update 2026 callout).
+      </p>
+      <table><thead><tr><th>Slug</th><th>Model</th><th>Commit</th><th>Waktu</th></tr></thead><tbody>${refreshRows}</tbody></table>
+    `;
+  } catch (e) {
+    return `<div class="card"><p style="color:#999;">Rank tracker error: ${esc(e.message)}</p></div>`;
+  }
+}
+
 // ─── Page Speed (P0.1 LCP audit) ────────────────
 // Latest page-speed audit (updated by scripts/measure_pagespeed.py or manual).
 // Hardcoded to avoid env.ASSETS.fetch cache issues. Re-measure periodically:
@@ -2103,11 +2201,12 @@ Aturan:
 - Jangan ubah H2/H3 existing
 - Output hanya JSON, no markdown`;
 
-      const aiText = await generateWithZenOrGroq(refreshPrompt, env);
-      if (!aiText) {
+      const aiResult = await generateWithZenOrGroq(refreshPrompt, env);
+      if (!aiResult) {
         errors.push({ slug: cand.slug, error: "AI failed" });
         continue;
       }
+      const aiText = (typeof aiResult === 'string') ? aiResult : (aiResult.text || '');
       const aiJson = extractJson(aiText);
       if (!aiJson || !aiJson.intro_baru || !aiJson.update_2026) {
         errors.push({ slug: cand.slug, error: "JSON parse failed", raw: String(aiText).slice(0, 200) });
@@ -2132,7 +2231,7 @@ Aturan:
       post.refreshed_at = new Date().toISOString();
       post.refresh_count = (post.refresh_count || 0) + 1;
 
-      updatedPosts.push({ slug: post.slug, title: post.title, model: aiJson._model || "unknown" });
+      updatedPosts.push({ slug: post.slug, title: post.title, model: (typeof aiResult === 'object' && aiResult._model) || "unknown" });
       log.push({ stage: "refreshed", slug: post.slug, title: post.title });
     } catch (e) {
       errors.push({ slug: cand.slug, error: String(e).slice(0, 200) });
@@ -2170,6 +2269,19 @@ Aturan:
     const pPutData = await pPut.json();
     commitSha = pPutData.commit?.sha || null;
     log.push({ stage: "commit_posts", sha: commitSha, count: updatedPosts.length });
+
+    // Log each refresh to D1 for dashboard visibility
+    if (env.DB) {
+      for (const up of updatedPosts) {
+        try {
+          await env.DB.prepare(
+            `INSERT INTO refresh_log (slug, model, commit_sha, elapsed_ms) VALUES (?, ?, ?, ?)`
+          ).bind(up.slug, up.model || "unknown", commitSha || "", Date.now() - t0).run();
+        } catch (e) {
+          // Noop — logging is non-critical
+        }
+      }
+    }
   } catch (e) {
     errors.push({ stage: "commit_posts", error: String(e).slice(0, 300) });
   }
@@ -2185,13 +2297,463 @@ Aturan:
   }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+// ─── N.5 Featured Snippet Optimizer — rewrite content for position 4-7 keywords ───
+async function handleSnippetOptimizer(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "3", 10), 5));
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+  const optimized = [];
+
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.GITHUB_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "GITHUB_TOKEN not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  // 1. Find keywords in position 4-7 (best snippet candidates)
+  const candidates = await env.DB.prepare(`
+    SELECT keyword, page_url, position FROM keyword_ranks
+    WHERE position BETWEEN 4 AND 7
+      AND date = (SELECT MAX(date) FROM keyword_ranks kr2 WHERE kr2.keyword = keyword_ranks.keyword)
+    ORDER BY position ASC LIMIT ?
+  `).bind(count).all();
+
+  if (!candidates.results || candidates.results.length === 0) {
+    return new Response(JSON.stringify({ ok: true, message: "no candidates in position 4-7", optimized: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
+  }
+  log.push({ stage: "candidates", count: candidates.results.length });
+
+  // 2. Fetch posts.json from assets
+  let posts = [];
+  try {
+    const r = await env.ASSETS.fetch(new URL("https://assets/data/posts.json"));
+    if (r.ok) posts = await r.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "posts fetch failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // 3. For each candidate, generate snippet block
+  for (const cand of candidates.results) {
+    try {
+      let slug = (cand.page_url || '').replace(/^https?:\/\/[^/]+\//, '').replace(/\/$/, '').replace(/^blog\//, '').replace(/\.html$/, '');
+      if (!slug) continue;
+      let post = posts.find(p => p.slug === slug);
+      if (!post && slug.includes('/')) {
+        slug = slug.split('/').pop();
+        post = posts.find(p => p.slug === slug);
+      }
+      // Try without trailing /page/N for paginated URLs
+      if (!post) {
+        const baseSlug = slug.replace(/\/page\/\d+$/, '');
+        post = posts.find(p => p.slug === baseSlug);
+        if (post) slug = baseSlug;
+      }
+      // Try legacy .html → matching blog post (301 redirects typically point to blog/<slug>/)
+      if (!post && cand.page_url.includes('.html')) {
+        const htmlSlug = cand.page_url.replace(/^https?:\/\/[^/]+\//, '').replace(/\.html$/, '');
+        post = posts.find(p => p.slug === htmlSlug);
+        if (post) slug = htmlSlug;
+      }
+      if (!post || !post.content) continue;
+
+      // Skip if already has snippet block
+      if (post.content.includes('class="snippet-block"')) continue;
+
+      const snippetPrompt = `Kamu adalah SEO copywriter Indonesia. Untuk keyword "${cand.keyword}", buat snippet block yang akan membantu ranking position 0 (featured snippet Google).
+
+Format output JSON WAJIB valid (no markdown):
+{
+  "definisi": "1 kalimat definisi 40-60 kata dengan target keyword di awal",
+  "poin": ["poin 1", "poin 2", "poin 3", "poin 4"],
+  "faq": {"q": "pertanyaan terkait", "a": "jawaban 1-2 kalimat"}
+}
+
+Aturan:
+- Definisi HARUS dimulai dengan kata target
+- Poin: 3-5 bullet, paralel structure, 8-15 kata per poin
+- FAQ: pertanyaan natural user, jawaban ringkas
+- Pakai bahasa Indonesia formal, "Anda" predominant
+- Jangan overclaim (no "pasti", "100%")`;
+
+      const aiResult = await generateWithZenOrGroq(snippetPrompt, env);
+      if (!aiResult) {
+        errors.push({ keyword: cand.keyword, error: "AI failed" });
+        continue;
+      }
+      const aiText = (typeof aiResult === 'string') ? aiResult : (aiResult.text || '');
+      const snippetJson = extractJson(aiText);
+      if (!snippetJson || !snippetJson.definisi) {
+        errors.push({ keyword: cand.keyword, error: "JSON parse failed" });
+        continue;
+      }
+
+      // Build snippet HTML block
+      const poinHtml = (snippetJson.poin || []).map(p => `<li>${escapeHtml(p)}</li>`).join('');
+      const faqHtml = snippetJson.faq ? `
+<div class="snippet-faq mt-4 pt-4 border-t border-amber-200">
+  <p class="font-bold text-ink mb-1">❓ ${escapeHtml(snippetJson.faq.q)}</p>
+  <p class="text-sm text-muted">${escapeHtml(snippetJson.faq.a)}</p>
+</div>` : '';
+
+      const snippetBlock = `
+<div class="snippet-block bg-amber-50 border-l-4 border-accent p-5 my-6 rounded-r-lg">
+  <p class="text-xs font-bold text-accent uppercase tracking-wider mb-2">📌 Ringkasan Cepat</p>
+  <p class="text-base text-ink mb-3 leading-relaxed">${escapeHtml(snippetJson.definisi)}</p>
+  ${poinHtml ? `<ul class="list-disc pl-5 text-sm text-muted space-y-1">${poinHtml}</ul>` : ''}
+  ${faqHtml}
+</div>`;
+
+      // Inject after first H2 (or at start)
+      const h2Match = post.content.match(/<h2[^>]*>/);
+      if (h2Match) {
+        post.content = post.content.slice(0, h2Match.index) + snippetBlock + "\n" + post.content.slice(h2Match.index);
+      } else {
+        post.content = snippetBlock + "\n" + post.content;
+      }
+      post.snippet_optimized_at = new Date().toISOString();
+
+      optimized.push({ keyword: cand.keyword, slug, position: cand.position, model: (typeof aiResult === 'object' && aiResult._model) || "unknown" });
+      log.push({ stage: "optimized", keyword: cand.keyword, slug, position: cand.position });
+    } catch (e) {
+      errors.push({ keyword: cand.keyword, error: String(e).slice(0, 200) });
+    }
+  }
+
+  if (optimized.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "no optimizations applied", log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // 4. Commit to GitHub
+  const owner = "ReqTimeout";
+  const repo = "beriklan.co.id";
+  const filePath = "src/data/posts.json";
+  let commitSha = null;
+  try {
+    const pGet = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=main`, {
+      headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0", Accept: "application/vnd.github.v3+json" },
+    });
+    if (!pGet.ok) throw new Error(`GitHub GET failed: ${pGet.status}`);
+    const pGetData = await pGet.json();
+    const pContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+    const pPut = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+      method: "PUT",
+      headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+      body: JSON.stringify({ message: `snippet: optimize ${optimized.length} posts for position 4-7`, content: pContent, sha: pGetData.sha, branch: "main" }),
+    });
+    if (!pPut.ok) throw new Error(`GitHub PUT failed: ${pPut.status}`);
+    const pPutData = await pPut.json();
+    commitSha = pPutData.commit?.sha;
+    log.push({ stage: "commit_posts", sha: commitSha, count: optimized.length });
+  } catch (e) {
+    errors.push({ stage: "commit_posts", error: String(e).slice(0, 300) });
+  }
+
+  return new Response(JSON.stringify({ ok: true, optimized: optimized.length, items: optimized, commit_sha: commitSha, elapsed_ms: Date.now() - t0, log, errors: errors.slice(0, 5) }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+// ─── N.4 Rank Tracker — daily GSC sync to D1 ─────────────
+async function handleRankSync(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) {
+    return new Response(JSON.stringify({ ok: false, error: "GSC_SERVICE_ACCOUNT_JSON not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  const days = Math.max(1, Math.min(parseInt(url.searchParams.get("days") || "1", 10), 30));
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+
+  // Load SA
+  let sa;
+  try {
+    sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "GSC SA parse failed: " + String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // JWT sign using Web Crypto
+  async function signJwt(saObj) {
+    const enc = (s) => new TextEncoder().encode(s);
+    const b64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+    const header = b64(enc(JSON.stringify({ alg: "RS256", typ: "JWT" })));
+    const now = Math.floor(Date.now() / 1000);
+    const claim = b64(enc(JSON.stringify({
+      iss: saObj.client_email,
+      scope: "https://www.googleapis.com/auth/webmasters.readonly",
+      aud: "https://oauth2.googleapis.com/token",
+      iat: now,
+      exp: now + 3600,
+    })));
+    const pkcs8 = saObj.private_key.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\n/g, "");
+    const keyBin = Uint8Array.from(atob(pkcs8), (c) => c.charCodeAt(0));
+    const cryptoKey = await crypto.subtle.importKey("pkcs8", keyBin, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+    const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, enc(`${header}.${claim}`));
+    return `${header}.${claim}.${b64(sig)}`;
+  }
+
+  // Get access token
+  let accessToken;
+  try {
+    const jwt = await signJwt(sa);
+    const tr = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+    });
+    const td = await tr.json();
+    if (!td.access_token) throw new Error("no access_token: " + JSON.stringify(td).slice(0, 200));
+    accessToken = td.access_token;
+    log.push({ stage: "jwt_auth", ok: true });
+  } catch (e) {
+    errors.push({ stage: "jwt_auth", error: String(e) });
+    return new Response(JSON.stringify({ ok: false, error: "auth failed", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // Query GSC searchAnalytics for last N days
+  const endDate = new Date().toISOString().slice(0, 10);
+  const startDate = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+  let gscRows = [];
+  try {
+    const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent("https://www.beriklan.co.id/")}/searchAnalytics/query`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        startDate, endDate,
+        dimensions: ["date", "query", "page"],
+        rowLimit: 5000,
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error("GSC query failed: " + JSON.stringify(d).slice(0, 300));
+    gscRows = d.rows || [];
+    log.push({ stage: "gsc_query", rows: gscRows.length, startDate, endDate });
+  } catch (e) {
+    errors.push({ stage: "gsc_query", error: String(e) });
+    return new Response(JSON.stringify({ ok: false, error: "gsc query failed", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  // Insert into D1
+  let inserted = 0;
+  let updated = 0;
+  for (const row of gscRows) {
+    try {
+      const date = row.keys[0];
+      const keyword = row.keys[1];
+      const pageUrl = row.keys[2];
+      const position = row.position;
+      const clicks = row.clicks || 0;
+      const impressions = row.impressions || 0;
+      const ctr = row.ctr || 0;
+      await env.DB.prepare(
+        `INSERT INTO keyword_ranks (keyword, page_url, position, clicks, impressions, ctr, date)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(keyword, page_url, date) DO UPDATE SET
+           position=excluded.position, clicks=excluded.clicks, impressions=excluded.impressions, ctr=excluded.ctr`
+      ).bind(keyword, pageUrl, position, clicks, impressions, ctr, date).run();
+      inserted++;
+    } catch (e) {
+      errors.push({ stage: "insert", keyword: row.keys?.[1], error: String(e).slice(0, 100) });
+    }
+  }
+  log.push({ stage: "inserted", count: inserted });
+
+  return new Response(JSON.stringify({ ok: true, days, rows: gscRows.length, inserted, elapsed_ms: Date.now() - t0, log, errors: errors.slice(0, 5) }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+async function handleRankTracker(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+  // Page-1 keywords (position <= 10) from latest snapshot per keyword
+  const pageOne = await env.DB.prepare(`
+    SELECT keyword, page_url, position, clicks, impressions, ctr, date
+    FROM keyword_ranks
+    WHERE position <= 10 AND date = (SELECT MAX(date) FROM keyword_ranks kr2 WHERE kr2.keyword = keyword_ranks.keyword)
+    ORDER BY position ASC
+    LIMIT 100
+  `).all();
+
+  // Improving (today vs yesterday)
+  const improving = await env.DB.prepare(`
+    SELECT t.keyword, t.page_url, t.position as today_pos, y.position as yesterday_pos,
+           (y.position - t.position) as improvement
+    FROM keyword_ranks t
+    LEFT JOIN keyword_ranks y ON t.keyword = y.keyword AND t.page_url = y.page_url AND y.date = ?
+    WHERE t.date = ? AND y.position IS NOT NULL AND t.position < y.position
+    ORDER BY improvement DESC
+    LIMIT 25
+  `).bind(yesterday, today).all();
+
+  // Declining
+  const declining = await env.DB.prepare(`
+    SELECT t.keyword, t.page_url, t.position as today_pos, y.position as yesterday_pos,
+           (t.position - y.position) as decline
+    FROM keyword_ranks t
+    LEFT JOIN keyword_ranks y ON t.keyword = y.keyword AND t.page_url = y.page_url AND y.date = ?
+    WHERE t.date = ? AND y.position IS NOT NULL AND t.position > y.position
+    ORDER BY decline DESC
+    LIMIT 25
+  `).bind(yesterday, today).all();
+
+  // Top keywords by clicks (last 7 days)
+  const topByClicks = await env.DB.prepare(`
+    SELECT keyword, SUM(clicks) as total_clicks, SUM(impressions) as total_impr, AVG(position) as avg_pos
+    FROM keyword_ranks
+    WHERE date >= date('now', '-7 days')
+    GROUP BY keyword
+    ORDER BY total_clicks DESC
+    LIMIT 25
+  `).all();
+
+  // Summary stats
+  const summary = await env.DB.prepare(`
+    SELECT
+      COUNT(DISTINCT keyword) as unique_keywords,
+      SUM(clicks) as total_clicks,
+      SUM(impressions) as total_impressions,
+      AVG(position) as avg_position,
+      MAX(date) as latest_date
+    FROM keyword_ranks
+    WHERE date = (SELECT MAX(date) FROM keyword_ranks)
+  `).first();
+
+  // Coverage: how many of our keywords have any rank data
+  const coverage = await env.DB.prepare(`
+    SELECT COUNT(DISTINCT kr.keyword) as ranked,
+           (SELECT COUNT(*) FROM keyword_queue) as total_queued
+    FROM keyword_ranks kr
+  `).first().catch(() => ({ ranked: 0, total_queued: 0 }));
+
+  // Format rows
+  const fmtRow = (r, withDelta) => {
+    const badge = r.position <= 3 ? 'green' : r.position <= 10 ? 'yellow' : 'red';
+    let extra = '';
+    if (withDelta && r.improvement) extra = ` <span class="badge green">↑${r.improvement.toFixed(1)}</span>`;
+    if (withDelta && r.decline) extra = ` <span class="badge red">↓${r.decline.toFixed(1)}</span>`;
+    return `<tr>
+      <td><strong>${escapeHtml(r.keyword)}</strong>${extra}</td>
+      <td><span class="badge ${badge}">#${r.position.toFixed(1)}</span></td>
+      <td>${r.clicks || 0}</td>
+      <td>${(r.impressions || 0).toLocaleString()}</td>
+      <td style="word-break:break-all;font-size:11px;"><a href="${escapeHtml(r.page_url)}" target="_blank">${escapeHtml((r.page_url || '').replace('https://beriklan.co.id', '').slice(0, 50))}</a></td>
+    </tr>`;
+  };
+
+  const pageOneRows = (pageOne.results || []).map((r) => fmtRow(r, false)).join("") || '<tr><td colspan="5" style="color:#999;">belum ada data — jalankan /api/cron/rank-sync dulu</td></tr>';
+  const improvingRows = (improving.results || []).map((r) => fmtRow({ ...r, position: r.today_pos, clicks: '', impressions: '' }, true)).join("") || '<tr><td colspan="5" style="color:#999;">tidak ada perbaikan (perlu data kemarin)</td></tr>';
+  const decliningRows = (declining.results || []).map((r) => fmtRow({ ...r, position: r.today_pos, clicks: '', impressions: '' }, true)).join("") || '<tr><td colspan="5" style="color:#999;">tidak ada penurunan</td></tr>';
+  const topClicksRows = (topByClicks.results || []).map((r) => `
+    <tr>
+      <td><strong>${escapeHtml(r.keyword)}</strong></td>
+      <td>${r.total_clicks || 0}</td>
+      <td>${(r.total_impressions || 0).toLocaleString()}</td>
+      <td><span class="badge yellow">#${(r.avg_pos || 0).toFixed(1)}</span></td>
+    </tr>
+  `).join("") || '<tr><td colspan="4" style="color:#999;">belum ada data</td></tr>';
+
+  const s = summary || {};
+  const cov = coverage || {};
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Rank Tracker — Beriklan Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.5; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card .metric { font-size: 30px; font-weight: 700; }
+    .card .sub { font-size: 12px; color: #666; margin-top: 4px; }
+    .card.success { background: #d4edda; border-left: 4px solid #10b981; }
+    .card.warning { background: #fff3cd; border-left: 4px solid #f59e0b; }
+    .card.info { background: #e0f2fe; border-left: 4px solid #0ea5e9; }
+    .card.danger { background: #f8d7da; border-left: 4px solid #dc2626; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+    th { background: #fafafa; color: #666; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #eee; color: #333; }
+    .badge.green { background: #d4edda; color: #155724; }
+    .badge.yellow { background: #fff3cd; color: #856404; }
+    .badge.red { background: #f8d7da; color: #721c24; }
+    a { color: #2563eb; text-decoration: none; }
+    .section-title { font-size: 16px; font-weight: 700; margin: 32px 0 12px; }
+    .nav { margin-bottom: 16px; font-size: 13px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    .sync-btn { background: #0f1e3d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 8px; }
+    .sync-btn:hover { background: #1a2f5c; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="/api/admin?token=${escapeHtml(token)}">← Admin Dashboard</a> · <a href="/api/admin/keywords?token=${escapeHtml(token)}">Keyword Pipeline</a>
+  </div>
+  <h1>📈 Rank Tracker (N.4)</h1>
+  <p class="subtitle">Data GSC: ${escapeHtml(s.latest_date || 'n/a')} · Sinkron: <a href="/api/cron/rank-sync?token=${escapeHtml(token)}&days=1" target="_blank">/api/cron/rank-sync?days=1</a> (manual)</p>
+
+  <div class="grid">
+    <div class="card info"><h2>Unique Keywords</h2><div class="metric">${s.unique_keywords || 0}</div><div class="sub">yang punya rank data</div></div>
+    <div class="card success"><h2>Total Clicks (latest)</h2><div class="metric">${s.total_clicks || 0}</div><div class="sub">dari ${(s.total_impressions || 0).toLocaleString()} impressions</div></div>
+    <div class="card warning"><h2>Avg Position</h2><div class="metric">#${(s.avg_position || 0).toFixed(1)}</div><div class="sub">semua keyword tracked</div></div>
+    <div class="card ${(pageOne.results || []).length > 0 ? 'success' : 'warning'}"><h2>Page-1 Winners</h2><div class="metric">${(pageOne.results || []).length}</div><div class="sub">position ≤ 10</div></div>
+    <div class="card info"><h2>Coverage</h2><div class="metric">${cov.ranked || 0}/${(cov.total_queued || 0).toLocaleString()}</div><div class="sub">${cov.total_queued ? ((cov.ranked / cov.total_queued) * 100).toFixed(2) : 0}% tracked</div></div>
+  </div>
+
+  <h3 class="section-title">🎯 Keywords at Page 1 (Top 100)</h3>
+  <table><thead><tr><th>Keyword</th><th>Position</th><th>Clicks</th><th>Impressions</th><th>URL</th></tr></thead><tbody>${pageOneRows}</tbody></table>
+
+  <div class="two-col">
+    <div>
+      <h3 class="section-title">📈 Improving (hari ini vs kemarin)</h3>
+      <table><thead><tr><th>Keyword</th><th>Today</th><th>Yesterday</th><th>Page</th></tr></thead><tbody>${improvingRows}</tbody></table>
+    </div>
+    <div>
+      <h3 class="section-title">📉 Declining (perlu perhatian)</h3>
+      <table><thead><tr><th>Keyword</th><th>Today</th><th>Yesterday</th><th>Page</th></tr></thead><tbody>${decliningRows}</tbody></table>
+    </div>
+  </div>
+
+  <h3 class="section-title">🔥 Top Keywords by Clicks (7 hari)</h3>
+  <table><thead><tr><th>Keyword</th><th>Clicks</th><th>Impressions</th><th>Avg Pos</th></tr></thead><tbody>${topClicksRows}</tbody></table>
+
+  <a class="sync-btn" href="/api/cron/rank-sync?token=${escapeHtml(token)}&days=1" target="_blank">🔄 Sync GSC Data Now (hari ini)</a>
+  <a class="sync-btn" style="background:#f59e0b;" href="/api/cron/rank-sync?token=${escapeHtml(token)}&days=7" target="_blank">🔄 Sync Last 7 Days</a>
+
+  <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Rank Tracker · ${new Date().toISOString()}</p>
+</div>
+</body>
+</html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
 }
 
 // Helper: extract JSON from AI response (handles code fences)
@@ -3195,6 +3757,79 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
                 errors.push({ stage: "auto_link", error: e.message });
               }
 
+              // 3c. N.4 Page-1 Link Booster — inject link from TOP page-1 winners to each new article
+              //     This gives new articles authority boost from pages that Google already trusts.
+              try {
+                if (env.DB) {
+                  const winners = await env.DB.prepare(`
+                    SELECT keyword, page_url FROM keyword_ranks
+                    WHERE position <= 10 AND date = (SELECT MAX(date) FROM keyword_ranks)
+                    ORDER BY position ASC
+                    LIMIT 10
+                  `).all();
+
+                  if (winners.results && winners.results.length > 0) {
+                    let boostedLinks = 0;
+                    for (const newPost of toAdd) {
+                      for (const w of winners.results) {
+                        const winnerSlug = (w.page_url || '').replace(/^https?:\/\/[^/]+\//, '').replace(/\/$/, '').replace(/^blog\//, '');
+                        if (!winnerSlug || winnerSlug === newPost.slug) continue;
+                        const winnerPost = posts.find(p => p.slug === winnerSlug);
+                        if (!winnerPost || !winnerPost.content) continue;
+                        if (winnerPost.content.includes(`/blog/${newPost.slug}/`)) continue;
+
+                        // Skip if topics don't match (basic keyword overlap)
+                        const newKeywords = (newPost.title + ' ' + (newPost.tags || []).join(' ')).toLowerCase();
+                        const winnerKeywords = (winnerPost.title + ' ' + (winnerPost.tags || []).join(' ')).toLowerCase();
+                        const overlap = ['facebook', 'instagram', 'tiktok', 'google', 'youtube', 'website', 'landing', 'iklan', 'digital', 'jasa', 'ads', 'marketing'].filter(k => newKeywords.includes(k) && winnerKeywords.includes(k));
+                        if (overlap.length === 0) continue;
+
+                        const boostBlock = `\n<hr/>\n<h3>📌 Artikel Terkait: <a href="/blog/${newPost.slug}/">${escapeHtml(newPost.title)}</a></h3>\n<p>${escapeHtml(newPost.excerpt || '')}</p>`;
+                        winnerPost.content = winnerPost.content.trimEnd() + boostBlock;
+                        boostedLinks++;
+                      }
+                    }
+
+                    if (boostedLinks > 0) {
+                      let currentSha2 = fileData.sha;
+                      try {
+                        const refetch3 = await fetch(
+                          `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                          { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+                        );
+                        if (refetch3.ok) {
+                          const rd3 = await refetch3.json();
+                          currentSha2 = rd3.sha;
+                        }
+                      } catch {}
+                      const updatedContent3 = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+                      const boostPut = await fetch(
+                        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+                        {
+                          method: "PUT",
+                          headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+                          body: JSON.stringify({
+                            message: `boost: page-1 winners link to ${toAdd.length} new articles (${boostedLinks} links)`,
+                            content: updatedContent3,
+                            sha: currentSha2,
+                            branch: "main",
+                          }),
+                        }
+                      );
+                      if (boostPut.ok) {
+                        const bd = await boostPut.json();
+                        fileData.sha = bd.content?.sha || fileData.sha;
+                        log.push({ stage: "page1_boost", links: boostedLinks, winners: winners.results.length });
+                      } else {
+                        errors.push({ stage: "page1_boost_commit", status: boostPut.status });
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                errors.push({ stage: "page1_boost", error: e.message });
+              }
+
               // Refresh posts-index.json
               const idx = posts.slice(0, 24).map(p => ({
                 slug: p.slug, title: p.title, excerpt: p.excerpt || "",
@@ -3417,6 +4052,36 @@ async function handleGscIndexing(request, env) {
 async function generateArticleForKeyword(item, env) {
   const kw = item.keyword;
   const slug = item.slug;
+
+  // Topic guard — block off-topic keywords at the gate
+  const BANNED_KEYWORDS = [
+    /\bcoring\b/i, /\bcor\s+beton\b/i, /\bdrill\s+beton\b/i,
+    /\bjudi\b/i, /jud[il]-/i, /\bslot\b/i, /slot-/i,
+    /\btogel\b/i, /\bpoker\b/i, /\bcasino\b/i,
+    /sbobet/i, /joker123/i, /maxbet/i, /\bsabung\b/i,
+    /\bbeton\b/i, /\bkonstruksi\b/i, /\bkontraktor\b/i, /\btukang\b/i,
+    /\bkeramik\b/i, /\bgenteng\b/i, /\bkanopi\b/i, /\bpipa\b/i,
+    /\brental\b/i, /\bsewa\b/i, /\bservice\s+ac\b/i,
+    /\bpenipuan\b/i, /\bscam\b/i, /\bpinjol\b/i, /\bpinjaman\s+online\b/i,
+    /\bgambling\b/i, /\bbetting\b/i, /\btaruhan\b/i,
+    /\bkucing\b/i, /\banjing\b/i, /\bburung\b/i, /\bpeliharaan\b/i,
+    /\bresep\b/i, /\bmasakan\b/i, /\bkuliner\b/i, /\brestoran\b/i, /\bmakanan\b/i,
+    /\bfashion\b/i, /\bbaju\b/i, /\bpakaian\b/i, /\bkecantikan\b/i, /\bkosmetik\b/i,
+    /\bmakeup\b/i, /\bskincare\b/i, /\bspa\b/i,
+    /\bfifa\b/i, /\bmanchester\b/i, /\bbola\b/i,
+    /\bcrypto\b/i, /\bbitcoin\b/i, /\bethereum\b/i, /\bforex\b/i, /\bsaham\b/i,
+    /\bkeluarga\b/i, /\bpercintaan\b/i, /\bpasangan\b/i,
+    /\blowongan\b/i, /\bkarir\b/i, /\bloker\b/i,
+    /mobile\s+legend/i, /free\s+fire/i, /\bpubg\b/i, /\bgame\b/i,
+    /\bpendidikan\b/i, /\bsekolah\b/i, /\bkuliah\b/i,
+    /\bkesehatan\b/i, /\bpenyakit\b/i, /\bdokter\b/i,
+  ];
+  for (const pat of BANNED_KEYWORDS) {
+    if (pat.test(kw)) {
+      throw new Error(`OFF_TOPIC_BLOCKED: keyword "${kw}" matches banned pattern ${pat}`);
+    }
+  }
+
   const { svc, city } = classifyKeyword(kw);
 
   // Build prompt (mirrors gen_from_queue.py build_prompt)
@@ -3446,6 +4111,16 @@ Aturan copy:
 - Pakai data konkret (%, Rp, contoh spesifik) bila relevan.
 - Brand voice: senior performance marketing partner, bukan sales.
 - Internal link 2-3 ke https://beriklan.co.id/{svc}/ dan /{svc}/{city}/ (bila city ada).
+
+TOPIK KETAT (WAJIB DIIKUTI):
+- Artikel HANYA tentang jasa iklan, digital marketing, Meta/Facebook/Instagram/TikTok/Google/YouTube Ads,
+  SEO, pembuatan website, landing page, social media management, dan topik terkait performa marketing.
+- DILARANG KERAS menulis tentang: judi, slot online, togel, poker, casino, sbobet, fashion/baju/pakaian,
+  kuliner/masakan/resep, kesehatan/penyakit, pendidikan/sekolah, hewan peliharaan, lowongan kerja/karir,
+  cryptocurrency, sepak bola, game online, konstruksi/beton/kanopi/keramik, atau topik di luar digital marketing.
+- Jika keyword tampak off-topic, TETAP tulis artikel dari sudut pandang digital marketing
+  (contoh: jika keyword adalah "jasa website sekolah", tulis sebagai jasa pembuatan website untuk institusi pendidikan
+  dalam konteks digital marketing), JANGAN keluar dari niche agency performance marketing.
 
 Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
 

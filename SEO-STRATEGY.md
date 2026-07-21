@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 3.0 (2026-07-20) — audit ulang dengan 7 gap baru ditemukan
+> **Versi:** 4.3 (2026-07-21) — UX cleanup + verif deploy
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -560,6 +560,9 @@ Jika ada perubahan:
 ---
 
 ## 📜 CHANGELOG (append-only, newest first)
+
+### 2026-07-21 (morning)
+- ✅ **UX cleanup live**: Removed duplicate NAPBlock from `Layout.astro` (Footer.svelte already has NAP). Removed "Layanan Terkait" section from 250 city service pages (10 services × 25 cities). Verified via curl: 0 occurrences on `/`, 0 occurrences on 4 sample city pages. Cleans up duplicate structured content + reduces page bloat.
 
 ### 2026-07-20 (evening)
 - ✅ **P0.1 DONE**: Preload `<link rel=preload as=image fetchpriority=high>` on blog post hero. Blog post FCP 396→284ms (-30%), Load 1126→628ms (-44%). All pages LCP <2s target met. Added "⚡ Page Speed" dashboard section.

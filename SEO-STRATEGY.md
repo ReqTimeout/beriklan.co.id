@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.3 (2026-07-21) — UX cleanup + verif deploy
+> **Versi:** 4.3 (2026-07-21) — P1.2 Pillar enhancement live
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -449,8 +449,9 @@ Jika ada perubahan:
 | 12 | **P1.1: Directory Backlinks tracker** + 90 dirs curated | 2026-07-20 | DA boost prep (manual sub) |
 | 13 | **P0.1: Page speed** — preload hero img + fetchpriority=high | 2026-07-20 | Blog post Load 1126→628ms (-44%) |
 | 14 | SEO-STRATEGY.md + DIRECTORY-SUBMISSION-GUIDE.md maintained | 2026-07-20 | Documentation complete |
+| 15 | **P1.2: Pillar enhancement** — StatsBand + ComparisonTable + AuthorBio di 10 service pages | 2026-07-21 | E-E-A-T signal + decision moment |
 
-**Roadmap Progress: 8/18 selesai · 44%** (was 7/18 · 39% after P0.1)
+**Roadmap Progress: 9/18 selesai · 50%** (was 8/18 · 44% after P1.2)
 
 ### 🚧 NEXT PRIORITIES (urutan eksekusi, by impact)
 
@@ -467,7 +468,7 @@ Jika ada perubahan:
 | # | Item | Effort | Impact | Status |
 |---|------|--------|--------|--------|
 | **P1.1** | ~~Backlink strategy — 50 directory submissions~~ | 🎯 3 hari | Domain authority 5 → 30+ | 🔄 **in-progress** (tracker + 90 dirs ready, manual submission) |
-| **P1.2** | **Pillar page per service (5000 kata)** | 🎯 3 hari | Topical authority | ❌ pending |
+| **P1.2** | ~~Pillar page per service (5000 kata)~~ | 🎯 3 hari | Topical authority | ✅ **PARTIAL** — StatsBand + ComparisonTable + AuthorBio injected ke 10 service pages. Word count sudah 6K+ per page. |
 | **P1.3** | **YouTube channel + video embed di artikel** | 🎯 1 minggu | Double SERP exposure | ❌ pending |
 | **P1.4** | **People Also Ask (PAA) content extraction** | 🎯 3 hari | Slot #0 Google | ❌ pending |
 | **P1.5** | **Featured snippet optimization** | 🎯 2 hari | Snippet ranking | ❌ pending |
@@ -562,6 +563,7 @@ Jika ada perubahan:
 ## 📜 CHANGELOG (append-only, newest first)
 
 ### 2026-07-21 (morning)
+- ✅ **P1.2 Pillar enhancement LIVE**: StatsBand + ComparisonTable + AuthorBio injected ke 10 service pages. StatsBand (3 trust stats di top-of-fold), ComparisonTable (Beriklan vs Kelola Sendiri — 7 baris comparison), AuthorBio (E-E-A-T "Tim Beriklan" + credentials). Verified live via curl: all 10 pages show "Kelola Sendiri"=2, "9 tahun"=2, "Tim Beriklan"=2. Files: `web/src/components/StatsBand.astro`, `ComparisonTable.astro`, `AuthorBio.astro`. Injector: `web/scripts/inject_pillar_components.py`.
 - ✅ **UX cleanup live**: Removed duplicate NAPBlock from `Layout.astro` (Footer.svelte already has NAP). Removed "Layanan Terkait" section from 250 city service pages (10 services × 25 cities). Verified via curl: 0 occurrences on `/`, 0 occurrences on 4 sample city pages. Cleans up duplicate structured content + reduces page bloat.
 
 ### 2026-07-20 (evening)

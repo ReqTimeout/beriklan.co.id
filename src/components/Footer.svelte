@@ -7,7 +7,16 @@
         { label: 'Google Search Ads', href: '/jasa-iklan-google' },
         { label: 'TikTok Ads', href: '/jasa-iklan-tiktok' },
         { label: 'YouTube Ads', href: '/jasa-iklan-youtube' },
+        { label: 'Buzzer Live', href: '/jasa-view-live', highlight: true },
         { label: 'Landing Page', href: '/jasa-pembuatan-landing-page' },
+    ];
+
+    const live = [
+        { label: 'TikTok Live', href: '/jasa-view-live/tiktok' },
+        { label: 'Shopee Live', href: '/jasa-view-live/shopee' },
+        { label: 'YouTube Live', href: '/jasa-view-live/youtube' },
+        { label: 'Instagram Live', href: '/jasa-view-live/instagram' },
+        { label: 'Twitch Live', href: '/jasa-view-live/twitch' },
     ];
 
     const harga = [
@@ -16,6 +25,7 @@
         { label: 'Google Ads', href: '/harga-iklan-google/bandung' },
         { label: 'TikTok Ads', href: '/harga-iklan-tiktok/bandung' },
         { label: 'YouTube Ads', href: '/harga-iklan-youtube/bandung' },
+        { label: 'Buzzer Live', href: '/jasa-view-live/tiktok/bandung' },
     ];
 
     const tools = [
@@ -106,7 +116,7 @@
             </div>
         </div>
 
-        <div class="grid md:grid-cols-5 gap-8 py-12">
+        <div class="grid md:grid-cols-6 gap-8 py-12">
             <div class="md:col-span-1">
                 <a href="/" class="flex items-center gap-2">
                     <img src="/logoweb.webp" alt="Beriklan.co.id" class="h-10 w-auto brightness-0 invert" />
@@ -131,7 +141,14 @@
                 <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Layanan</h4>
                 <ul class="space-y-2">
                     {#each services as item}
-                        <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
+                        <li>
+                            <a href={item.href} class="text-white/80 hover:text-accent text-sm transition inline-flex items-center gap-1.5">
+                                {item.label}
+                                {#if item.highlight}
+                                    <span class="text-[9px] font-bold uppercase tracking-wider bg-accent/20 text-accent px-1.5 py-0.5 rounded">Hot</span>
+                                {/if}
+                            </a>
+                        </li>
                     {/each}
                 </ul>
             </div>
@@ -140,6 +157,15 @@
                 <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Harga</h4>
                 <ul class="space-y-2">
                     {#each harga as item}
+                        <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
+                    {/each}
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-xs uppercase tracking-wider text-white/50 mb-3">Live</h4>
+                <ul class="space-y-2">
+                    {#each live as item}
                         <li><a href={item.href} class="text-white/80 hover:text-accent text-sm transition">{item.label}</a></li>
                     {/each}
                 </ul>

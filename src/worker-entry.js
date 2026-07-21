@@ -24,6 +24,9 @@ export default {
     if (path === "/api/health" || path === "/api/health/") {
       return await handleHealth(env);
     }
+    if (path === "/api/admin/env-check" || path === "/api/admin/env-check/") {
+      return await handleEnvCheck(request, env);
+    }
     if (path === "/api/_test_route" || path === "/api/_test_route/") {
       return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-17", timestamp: new Date().toISOString() }), { headers: { "Content-Type": "application/json" } });
     }
@@ -238,6 +241,34 @@ async function handleHealth(env) {
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
   }
+}
+
+// Env check — verify which secrets are set (boolean only, no values).
+// Use ?token=ADMIN_TOKEN to view.
+async function handleEnvCheck(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  if (!env.ADMIN_TOKEN || token !== env.ADMIN_TOKEN) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const groqKeys = getGroqKeys(env);
+  const result = {
+    timestamp: new Date().toISOString(),
+    secrets: {
+      ADMIN_TOKEN: !!env.ADMIN_TOKEN,
+      GITHUB_TOKEN: !!env.GITHUB_TOKEN,
+      ZEN_API_KEY: !!env.ZEN_API_KEY,
+      GROQ_API_KEY: !!env.GROQ_API_KEY,
+      GROQ_API_KEY_2: !!env.GROQ_API_KEY_2,
+      GROQ_API_KEY_3: !!env.GROQ_API_KEY_3,
+      GROQ_API_KEY_4: !!env.GROQ_API_KEY_4,
+      GROQ_API_KEY_5: !!env.GROQ_API_KEY_5,
+      GSC_SERVICE_ACCOUNT_JSON: !!env.GSC_SERVICE_ACCOUNT_JSON,
+    },
+    groq_total_keys: groqKeys.length,
+    groq_status: groqKeys.length >= 3 ? "OK (3+ keys for rotation)" : (groqKeys.length === 2 ? "PARTIAL (2 keys — add 1 more)" : (groqKeys.length === 1 ? "MINIMAL (1 key — add 2 more for TPD headroom)" : "MISSING")),
+  };
+  return new Response(JSON.stringify(result, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
 // Sitemap status — show what D1 tracks for each sitemap

@@ -280,6 +280,30 @@ import cityContentMap from '../../../data/city-content.json';
 
     <Footer client:only="svelte" />
 
+        <!-- Cluster auto-link to pillar (N.8) -->
+    <section class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Pelajari Lebih Lanjut</h2>
+            <div class="grid md:grid-cols-3 gap-5">
+                <a href="/blog/?service=jasa-iklan-tiktok" class="block bg-white rounded-xl p-5 border border-gray-200 hover:border-accent hover:shadow-soft transition">
+                    <span class="text-xs font-bold uppercase tracking-wider text-accent">Artikel Cluster</span>
+                    <h3 class="font-bold text-ink mt-2">Semua Artikel Jasa Iklan TikTok</h3>
+                    <p class="text-sm text-muted mt-1">Kumpulan artikel pillar + city tentang Jasa Iklan TikTok di Indonesia.</p>
+                </a>
+                <a href="/jasa-iklan-tiktok/pilar/" class="block bg-white rounded-xl p-5 border border-gray-200 hover:border-accent hover:shadow-soft transition">
+                    <span class="text-xs font-bold uppercase tracking-wider text-accent">Pillar</span>
+                    <h3 class="font-bold text-ink mt-2">Panduan Lengkap Jasa Iklan TikTok</h3>
+                    <p class="text-sm text-muted mt-1">Strategi, format iklan, optimasi budget, cara ukur ROI dari tim Beriklan.</p>
+                </a>
+                <a href="/jasa-digital-marketing/" class="block bg-white rounded-xl p-5 border border-gray-200 hover:border-accent hover:shadow-soft transition">
+                    <span class="text-xs font-bold uppercase tracking-wider text-accent">Multi-Channel</span>
+                    <h3 class="font-bold text-ink mt-2">Layanan Multi-Channel</h3>
+                    <p class="text-sm text-muted mt-1">Paket 5 channel (Meta + Google + TikTok + YouTube + Landing Page) hemat 30%.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <LocalSchema
         type="city-service"
         city={city}

@@ -5,7 +5,7 @@
 > 2. **AdSense revenue scale-up** (pageviews × RPM tinggi)
 > 3. **Customer matching** (lead WA berkualitas ke admin)
 >
-> **Versi:** 4.3 (2026-07-21) — P1.2 Pillar enhancement live
+> **Versi:** 4.4 (2026-07-21) — P0.3 verified + env-check endpoint + purge_cache lesson
 > **Maintainer:** Beriklan Digital Agency + AI coding agent
 > **Update terakhir:** Lihat git log `SEO-STRATEGY.md`
 
@@ -450,8 +450,9 @@ Jika ada perubahan:
 | 13 | **P0.1: Page speed** — preload hero img + fetchpriority=high | 2026-07-20 | Blog post Load 1126→628ms (-44%) |
 | 14 | SEO-STRATEGY.md + DIRECTORY-SUBMISSION-GUIDE.md maintained | 2026-07-20 | Documentation complete |
 | 15 | **P1.2: Pillar enhancement** — StatsBand + ComparisonTable + AuthorBio di 10 service pages | 2026-07-21 | E-E-A-T signal + decision moment |
+| 16 | **P0.3: Multi-Groq-key verified** — GROQ_API_KEY + GROQ_API_KEY_2 + GROQ_API_KEY_3 = 3 keys aktif | 2026-07-21 | TPD quota 3× = 300K/hari |
 
-**Roadmap Progress: 9/18 selesai · 50%** (was 8/18 · 44% after P1.2)
+**Roadmap Progress: 10/18 selesai · 56%** (was 9/18 · 50% after P0.3)
 
 ### 🚧 NEXT PRIORITIES (urutan eksekusi, by impact)
 
@@ -461,7 +462,7 @@ Jika ada perubahan:
 |---|------|--------|--------|--------|
 | **P0.1** | ~~Page speed audit + LCP < 2s~~ | 🎯 1 hari | Tanpa ini Google deprioritize ranking | ✅ **DONE** — preload + fetchpriority=high |
 | **P0.2** | **Google Business Profile setup + verify** | 🎯 1 hari | WAJIB untuk local SEO UMKM | ❌ pending — manual |
-| **P0.3** | **Add 2 Groq keys (GSC_KEY_2, GSC_KEY_3) + add ZEN key as 2nd primary** | 🚀 10 menit | TPD quota 3× → 300K/hari | ❌ pending — add secrets di CF Dashboard |
+| **P0.3** | ~~Add 2 Groq keys (GSC_KEY_2, GSC_KEY_3) + add ZEN key as 2nd primary~~ | 🚀 10 menit | TPD quota 3× → 300K/hari | ✅ **DONE** — 3 Groq keys aktif (verified via `/api/admin/env-check`). GROQ_API_KEY_4/5 belum dikonfig (TPD 100K × 3 keys cukup untuk sekarang). |
 
 #### 🟡 P1 — HIGH (minggu depan, traffic naik)
 
@@ -533,8 +534,10 @@ Jika ada perubahan:
 | AI returns "Zen + Groq both empty" | Rate limit hit | Tunggu reset, atau tambah Groq key |
 | Posts.json tidak update | SHA race cron concurrent | Retry — auto-handled |
 | `daily_count` shows 0 | CF edge cache stale | `purge_cache` API |
+| **New route / endpoint returns 404 setelah push ke GitHub** | **CF edge cache serving stale Worker bundle** | **`POST /zones/{id}/purge_cache` `{"purge_everything":true}` — wajib setelah setiap push code** |
 | Article tidak muncul di blog | post.slug duplicate | Cek existing posts.json |
 | `article.length < 500` | AI response stripped (markdown fences) | Auto-handled in code |
+| Verify Groq/Zen keys configured | `/api/admin/env-check?token=...` | Returns booleans only, no values |
 
 
 ## 📚 REFERENCES
@@ -561,6 +564,10 @@ Jika ada perubahan:
 ---
 
 ## 📜 CHANGELOG (append-only, newest first)
+
+### 2026-07-21 (midday)
+- ✅ **P0.3 VERIFIED DONE**: 3 Groq keys configured di CF Dashboard (`GROQ_API_KEY`, `GROQ_API_KEY_2`, `GROQ_API_KEY_3`). Added `/api/admin/env-check` endpoint (boolean-only, no values) untuk verifikasi future. TPD quota = 300K/hari. Rotation works silent (groq#1 selalu sukses → tidak perlu fallback).
+- ⚠️ **LESSON LEARNED**: CF edge cache served stale Worker code 15+ menit setelah push. **WAJIB `purge_cache` API setelah push code**. Endpoint `purge_everything: true` sekarang jadi step wajib di deploy workflow.
 
 ### 2026-07-21 (morning)
 - ✅ **P1.2 Pillar enhancement LIVE**: StatsBand + ComparisonTable + AuthorBio injected ke 10 service pages. StatsBand (3 trust stats di top-of-fold), ComparisonTable (Beriklan vs Kelola Sendiri — 7 baris comparison), AuthorBio (E-E-A-T "Tim Beriklan" + credentials). Verified live via curl: all 10 pages show "Kelola Sendiri"=2, "9 tahun"=2, "Tim Beriklan"=2. Files: `web/src/components/StatsBand.astro`, `ComparisonTable.astro`, `AuthorBio.astro`. Injector: `web/scripts/inject_pillar_components.py`.

@@ -5980,10 +5980,13 @@ ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 <tr><td align="center" style="padding:24px 16px;">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(15,30,61,0.08);">
 
-<!-- Header: Logo Putih + Brand -->
+<!-- Header: Logo Orange + Brand Text -->
 <tr><td style="background:#0f1e3d;padding:18px 28px;">
 <table width="100%"><tr>
-<td><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:32px;display:block;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);"></td>
+<td><table cellpadding="0" cellspacing="0"><tr>
+<td style="vertical-align:middle;"><img src="https://beriklan.co.id/logo-beriklan.png" alt="Beriklan" width="36" height="36" style="display:block;border-radius:8px;"></td>
+<td style="padding-left:10px;vertical-align:middle;"><span style="color:#fff;font-size:16px;font-weight:800;letter-spacing:-0.01em;">Beriklan</span></td>
+</tr></table></td>
 <td align="right"><span style="color:#cbd5e1;font-size:11px;font-weight:600;">Performance Agency &middot; Bandung</span></td>
 </tr></table>
 </td></tr>
@@ -6040,14 +6043,14 @@ ${stepsHTML}
 
 <!-- Final CTA -->
 <tr><td style="padding:28px 28px;background:#f7f8fb;border-top:1px solid #e2e8f0;">
-<p style="color:#0f1e3d;font-size:16px;margin:0 0 8px;font-weight:700;text-align:center;">Mau tahu apa yang bisa kami lakukan untuk {{company}}?</p>
-<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Konsultasi gratis 15 menit. Kami analisis kondisi Anda &amp; sarankan langkah konkret.</p>
+<p style="color:#0f1e3d;font-size:16px;margin:0 0 8px;font-weight:700;text-align:center;">Mau diskusi strategi untuk {{company}}?</p>
+<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Konsultasi gratis 15 menit — kami analisis kondisi campaign Anda, lalu sarankan langkah konkret.</p>
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
-<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20${encodeURIComponent(c.name)}" style="color:#0f1e3d;text-decoration:none;display:block;">Konsultasi via WhatsApp &rarr;</a>
+<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20${encodeURIComponent(c.name)}" style="color:#0f1e3d;text-decoration:none;display:block;">Diskusi via WhatsApp &rarr;</a>
 </td></tr></table>
 <table cellpadding="0" cellspacing="0" style="margin:12px auto 0;">
-<tr><td><a href="${c.service_path}" style="color:#475569;font-size:12px;text-decoration:underline;">📄 Lihat halaman layanan lengkap</a></td></tr></table>
+<tr><td><a href="${c.service_path}" style="color:#475569;font-size:12px;text-decoration:underline;">📄 Halaman layanan lengkap</a></td></tr></table>
 </td></tr>
 
 <!-- Footer -->
@@ -6074,7 +6077,10 @@ const GENERIC_TEMPLATES = [
 
 <tr><td style="background:#0f1e3d;padding:18px 28px;">
 <table width="100%"><tr>
-<td><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:32px;display:block;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);"></td>
+<td><table cellpadding="0" cellspacing="0"><tr>
+<td style="vertical-align:middle;"><img src="https://beriklan.co.id/logo-beriklan.png" alt="Beriklan" width="36" height="36" style="display:block;border-radius:8px;"></td>
+<td style="padding-left:10px;vertical-align:middle;"><span style="color:#fff;font-size:16px;font-weight:800;letter-spacing:-0.01em;">Beriklan</span></td>
+</tr></table></td>
 <td align="right"><span style="color:#cbd5e1;font-size:11px;font-weight:600;">Performance Agency &middot; Bandung</span></td>
 </tr></table>
 </td></tr>
@@ -7142,8 +7148,8 @@ async function handleEmailTemplatePreview(request, env) {
   const tpl = await env.DB.prepare("SELECT * FROM email_templates WHERE id=?").bind(id).first();
   if (!tpl) return new Response("Template not found", { status: 404 });
   let html = tpl.html_body || "";
-  html = html.replace(/\{\{name\}\}/g, "Nama Perusahaan");
-  html = html.replace(/\{\{company\}\}/g, "PT Contoh Perusahaan");
+  html = html.replace(/\{\{name\}\}/g, "Bapak/Ibu");
+  html = html.replace(/\{\{company\}\}/g, "perusahaan Anda");
   html = html.replace(/\{\{unsubscribe_url\}\}/g, "#");
   html = html.replace(/\{\{date\}\}/g, new Date().toLocaleDateString("id-ID"));
   html = html.replace(/\{\{headline\}\}/g, "Tips Digital Marketing Terbaru");
@@ -7179,8 +7185,8 @@ async function handleEmailTestSend(request, env) {
   if (!tpl) return new Response(JSON.stringify({ ok: false, error: "Template not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
 
 const sample = {
-    name: "Pak Budi",
-    company: "PT Contoh Maju",
+    name: "Bapak/Ibu",
+    company: "perusahaan Anda",
     email: toEmail
   };
   let html = tpl.html_body || "";

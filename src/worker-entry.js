@@ -298,23 +298,99 @@ export default {
     const fakeReq = (path) => new Request(`https://beriklan.co.id${path}`, { method: "GET" });
 
     const run = async (label, handler, path, cronName) => {
+      const t0 = Date.now();
+      let runId = 0;
+      let status = "ok";
+      let output = "";
+      let errorMsg = "";
+
+      // Check if cron is paused
+      if (cronName && env.DB) {
+        try {
+          const s = await env.DB.prepare("SELECT enabled FROM cron_settings WHERE name=?").bind(cronName).first();
+          if (s && s.enabled === 0) {
+            console.log(`[scheduled:${label}] PAUSED, skipping`);
+            return;
+          }
+        } catch {}
+      }
+
+      // Check retry queue first — kalau ada retry pending untuk cron ini, jalankan
+      if (cronName && env.DB) {
+        try {
+          const retries = await env.DB.prepare(
+            "SELECT id, payload, attempts FROM cron_retry_queue WHERE cron_name = ? AND status = 'pending' AND (next_retry_at IS NULL OR next_retry_at <= datetime('now')) ORDER BY id LIMIT 1"
+          ).bind(cronName).first();
+          if (retries) {
+            console.log(`[scheduled:${label}] retrying attempt #${retries.attempts + 1} for queue #${retries.id}`);
+          }
+        } catch {}
+      }
+
+      // Log start to cron_runs
+      if (cronName && env.DB) {
+        try {
+          const r = await env.DB.prepare(
+            "INSERT INTO cron_runs (cron_name, status, started_at) VALUES (?, 'running', datetime('now'))"
+          ).bind(cronName).run();
+          runId = r.meta?.last_row_id || 0;
+        } catch {}
+      }
+
       try {
-        // Check if cron is paused
-        if (cronName && env.DB) {
-          try {
-            const s = await env.DB.prepare("SELECT enabled FROM cron_settings WHERE name=?").bind(cronName).first();
-            if (s && s.enabled === 0) {
-              console.log(`[scheduled:${label}] PAUSED, skipping`);
-              return;
-            }
-          } catch {}
-        }
-        const t0 = Date.now();
         const res = await handler(fakeReq(path), env);
         const data = await res.json().catch(() => ({}));
-        console.log(`[scheduled:${label}] ${res.status} ${Date.now() - t0}ms ok=${data.ok} ${JSON.stringify(data).slice(0, 400)}`);
+        const duration = Date.now() - t0;
+        if (!data.ok) {
+          status = "failed";
+          errorMsg = data.error || `HTTP ${res.status}`;
+          output = JSON.stringify(data).slice(0, 1000);
+        } else {
+          output = JSON.stringify(data).slice(0, 1000);
+        }
+        console.log(`[scheduled:${label}] ${res.status} ${duration}ms ok=${data.ok} ${output.slice(0, 300)}`);
       } catch (e) {
-        console.error(`[scheduled:${label}] error:`, String(e).slice(0, 300));
+        status = "failed";
+        errorMsg = String(e).slice(0, 500);
+        console.error(`[scheduled:${label}] error:`, errorMsg);
+      }
+
+      // Update cron_runs dengan status
+      if (runId && env.DB) {
+        try {
+          await env.DB.prepare(
+            "UPDATE cron_runs SET status = ?, finished_at = datetime('now'), duration_ms = ?, output = ?, error = ? WHERE id = ?"
+          ).bind(status, Date.now() - t0, output, errorMsg, runId).run();
+        } catch {}
+      }
+
+      // AUTO-RETRY: kalau gagal, masukkan retry queue
+      if (status === "failed" && cronName && env.DB) {
+        try {
+          // Cek apakah sudah ada 3 gagal berturut-turut → auto-pause
+          const recent = await env.DB.prepare(
+            "SELECT status FROM cron_runs WHERE cron_name = ? ORDER BY id DESC LIMIT 3"
+          ).bind(cronName).all();
+          const recentRows = recent.results || [];
+          const allFailed = recentRows.length >= 3 && recentRows.every(r => r.status === "failed");
+          if (allFailed) {
+            console.error(`[scheduled:${label}] AUTO-PAUSE: 3 consecutive failures`);
+            await env.DB.prepare(
+              "UPDATE cron_settings SET enabled = 0 WHERE name = ?"
+            ).bind(cronName).run();
+            // Add to retry queue dengan backoff
+            await env.DB.prepare(
+              "INSERT INTO cron_retry_queue (cron_name, last_error, attempts, next_retry_at, status) VALUES (?, ?, 1, datetime('now', '+30 minutes'), 'pending')"
+            ).bind(cronName, "AUTO-PAUSED: " + errorMsg.slice(0, 200)).run();
+          } else {
+            // Add ke retry queue dengan exponential backoff
+            await env.DB.prepare(
+              "INSERT INTO cron_retry_queue (cron_name, last_error, attempts, next_retry_at, status) VALUES (?, ?, 1, datetime('now', '+5 minutes'), 'pending')"
+            ).bind(cronName, errorMsg.slice(0, 200)).run();
+          }
+        } catch (e) {
+          console.error(`[scheduled:${label}] retry queue error:`, String(e).slice(0, 200));
+        }
       }
     };
 
@@ -1102,6 +1178,31 @@ async function handleAdminMigrate(request, env) {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_scrape_results_user ON scrape_results (user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_scrape_results_search ON scrape_results (search_id)`,
+    // Cron health monitoring & retry queue
+    `CREATE TABLE IF NOT EXISTS cron_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      cron_name TEXT NOT NULL,
+      status TEXT NOT NULL,
+      started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      finished_at TEXT,
+      duration_ms INTEGER,
+      output TEXT,
+      error TEXT,
+      retry_count INTEGER DEFAULT 0
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_cron_runs_name ON cron_runs (cron_name, started_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_cron_runs_status ON cron_runs (status)`,
+    `CREATE TABLE IF NOT EXISTS cron_retry_queue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      cron_name TEXT NOT NULL,
+      payload TEXT,
+      last_error TEXT,
+      last_attempt_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      attempts INTEGER DEFAULT 1,
+      next_retry_at TEXT,
+      status TEXT DEFAULT 'pending'
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_cron_retry_pending ON cron_retry_queue (status, next_retry_at)`,
   ];
 
   const results = [];
@@ -1366,14 +1467,21 @@ async function handleAdminDashboard(request, env) {
     stats.rate_limits = { error: e.message };
   }
 
-  // 3. Recent cron_logs (last 10)
+  // 3. Recent cron_runs (last 20) — new schema
   try {
     const r = await env.DB.prepare(
-      "SELECT timestamp, google_ok, google_fail, indexnow_ok, indexnow_fail, urls_processed FROM cron_logs ORDER BY id DESC LIMIT 10"
+      "SELECT cron_name, status, started_at, duration_ms, error FROM cron_runs ORDER BY id DESC LIMIT 20"
     ).all();
     stats.recent_cron_runs = r.results || [];
+    // Last run per cron (health summary)
+    const lastRuns = await env.DB.prepare(
+      "SELECT cron_name, MAX(started_at) as last_run, status FROM cron_runs GROUP BY cron_name"
+    ).all();
+    stats.cron_health = lastRuns.results || [];
   } catch (e) {
-    stats.recent_cron_runs = { error: e.message };
+    console.error("cron_runs query error:", String(e).slice(0, 300));
+    stats.recent_cron_runs = [];
+    stats.cron_health = [];
   }
 
   // 4. Pending indexing count
@@ -1384,12 +1492,36 @@ async function handleAdminDashboard(request, env) {
     stats.pending_indexing = { error: e.message };
   }
 
-  // 5. Backup recency
+  // 5. Retry queue count
   try {
-    const r = await env.DB.prepare("SELECT id, timestamp FROM cron_logs ORDER BY id DESC LIMIT 1").all();
-    stats.last_backup = (r.results && r.results[0]) ? r.results[0] : null;
+    const r = await env.DB.prepare("SELECT COUNT(*) as count FROM cron_retry_queue WHERE status = 'pending'").all();
+    stats.retry_queue = (r.results && r.results[0]) ? r.results[0].count : 0;
   } catch (e) {
-    stats.last_backup = { error: e.message };
+    stats.retry_queue = 0;
+  }
+
+  // 6. SEO metrics
+  try {
+    const articles = await env.DB.prepare("SELECT COUNT(*) as c FROM articles").first();
+    const posts = await env.DB.prepare("SELECT COUNT(*) as c FROM posts_meta").first();
+    const indexed = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'indexed'").first();
+    const pending = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'pending'").first();
+    stats.seo = {
+      articles: articles?.c || 0,
+      posts: posts?.c || 0,
+      indexed: indexed?.c || 0,
+      pending_index: pending?.c || 0,
+    };
+  } catch (e) {
+    stats.seo = { error: e.message };
+  }
+
+  // 7. Cron settings status
+  try {
+    const r = await env.DB.prepare("SELECT name, enabled, label FROM cron_settings ORDER BY id").all();
+    stats.cron_settings = r.results || [];
+  } catch (e) {
+    stats.cron_settings = [];
   }
 
   // If ?format=json → return JSON
@@ -1398,22 +1530,45 @@ async function handleAdminDashboard(request, env) {
   }
 
   // Otherwise return HTML dashboard
-  const html = renderDashboard(stats);
+  const html = renderDashboard(stats, token);
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
-function renderDashboard(stats) {
+function renderDashboard(stats, token) {
+  // Health summary
+  const totalCrons = (stats.cron_settings || []).length;
+  const enabledCrons = (stats.cron_settings || []).filter(c => c.enabled).length;
+  const recentFailed = (stats.recent_cron_runs || []).filter(c => c.status === "failed").length;
+  const healthStatus = recentFailed > 3 ? "critical" : recentFailed > 0 ? "warning" : "healthy";
+
   const expiringRows = (stats.api_keys?.expiring_list || []).map(k => `
-    <tr><td><strong>${k.name}</strong></td><td><code>${k.prefix}...${k.days_left ? k.days_left + 'd' : ''}</code></td><td><span class="badge ${k.days_left < 7 ? 'red' : 'yellow'}">${k.days_left} days</span></td><td><a href="/api/admin/keys?token=HIDDEN&action=rotate&name=${k.name}">Rotate Now</a></td></tr>
-  `).join('') || '<tr><td colspan="4" style="color:#666;">No keys expiring soon</td></tr>';
+    <tr><td><strong>${k.name}</strong></td><td><code>${k.prefix}...</code></td><td><span class="badge ${k.days_left < 7 ? 'red' : 'yellow'}">${k.days_left} days</span></td><td><a href="/api/admin/keys?token=HIDDEN&action=rotate&name=${k.name}">Rotate</a></td></tr>
+  `).join('') || '<tr><td colspan="4" style="color:#666;text-align:center;padding:20px;">✅ Tidak ada API key yang akan expired</td></tr>';
 
-  const rateLimitRows = (stats.rate_limits?.top_ips || []).map(r => `
+  const rateLimitRows = (stats.rate_limits?.top_ips || []).slice(0, 5).map(r => `
     <tr><td><code>${r.ip || '-'}</code></td><td>${r.endpoint}</td><td><span class="badge ${r.request_count > 30 ? 'red' : 'green'}">${r.request_count}</span></td></tr>
-  `).join('') || '<tr><td colspan="3" style="color:#666;">No requests in current window</td></tr>';
+  `).join('') || '<tr><td colspan="3" style="color:#666;text-align:center;padding:20px;">Tidak ada request di window ini</td></tr>';
 
-  const cronRows = (stats.recent_cron_runs || []).map(c => `
-    <tr><td>${(c.timestamp || '').slice(0,19)}</td><td><span class="badge green">${c.google_ok || 0} ✓</span></td><td><span class="badge ${c.google_fail > 0 ? 'red' : 'green'}">${c.google_fail || 0}</span></td><td><span class="badge green">${c.indexnow_ok || 0} ✓</span></td><td><span class="badge ${c.indexnow_fail > 0 ? 'red' : 'green'}">${c.indexnow_fail || 0}</span></td><td>${c.urls_processed || 0}</td></tr>
-  `).join('') || '<tr><td colspan="6" style="color:#666;">No cron runs yet</td></tr>';
+  // Cron health rows
+  const cronHealthRows = (stats.cron_health || []).map(c => {
+    const lastRun = c.last_run ? new Date(c.last_run + 'Z') : null;
+    const ageMs = lastRun ? (Date.now() - lastRun.getTime()) : null;
+    const ageStr = ageMs === null ? 'never' : ageMs < 3600000 ? `${Math.floor(ageMs/60000)}m ago` : ageMs < 86400000 ? `${Math.floor(ageMs/3600000)}h ago` : `${Math.floor(ageMs/86400000)}d ago`;
+    const statusBadge = c.status === 'failed' ? '<span class="badge red">FAILED</span>' : c.status === 'running' ? '<span class="badge yellow">RUNNING</span>' : '<span class="badge green">OK</span>';
+    return `<tr><td><strong>${c.cron_name}</strong></td><td>${statusBadge}</td><td>${ageStr}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="color:#666;">Belum ada cron run</td></tr>';
+
+  // Cron runs (last 10)
+  const cronRunRows = (stats.recent_cron_runs || []).slice(0, 10).map(c => {
+    const statusBadge = c.status === 'failed' ? '<span class="badge red">FAIL</span>' : '<span class="badge green">OK</span>';
+    const dur = c.duration_ms ? `${c.duration_ms}ms` : '-';
+    const err = c.error ? `<br><small style="color:#dc2626;">${String(c.error).slice(0, 60)}</small>` : '';
+    return `<tr><td>${(c.started_at || '').slice(0, 19)}</td><td><strong>${c.cron_name}</strong></td><td>${statusBadge}</td><td>${dur}</td><td>${err}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:#666;text-align:center;padding:20px;">Belum ada cron run</td></tr>';
+
+  const cronSettingsRows = (stats.cron_settings || []).map(c => `
+    <tr><td><strong>${c.name}</strong><br><small style="color:#666;">${c.label || ''}</small></td><td>${c.enabled ? '<span class="badge green">✓ AKTIF</span>' : '<span class="badge red">⏸ PAUSED</span>'}</td><td><a href="/api/admin/cron/toggle?token=${token}&name=${c.name}" onclick="event.preventDefault(); fetch(this.href,{method:'POST'}).then(()=>location.reload())" class="toggle-link">${c.enabled ? 'Pause' : 'Enable'}</a></td></tr>
+  `).join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -1424,89 +1579,140 @@ function renderDashboard(stats) {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f7; color: #1d1d1f; padding: 20px; }
-    .container { max-width: 1100px; margin: 0 auto; }
-    h1 { font-size: 24px; margin-bottom: 8px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
     .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-    .card h2 { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .card .metric { font-size: 32px; font-weight: 700; }
-    .card .sub { font-size: 12px; color: #666; margin-top: 4px; }
-    .card.warning { background: #fff3cd; border-left: 4px solid #f59e0b; }
-    .card.error { background: #f8d7da; border-left: 4px solid #dc3545; }
-    .card.success { background: #d4edda; border-left: 4px solid #10b981; }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px; }
-    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-    th { background: #fafafa; color: #666; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #eee; color: #333; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 18px; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+    .card-head h2 { font-size: 15px; font-weight: 700; }
+    .metric { font-size: 28px; font-weight: 800; line-height: 1.1; }
+    .sub { font-size: 12px; color: #666; margin-top: 4px; }
+    .healthy { border-left: 4px solid #10b981; }
+    .warning { border-left: 4px solid #f59e0b; background: #fffbeb; }
+    .critical { border-left: 4px solid #dc2626; background: #fef2f2; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+    th { background: #fafafa; color: #666; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+    tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     .badge.green { background: #d4edda; color: #155724; }
     .badge.yellow { background: #fff3cd; color: #856404; }
     .badge.red { background: #f8d7da; color: #721c24; }
+    .badge.blue { background: #dbeafe; color: #1e40af; }
     a { color: #2563eb; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
-    .section-title { font-size: 16px; font-weight: 700; margin: 32px 0 12px; }
-    .refresh { float: right; font-size: 12px; color: #2563eb; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+    .section-title { font-size: 14px; font-weight: 700; margin: 20px 0 10px; color: #1d1d1f; }
+    .quick-links { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .quick-links a { padding: 8px 14px; background: #0f1e3d; color: white; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .quick-links a:hover { background: #1a2f5c; text-decoration: none; }
+    .toggle-link { padding: 4px 10px; background: #f59e0b; color: white; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; cursor: pointer; }
+    .toggle-link:hover { background: #d97706; text-decoration: none; }
+    .health-banner { padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 14px; }
+    .health-banner.healthy { background: #d4edda; color: #155724; }
+    .health-banner.warning { background: #fff3cd; color: #856404; }
+    .health-banner.critical { background: #f8d7da; color: #721c24; }
+    small.muted { color: #999; font-size: 11px; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>🚀 Beriklan.co.id Admin Dashboard</h1>
-  <p class="subtitle">Last updated: ${stats.timestamp} | <a href="/api/admin/keywords?token=" onclick="this.href+=new URLSearchParams(location.search).get('token')">🎯 Keyword Pipeline →</a> | Auto-refresh: <a href="">reload</a></p>
+  <h1>🚀 Beriklan.co.id Admin</h1>
+  <p class="subtitle">Last updated: ${stats.timestamp} WIB · <a href="">refresh</a></p>
 
-  <!-- Top metrics -->
+  <div class="quick-links">
+    <a href="/api/admin/email?token=${token}">📧 Email Dashboard</a>
+    <a href="/api/admin/keywords?token=${token}">🎯 Keyword Pipeline</a>
+    <a href="/api/admin/env-check?token=${token}">🔑 Env Check</a>
+    <a href="/api/admin/health?token=${token}">🏥 Health JSON</a>
+    <a href="https://beriklan.co.id" target="_blank">🌐 View Site</a>
+  </div>
+
+  <div class="health-banner ${healthStatus}">
+    ${healthStatus === 'healthy' ? '✅ Semua cron sehat — tidak ada kegagalan dalam run terakhir.' :
+      healthStatus === 'warning' ? `⚠️ ${recentFailed} cron run gagal terdeteksi. Cek detail di bawah.` :
+      `🚨 ${recentFailed} cron run gagal. Auto-pause mungkin sudah aktif — cek tab Cron.`}
+  </div>
+
+  <!-- Top KPI Grid -->
   <div class="grid">
-    <div class="card ${(stats.api_keys?.expiring_soon || 0) > 0 ? 'warning' : 'success'}">
-      <h2>API Keys</h2>
+    <div class="card ${(stats.api_keys?.expiring_soon || 0) > 0 ? 'warning' : 'healthy'}">
       <div class="metric">${stats.api_keys?.total_active || 0}</div>
-      <div class="sub">active · <span class="${(stats.api_keys?.expiring_soon || 0) > 0 ? 'badge yellow' : 'badge green'}">${stats.api_keys?.expiring_soon || 0} expiring</span></div>
+      <div class="sub">API Keys aktif · ${stats.api_keys?.expiring_soon || 0} expiring &lt; 30d</div>
+    </div>
+    <div class="card ${(stats.pending_indexing || 0) > 100 ? 'warning' : 'healthy'}">
+      <div class="metric">${stats.seo?.articles || 0}</div>
+      <div class="sub">Artikel (${stats.seo?.posts || 0} live di posts.json)</div>
+    </div>
+    <div class="card ${(stats.pending_indexing || 0) > 100 ? 'warning' : ''}">
+      <div class="metric">${stats.seo?.indexed || 0}</div>
+      <div class="sub">URL ter-index · ${stats.seo?.pending_index || 0} pending</div>
+    </div>
+    <div class="card ${(stats.retry_queue || 0) > 0 ? 'warning' : 'healthy'}">
+      <div class="metric">${stats.retry_queue || 0}</div>
+      <div class="sub">Retry queue (cron yang gagal)</div>
     </div>
     <div class="card">
-      <h2>Active IPs (this hour)</h2>
-      <div class="metric">${stats.rate_limits?.active_ips || 0}</div>
-      <div class="sub">distinct IPs in rate-limit window</div>
-    </div>
-    <div class="card ${(stats.pending_indexing || 0) > 100 ? 'warning' : 'success'}">
-      <h2>Pending URLs</h2>
-      <div class="metric">${stats.pending_indexing || 0}</div>
-      <div class="sub">awaiting indexing submit</div>
-    </div>
-    <div class="card">
-      <h2>Last Cron Run</h2>
-      <div class="metric" style="font-size: 14px;">${(stats.last_backup?.timestamp || 'never').slice(0, 19) || 'never'}</div>
-      <div class="sub">UTC timestamp</div>
+      <div class="metric">${enabledCrons}/${totalCrons}</div>
+      <div class="sub">Cron aktif · ${totalCrons - enabledCrons} paused</div>
     </div>
   </div>
 
-  <!-- API Keys Expiring -->
-  <h3 class="section-title">🔑 API Keys Expiring Soon (&lt; 30 days)
-    <span class="refresh"><a href="?token=${(new URLSearchParams(stats).get('token') || '')}">refresh</a></span>
-  </h3>
-  <table>
-    <thead><tr><th>Name</th><th>Key Prefix</th><th>Days Left</th><th>Action</th></tr></thead>
-    <tbody>${expiringRows}</tbody>
-  </table>
+  <div class="grid-2">
+    <!-- Cron Health -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h2>⏰ Cron Health (last run per cron)</h2>
+          <small class="muted">${recentFailed} failed in last 20</small>
+        </div>
+        <table>
+          <thead><tr><th>Cron</th><th>Status</th><th>Last Run</th></tr></thead>
+          <tbody>${cronHealthRows}</tbody>
+        </table>
+      </div>
 
-  <!-- Top Rate Limited IPs -->
-  <h3 class="section-title">🔥 Top Rate-Limited IPs (current hour)</h3>
-  <table>
-    <thead><tr><th>IP</th><th>Endpoint</th><th>Requests</th></tr></thead>
-    <tbody>${rateLimitRows}</tbody>
-  </table>
+      <div class="card">
+        <div class="card-head"><h2>📊 Recent Cron Runs (last 10)</h2></div>
+        <table>
+          <thead><tr><th>Started</th><th>Name</th><th>Status</th><th>Duration</th><th>Error</th></tr></thead>
+          <tbody>${cronRunRows}</tbody>
+        </table>
+      </div>
+    </div>
 
-  <!-- Recent Cron Runs -->
-  <h3 class="section-title">📅 Recent Cron Runs (last 10)</h3>
-  <table>
-    <thead><tr><th>Timestamp</th><th>Google ✓</th><th>Google ✗</th><th>IndexNow ✓</th><th>IndexNow ✗</th><th>URLs</th></tr></thead>
-    <tbody>${cronRows}</tbody>
-  </table>
+    <!-- Sidebar -->
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>⚙️ Cron Settings</h2></div>
+        <table>
+          <tbody>${cronSettingsRows}</tbody>
+        </table>
+      </div>
 
-  <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">
-    Beriklan.co.id Admin Dashboard · P0.4 · ${stats.timestamp}
-  </p>
+      <div class="card">
+        <div class="card-head"><h2>🔑 API Keys Expiring</h2></div>
+        <table>
+          <thead><tr><th>Name</th><th>Key</th><th>Days</th><th>Action</th></tr></thead>
+          <tbody>${expiringRows}</tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>🔥 Top Rate-Limited IPs</h2></div>
+        <table>
+          <thead><tr><th>IP</th><th>Endpoint</th><th>Count</th></tr></thead>
+          <tbody>${rateLimitRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
-</body>
-</html>`;
+</body></html>`;
 }
 
 // ─── Keyword Pipeline Dashboard ─────────────────────────────────
@@ -6433,6 +6639,19 @@ ${recentCampaigns.length ? `<table>
 <td><a href="?token=${token}&tab=campaigns&id=${c.id}" class="btn-outline" style="font-size:11px;padding:5px 10px;">Detail →</a></td>
 </tr>`;
 }).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📭</div><p>Belum ada campaign.</p><a href="?token='+token+'&tab=composer" class="btn-amber" style="margin-top:14px;">Buat Campaign Pertama</a></div>'}
+</div>
+
+<div class="card">
+<div class="card-head"><h2>⚙️ Email Cron Status</h2><p>Auto-sender jalan tiap 15 menit. Kalau gagal, otomatis retry dengan backoff. 3x gagal berturut-turut = auto-pause.</p></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+<span class="badge b-amber">⏰ Every 15 min</span>
+<span class="badge b-blue">📤 20 email/batch</span>
+<span class="badge b-green">✓ Auto-retry (5min)</span>
+<span class="badge b-red">🚨 Auto-pause (3 fails)</span>
+</div>
+<p style="margin-top:12px;font-size:12px;color:#6b7280;line-height:1.5;">
+Quota Resend free tier: 500 email/hari. Cron jalan otomatis — tidak perlu intervensi. Cek tab <strong>Cron & Automasi</strong> untuk toggle pause.
+</p>
 </div>
 `;
 }

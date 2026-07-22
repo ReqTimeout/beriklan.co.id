@@ -12,6 +12,12 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const hostname = url.hostname || request.headers.get("Host") || "";
+
+    // scrape.beriklan.co.id — consumer-facing scraping trial
+    if (hostname.startsWith("scrape.beriklan.co.id")) {
+      return await handleScrapePortal(request, env, ctx);
+    }
 
     // IndexNow key file
     if (path === "/2dac33f6303f4041b9ec7e2f2910ea80.txt") {
@@ -1058,6 +1064,44 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-indonetwork', '30 6 * * *', 1, 'Scrape Indonetwork (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-google-places', '0 7 * * *', 1, 'Scrape Google Places (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('email-send', '*/15 * * * *', 1, 'Kirim antrian email (tiap 15 menit)')`,
+    // scrape.beriklan.co.id — consumer trial system
+    `CREATE TABLE IF NOT EXISTS scrape_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      whatsapp TEXT NOT NULL,
+      search_count INTEGER DEFAULT 0,
+      session_token TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      last_active TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_scrape_users_email ON scrape_users (email)`,
+    `CREATE INDEX IF NOT EXISTS idx_scrape_users_session ON scrape_users (session_token)`,
+    `CREATE TABLE IF NOT EXISTS scrape_searches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      query TEXT NOT NULL,
+      city TEXT,
+      category TEXT,
+      results_count INTEGER DEFAULT 0,
+      results_json TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_scrape_searches_user ON scrape_searches (user_id)`,
+    `CREATE TABLE IF NOT EXISTS scrape_results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      search_id INTEGER NOT NULL,
+      name TEXT,
+      phone TEXT,
+      email TEXT,
+      website TEXT,
+      category TEXT,
+      city TEXT,
+      source TEXT
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_scrape_results_user ON scrape_results (user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_scrape_results_search ON scrape_results (search_id)`,
   ];
 
   const results = [];
@@ -7033,6 +7077,584 @@ async function handleScrapeGooglePlaces(request, env) {
     }
   }
   return new Response(JSON.stringify({ ok: true, query: category.q, label: category.label, contacts_saved: totalSaved, cities: cities.length, debug: dbg }), { headers: { "Content-Type": "application/json" } });
+}
+
+// ───────────────────────────────────────────────────────────────
+// scrape.beriklan.co.id — Consumer-facing scraping trial portal
+// ───────────────────────────────────────────────────────────────
+
+const SCRAPE_CATEGORIES = [
+  { id: "manufaktur", label: "Manufaktur", osm: '["shop"="industrial"]' },
+  { id: "toko", label: "Toko Retail", osm: '["shop"]' },
+  { id: "resto", label: "Restoran / Cafe", osm: '["amenity"~"restaurant|cafe|fast_food"]' },
+  { id: "klinik", label: "Klinik / Apotek", osm: '["amenity"~"clinic|pharmacy|doctors|hospital"]' },
+  { id: "hotel", label: "Hotel / Penginapan", osm: '["tourism"~"hotel|hostel|guest_house"]' },
+  { id: "salon", label: "Salon / Kecantikan", osm: '["shop"~"beauty|hairdresser|cosmetics"]' },
+  { id: "otomotif", label: "Bengkel Otomotif", osm: '["shop"="car_repair"]' },
+  { id: "percetakan", label: "Percetakan", osm: '["shop"="printing"]' },
+  { id: "properti", label: "Properti", osm: '["office"="estate_agent"]' },
+  { id: "pendidikan", label: "Pendidikan / Kursus", osm: '["amenity"~"school|college|university|language_school"]' },
+];
+
+const SCRAPE_CITIES = [
+  "Bandung","Jakarta","Surabaya","Tangerang","Bekasi","Depok","Bogor","Semarang",
+  "Yogyakarta","Malang","Medan","Palembang","Makassar","Denpasar","Balikpapan",
+  "Solo","Cimahi","Tasikmalaya","Banjarmasin","Manado","Pontianak","Pekanbaru",
+  "Padang","Jambi","Bengkulu","Lampung","Cirebon","Sukabumi","Garut","Cianjur"
+];
+
+async function handleScrapePortal(request, env, ctx) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  // Static assets (none for now)
+
+  // API endpoints
+  if (path === "/api/signup" || path === "/api/signup/") {
+    return await handleScrapeSignup(request, env);
+  }
+  if (path === "/api/search" || path === "/api/search/") {
+    return await handleScrapeSearch(request, env);
+  }
+  if (path === "/api/export" || path === "/api/export/") {
+    return await handleScrapeExport(request, env);
+  }
+  if (path === "/api/logout" || path === "/api/logout/") {
+    const cookie = request.headers.get("Cookie") || "";
+    const newCookie = cookie.replace(/scrape_token=[^;]+;?/g, "").trim() + "; Path=/; Max-Age=0";
+    return new Response("", { status: 302, headers: { Location: "/", "Set-Cookie": newCookie } });
+  }
+
+  // Page routes
+  if (path === "/" || path === "/index.html") {
+    return await renderScrapeLanding(request, env);
+  }
+  if (path === "/signup" || path === "/signup.html") {
+    return await renderScrapeSignup(request, env);
+  }
+  if (path === "/dashboard" || path === "/search") {
+    return await renderScrapeDashboard(request, env);
+  }
+  if (path === "/admin") {
+    return await renderScrapeAdmin(request, env);
+  }
+
+  return new Response("Not found", { status: 404 });
+}
+
+async function getScrapeUserFromCookie(request, env) {
+  const cookie = request.headers.get("Cookie") || "";
+  const m = cookie.match(/scrape_token=([^;]+)/);
+  if (!m) return null;
+  const token = m[1];
+  const u = await env.DB.prepare("SELECT * FROM scrape_users WHERE session_token = ?").bind(token).first();
+  if (!u) return null;
+  await env.DB.prepare("UPDATE scrape_users SET last_active = CURRENT_TIMESTAMP WHERE id = ?").bind(u.id).run();
+  return u;
+}
+
+function genScrapeToken() {
+  return "sk_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+}
+
+async function handleScrapeSignup(request, env) {
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  const body = await request.formData().catch(() => null) || await request.json().catch(() => ({}));
+  const name = String((body.get ? body.get("name") : body.name) || "").trim();
+  const email = String((body.get ? body.get("email") : body.email) || "").trim().toLowerCase();
+  const whatsapp = String((body.get ? body.get("whatsapp") : body.whatsapp) || "").trim();
+
+  if (!name || name.length < 2) return json({ ok: false, error: "Nama minimal 2 karakter" }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, error: "Email tidak valid" }, 400);
+  if (!/^(\+?62|0)8\d{8,12}$/.test(whatsapp.replace(/\s|-/g, ""))) return json({ ok: false, error: "WhatsApp tidak valid (format: 081234567890)" }, 400);
+
+  const existing = await env.DB.prepare("SELECT * FROM scrape_users WHERE email = ?").bind(email).first();
+  if (existing) {
+    return json({ ok: false, error: "Email sudah pernah trial. 1 trial per user.", email_exists: true }, 409);
+  }
+
+  const token = genScrapeToken();
+  const r = await env.DB.prepare("INSERT INTO scrape_users (name, email, whatsapp, session_token) VALUES (?,?,?,?)").bind(name, email, whatsapp, token).run();
+  const userId = r.meta?.last_row_id || 0;
+
+  // Send welcome via WhatsApp webhook (optional — skip for now)
+  // Send notification ke admin via email kalau ada RESEND_API_KEY
+  try {
+    if (env.RESEND_API_KEY) {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "Beriklan Scrape <noreply@beriklan.co.id>",
+          to: ["admin@3smedianet.com"],
+          subject: `[Scrape Trial] New user: ${name}`,
+          html: `<p>Trial baru scrape.beriklan.co.id:</p><ul><li><b>Nama:</b> ${escHtml(name)}</li><li><b>Email:</b> ${escHtml(email)}</li><li><b>WhatsApp:</b> ${escHtml(whatsapp)}</li></ul>`
+        })
+      });
+    }
+  } catch {}
+
+  const cookie = `scrape_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`;
+  return new Response(JSON.stringify({ ok: true, id: userId, token, redirect: "/dashboard" }), {
+    headers: { "Content-Type": "application/json", "Set-Cookie": cookie },
+  });
+}
+
+async function handleScrapeSearch(request, env) {
+  const user = await getScrapeUserFromCookie(request, env);
+  if (!user) return json({ ok: false, error: "Login required", redirect: "/signup" }, 401);
+
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  if ((user.search_count || 0) >= 30) {
+    return json({ ok: false, error: "Trial limit tercapai (30 pencarian). Hubungi kami untuk akses full.", limit_reached: true }, 403);
+  }
+
+  const body = await request.formData().catch(() => null) || await request.json().catch(() => ({}));
+  const query = String((body.get ? body.get("query") : body.query) || "").trim();
+  const category = String((body.get ? body.get("category") : body.category) || "").trim();
+  const city = String((body.get ? body.get("city") : body.city) || "").trim();
+  const limit = Math.min(parseInt(body.get ? body.get("limit") : body.limit) || 20, 50);
+
+  if (!query && !category) return json({ ok: false, error: "Query atau kategori required" }, 400);
+
+  // Increment counter
+  await env.DB.prepare("UPDATE scrape_users SET search_count = search_count + 1 WHERE id = ?").bind(user.id).run();
+
+  // Save search
+  const sr = await env.DB.prepare("INSERT INTO scrape_searches (user_id, query, category, city) VALUES (?,?,?,?)").bind(user.id, query || category, category, city).run();
+  const searchId = sr.meta?.last_row_id || 0;
+
+  // === Strategy 1: search existing D1 lead_contacts ===
+  const results = [];
+  const seenKeys = new Set();
+
+  const dbQuery = category && city
+    ? env.DB.prepare("SELECT company, name, phone, email, website, city, category FROM lead_contacts WHERE (LOWER(category) = LOWER(?) OR LOWER(company) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)) AND LOWER(city) LIKE LOWER(?) LIMIT ?").bind(category, `%${category}%`, `%${category}%`, `%${city}%`, limit)
+    : category
+    ? env.DB.prepare("SELECT company, name, phone, email, website, city, category FROM lead_contacts WHERE LOWER(category) = LOWER(?) OR LOWER(company) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?) LIMIT ?").bind(category, `%${category}%`, `%${category}%`, limit)
+    : city
+    ? env.DB.prepare("SELECT company, name, phone, email, website, city, category FROM lead_contacts WHERE LOWER(city) LIKE LOWER(?) AND (LOWER(company) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)) LIMIT ?").bind(`%${city}%`, `%${query}%`, `%${query}%`, limit)
+    : env.DB.prepare("SELECT company, name, phone, email, website, city, category FROM lead_contacts WHERE LOWER(company) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?) LIMIT ?").bind(`%${query}%`, `%${query}%`, limit);
+
+  const dbResults = await dbQuery.all();
+  for (const r of dbResults.results || []) {
+    const key = `${r.company || r.name}-${r.city || ""}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    results.push({
+      name: r.company || r.name,
+      phone: r.phone || "",
+      email: r.email || "",
+      website: r.website || "",
+      city: r.city || "",
+      category: r.category || category,
+      source: "Database Beriklan",
+    });
+  }
+
+  // === Strategy 2: query Overpass API (OSM) if city + category ===
+  if (results.length < limit && city && category) {
+    const cat = SCRAPE_CATEGORIES.find(c => c.id === category);
+    if (cat) {
+      try {
+        // Geocode city first via Nominatim
+        const geoResp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city + ", Indonesia")}&format=json&limit=1`, {
+          headers: { "User-Agent": "BeriklanScrape/1.0 (https://beriklan.co.id)" }
+        });
+        const geoData = await geoResp.json();
+        if (geoData[0]) {
+          const lat = parseFloat(geoData[0].lat);
+          const lon = parseFloat(geoData[0].lon);
+          const radius = 25000; // 25km
+          // bbox query for speed
+          const bbox = `${lat - 0.2},${lon - 0.2},${lat + 0.2},${lon + 0.2}`;
+          const overpassQuery = `[out:json][timeout:25];(node${cat.osm}(${bbox}););out body ${limit - results.length};`;
+          const opResp = await fetch("https://overpass-api.de/api/interpreter", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "BeriklanScrape/1.0" },
+            body: "data=" + encodeURIComponent(overpassQuery)
+          });
+          if (opResp.ok) {
+            const opData = await opResp.json();
+            for (const e of opData.elements || []) {
+              const t = e.tags || {};
+              const name = t.name || t["name:id"] || "";
+              if (!name) continue;
+              const key = `${name}-${city}`;
+              if (seenKeys.has(key)) continue;
+              seenKeys.add(key);
+              results.push({
+                name,
+                phone: t.phone || t["contact:phone"] || "",
+                email: t.email || t["contact:email"] || "",
+                website: t.website || t["contact:website"] || "",
+                city: city,
+                category: category,
+                source: "OpenStreetMap",
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.log("OSM error:", e.message);
+      }
+    }
+  }
+
+  // Save results to D1
+  const insertedRows = [];
+  for (const r of results.slice(0, limit)) {
+    insertedRows.push([user.id, searchId, r.name, r.phone, r.email, r.website, r.city, r.category, r.source]);
+  }
+  if (insertedRows.length) {
+    await env.DB.batch(insertedRows.map(r => env.DB.prepare("INSERT INTO scrape_results (user_id, search_id, name, phone, email, website, city, category, source) VALUES (?,?,?,?,?,?,?,?,?)").bind(...r)));
+  }
+  await env.DB.prepare("UPDATE scrape_searches SET results_count = ? WHERE id = ?").bind(insertedRows.length, searchId).run();
+
+  return json({
+    ok: true,
+    search_id: searchId,
+    results: insertedRows.map(r => ({ name: r[2], phone: r[3], email: r[4], website: r[5], city: r[6], category: r[7], source: r[8] })),
+    remaining_searches: 30 - (user.search_count + 1),
+  });
+}
+
+async function handleScrapeExport(request, env) {
+  const user = await getScrapeUserFromCookie(request, env);
+  if (!user) return json({ ok: false, error: "Login required" }, 401);
+  const url = new URL(request.url);
+  const format = url.searchParams.get("format") || "csv";
+
+  const rows = await env.DB.prepare("SELECT name, phone, email, website, city, category, source, created_at FROM scrape_results WHERE user_id = ? ORDER BY id DESC").bind(user.id).all();
+
+  if (format === "json") {
+    return json({ ok: true, results: rows.results });
+  }
+
+  // CSV
+  const headers = ["Name","Phone","Email","Website","City","Category","Source","Date"];
+  const csv = [headers.join(",")];
+  for (const r of rows.results || []) {
+    csv.push([r.name, r.phone, r.email, r.website, r.city, r.category, r.source, r.created_at].map(v => `"${String(v||"").replace(/"/g, '""')}"`).join(","));
+  }
+  return new Response(csv.join("\n"), {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="beriklan-scrape-${new Date().toISOString().slice(0,10)}.csv"`,
+    }
+  });
+}
+
+function json(obj, status = 200) { return new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } }); }
+
+async function renderScrapeLanding(request, env) {
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scrape Bisnis Indonesia — 30 Pencarian Gratis · Beriklan</title>
+<meta name="description" content="Cari database bisnis Indonesia berdasarkan kategori dan kota. 30 pencarian gratis, tanpa kontrak.">
+<link rel="icon" href="https://beriklan.co.id/logoweb.webp">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans',sans-serif;}
+body{background:#f7f8fb;color:#0b1426;}
+.hero{background:linear-gradient(135deg,#0f1e3d 0%,#1a2f5c 100%);color:#fff;padding:64px 24px 80px;text-align:center;}
+.hero h1{font-size:32px;font-weight:800;margin-bottom:14px;line-height:1.2;}
+.hero h1 span{color:#f59e0b;}
+.hero p{font-size:16px;color:#cbd5e1;margin-bottom:28px;max-width:560px;margin-left:auto;margin-right:auto;}
+.btn{display:inline-block;padding:14px 32px;border-radius:999px;font-weight:700;text-decoration:none;font-size:15px;transition:transform .15s;}
+.btn-primary{background:#f59e0b;color:#0f1e3d;}
+.btn-primary:hover{transform:translateY(-2px);}
+.badge{display:inline-block;background:rgba(245,158,11,.15);color:#fbbf24;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:18px;}
+.container{max-width:920px;margin:0 auto;padding:0 20px;}
+.features{padding:64px 0;}
+.features h2{font-size:26px;text-align:center;margin-bottom:14px;font-weight:800;}
+.features .sub{text-align:center;color:#6b7280;margin-bottom:40px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.card{background:#fff;padding:24px;border-radius:14px;box-shadow:0 1px 2px rgba(15,30,61,.04),0 4px 12px rgba(15,30,61,.04);}
+.card .ico{font-size:28px;margin-bottom:12px;}
+.card h3{font-size:16px;font-weight:700;margin-bottom:6px;}
+.card p{font-size:13px;color:#6b7280;line-height:1.5;}
+.how{padding:64px 0;background:#0f1e3d;color:#fff;}
+.how h2{text-align:center;font-size:26px;margin-bottom:40px;font-weight:800;}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:800px;margin:0 auto;}
+.step{text-align:center;}
+.step .num{display:inline-block;width:36px;height:36px;line-height:36px;background:#f59e0b;color:#0f1e3d;border-radius:999px;font-weight:800;margin-bottom:12px;}
+.step h4{font-size:14px;margin-bottom:6px;}
+.step p{font-size:12px;color:#94a3b8;line-height:1.5;}
+.cta{padding:64px 0;text-align:center;background:#fff;}
+.cta h2{font-size:26px;margin-bottom:14px;font-weight:800;}
+.cta p{color:#6b7280;margin-bottom:24px;}
+.footer{padding:24px;text-align:center;color:#94a3b8;font-size:13px;border-top:1px solid #e5e7eb;}
+.footer a{color:#f59e0b;text-decoration:none;}
+@media(max-width:640px){.hero h1{font-size:24px;}.hero{padding:48px 20px 60px;}.features,.how,.cta{padding:48px 0;}}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="container">
+<div class="badge">🔥 Trial 30 pencarian gratis</div>
+<h1>Temukan database bisnis<br>Indonesia <span>dalam hitungan detik</span></h1>
+<p>Cari perusahaan berdasarkan kategori dan kota. Cocok untuk riset pasar, lead generation, dan analisis kompetitor.</p>
+<a href="/signup" class="btn btn-primary">Mulai Trial Gratis →</a>
+</div>
+</div>
+<div class="container features">
+<h2>Kenapa scrape.beriklan.co.id?</h2>
+<p class="sub">Lead generation tool yang ringan, tanpa API key, tanpa setup.</p>
+<div class="grid">
+<div class="card"><div class="ico">🎯</div><h3>Targeted</h3><p>Filter berdasarkan kategori spesifik dan kota — bukan search acak.</p></div>
+<div class="card"><div class="ico">⚡</div><h3>Instan</h3><p>Hasil keluar dalam hitungan detik. Tidak perlu download, langsung dilihat di browser.</p></div>
+<div class="card"><div class="ico">📊</div><h3>Export Ready</h3><p>Download CSV dengan satu klik. Siap pakai untuk CRM atau Excel.</p></div>
+<div class="card"><div class="ico">🔒</div><h3>Aman & Privat</h3><p>Data tidak dibagikan. Hanya kamu yang bisa akses hasil pencarian.</p></div>
+</div>
+</div>
+<div class="how"><div class="container">
+<h2>Cara Pakai (3 Langkah)</h2>
+<div class="steps">
+<div class="step"><div class="num">1</div><h4>Sign up</h4><p>Masukkan nama, email, dan WhatsApp. 1 trial per user, gratis.</p></div>
+<div class="step"><div class="num">2</div><h4>Cari bisnis</h4><p>Ketik kategori (misal: manufaktur) + kota. Maks 30 pencarian.</p></div>
+<div class="step"><div class="num">3</div><h4>Export CSV</h4><p>Download hasil pencarian sebagai CSV. Langsung pakai.</p></div>
+</div>
+</div></div>
+<div class="cta"><div class="container">
+<h2>Siap scale up penjualan Anda?</h2>
+<p>30 pencarian gratis, tanpa komitmen. Coba sekarang.</p>
+<a href="/signup" class="btn btn-primary">Mulai Trial →</a>
+</div></div>
+<div class="footer">
+<a href="https://beriklan.co.id">Beriklan.co.id</a> · Performance Marketing Partner · Bandung · <a href="/admin?token=beriklan-admin-2026">admin</a>
+</div>
+</body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+async function renderScrapeSignup(request, env) {
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mulai Trial — Scrape.beriklan.co.id</title>
+<link rel="icon" href="https://beriklan.co.id/logoweb.webp">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans',sans-serif;}
+body{background:linear-gradient(135deg,#0f1e3d 0%,#1a2f5c 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:#0b1426;}
+.box{background:#fff;padding:40px 36px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:440px;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.logo img{width:36px;height:36px;}
+.logo span{font-weight:800;font-size:18px;color:#0f1e3d;}
+h1{font-size:22px;font-weight:800;margin-bottom:8px;}
+.sub{font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.5;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#0b1426;}
+.field input{width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;transition:border .15s;font-family:inherit;}
+.field input:focus{outline:none;border-color:#f59e0b;}
+.field .hint{font-size:11px;color:#9ca3af;margin-top:4px;}
+.btn{width:100%;padding:13px;border-radius:999px;border:none;font-weight:700;font-size:14px;cursor:pointer;transition:transform .15s;}
+.btn-primary{background:#f59e0b;color:#0f1e3d;}
+.btn-primary:hover{transform:translateY(-1px);}
+.note{font-size:11px;color:#9ca3af;margin-top:16px;text-align:center;line-height:1.4;}
+.err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
+</style>
+</head>
+<body>
+<div class="box">
+<div class="logo"><img src="https://beriklan.co.id/logoweb.webp" alt=""><span>Beriklan</span></div>
+<h1>Mulai Trial Scrape</h1>
+<p class="sub">1 trial per user. 30 pencarian gratis. Verifikasi lewat WhatsApp & email.</p>
+<div id="err" class="err"></div>
+<form id="signup-form">
+<div class="field"><label>Nama Lengkap</label><input name="name" required minlength="2" placeholder="misal: Budi Santoso"></div>
+<div class="field"><label>Email</label><input type="email" name="email" required placeholder="budi@perusahaan.com"></div>
+<div class="field"><label>WhatsApp</label><input name="whatsapp" required placeholder="081234567890"><div class="hint">Format: 08xxx atau +62xxx</div></div>
+<button type="submit" class="btn btn-primary">🚀 Mulai Trial 30 Pencarian</button>
+</form>
+<p class="note">Dengan mendaftar, Anda menyetujui menerima update dari Beriklan. Bisa berhenti kapan saja.</p>
+</div>
+<script>
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  const fd = new FormData(e.target);
+  try {
+    const r = await fetch('/api/signup', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      window.location.href = d.redirect || '/dashboard';
+    } else {
+      err.textContent = d.error || 'Signup gagal';
+      err.style.display = 'block';
+    }
+  } catch (e) {
+    err.textContent = 'Error: ' + e.message;
+    err.style.display = 'block';
+  }
+});
+</script>
+</body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+async function renderScrapeDashboard(request, env) {
+  const user = await getScrapeUserFromCookie(request, env);
+  if (!user) return Response.redirect(new URL("/signup", request.url).toString(), 302);
+
+  const searches = await env.DB.prepare("SELECT id, query, category, city, results_count, created_at FROM scrape_searches WHERE user_id = ? ORDER BY id DESC LIMIT 20").bind(user.id).all();
+  const allResults = await env.DB.prepare("SELECT COUNT(*) as c FROM scrape_results WHERE user_id = ?").bind(user.id).first();
+
+  const remaining = Math.max(0, 30 - (user.search_count || 0));
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Scrape.beriklan.co.id</title>
+<link rel="icon" href="https://beriklan.co.id/logoweb.webp">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans',sans-serif;}
+body{background:#f7f8fb;color:#0b1426;min-height:100vh;}
+header{background:#0f1e3d;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+header h1{font-size:16px;font-weight:700;}
+header .user{font-size:13px;color:#94a3b8;}
+header a{color:#f59e0b;text-decoration:none;font-size:13px;}
+.container{max-width:960px;margin:0 auto;padding:24px 20px;}
+.card{background:#fff;padding:24px;border-radius:14px;box-shadow:0 1px 2px rgba(15,30,61,.04),0 4px 12px rgba(15,30,61,.04);margin-bottom:18px;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.stat{background:#fff;padding:18px;border-radius:12px;text-align:center;border:1px solid #e5e7eb;}
+.stat .val{font-size:24px;font-weight:800;color:#0f1e3d;}
+.stat .lbl{font-size:11px;color:#6b7280;margin-top:4px;text-transform:uppercase;letter-spacing:.05em;}
+.stat.warn .val{color:#dc2626;}
+.search-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:14px;}
+@media(max-width:640px){.search-form{grid-template-columns:1fr;}}
+.search-form input,.search-form select{padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;background:#fff;font-family:inherit;}
+.search-form input:focus,.search-form select:focus{outline:none;border-color:#f59e0b;}
+.btn{padding:11px 20px;border-radius:999px;border:none;font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s;}
+.btn-primary{background:#f59e0b;color:#0f1e3d;}
+.btn-secondary{background:#0f1e3d;color:#fff;text-decoration:none;display:inline-block;}
+.btn-secondary:hover{transform:translateY(-1px);}
+.results-box{max-height:420px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;}
+th{background:#f7f8fb;text-align:left;padding:10px;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;position:sticky;top:0;}
+td{padding:10px;border-bottom:1px solid #f3f4f8;font-size:13px;}
+td a{color:#0f1e3d;text-decoration:none;}
+td a:hover{color:#f59e0b;}
+.empty{text-align:center;padding:40px;color:#9ca3af;}
+.history{margin-top:14px;font-size:12px;color:#6b7280;}
+.history li{padding:6px 0;border-bottom:1px solid #f3f4f8;display:flex;justify-content:space-between;}
+.h-remaining{display:inline-block;padding:6px 14px;background:${remaining > 10 ? '#d1fae5' : remaining > 0 ? '#fef3c7' : '#fee2e2'};color:${remaining > 10 ? '#065f46' : remaining > 0 ? '#92400e' : '#991b1b'};border-radius:999px;font-size:12px;font-weight:700;}
+.tag{display:inline-block;background:#f0f9ff;color:#0369a1;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.upgrade{background:linear-gradient(135deg,#f59e0b 0%,#fb923c 100%);padding:18px;border-radius:12px;color:#0f1e3d;margin-top:18px;text-align:center;}
+.upgrade h3{font-size:15px;font-weight:800;margin-bottom:6px;}
+.upgrade p{font-size:12px;margin-bottom:10px;}
+.upgrade a{background:#0f1e3d;color:#f59e0b;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:700;font-size:13px;display:inline-block;}
+</style>
+</head>
+<body>
+<header>
+<h1>🔍 Scrape.beriklan.co.id</h1>
+<div><span class="user">${escHtml(user.name)} · ${escHtml(user.email)}</span> &nbsp; <a href="/api/logout">Logout</a></div>
+</header>
+<div class="container">
+<div class="stats">
+<div class="stat"><div class="val">${user.search_count || 0} / 30</div><div class="lbl">Pencarian</div></div>
+<div class="stat ${remaining === 0 ? 'warn' : ''}"><div class="val">${remaining}</div><div class="lbl">Sisa</div></div>
+<div class="stat"><div class="val">${allResults?.c || 0}</div><div class="lbl">Total Lead</div></div>
+</div>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+<h2 style="font-size:18px;font-weight:800;">🔎 Pencarian Bisnis</h2>
+<span class="h-remaining">${remaining} pencarian tersisa</span>
+</div>
+<form id="search-form" class="search-form">
+<input name="query" placeholder="misal: toko bangunan" required>
+<select name="category">
+<option value="">— Kategori —</option>
+${SCRAPE_CATEGORIES.map(c => `<option value="${c.id}">${c.label}</option>`).join("")}
+</select>
+<select name="city">
+<option value="">— Kota —</option>
+${SCRAPE_CITIES.map(c => `<option value="${c}">${c}</option>`).join("")}
+</select>
+<button type="submit" class="btn btn-primary" ${remaining === 0 ? 'disabled' : ''}>🔍 Cari</button>
+</form>
+<div id="search-status" style="font-size:13px;color:#6b7280;margin-bottom:10px;"></div>
+<div id="results" class="results-box"></div>
+<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+<a href="/api/export?format=csv" class="btn btn-secondary">📥 Export CSV</a>
+<a href="/api/export?format=json" class="btn btn-secondary" target="_blank">📋 Lihat JSON</a>
+</div>
+</div>
+${(searches.results||[]).length ? `<div class="card">
+<h2 style="font-size:18px;font-weight:800;margin-bottom:10px;">📜 Riwayat Pencarian</h2>
+<ul class="history">
+${(searches.results||[]).map(s => `<li><span><strong>${escHtml(s.query || s.category || '?')}</strong> ${s.city ? `di ${escHtml(s.city)}` : ''} <span class="tag">${s.results_count || 0} hasil</span></span><span>${escHtml((s.created_at || '').slice(0,16))}</span></li>`).join("")}
+</ul>
+</div>` : ''}
+${remaining === 0 ? `<div class="upgrade">
+<h3>🚀 Limit tercapai — Mau akses full?</h3>
+<p>Dapatkan akses tanpa limit + fitur export CRM-ready. Konsultasi gratis 15 menit.</p>
+<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20sudah%20trial%20scrape.beriklan.co.id%20dan%20tertarik%20akses%20full">Hubungi WhatsApp →</a>
+</div>` : ''}
+</div>
+<script>
+document.getElementById('search-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const status = document.getElementById('search-status');
+  const res = document.getElementById('results');
+  status.textContent = '⏳ Mencari...';
+  res.innerHTML = '';
+  try {
+    const r = await fetch('/api/search', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!d.ok) {
+      status.innerHTML = '<span style="color:#dc2626;">' + (d.error || 'Error') + '</span>';
+      if (d.limit_reached) setTimeout(() => location.reload(), 1500);
+      return;
+    }
+    status.textContent = '✅ Ditemukan ' + d.results.length + ' bisnis' + (d.remaining_searches !== undefined ? ' · Sisa ' + d.remaining_searches + ' pencarian' : '');
+    if (d.results.length === 0) {
+      res.innerHTML = '<div class="empty">Tidak ada hasil. Coba ganti kategori/kota.</div>';
+      return;
+    }
+    res.innerHTML = '<table><thead><tr><th>Nama</th><th>Kota</th><th>Phone</th><th>Website</th><th>Source</th></tr></thead><tbody>' +
+      d.results.map(r => '<tr><td><strong>' + (r.name || '?') + '</strong><br><span style="font-size:11px;color:#9ca3af;">' + (r.category || '') + '</span></td><td>' + (r.city || '-') + '</td><td>' + (r.phone ? '<a href="tel:' + r.phone + '">' + r.phone + '</a>' : '<span style="color:#9ca3af;">-</span>') + '</td><td>' + (r.website ? '<a href="' + r.website + '" target="_blank">🔗</a>' : '<span style="color:#9ca3af;">-</span>') + '</td><td><span class="tag">' + (r.source || '-') + '</span></td></tr>').join('') + '</tbody></table>';
+  } catch (e) {
+    status.innerHTML = '<span style="color:#dc2626;">Error: ' + e.message + '</span>';
+  }
+});
+</script>
+</body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+async function renderScrapeAdmin(request, env) {
+  const url = new URL(request.url);
+  if (url.searchParams.get("token") !== "beriklan-admin-2026") return new Response("Unauthorized", { status: 401 });
+  const users = await env.DB.prepare("SELECT id, name, email, whatsapp, search_count, created_at, last_active FROM scrape_users ORDER BY id DESC LIMIT 100").all();
+  const totalSearches = await env.DB.prepare("SELECT COUNT(*) as c FROM scrape_searches").first();
+  const totalResults = await env.DB.prepare("SELECT COUNT(*) as c FROM scrape_results").first();
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Scrape Admin</title>
+<style>body{font-family:sans-serif;padding:20px;background:#f7f8fb;}h1{margin-bottom:20px;}table{width:100%;background:#fff;border-collapse:collapse;box-shadow:0 1px 2px rgba(0,0,0,.05);}th{background:#0f1e3d;color:#fff;padding:10px;text-align:left;font-size:12px;}td{padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;}.stats{display:flex;gap:12px;margin-bottom:20px;}.stat{background:#fff;padding:14px 18px;border-radius:8px;flex:1;}.stat .val{font-size:22px;font-weight:800;color:#0f1e3d;}.stat .lbl{font-size:11px;color:#6b7280;text-transform:uppercase;}</style>
+</head><body>
+<h1>🔍 Scrape Portal — Admin</h1>
+<div class="stats">
+<div class="stat"><div class="val">${users.results?.length || 0}</div><div class="lbl">Total Users</div></div>
+<div class="stat"><div class="val">${totalSearches?.c || 0}</div><div class="lbl">Total Searches</div></div>
+<div class="stat"><div class="val">${totalResults?.c || 0}</div><div class="lbl">Total Results</div></div>
+</div>
+<table><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>WhatsApp</th><th>Pencarian</th><th>Dibuat</th><th>Last Active</th></tr></thead>
+<tbody>
+${(users.results||[]).map(u => `<tr><td>${u.id}</td><td>${escHtml(u.name)}</td><td>${escHtml(u.email)}</td><td>${escHtml(u.whatsapp)}</td><td>${u.search_count || 0}</td><td>${escHtml((u.created_at||'').slice(0,16))}</td><td>${escHtml((u.last_active||'').slice(0,16))}</td></tr>`).join("")}
+</tbody></table>
+</body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
 // P0.7 build-signature 2026-07-17T06:08:00Z  (forces redeploy)

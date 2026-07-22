@@ -6171,10 +6171,10 @@ async function handleEmailDashboard(request, env) {
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#f5f6fa;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0f1e3d;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1400px;margin:0 auto}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
 @media(max-width:900px){.layout{grid-template-columns:1fr}}
-.sidebar{background:#0f1e3d;color:#cbd5e1;padding:28px 20px;display:flex;flex-direction:column;gap:4px}
-@media(max-width:900px){.sidebar{flex-direction:row;flex-wrap:wrap;padding:14px}}
+.sidebar{background:#0f1e3d;color:#cbd5e1;padding:28px 20px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media(max-width:900px){.sidebar{flex-direction:row;flex-wrap:wrap;padding:14px;height:auto;position:static}}
 .sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:0 8px}
 .sidebar-brand img{height:28px;filter:brightness(0) invert(1)}
 .sidebar-brand span{font-weight:800;font-size:16px;color:#fff}
@@ -6184,7 +6184,7 @@ a{text-decoration:none;color:inherit}
 .sidebar a.nav .ico{width:18px;text-align:center;opacity:0.8}
 .sidebar-foot{margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b}
 @media(max-width:900px){.sidebar-foot{display:none}}
-.main{padding:28px 32px;overflow-x:hidden}
+.main{padding:32px 40px;overflow-x:hidden;max-width:none;width:100%}
 @media(max-width:900px){.main{padding:18px}}
 .page-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;flex-wrap:wrap;gap:12px}
 .page-head h1{font-size:24px;font-weight:800;letter-spacing:-0.01em}
@@ -6364,7 +6364,7 @@ function renderCampaignsList(campaigns, T, token) {
   const cs = campaigns.results || [];
   return `
 <div class="page-head"><div><h1>Campaigns</h1><p>Semua campaign email dan riwayatnya.</p></div><a href="?token=${token}&tab=composer" class="btn-amber">✍️ Campaign Baru</a></div>
-${cs.length ? `<table>
+${cs.length ? `<div class="card" style="padding:0;overflow:hidden;"><table style="border:none;box-shadow:none;">
 <thead><tr><th style="width:32%">Campaign</th><th>Template / List</th><th>Status</th><th>Progres</th><th>Open</th><th>Click</th><th>Aksi</th></tr></thead>
 <tbody>${cs.map(c => {
   const pct = c.total_recipients > 0 ? Math.round(c.db_sent / c.total_recipients * 100) : 0;
@@ -6381,7 +6381,7 @@ ${cs.length ? `<table>
 <td><strong>${clk}%</strong><br><span style="font-size:11px;color:#6b7280;">${c.click_count || 0} klik</span></td>
 <td><a href="?token=${token}&tab=campaigns&id=${c.id}" class="btn-outline" style="font-size:11px;">Detail →</a></td>
 </tr>`;
-}).join('')}</tbody></table>` : '<div class="card empty-state"><div class="ico">📨</div><p>Belum ada campaign.</p><a href="?token='+token+'&tab=composer" class="btn-amber" style="margin-top:14px;">Buat Campaign Pertama</a></div>'}
+}).join('')}</tbody></table></div>` : '<div class="card empty-state"><div class="ico">📨</div><p>Belum ada campaign.</p><a href="?token='+token+'&tab=composer" class="btn-amber" style="margin-top:14px;">Buat Campaign Pertama</a></div>'}
 `;
 }
 

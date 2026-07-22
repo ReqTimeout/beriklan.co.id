@@ -69,6 +69,9 @@ export default {
     if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
       return await handleGscIndexing(request, env);
     }
+    if (path === "/api/admin/cleanup-indexing" || path === "/api/admin/cleanup-indexing/") {
+      return await handlePendingIndexingCleanup(request, env);
+    }
     if (path === "/api/cron/refresh" || path === "/api/cron/refresh/") {
       return await handleRefreshContent(request, env);
     }
@@ -244,13 +247,14 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     if (cron === "0 * * * *") {
-      // Hourly: generate 1 article from top pending keyword
-      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=1"));
+      // Hourly: generate 2 articles from top pending keywords (48/day, well under GSC quota 200/day)
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=2"));
     } else if (cron === "0 */6 * * *") {
-      // Every 6h at :00: GSC indexing (20 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4)
-      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=20"));
+      // Every 6h at :00: GSC indexing (50 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4)
+      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50"));
       ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026"));
       ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1"));
+      ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026"));
     } else if (cron === "30 */6 * * *") {
       // Every 6h at :30: trending-generate (1 article from queue)
       ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1"));
@@ -1310,9 +1314,11 @@ async function handleKeywordDashboard(request, env) {
   try {
     const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status").all();
     for (const row of (c.results || [])) idx[row.status] = row.n;
-    const t = await env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status='submitted' AND date(submitted_at)=date('now')").first();
+    // Count gsc_submitted as 'submitted' for dashboard display
+    idx.submitted = (idx.submitted || 0) + (idx.gsc_submitted || 0);
+    const t = await env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status IN ('submitted','gsc_submitted') AND date(COALESCE(gsc_submitted_at, submitted_at, created_at))=date('now')").first();
     idx.today = t ? t.n : 0;
-    const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 25").all();
+    const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at, gsc_submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 25").all();
     idx.recent = rec.results || [];
   } catch (e) {
     idx.error = e.message;
@@ -2456,6 +2462,52 @@ Aturan:
   }
 
   return new Response(JSON.stringify({ ok: true, optimized: optimized.length, items: optimized, commit_sha: commitSha, elapsed_ms: Date.now() - t0, log, errors: errors.slice(0, 5) }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+// ─── Pending Indexing Cleanup (mark old 'submitted' as 'completed') ─────────────
+async function handlePendingIndexingCleanup(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  const t0 = Date.now();
+  const log = [];
+
+  // 1. Mark old 'submitted' rows as 'gsc_submitted' (they pre-date the gsc_submitted_at column)
+  let updatedOld = 0;
+  try {
+    const r = await env.DB.prepare(
+      `UPDATE pending_indexing SET status='gsc_submitted', gsc_submitted_at = COALESCE(gsc_submitted_at, datetime('now', '-30 days'))
+       WHERE status='submitted'`
+    ).run();
+    updatedOld = r.meta?.changes || 0;
+    log.push({ stage: "migrate_old_submitted", updated: updatedOld });
+  } catch (e) {
+    log.push({ stage: "migrate_old_submitted", error: String(e).slice(0, 200) });
+  }
+
+  // 2. Cleanup: delete very old completed entries (older than 90 days) to keep table lean
+  let deletedOld = 0;
+  try {
+    const r = await env.DB.prepare(
+      `DELETE FROM pending_indexing WHERE status IN ('gsc_submitted','completed','failed') AND created_at < datetime('now', '-90 days')`
+    ).run();
+    deletedOld = r.meta?.changes || 0;
+    log.push({ stage: "delete_old_completed", deleted: deletedOld });
+  } catch (e) {
+    log.push({ stage: "delete_old_completed", error: String(e).slice(0, 200) });
+  }
+
+  // 3. Summary
+  let stats = {};
+  try {
+    const r = await env.DB.prepare(`SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status`).all();
+    stats = r.results || [];
+  } catch (e) {}
+
+  return new Response(JSON.stringify({ ok: true, log, stats, elapsed_ms: Date.now() - t0 }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
 // ─── N.4 Rank Tracker — daily GSC sync to D1 ─────────────

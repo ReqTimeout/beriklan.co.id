@@ -5677,232 +5677,217 @@ async function pushToGithub({ token, owner, repo, branch, filePath, content, mes
 const SERVICE_CONFIGS = [
   {
     name: "Jasa Iklan Facebook Ads",
-    subject: "ROAS 4x dari Facebook Ads — strategi yang {{company}} butuhkan",
+    subject: "Strategi Facebook Ads untuk {{company}}",
     category: "meta-ads",
     service_path: "/jasa-iklan-facebook/",
     hero_image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=280&fit=crop&q=80",
     accent_color: "#1877f2",
     accent_bg: "#e7f0ff",
     badge: "Meta Business Partner",
-    headline: "Facebook Ads yang<br><span style='color:#f59e0b'>Konversi Terukur</span>",
-    subheadline: "Dari ratusan audit campaign yang kami lakukan, 7 dari 10 bisnis punya budget terbuang karena targeting melebar. Kami perbaiki dulu, baru jalan.",
+    headline: "Facebook Ads yang terukur dari hari pertama.",
+    subheadline: "Sebelum jalan, kami audit dulu — lihat di mana budget Anda selama ini terbuang. Baru susun strategi yang sesuai objektif bisnis Anda.",
     benefits: [
-      { short: "🎯", title: "Targeting Presisi", desc: "Audience research berbasis interest, behavior, dan lookalike 1-3%" },
-      { short: "🎨", title: "Creative Variasi", desc: "5-10 ad creative per campaign dengan A/B test otomatis" },
-      { short: "📊", title: "Dashboard Real-time", desc: "Pantau ROAS, CPA, CTR live — bukan laporan mingguan saja" },
-      { short: "🔄", title: "Optimasi Mingguan", desc: "Iterasi budget, creative, dan targeting tiap minggu" }
+      { short: "🎯", title: "Targeting presisi", desc: "Riset audiens dari interest, behavior, sampai lookalike 1–3%" },
+      { short: "🎨", title: "Variasi creative", desc: "5–10 materi iklan per campaign, diuji A/B otomatis" },
+      { short: "📊", title: "Dashboard real-time", desc: "Pantau ROAS, CPA, CTR kapan saja — bukan mingguan" },
+      { short: "🔄", title: "Optimasi tiap minggu", desc: "Iterasi budget, creative, dan targeting berdasarkan data" }
     ],
-    proof: "9 tahun mengelola campaign · Tersertifikasi Meta Business Partner",
-    cta_text: "💬 Konsultasi Gratis 15 Menit",
+    proof: "Tersertifikasi Meta Business Partner · Mengelola campaign sejak 2016",
+    cta_text: "Konsultasi Gratis 15 Menit",
     cta_url: "https://beriklan.co.id/jasa-iklan-facebook/"
   },
   {
     name: "Jasa Iklan Instagram",
-    subject: "Engagement 5x dari Instagram Ads — tanpa keluar modal besar",
+    subject: "Strategi Instagram Ads untuk {{company}}",
     category: "meta-ads",
     service_path: "/jasa-iklan-instagram/",
     hero_image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=280&fit=crop&q=80",
     accent_color: "#e1306c",
     accent_bg: "#fce4ec",
     badge: "Meta Business Partner",
-    headline: "Instagram Ads dengan<br><span style='color:#f59e0b'>Engagement 5x Lipat</span>",
-    subheadline: "Instagram bukan cuma untuk branding. Dengan strategi yang tepat, jadi sumber leads dan closing — terutama untuk pasar B2C dan audiens muda.",
+    headline: "Instagram Ads yang jadi sumber leads — bukan cuma likes.",
+    subheadline: "Instagram bukan cuma untuk branding. Dengan strategi yang tepat, jadi channel leads dan closing — terutama untuk B2C, F&B, fashion, lifestyle.",
     benefits: [
       { short: "📱", title: "Reels & Story Ads", desc: "Format video pendek yang disukai algoritma IG" },
-      { short: "🎯", title: "Interest Targeting", desc: "Capai audiens berdasarkan interest & behavior Instagram" },
-      { short: "💬", title: "DM Otomatis", desc: "Lead form + auto-reply WhatsApp untuk closing cepat" },
-      { short: "📈", title: "A/B Test Visual", desc: "Multiple creative diuji sekaligus untuk cari winner" }
+      { short: "🎯", title: "Interest targeting", desc: "Capai audiens berdasarkan minat & perilaku di IG" },
+      { short: "💬", title: "DM otomatis", desc: "Lead form + auto-reply WhatsApp untuk closing cepat" },
+      { short: "📈", title: "A/B test visual", desc: "Beberapa materi diuji sekaligus untuk cari yang terbaik" }
     ],
-    proof: "Tersertifikasi Meta · Portfolio fashion, F&B, lifestyle, jasa",
-    cta_text: "💬 Lihat Strategi IG untuk Bisnis Anda",
+    proof: "Tersertifikasi Meta · Portfolio fashion, F&B, lifestyle, jasa profesional",
+    cta_text: "Diskusi Strategi IG",
     cta_url: "https://beriklan.co.id/jasa-iklan-instagram/"
   },
   {
     name: "Jasa Iklan TikTok",
-    subject: "Jutaan viewers dari TikTok Ads — untuk {{company}}",
+    subject: "TikTok Ads untuk {{company}}",
     category: "tiktok",
     service_path: "/jasa-iklan-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=600&h=280&fit=crop&q=80",
     accent_color: "#ff0050",
     accent_bg: "#ffe0e8",
     badge: "TikTok Marketing Partner",
-    headline: "TikTok Ads yang<br><span style='color:#f59e0b'>Naikkan Views 10x</span>",
-    subheadline: "Pasar muda Indonesia ada di TikTok. Setiap hari 30+ juta orang Indonesia buka TikTok — pertanyaan: apakah {{company}} sudah muncul di FYP mereka?",
+    headline: "Muncul di FYP audiens muda Indonesia.",
+    subheadline: "Pasar muda ada di TikTok. Pertanyaannya: apakah {{company}} muncul di FYP mereka, atau cuma lewat begitu saja?",
     benefits: [
       { short: "🎬", title: "Spark Ads", desc: "Boost UGC creators yang terbukti perform — bayar sesuai hasil" },
-      { short: "🎯", title: "Interest TikTok", desc: "Targeting khusus platform: interest, hashtag, behavior" },
-      { short: "📊", title: "Pixel Integration", desc: "Track full-funnel dari view sampai checkout" },
-      { short: "🚀", title: "FYP Strategy", desc: "Optimasi konten agar organic reach meledak" }
+      { short: "🎯", title: "Interest TikTok", desc: "Targeting khusus platform: minat, hashtag, perilaku" },
+      { short: "📊", title: "Pixel integration", desc: "Track full-funnel dari view sampai checkout" },
+      { short: "🚀", title: "Boost organik", desc: "Optimasi konten agar reach organik ikut naik" }
     ],
-    proof: "TikTok Marketing Partner · 50+ brand F&B, fashion, beauty",
-    cta_text: "💬 Konsultasi TikTok Ads Gratis",
+    proof: "TikTok Marketing Partner · Berpengalaman di F&B, fashion, beauty, edukasi",
+    cta_text: "Konsultasi TikTok Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-tiktok/"
   },
   {
     name: "Jasa Iklan Google Ads",
-    subject: "Target audiens yang sedang mencari — Google Ads untuk {{company}}",
+    subject: "Google Ads untuk {{company}}",
     category: "google-ads",
     service_path: "/jasa-iklan-google/",
     hero_image: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=600&h=280&fit=crop&q=80",
     accent_color: "#4285f4",
     accent_bg: "#e3f2fd",
     badge: "Google Premier Partner",
-    headline: "Google Ads yang<br><span style='color:#f59e0b'>Menangkap Intent</span>",
-    subheadline: "Bedanya dengan social ads: di Google, Anda muncul saat orang SEDANG mencari produk/layanan Anda. Quality traffic, conversion lebih tinggi.",
+    headline: "Tampil saat audiens Anda sedang mencari.",
+    subheadline: "Bedanya dengan social ads: di Google, Anda muncul saat orang SEDANG mencari produk atau layanan Anda. Traffic lebih berkualitas, konversi lebih tinggi.",
     benefits: [
-      { short: "🔍", title: "Search Campaigns", desc: "Tampil di halaman 1 untuk keyword relevan" },
-      { short: "📺", title: "YouTube Ads", desc: "Video awareness di platform #2 dunia" },
+      { short: "🔍", title: "Search Campaigns", desc: "Tampil di halaman 1 untuk keyword yang relevan" },
+      { short: "📺", title: "YouTube Ads", desc: "Video awareness di platform video terbesar dunia" },
       { short: "📧", title: "Gmail Ads", desc: "Promosi langsung ke inbox orang yang tepat" },
       { short: "🛒", title: "Shopping Ads", desc: "Untuk e-commerce: produk tampil dengan gambar & harga" }
     ],
-    proof: "Google Premier Partner · Sertifikasi Search, Display, Video",
-    cta_text: "💬 Audit Google Ads Gratis",
+    proof: "Google Premier Partner · Bersertifikasi Search, Display, Video",
+    cta_text: "Audit Google Ads Gratis",
     cta_url: "https://beriklan.co.id/jasa-iklan-google/"
   },
   {
     name: "Jasa Iklan YouTube",
-    subject: "Brand Anda tampil di YouTube — {{company}}",
+    subject: "YouTube Ads untuk {{company}}",
     category: "google-ads",
     service_path: "/jasa-iklan-youtube/",
     hero_image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=600&h=280&fit=crop&q=80",
     accent_color: "#ff0000",
     accent_bg: "#ffe0e0",
     badge: "Google Video Partner",
-    headline: "YouTube Ads untuk<br><span style='color:#f59e0b'>Brand Awareness</span>",
-    subheadline: "YouTube = TV modern. Lebih murah, lebih terukur. Tepat untuk produk yang butuh penjelasan visual — jasa, software, F&B, properti, edukasi.",
+    headline: "YouTube Ads untuk brand awareness yang terukur.",
+    subheadline: "YouTube adalah TV modern — lebih murah, lebih terukur. Cocok untuk produk yang butuh penjelasan visual: jasa, software, F&B, properti, edukasi.",
     benefits: [
-      { short: "▶️", title: "TrueView Ads", desc: "Bayar hanya kalau观众 nonton 30 detik atau lebih" },
-      { short: "🎯", title: "Bumper 6 detik", desc: "Singkat, padat, langsung diingat" },
+      { short: "▶️", title: "TrueView Ads", desc: "Bayar hanya kalau penonton tonton 30 detik atau lebih" },
+      { short: "⏱️", title: "Bumper 6 detik", desc: "Singkat, padat, langsung diingat" },
       { short: "📱", title: "Multi-device", desc: "Tampil di TV, desktop, mobile, tablet — semua device" },
-      { short: "📊", title: "Brand Lift", desc: "Ukur dampak nyata terhadap brand awareness" }
+      { short: "📈", title: "Brand Lift", desc: "Ukur dampak nyata terhadap brand awareness" }
     ],
-    proof: "Sertifikasi Google Video · Portfolio brand FMCG, tech, edukasi",
-    cta_text: "💬 Diskusi YouTube Ads",
+    proof: "Bersertifikasi Google Video · Portfolio FMCG, tech, edukasi",
+    cta_text: "Diskusi YouTube Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-youtube/"
   },
   {
     name: "Jasa Kelola Instagram",
-    subject: "Instagram {{company}} stuck? — strategi organik yang works",
+    subject: "Instagram {{company}} butuh strategi organik?",
     category: "social-organic",
     service_path: "/jasa-kelola-instagram/",
     hero_image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=280&fit=crop&q=80",
     accent_color: "#833ab4",
     accent_bg: "#f3e5f5",
     badge: "Organic Specialist",
-    headline: "Instagram Organik yang<br><span style='color:#f59e0b'>Bangun Audiens Setia</span>",
-    subheadline: "Iklan saja tidak cukup. Anda butuh audiens organik yang loyal. Kami handle content calendar, desain, copywriting, dan community management.",
+    headline: "Bangun audiens Instagram yang loyal, bukan cuma follower.",
+    subheadline: "Iklan saja tidak cukup. Anda butuh audiens organik yang engaged dan loyal. Kami handle content calendar, desain, copywriting, dan community management.",
     benefits: [
-      { short: "📅", title: "Content Calendar", desc: "30 hari konten terstruktur — feed, reels, story" },
-      { short: "🎨", title: "Desain Profesional", desc: "Template brand yang konsisten, estetik, recognizable" },
+      { short: "📅", title: "Content calendar", desc: "30 hari konten terstruktur — feed, reels, story" },
+      { short: "🎨", title: "Desain profesional", desc: "Template brand yang konsisten dan recognizable" },
       { short: "✍️", title: "Copywriting", desc: "Caption engaging dengan CTA yang natural" },
-      { short: "💬", title: "Community Management", desc: "Balas komentar & DM dengan tone brand Anda" }
+      { short: "💬", title: "Community management", desc: "Balas komentar & DM dengan tone brand Anda" }
     ],
-    proof: "9 tahun mengelola brand · 50+ akun IG aktif",
-    cta_text: "💬 Lihat Portfolio Kelola IG",
+    proof: "Mengelola brand sejak 2016 · Puluhan akun IG aktif setiap bulan",
+    cta_text: "Lihat Portfolio",
     cta_url: "https://beriklan.co.id/jasa-kelola-instagram/"
   },
   {
     name: "Jasa Kelola TikTok",
-    subject: "FYP TikTok untuk {{company}} — tanpa harus viral sendiri",
+    subject: "Konsisten di TikTok untuk {{company}}",
     category: "social-organic",
     service_path: "/jasa-kelola-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=600&h=280&fit=crop&q=80",
     accent_color: "#00f2ea",
     accent_bg: "#e0ffff",
     badge: "TikTok Specialist",
-    headline: "TikTok Organik<br><span style='color:#f59e0b'>Tanpa Harus Viral</span>",
+    headline: "Konsisten di TikTok, tanpa harus viral.",
     subheadline: "Tidak semua video harus viral. Yang penting: konsisten, sesuai algoritma, dan menarik untuk target market Anda. Kami handle semuanya.",
     benefits: [
-      { short: "🎬", title: "Video Production", desc: "30 video/bulan dengan scripting, shooting, editing" },
-      { short: "🎵", title: "Trending Sounds", desc: "Riset sound & hashtag yang lagi naik" },
-      { short: "📊", title: "Analytics Mingguan", desc: "Report view, engagement, follower growth" },
-      { short: "💬", title: "Live Streaming", desc: "Opsional: jadwal & script untuk live commerce" }
+      { short: "🎬", title: "Video production", desc: "Paket video bulanan dengan scripting, shooting, editing" },
+      { short: "🎵", title: "Trending sounds", desc: "Riset sound & hashtag yang sedang naik" },
+      { short: "📊", title: "Analytics mingguan", desc: "Report view, engagement, follower growth" },
+      { short: "💬", title: "Live streaming", desc: "Opsional: jadwal & script untuk live commerce" }
     ],
-    proof: "Tim content creator berpengalaman · 20+ akun TikTok dikelola",
-    cta_text: "💬 Lihat Contoh Video",
+    proof: "Tim content creator berpengalaman · Puluhan akun TikTok dikelola",
+    cta_text: "Lihat Contoh Video",
     cta_url: "https://beriklan.co.id/jasa-kelola-tiktok/"
   },
   {
     name: "Jasa Pembuatan Website",
-    subject: "Website profesional untuk {{company}} — custom design, SEO ready",
+    subject: "Website profesional untuk {{company}}",
     category: "website",
     service_path: "/jasa-pembuatan-website/",
     hero_image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=280&fit=crop&q=80",
     accent_color: "#0ea5e9",
     accent_bg: "#e0f2fe",
     badge: "Custom Development",
-    headline: "Website Profesional<br><span style='color:#f59e0b'>yang Konversi</span>",
-    subheadline: "Website bukan sekadar brosur online. Setiap halaman didesain untuk membawa pengunjung ke action — kontak, beli, atau daftar.",
+    headline: "Website yang dirancang untuk konversi.",
+    subheadline: "Website bukan sekadar brosur online. Setiap halaman didesain untuk membawa pengunjung ke satu aksi — kontak, beli, atau daftar.",
     benefits: [
-      { short: "🎨", title: "Custom Design", desc: "Bukan template pasaran — sesuai brand identity Anda" },
+      { short: "🎨", title: "Custom design", desc: "Bukan template pasaran — sesuai brand identity Anda" },
       { short: "📱", title: "Mobile-first", desc: "Optimal di semua device, loading cepat" },
-      { short: "🔍", title: "SEO Ready", desc: "Struktur SEO-friendly dari awal — muncul di Google" },
-      { short: "⚙️", title: "CMS Custom", desc: "Mudah update konten sendiri tanpa tergantung developer" }
+      { short: "🔍", title: "SEO ready", desc: "Struktur SEO-friendly dari awal — muncul di Google" },
+      { short: "⚙️", title: "CMS custom", desc: "Update konten sendiri tanpa tergantung developer" }
     ],
-    proof: "9 tahun develop website · 30+ brand · Berbagai industri",
-    cta_text: "💬 Konsultasi Website Gratis",
+    proof: "Mengembangkan website sejak 2016 · Puluhan brand berbagai industri",
+    cta_text: "Konsultasi Website",
     cta_url: "https://beriklan.co.id/jasa-pembuatan-website/"
   },
   {
     name: "Jasa Pembuatan Landing Page",
-    subject: "Landing page yang {{company}} butuhkan — high converting",
+    subject: "Landing page untuk campaign {{company}}",
     category: "website",
     service_path: "/jasa-pembuatan-landing-page/",
     hero_image: "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=600&h=280&fit=crop&q=80",
     accent_color: "#10b981",
     accent_bg: "#d1fae5",
     badge: "Conversion Focused",
-    headline: "Landing Page yang<br><span style='color:#f59e0b'>High Converting</span>",
-    subheadline: "Bundle landing page + Google Ads = kombinasi paling efisien untuk campaign. Landing page khusus untuk 1 produk/penawaran, fokus pada 1 CTA.",
+    headline: "Landing page yang fokus pada satu aksi.",
+    subheadline: "Bundle landing page + Google Ads = kombinasi paling efisien untuk campaign. Satu halaman, satu penawaran, satu CTA — tanpa distraksi.",
     benefits: [
-      { short: "🎯", title: "Single Goal", desc: "1 halaman, 1 CTA, 1 conversion path — tidak ada distraksi" },
+      { short: "🎯", title: "Single goal", desc: "1 halaman, 1 CTA, 1 conversion path" },
       { short: "⚡", title: "Load < 2 detik", desc: "Optimal Core Web Vitals untuk Google Ads Quality Score" },
-      { short: "📊", title: "A/B Testing", desc: "2 versi diuji untuk cari yang konversinya lebih tinggi" },
-      { short: "📱", title: "Mobile Optimized", desc: "80% traffic dari mobile — layout disesuaikan" }
+      { short: "📊", title: "A/B testing", desc: "2 versi diuji untuk cari yang konversinya lebih tinggi" },
+      { short: "📱", title: "Mobile optimized", desc: "Mayoritas traffic dari mobile — layout disesuaikan" }
     ],
-    proof: "Bundle paket LP + Google Ads · Mulai Rp 2.5jt",
-    cta_text: "💬 Lihat Paket Landing Page",
+    proof: "Bundle paket LP + Google Ads · Dipakai campaign berbagai industri",
+    cta_text: "Lihat Paket Landing Page",
     cta_url: "https://beriklan.co.id/jasa-pembuatan-landing-page/"
   },
   {
     name: "Jasa View Live TikTok",
-    subject: "Tingkatkan viewers live TikTok {{company}} — real & live",
+    subject: "Viewers live TikTok untuk {{company}}",
     category: "view-live",
     service_path: "/jasa-view-live-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=600&h=280&fit=crop&q=80",
     accent_color: "#f59e0b",
     accent_bg: "#fef3c7",
     badge: "Trusted sejak 2016",
-    headline: "Viewers Live TikTok<br><span style='color:#f59e0b'>Real, Aktif, Sesuai Target</span>",
-    subheadline: "Live commerce butuh viewers awal untuk boost algoritma. Kami sediakan viewers real & aktif yang bantu live Anda viral.",
+    headline: "Viewers live TikTok yang real dan aktif.",
+    subheadline: "Live commerce butuh viewers awal untuk boost algoritma. Kami sediakan viewers akun aktif Indonesia yang bantu live Anda tetap tayang.",
     benefits: [
-      { short: "👥", title: "Viewers Real", desc: "Akun aktif Indonesia, bukan bot kosong" },
-      { short: "🎯", title: "Target Market", desc: "Sesuai niche Anda: beauty, fashion, F&B, dll" },
-      { short: "⏱️", title: "Live Sambil Tayang", desc: "Viewer masuk selama live berlangsung" },
+      { short: "👥", title: "Viewers real", desc: "Akun aktif Indonesia, bukan bot kosong" },
+      { short: "🎯", title: "Sesuai target", desc: "Cocokkan dengan niche Anda: beauty, fashion, F&B, dll" },
+      { short: "⏱️", title: "Sambil tayang", desc: "Viewer masuk selama live berlangsung" },
       { short: "💬", title: "Interaksi", desc: "Viewers aktif tinggalkan like & komentar" }
     ],
-    proof: "Trusted oleh 200+ seller TikTok Shop Indonesia",
-    cta_text: "💬 Order Viewers Live Sekarang",
+    proof: "Dipercaya ratusan seller TikTok Shop Indonesia",
+    cta_text: "Order via WhatsApp",
     cta_url: "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20jasa%20view%20live%20TikTok"
   }
 ];
 
 function generateServiceTemplate(c) {
-  const benefitsHTML = c.benefits.map(b =>
-    `<tr><td style="padding:8px;vertical-align:top;width:50%;">
-<table width="100%" style="background:#f7f8fb;border-radius:12px;padding:18px;border-left:3px solid ${c.accent_color};">
-<tr><td>
-<div style="font-size:24px;line-height:1;margin-bottom:8px;">${b.short}</div>
-<div style="color:#0f1e3d;font-size:14px;font-weight:700;margin-bottom:4px;">${b.title}</div>
-<div style="color:#6b7280;font-size:12px;line-height:1.5;">${b.desc}</div>
-</td></tr></table>
-</td></tr>`
-  ).join("").replace(/<\/td><\/tr><\/table><\/td><tr>/g, '</td></tr><tr><td style="padding:8px;vertical-align:top;width:50%;">');
-  const benefitsRows = [];
-  for (let i = 0; i < c.benefits.length; i += 2) {
-    benefitsRows.push(`<tr>${benefitsHTML.slice(i * 1000, (i+2) * 1000)}</tr>`);
-  }
-  // Simpler: just output rows of 2
   const benefitPairs = [];
   for (let i = 0; i < c.benefits.length; i += 2) {
     const a = c.benefits[i];
@@ -5911,16 +5896,16 @@ function generateServiceTemplate(c) {
 <td style="padding:6px;vertical-align:top;width:50%;">
 <table width="100%" style="background:#f7f8fb;border-radius:12px;padding:18px;border-left:3px solid ${c.accent_color};">
 <tr><td>
-<div style="font-size:24px;line-height:1;margin-bottom:6px;">${a.short}</div>
-<div style="color:#0f1e3d;font-size:14px;font-weight:700;margin-bottom:4px;">${a.title}</div>
+<div style="font-size:22px;line-height:1;margin-bottom:6px;">${a.short}</div>
+<div style="color:#0f1e3d;font-size:13px;font-weight:700;margin-bottom:4px;">${a.title}</div>
 <div style="color:#6b7280;font-size:12px;line-height:1.5;">${a.desc}</div>
 </td></tr></table>
 </td>
 ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 <table width="100%" style="background:#f7f8fb;border-radius:12px;padding:18px;border-left:3px solid ${c.accent_color};">
 <tr><td>
-<div style="font-size:24px;line-height:1;margin-bottom:6px;">${b.short}</div>
-<div style="color:#0f1e3d;font-size:14px;font-weight:700;margin-bottom:4px;">${b.title}</div>
+<div style="font-size:22px;line-height:1;margin-bottom:6px;">${b.short}</div>
+<div style="color:#0f1e3d;font-size:13px;font-weight:700;margin-bottom:4px;">${b.title}</div>
 <div style="color:#6b7280;font-size:12px;line-height:1.5;">${b.desc}</div>
 </td></tr></table>
 </td>` : '<td style="width:50%;"></td>'}
@@ -5931,70 +5916,76 @@ ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 <tr><td align="center" style="padding:24px 16px;">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(15,30,61,0.08);">
 
-<!-- Header: Logo + Brand -->
+<!-- Header: Logo Putih + Brand -->
 <tr><td style="background:#0f1e3d;padding:18px 28px;">
 <table width="100%"><tr>
-<td><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:32px;"></td>
-<td align="right"><span style="color:#94a3b8;font-size:11px;">Performance Agency &middot; Bandung</span></td>
+<td><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:32px;display:block;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);"></td>
+<td align="right"><span style="color:#cbd5e1;font-size:11px;font-weight:600;">Performance Agency &middot; Bandung</span></td>
 </tr></table>
 </td></tr>
 
-<!-- Hero Image -->
-<tr><td style="padding:0;line-height:0;">
-<img src="${c.hero_image}" alt="${c.name}" width="600" style="width:100%;max-width:600px;height:auto;display:block;border:0;" />
+<!-- Eyebrow + Sub-header -->
+<tr><td style="padding:24px 28px 0;background:#ffffff;">
+<p style="margin:0 0 6px;color:${c.accent_color};font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">${c.badge}</p>
+<h1 style="margin:0 0 10px;color:#0f1e3d;font-size:24px;font-weight:800;line-height:1.3;">${c.headline}</h1>
+<p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.6;">${c.subheadline}</p>
 </td></tr>
 
-<!-- Hero Content -->
-<tr><td style="padding:32px 28px;text-align:center;background:linear-gradient(135deg,#0f1e3d 0%,#1a2f5c 100%);">
-<table cellpadding="0" cellspacing="0" style="margin:0 auto 14px;"><tr><td style="background:${c.accent_color};color:#fff;padding:4px 14px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;">${c.badge}</td></tr></table>
-<h1 style="color:#fff;font-size:26px;margin:0 0 12px;font-weight:800;line-height:1.25;">${c.headline}</h1>
-<p style="color:#cbd5e1;font-size:14px;margin:0 0 22px;line-height:1.6;">${c.subheadline}</p>
+<!-- Hero Image -->
+<tr><td style="padding:0 28px 24px;line-height:0;">
+<img src="${c.hero_image}" alt="${c.name}" width="544" style="width:100%;max-width:544px;height:auto;display:block;border-radius:10px;border:0;" />
+</td></tr>
+
+<!-- CTA Utama -->
+<tr><td style="padding:0 28px 28px;text-align:center;">
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-<tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
+<tr><td style="background:#f59e0b;border-radius:100px;padding:14px 32px;font-weight:700;font-size:14px;">
 <a href="${c.cta_url}" style="color:#0f1e3d;text-decoration:none;display:block;">${c.cta_text} &rarr;</a>
 </td></tr></table>
-<table cellpadding="0" cellspacing="0" style="margin:14px auto 0;">
-<tr><td style="background:transparent;border:2px solid #cbd5e1;border-radius:100px;padding:11px 24px;font-weight:600;font-size:13px;">
-<a href="${c.service_path}" style="color:#cbd5e1;text-decoration:none;display:block;">📄 Lihat Halaman Layanan</a>
-</td></tr></table>
 </td></tr>
 
+<!-- Garis Pemisah -->
+<tr><td style="padding:0 28px;"><div style="border-top:1px solid #e2e8f0;"></div></td></tr>
+
 <!-- Benefits Grid -->
-<tr><td style="padding:32px 28px;">
-<h2 style="color:#0f1e3d;font-size:18px;margin:0 0 18px;text-align:center;font-weight:800;">Apa yang Anda Dapatkan</h2>
+<tr><td style="padding:28px 28px 8px;">
+<h2 style="color:#0f1e3d;font-size:16px;margin:0 0 18px;text-align:center;font-weight:800;letter-spacing:-0.01em;">Apa yang Anda dapatkan</h2>
 <table width="100%" cellpadding="0" cellspacing="0">${benefitPairs.join("")}</table>
 </td></tr>
 
 <!-- Stats Strip -->
-<tr><td style="background:${c.accent_bg};padding:24px 28px;">
+<tr><td style="background:${c.accent_bg};padding:22px 28px;">
 <table width="100%" cellpadding="0" cellspacing="0"><tr>
-<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:24px;font-weight:800;">9</div><div style="color:#475569;font-size:11px;margin-top:4px;">Tahun Pengalaman</div></td>
-<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:24px;font-weight:800;">1</div><div style="color:#475569;font-size:11px;margin-top:4px;">Jam Respon</div></td>
-<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:24px;font-weight:800;">24/7</div><div style="color:#475569;font-size:11px;margin-top:4px;">Dashboard</div></td>
+<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:22px;font-weight:800;line-height:1;">9</div><div style="color:#475569;font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Tahun</div></td>
+<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:22px;font-weight:800;line-height:1;">1 jam</div><div style="color:#475569;font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Respon</div></td>
+<td align="center" style="padding:0 8px;"><div style="color:${c.accent_color};font-size:22px;font-weight:800;line-height:1;">24/7</div><div style="color:#475569;font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Dashboard</div></td>
 </tr></table>
 </td></tr>
 
 <!-- Social Proof -->
-<tr><td style="padding:24px 28px;text-align:center;border-top:1px solid #e2e8f0;">
-<p style="color:#0f1e3d;font-size:13px;margin:0;font-weight:600;">${c.proof}</p>
+<tr><td style="padding:22px 28px;text-align:center;background:#ffffff;">
+<p style="color:#0f1e3d;font-size:13px;margin:0;line-height:1.5;">${c.proof}</p>
 </td></tr>
 
 <!-- Final CTA -->
-<tr><td style="padding:32px 28px;text-align:center;background:#fdf6e8;">
-<p style="color:#0f1e3d;font-size:16px;margin:0 0 12px;font-weight:700;">Siap diskusikan strategi untuk {{company}}?</p>
-<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.5;">Konsultasi gratis 15 menit. Tim kami akan analisis kondisi campaign Anda &amp; sarankan langkah konkret.</p>
+<tr><td style="padding:28px 28px;background:#f7f8fb;border-top:1px solid #e2e8f0;">
+<p style="color:#0f1e3d;font-size:16px;margin:0 0 8px;font-weight:700;text-align:center;">Mau tahu apa yang bisa kami lakukan untuk {{company}}?</p>
+<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Konsultasi gratis 15 menit. Kami analisis kondisi Anda &amp; sarankan langkah konkret.</p>
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-<tr><td style="background:#f59e0b;border-radius:100px;padding:14px 32px;font-weight:700;font-size:15px;">
-<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(c.name)}" style="color:#0f1e3d;text-decoration:none;display:block;">${c.cta_text} &rarr;</a>
+<tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
+<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20${encodeURIComponent(c.name)}" style="color:#0f1e3d;text-decoration:none;display:block;">Konsultasi via WhatsApp &rarr;</a>
 </td></tr></table>
+<table cellpadding="0" cellspacing="0" style="margin:12px auto 0;">
+<tr><td><a href="${c.service_path}" style="color:#475569;font-size:12px;text-decoration:underline;">📄 Lihat halaman layanan lengkap</a></td></tr></table>
 </td></tr>
 
 <!-- Footer -->
-<tr><td style="padding:24px 28px;border-top:1px solid #e2e8f0;background:#f7f8fb;font-size:12px;color:#94a3b8;text-align:center;">
-<p style="margin:0 0 4px;color:#0f1e3d;font-weight:600;">Beriklan Digital Agency</p>
+<tr><td style="padding:22px 28px;border-top:1px solid #e2e8f0;background:#0f1e3d;color:#94a3b8;font-size:11px;text-align:center;">
+<p style="margin:0 0 4px;color:#fff;font-weight:700;font-size:13px;">Beriklan Digital Agency</p>
+<p style="margin:0 0 4px;">Performance Marketing Partner sejak 2016</p>
 <p style="margin:0 0 4px;">Jl. Arcamanik Endah No.76, Bandung 40195</p>
-<p style="margin:0 0 4px;">info@beriklan.co.id &middot; +62 81-1919-328</p>
-<p style="margin:8px 0 0;"><a href="{{unsubscribe_url}}" style="color:#94a3b8;text-decoration:underline;">Berhenti berlangganan</a></p>
+<p style="margin:0 0 4px;"><a href="mailto:info@beriklan.co.id" style="color:#fbbf24;text-decoration:none;">info@beriklan.co.id</a> &middot; +62 81-1919-328</p>
+<p style="margin:10px 0 0;"><a href="{{unsubscribe_url}}" style="color:#94a3b8;text-decoration:underline;">Berhenti berlangganan</a></p>
 </td></tr>
 
 </table>
@@ -6008,26 +5999,43 @@ const GENERIC_TEMPLATES = [
     category: "followup",
     html_body: `<table width="100%" cellpadding="0" cellspacing="0" style="font-family:Inter,-apple-system,sans-serif;background:#f3f4f8;margin:0;padding:0;">
 <tr><td align="center" style="padding:24px 16px;">
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:100%;background:#fff;border-radius:16px;overflow:hidden;">
-<tr><td style="background:#0f1e3d;padding:24px 32px;text-align:center;">
-<img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:36px;">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(15,30,61,0.08);">
+
+<tr><td style="background:#0f1e3d;padding:18px 28px;">
+<table width="100%"><tr>
+<td><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" style="height:32px;display:block;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);"></td>
+<td align="right"><span style="color:#cbd5e1;font-size:11px;font-weight:600;">Performance Agency &middot; Bandung</span></td>
+</tr></table>
 </td></tr>
-<tr><td style="padding:40px 32px;text-align:center;">
-<p style="color:#6b7280;font-size:14px;margin:0 0 8px;">Halo {{name}},</p>
-<h1 style="color:#0f1e3d;font-size:24px;margin:0 0 12px;font-weight:800;line-height:1.3;">Masih Tertarik dengan<br>Digital Marketing?</h1>
-<p style="color:#6b7280;font-size:15px;margin:0 0 24px;line-height:1.6;">Kami paham — memulai campaign iklan digital memang terasa rumit. Tim Beriklan siap membantu Anda dari konsultasi awal sampai campaign live dan terukur.</p>
+
+<tr><td style="padding:32px 28px 8px;background:#ffffff;">
+<p style="margin:0 0 6px;color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Follow Up</p>
+<h1 style="margin:0 0 12px;color:#0f1e3d;font-size:22px;font-weight:800;line-height:1.3;">Halo {{name}}, masih tertarik dengan digital marketing?</h1>
+<p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.6;">Kami paham — memulai campaign iklan digital memang terasa rumit. Tim Beriklan siap membantu dari konsultasi awal sampai campaign live dan terukur.</p>
+</td></tr>
+
+<tr><td style="padding:8px 28px 24px;background:#ffffff;">
 <table width="100%" cellpadding="0" cellspacing="0">
-<tr><td style="padding:8px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:16px 20px;"><tr><td width="40" valign="top" style="background:#f59e0b;color:#0f1e3d;border-radius:50%;width:40px;height:40px;text-align:center;line-height:40px;font-weight:700;font-size:14px;">1</td><td style="padding-left:14px;"><strong style="color:#0f1e3d;font-size:14px;">Konsultasi Gratis 15 Menit</strong><br><span style="color:#6b7280;font-size:13px;">Ceritakan tujuan bisnis Anda, kami sarankan strateginya</span></td></tr></table></td></tr>
-<tr><td style="padding:8px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:16px 20px;"><tr><td width="40" valign="top" style="background:#10b981;color:#fff;border-radius:50%;width:40px;height:40px;text-align:center;line-height:40px;font-weight:700;font-size:14px;">2</td><td style="padding-left:14px;"><strong style="color:#0f1e3d;font-size:14px;">Dashboard Real-time</strong><br><span style="color:#6b7280;font-size:13px;">Pantau ROI campaign 24/7 dari mana saja</span></td></tr></table></td></tr>
-<tr><td style="padding:8px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:16px 20px;"><tr><td width="40" valign="top" style="background:#0ea5e9;color:#fff;border-radius:50%;width:40px;height:40px;text-align:center;line-height:40px;font-weight:700;font-size:14px;">3</td><td style="padding-left:14px;"><strong style="color:#0f1e3d;font-size:14px;">Laporan Bahasa Manusia</strong><br><span style="color:#6b7280;font-size:13px;">Laporan mingguan tanpa jargon teknis</span></td></tr></table></td></tr>
+<tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#f59e0b;color:#0f1e3d;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">1</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Konsultasi Gratis 15 Menit</strong><span style="color:#6b7280;font-size:12px;">Ceritakan tujuan Anda, kami sarankan strateginya</span></td></tr></table></td></tr>
+<tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#10b981;color:#fff;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">2</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Dashboard Real-time</strong><span style="color:#6b7280;font-size:12px;">Pantau ROI 24/7 dari mana saja</span></td></tr></table></td></tr>
+<tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#0ea5e9;color:#fff;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">3</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Laporan Bahasa Manusia</strong><span style="color:#6b7280;font-size:12px;">Mingguan tanpa jargon teknis</span></td></tr></table></td></tr>
 </table>
-<table cellpadding="0" cellspacing="0" style="margin:24px auto 0;"><tr><td style="background:#f59e0b;border-radius:100px;padding:14px 36px;font-weight:700;font-size:15px;"><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20konsultasi" style="color:#0f1e3d;text-decoration:none;display:block;">💬 Saya Mau Konsultasi Gratis</a></td></tr></table>
 </td></tr>
-<tr><td style="padding:24px 32px;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;text-align:center;">
-<p style="margin:0 0 4px;color:#0f1e3d;font-weight:600;">Beriklan Digital Agency</p>
+
+<tr><td style="padding:0 28px 28px;text-align:center;">
+<table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+<tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
+<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20konsultasi" style="color:#0f1e3d;text-decoration:none;display:block;">Konsultasi via WhatsApp &rarr;</a>
+</td></tr></table>
+</td></tr>
+
+<tr><td style="padding:22px 28px;border-top:1px solid #e2e8f0;background:#0f1e3d;color:#94a3b8;font-size:11px;text-align:center;">
+<p style="margin:0 0 4px;color:#fff;font-weight:700;font-size:13px;">Beriklan Digital Agency</p>
+<p style="margin:0 0 4px;">Performance Marketing Partner sejak 2016</p>
 <p style="margin:0 0 4px;">Jl. Arcamanik Endah No.76, Bandung 40195</p>
-<p style="margin:8px 0 0;"><a href="{{unsubscribe_url}}" style="color:#94a3b8;">Berhenti berlangganan</a></p>
+<p style="margin:10px 0 0;"><a href="{{unsubscribe_url}}" style="color:#94a3b8;text-decoration:underline;">Berhenti berlangganan</a></p>
 </td></tr>
+
 </table>
 </td></tr></table>`
   }
@@ -6092,115 +6100,175 @@ async function getDailyEmailCount(env) {
   } catch { return 0; }
 }
 
-// ─── Email Dashboard ──────────────────────────────────────────
+// ─── Email Dashboard (Redesigned) ──────────────────────────────
 async function handleEmailDashboard(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const tab = url.searchParams.get("tab") || "overview";
+  const viewId = url.searchParams.get("id");
+
+  // Detail page untuk 1 campaign
+  if (viewId) {
+    return await renderCampaignDetail(viewId, token, env);
+  }
+
   try {
-    const campaigns = await env.DB.prepare("SELECT id, name, status, total_recipients, sent_count, open_count, click_count, created_at FROM campaigns ORDER BY id DESC LIMIT 20").all();
-    const templates = await env.DB.prepare("SELECT COUNT(*) as c FROM email_templates").first();
-    const lists = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_lists").first();
-    const contacts = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts").first();
+    // Fetch semua data yang dibutuhkan
+    const campaigns = await env.DB.prepare(`
+      SELECT c.*, t.name as template_name, l.name as list_name,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') as pending_count,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='sent') as db_sent,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='failed') as failed_count,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND opened_at IS NOT NULL) as open_count,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND clicked_at IS NOT NULL) as click_count
+      FROM campaigns c
+      LEFT JOIN email_templates t ON c.template_id=t.id
+      LEFT JOIN lead_lists l ON c.list_id=l.id
+      ORDER BY c.id DESC LIMIT 50
+    `).all();
+
+    const templates = await env.DB.prepare("SELECT id, name, subject, category FROM email_templates ORDER BY id").all();
+    const lists = await env.DB.prepare("SELECT id, name, source, total FROM lead_lists WHERE total > 0 ORDER BY total DESC LIMIT 30").all();
+    const cronRows = await env.DB.prepare("SELECT * FROM cron_settings ORDER BY id ASC").all();
+
     const totalSent = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE status='sent'").first();
+    const totalOpened = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE opened_at IS NOT NULL").first();
+    const totalClicked = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE clicked_at IS NOT NULL").first();
     const pending = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE status='pending'").first();
     const dailySent = await getDailyEmailCount(env);
-    const templateRows = await env.DB.prepare("SELECT id, name, subject, category, created_at FROM email_templates ORDER BY id DESC LIMIT 20").all();
-    const listRows = await env.DB.prepare("SELECT id, name, source, total, created_at FROM lead_lists ORDER BY id DESC LIMIT 20").all();
-    const cronRows = await env.DB.prepare("SELECT * FROM cron_settings ORDER BY id ASC").all();
-    const tab = url.searchParams.get("tab") || "campaigns";
+    const contactsCount = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL").first();
+    const templatesCount = await env.DB.prepare("SELECT COUNT(*) as c FROM email_templates").first();
+
+    // Hitung next cron run untuk email-send
+    const emailCron = cronRows.results?.find(c => c.name === 'email-send');
+    const nextEmailRun = emailCron?.enabled ? getNextCronRun('*/15 * * * *') : null;
 
     const T = {
-      header: `background:#0f1e3d;color:#fff;padding:20px 28px;`,
-      body: `background:#f3f4f8;font-family:Inter,-apple-system,sans-serif;color:#0f1e3d;padding:0;margin:0;`,
-      card: `background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(15,30,61,0.06);`,
-      grid: `display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;`,
-      val: `font-size:26px;font-weight:800;line-height:1;`,
-      lbl: `font-size:12px;color:#6b7280;margin-top:4px;`,
-      btn: `display:inline-flex;align-items:center;gap:4px;padding:8px 18px;border-radius:100px;font-weight:600;font-size:13px;text-decoration:none;border:none;cursor:pointer;background:#0f1e3d;color:#fff;`,
-      tabActive: `background:#f59e0b;color:#0f1e3d;`,
-      tabInactive: `background:transparent;color:#6b7280;border:1px solid #e2e8f0;`,
-      th: `background:#0f1e3d;color:#fff;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;`,
-      td: `padding:10px 14px;border-bottom:1px solid #eef0f5;font-size:13px;`,
-      table: `width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,30,61,0.06);`,
+      header: `background:linear-gradient(135deg,#0f1e3d 0%,#1a2f5c 100%);color:#fff;padding:24px 32px;border-radius:18px;`,
+      card: `background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(15,30,61,0.06),0 1px 2px rgba(15,30,61,0.04);border:1px solid #f0f1f5;`,
+      statCard: `background:#fff;border-radius:14px;padding:18px 20px;border:1px solid #f0f1f5;box-shadow:0 1px 2px rgba(15,30,61,0.04);`,
+      navActive: `background:#0f1e3d;color:#fff;font-weight:600;`,
+      navInactive: `background:transparent;color:#475569;border:1px solid #e5e7eb;font-weight:500;`,
+      th: `background:#fafbfc;color:#475569;padding:12px 16px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;border-bottom:1px solid #e5e7eb;`,
+      td: `padding:14px 16px;border-bottom:1px solid #f0f1f5;font-size:14px;`,
+      btnPrimary: `display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:10px;font-weight:600;font-size:13px;text-decoration:none;border:none;cursor:pointer;background:#0f1e3d;color:#fff;transition:transform .15s,box-shadow .15s;`,
+      btnAmber: `display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;text-decoration:none;border:none;cursor:pointer;background:#f59e0b;color:#0f1e3d;`,
+      btnOutline: `display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-weight:500;font-size:13px;text-decoration:none;cursor:pointer;background:#fff;color:#0f1e3d;border:1px solid #d1d5db;`,
+      btnDanger: `display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:10px;font-weight:500;font-size:12px;text-decoration:none;cursor:pointer;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;`,
     };
 
-    const nav = (t) => `<a href="?token=${token}&tab=${t}" style="padding:8px 18px;border-radius:100px;font-weight:600;font-size:13px;text-decoration:none;${tab===t?T.tabActive:T.tabInactive}">${t==='campaigns'?'📨 Campaign':t==='templates'?'📝 Template':t==='lists'?'📋 Lead List':t==='scraper'?'🔍 Scraper':t==='crons'?'⏰ Cron':'➕ Baru'}</a>`;
+    const navBtn = (t, label, icon) => {
+      const active = tab === t;
+      return `<a href="?token=${token}&tab=${t}" style="padding:9px 16px;border-radius:10px;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;${active?T.navActive:T.navInactive}">${icon} ${label}</a>`;
+    };
 
     const html = `<!DOCTYPE html>
-<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Email — Beriklan</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}a{text-decoration:none;color:inherit}body{${T.body}}
-.container{max-width:960px;margin:0 auto;padding:20px 16px;}
-.header{${T.header}border-radius:16px;margin-bottom:20px;}
-.header h1{font-size:20px;margin:0;font-weight:800}.header p{color:#94a3b8;font-size:13px;margin:4px 0 0;}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
-.grid{${T.grid}}.card{${T.card}}.card .val{${T.val}}.card .lbl{${T.lbl}}
-.section-title{font-size:15px;font-weight:700;margin:20px 0 10px;display:flex;justify-content:space-between;align-items:center;}
-table{${T.table}}th{${T.th}}td{${T.td}}tr:last-child td{border-bottom:none}
-.badge{padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;display:inline-block;}
-.green{background:#d1fae5;color:#065f46}.amber{background:#fef3c7;color:#92400e}.gray{background:#e2e8f0;color:#475569}.blue{background:#dbeafe;color:#1e40af}.red{background:#fee2e2;color:#991b1b}
-form{display:inline}.mono{font-family:monospace;font-size:12px;color:#6b7280;}
-input,select,textarea{padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;width:100%;outline:none;}
-input:focus,select:focus,textarea:focus{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
-.form-group{margin-bottom:12px;}.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#374151;}
-.form-row{display:flex;gap:12px;flex-wrap:wrap;}.form-row > div{flex:1;min-width:180px;}
-.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;}.toggle input{display:none;}
-.toggle .slider{width:36px;height:20px;background:#d1d5db;border-radius:10px;position:relative;transition:.2s;}
-.toggle .slider::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.2s;}
-.toggle input:checked+.slider{background:#10b981;}.toggle input:checked+.slider::after{left:18px;}
-.toggle .lbl{font-size:13px;color:#374151;}
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Email — Beriklan Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f6fa;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0f1e3d;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.sidebar{background:#0f1e3d;color:#cbd5e1;padding:28px 20px;display:flex;flex-direction:column;gap:4px}
+@media(max-width:900px){.sidebar{flex-direction:row;flex-wrap:wrap;padding:14px}}
+.sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:0 8px}
+.sidebar-brand img{height:28px;filter:brightness(0) invert(1)}
+.sidebar-brand span{font-weight:800;font-size:16px;color:#fff}
+.sidebar a.nav{padding:10px 14px;border-radius:8px;font-size:14px;display:flex;align-items:center;gap:10px;color:#cbd5e1;font-weight:500;transition:background .15s}
+.sidebar a.nav:hover{background:rgba(255,255,255,0.06);color:#fff}
+.sidebar a.nav.active{background:#1a2f5c;color:#fff;font-weight:600}
+.sidebar a.nav .ico{width:18px;text-align:center;opacity:0.8}
+.sidebar-foot{margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b}
+@media(max-width:900px){.sidebar-foot{display:none}}
+.main{padding:28px 32px;overflow-x:hidden}
+@media(max-width:900px){.main{padding:18px}}
+.page-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-head h1{font-size:24px;font-weight:800;letter-spacing:-0.01em}
+.page-head p{color:#6b7280;font-size:13px;margin-top:2px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.kpi{${T.statCard};display:flex;flex-direction:column;gap:6px}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280;font-weight:700}
+.kpi-val{font-size:26px;font-weight:800;line-height:1.1;color:#0f1e3d}
+.kpi-sub{font-size:11px;color:#6b7280}
+.kpi-bar{height:4px;background:#f0f1f5;border-radius:2px;margin-top:6px;overflow:hidden}
+.kpi-bar > div{height:100%;background:linear-gradient(90deg,#0f1e3d,#f59e0b);border-radius:2px}
+.card{${T.card};margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-head h2{font-size:16px;font-weight:700;letter-spacing:-0.01em}
+.card-head p{color:#6b7280;font-size:12px;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f0f1f5}
+th{${T.th}}td{${T.td}}
+tr:hover td{background:#fafbfc}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;line-height:1.4}
+.b-green{background:#d1fae5;color:#065f46}.b-amber{background:#fef3c7;color:#92400e}.b-gray{background:#f1f5f9;color:#475569}.b-blue{background:#dbeafe;color:#1e40af}.b-red{background:#fee2e2;color:#991b1b}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.progress{height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden;margin-top:4px}
+.progress > div{height:100%;background:linear-gradient(90deg,#0f1e3d 0%,#f59e0b 100%);transition:width .3s}
+.empty-state{text-align:center;padding:48px 20px;color:#9ca3af}
+.empty-state .ico{font-size:36px;margin-bottom:8px;opacity:0.6}
+.empty-state p{margin-top:6px;font-size:13px}
+input,select,textarea{padding:10px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;width:100%;outline:none;background:#fff;font-family:inherit;transition:border .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:#0f1e3d;box-shadow:0 0 0 3px rgba(15,30,61,0.08)}
+label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#374151;text-transform:uppercase;letter-spacing:0.04em}
+.field{margin-bottom:14px}
+.field-hint{font-size:11px;color:#6b7280;margin-top:4px;line-height:1.4}
+.btn-primary{${T.btnPrimary}}
+.btn-amber{${T.btnAmber}}
+.btn-outline{${T.btnOutline}}
+.btn-danger{${T.btnDanger}}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,30,61,0.15)}
+.cron-card{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#fff;border-radius:12px;border:1px solid #f0f1f5;margin-bottom:8px}
+.cron-card .left strong{display:block;font-size:14px;font-weight:700;margin-bottom:2px}
+.cron-card .left .cron{font-family:'JetBrains Mono',monospace;font-size:12px;color:#475569;background:#f1f5f9;padding:2px 8px;border-radius:6px;display:inline-block;margin-right:8px}
+.cron-card .left .next{font-size:11px;color:#6b7280;margin-top:4px}
+.toggle{position:relative;display:inline-block;width:48px;height:26px;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;inset:0;background:#d1d5db;border-radius:13px;transition:.2s}
+.toggle .slider::before{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle input:checked+.slider{background:#10b981}
+.toggle input:checked+.slider::before{transform:translateX(22px)}
 </style></head><body>
-<div class="container">
-<div class="header">
-<div style="display:flex;justify-content:space-between;align-items:center;">
-<div><h1>📧 Email Campaigns</h1><p>Resend · ${dailySent} terkirim hari ini · ${contacts?.c||0} kontak</p></div>
-<a href="/api/admin?token=${token}" style="font-size:12px;color:#94a3b8;">← Dashboard Utama</a>
-</div></div>
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-brand"><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" onerror="this.style.display='none'"><span>Beriklan</span></div>
+<a href="/api/admin?token=${token}" class="nav"><span class="ico">🏠</span> Dashboard Utama</a>
+<a href="?token=${token}&tab=overview" class="nav ${tab==='overview'?'active':''}"><span class="ico">📊</span> Overview</a>
+<a href="?token=${token}&tab=campaigns" class="nav ${tab==='campaigns'?'active':''}"><span class="ico">📨</span> Campaigns</a>
+<a href="?token=${token}&tab=composer" class="nav ${tab==='composer'?'active':''}"><span class="ico">✍️</span> Composer</a>
+<a href="?token=${token}&tab=templates" class="nav ${tab==='templates'?'active':''}"><span class="ico">📝</span> Templates</a>
+<a href="?token=${token}&tab=lists" class="nav ${tab==='lists'?'active':''}"><span class="ico">👥</span> Kontak & Lists</a>
+<a href="?token=${token}&tab=cron" class="nav ${tab==='cron'?'active':''}"><span class="ico">⏰</span> Cron & Automasi</a>
+<a href="?token=${token}&tab=scraper" class="nav ${tab==='scraper'?'active':''}"><span class="ico">🔍</span> Scraper</a>
+<div class="sidebar-foot">
+Email · Resend API<br>
+Quota hari ini: ${dailySent}/500
+${nextEmailRun ? `<br>Next send: <strong>${nextEmailRun}</strong>` : '<br>⏸️ Email cron paused'}
+</div>
+</aside>
 
-<div class="tabs">${nav('campaigns')}${nav('templates')}${nav('lists')}${nav('crons')}<a href="?token=${token}&tab=new-campaign" style="padding:8px 18px;border-radius:100px;font-weight:600;font-size:13px;text-decoration:none;background:#f59e0b;color:#0f1e3d;">➕ Campaign Baru</a></div>
-
-<div class="grid">
-<div class="card"><div class="val">${templates?.c||0}</div><div class="lbl">📝 Template</div></div>
-<div class="card"><div class="val">${campaigns.results?.length||0}</div><div class="lbl">📨 Campaign</div></div>
-<div class="card"><div class="val">${contacts?.c||0}</div><div class="lbl">👥 Kontak</div></div>
-<div class="card"><div class="val">${lists?.c||0}</div><div class="lbl">📋 Lead List</div></div>
-<div class="card"><div class="val">${totalSent?.c||0}</div><div class="lbl">📤 Terkirim</div></div>
-<div class="card"><div class="val">${pending?.c||0}</div><div class="lbl">⏳ Antrian</div></div>
+<div class="main">
+${tab === 'overview' ? renderOverview(campaigns, totalSent, totalOpened, totalClicked, pending, dailySent, contactsCount, templatesCount, T, token) :
+  tab === 'campaigns' ? renderCampaignsList(campaigns, T, token) :
+  tab === 'composer' ? await renderComposer(templates, lists, T, token, env) :
+  tab === 'templates' ? renderTemplates(templates, T, token) :
+  tab === 'lists' ? renderLists(lists, T, token) :
+  tab === 'cron' ? renderCron(cronRows, T, token) :
+  tab === 'scraper' ? renderScraper(campaigns, T, token, env) :
+  '<div class="card"><p>Halaman tidak ditemukan. <a href="?token='+token+'&tab=overview">← Overview</a></p></div>'}
+</div>
 </div>
 
-${tab === 'campaigns' ? `
-<div class="section-title">📨 Semua Campaign</div>
-<table><thead><tr><th>Nama</th><th>Total</th><th>Sent</th><th>Status</th><th>Aksi</th></tr></thead>
-<tbody>${(campaigns.results||[]).map(c => `<tr>
-<td><strong>${escHtml(c.name)}</strong></td>
-<td>${c.total_recipients||0}</td>
-<td>${c.sent_count||0}</td>
-<td><span class="badge ${c.status==='done'?'green':c.status==='sending'?'amber':c.status==='draft'?'gray':'blue'}">${c.status||'draft'}</span></td>
-<td>
-<form method="POST" action="/api/email/campaigns?token=${token}&action=start&id=${c.id}"><button class="badge green" style="border:none;cursor:pointer;">▶ Kirim</button></form>
-<form method="POST" action="/api/email/campaigns?token=${token}&action=delete&id=${c.id}" onsubmit="return confirm('Hapus?')"><button class="badge red" style="border:none;cursor:pointer;">✕</button></form>
-</td>
-</tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:24px;">Belum ada campaign.</td></tr>'}</tbody></table>
-` : tab === 'templates' ? `
-<div class="section-title">📝 Template Email <form method="POST" action="/api/email/templates?token=${token}&action=seed"><button class="badge blue" style="border:none;cursor:pointer;font-size:12px;padding:4px 10px;">+ Seed Default</button></form></div>
-<table><thead><tr><th>Nama</th><th>Subject</th><th>Kategori</th><th>Aksi</th></tr></thead>
-<tbody>${(templateRows.results||[]).map(t => `<tr>
-<td><strong>${escHtml(t.name)}</strong></td>
-<td style="color:#6b7280;font-size:12px;">${escHtml(t.subject)}</td>
-<td><span class="badge blue">${escHtml(t.category)}</span></td>
-<td>
-<a href="/api/email/templates/preview?id=${t.id}&token=${token}" target="_blank" style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;background:#d1fae5;color:#065f46;text-decoration:none;margin-right:4px;">👁 Preview</a>
-<button onclick="testSend(${t.id})" style="display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;background:#dbeafe;color:#1e40af;border:none;cursor:pointer;margin-right:4px;">✉️ Test</button>
-<form method="POST" action="/api/email/templates?token=${token}&action=delete&id=${t.id}" onsubmit="return confirm('Hapus?')" style="display:inline"><button style="padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;border:none;cursor:pointer;">✕</button></form>
-</td>
-</tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">Belum ada template. Klik "Seed Default".</td></tr>'}</tbody></table>
 <script>
 async function testSend(id) {
   const email = prompt("Kirim test ke email mana?", "3smedianet@gmail.com");
   if (!email) return;
   const btn = event.target;
-  btn.disabled = true; btn.textContent = "⏳ Mengirim...";
+  btn.disabled = true; btn.innerHTML = "⏳ Mengirim...";
   try {
     const r = await fetch('/api/email/test-send?token=${token}&template_id=' + id + '&to=' + encodeURIComponent(email));
     const d = await r.json();
@@ -6209,135 +6277,420 @@ async function testSend(id) {
     } else {
       alert("❌ Gagal: " + d.error);
     }
-  } catch(e) {
-    alert("❌ Error: " + e.message);
-  }
-  btn.disabled = false; btn.textContent = "✉️ Test";
+  } catch(e) { alert("❌ Error: " + e.message); }
+  btn.disabled = false; btn.innerHTML = "✉️ Test";
 }
-</script>
-` : tab === 'lists' ? `
-<div class="section-title">📋 Lead Lists</div>
-<table><thead><tr><th>Nama</th><th>Sumber</th><th>Kontak</th><th>Aksi</th></tr></thead>
-<tbody>${(listRows.results||[]).map(l => `<tr>
-<td><strong>${escHtml(l.name)}</strong></td>
-<td style="color:#6b7280;">${escHtml(l.source||'-')}</td>
-<td>${l.total||0}</td>
-<td>
-<form method="POST" action="/api/email/lists?token=${token}&action=delete&id=${l.id}" onsubmit="return confirm('Hapus list ini?')"><button class="badge red" style="border:none;cursor:pointer;">✕</button></form>
-</td>
-</tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">Belum ada list.</td></tr>'}</tbody></table>
-` : tab === 'scraper' ? `
-<div class="section-title">🔍 Scraper Bisnis Direktori</div>
-<div style="${T.card}margin-bottom:16px;">
-<p style="margin:0 0 12px;color:#0f1e3d;font-weight:700;font-size:14px;">📡 Sumber Data Aktif:</p>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
-<div style="background:#f7f8fb;padding:12px;border-radius:8px;border-left:3px solid #10b981;">
-<strong style="font-size:13px;">📊 Database Internal</strong><br>
-<span style="font-size:11px;color:#6b7280;">${contacts?.c||0} kontak — siap pakai</span>
-</div>
-<div style="background:#f7f8fb;padding:12px;border-radius:8px;border-left:3px solid ${env.GOOGLE_PLACES_API_KEY?'#10b981':'#9ca3af'};">
-<strong style="font-size:13px;">🌐 Google Places API</strong><br>
-<span style="font-size:11px;color:#6b7280;">${env.GOOGLE_PLACES_API_KEY?'✅ Aktif (butuh key di wrangler secret)':'⚠️ Belum dikonfigurasi'}</span>
-</div>
-<div style="background:#f7f8fb;padding:12px;border-radius:8px;border-left:3px solid #f59e0b;">
-<strong style="font-size:13px;">🏭 Indonetwork.co.id</strong><br>
-<span style="font-size:11px;color:#6b7280;">✅ Scraping aktif — 10 kategori × 8 company/hari</span>
-</div>
-<div style="background:#f7f8fb;padding:12px;border-radius:8px;border-left:3px solid #f59e0b;">
-<strong style="font-size:13px;">📋 Manual Import</strong><br>
-<span style="font-size:11px;color:#6b7280;">${lists?.c||0} list tersedia — bisa upload CSV/Excel</span>
-</div>
-</div>
-</div>
-
-<div class="section-title">🚀 Jalankan Scraper</div>
-<div style="display:grid;gap:8px;margin-bottom:16px;">
-<div style="${T.card}display:flex;align-items:center;justify-content:space-between;padding:14px 18px;">
-<div><strong style="font-size:14px;">🏭 Indonetwork Manufaktur</strong><br><span style="font-size:12px;color:#6b7280;">Decode base64 + visit website untuk extract email</span></div>
-<button onclick="runScraper('/api/cron/scrape/indonetwork?token=${token}&cat=0', 'Manufaktur')" style="padding:6px 16px;border-radius:100px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#f59e0b;color:#0f1e3d;">▶ Jalankan</button>
-</div>
-<div style="${T.card}display:flex;align-items:center;justify-content:space-between;padding:14px 18px;">
-<div><strong style="font-size:14px;">🏭 Indonetwork Distributor</strong><br><span style="font-size:12px;color:#6b7280;">Kategori: distributor</span></div>
-<button onclick="runScraper('/api/cron/scrape/indonetwork?token=${token}&cat=1', 'Distributor')" style="padding:6px 16px;border-radius:100px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:#f59e0b;color:#0f1e3d;">▶ Jalankan</button>
-</div>
-<div style="${T.card}display:flex;align-items:center;justify-content:space-between;padding:14px 18px;">
-<div><strong style="font-size:14px;">🌐 Google Places (Manual)</strong><br><span style="font-size:12px;color:#6b7280;">${env.GOOGLE_PLACES_API_KEY?'✅ Siap pakai':'⚠️ Butuh API key — set via: wrangler secret put GOOGLE_PLACES_API_KEY'}</span></div>
-<button onclick="runScraper('/api/cron/scrape/google-places?token=${token}&q=0', 'Google Places')" style="padding:6px 16px;border-radius:100px;border:none;cursor:pointer;font-weight:600;font-size:13px;background:${env.GOOGLE_PLACES_API_KEY?'#10b981':'#d1d5db'};color:#fff;" ${env.GOOGLE_PLACES_API_KEY?'':'disabled'}>▶ Jalankan</button>
-</div>
-</div>
-
-<div class="section-title">📊 Hasil Scraper Terbaru</div>
-<table><thead><tr><th>Nama List</th><th>Sumber</th><th>Kontak</th><th>Dibuat</th></tr></thead>
-<tbody>${(listRows.results||[]).filter(l => l.source && l.source !== 'database-siap-pake').slice(0, 15).map(l => `<tr>
-<td><strong>${escHtml(l.name)}</strong></td>
-<td><span class="badge ${l.source==='indonetwork'?'amber':l.source==='google_places'?'blue':'gray'}">${escHtml(l.source||'-')}</span></td>
-<td>${l.total||0}</td>
-<td style="font-size:11px;color:#6b7280;">${l.created_at||''}</td>
-</tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">Belum ada hasil scrape.</td></tr>'}</tbody></table>
-
-<div class="section-title">📥 Import Manual (paste emails)</div>
-<form method="POST" action="/api/email/lists?token=${token}&action=create" style="${T.card}display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
-<div class="form-group" style="flex:1;min-width:140px;"><label>Nama List</label><input name="name" required placeholder="misal: jakarta-jasa-cleaning"></div>
-<div class="form-group" style="flex:1;min-width:140px;"><label>Sumber</label><input name="source" placeholder="manual / yellowpages / dll"></div>
-<div class="form-group" style="flex:2;min-width:200px;"><label>Email + Nama (pisah koma, 1 per baris)</label><textarea name="emails" rows="4" placeholder="info@abc.com, PT ABC&#10;admin@xyz.com, CV XYZ" style="width:100%;"></textarea></div>
-<button style="${T.btn}background:#f59e0b;color:#0f1e3d;padding:10px 24px;">📥 Import</button>
-</form>
-<script>
 async function runScraper(url, label) {
   const btn = event.target;
   btn.disabled = true; btn.textContent = '⏳ Scraping...';
   try {
     const r = await fetch(url, { method: 'POST' });
     const d = await r.json();
-    let msg = '';
-    if (d.ok) {
-      msg = '✅ ' + label + ': ' + (d.contacts_saved || d.places_found || 0) + ' kontak disimpan' +
-            (d.websites_visited ? ' (' + d.websites_visited + ' website dikunjungi)' : '') +
-            (d.companies_found ? ' dari ' + d.companies_found + ' perusahaan' : '');
-    } else {
-      msg = '❌ ' + label + ': ' + (d.error || 'Unknown error');
-    }
-    alert(msg);
+    alert((d.ok ? '✅ ' : '❌ ') + label + ': ' + (d.error || (d.contacts_saved || 0) + ' saved'));
     location.reload();
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
+  } catch(e) { alert('❌ Error: ' + e.message); }
   btn.disabled = false; btn.textContent = '▶ Jalankan';
 }
 </script>
-` : tab === 'crons' ? `
-` : tab === 'crons' ? `
-<div class="section-title">⏰ Cron Settings — klik toggle untuk pause/enable</div>
-<div class="section-title">⏰ Cron Settings — klik toggle untuk pause/enable</div>
-<div style="display:grid;gap:8px;">${(cronRows.results||[]).map(cr => `
-<div style="${T.card}display:flex;align-items:center;justify-content:space-between;padding:14px 18px;">
-<div><strong style="font-size:14px;">${escHtml(cr.label||cr.name)}</strong><br><span style="font-size:12px;color:#6b7280;"><code class="mono">${cr.cron||''}</code> · saat ini: <strong>${cr.enabled?'✅ AKTIF':'⏸️ PAUSED'}</strong></span></div>
-<form method="POST" action="/api/admin/cron/toggle?token=${token}&name=${cr.name}">
-<button style="padding:6px 16px;border-radius:100px;border:none;cursor:pointer;font-weight:600;font-size:13px;${cr.enabled?'background:#fee2e2;color:#991b1b;':'background:#d1fae5;color:#065f46;'}">${cr.enabled?'⏸️ Pause':'▶️ Enable'}</button>
-</form>
-</div>`).join('')||'<div style="text-align:center;color:#6b7280;">Tidak ada cron settings.</div>'}</div>
-` : tab === 'new-campaign' ? `
-<div class="section-title">➕ Campaign Baru</div>
-<form method="POST" action="/api/email/campaigns?token=${token}&action=create" style="${T.card}">
-<div class="form-row">
-<div class="form-group"><label>Nama Campaign</label><input name="name" required></div>
-<div class="form-group"><label>Subject Email</label><input name="subject" required></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Template</label><select name="template_id" required>${(templateRows.results||[]).map(t => `<option value="${t.id}">${escHtml(t.name)}</option>`).join('')}</select></div>
-<div class="form-group"><label>Target List</label><select name="list_id">
-<option value="0">📬 Semua Kontak (${(await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL").first())?.c || 0})</option>
-${(listRows.results||[]).map(l => `<option value="${l.id}">${escHtml(l.name)} (${l.total||0})</option>`).join('')}</select></div>
-</div>
-<button style="${T.btn}background:#f59e0b;color:#0f1e3d;padding:10px 28px;margin-top:8px;">📤 Buat & Kirim</button>
-</form>
-` : ''}
-</div></body></html>`;
+</body></html>`;
+
     return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response("Dashboard error: " + e.message, { status: 500 });
   }
 }
+
+// Helper: hitung next cron run
+function getNextCronRun(expr) {
+  try {
+    const parts = expr.split(' ');
+    const min = parts[0];
+    if (min.startsWith('*/')) {
+      const interval = parseInt(min.slice(2));
+      const now = new Date();
+      const currentMin = now.getMinutes();
+      const nextMin = Math.ceil((currentMin + 1) / interval) * interval;
+      const next = new Date(now);
+      if (nextMin >= 60) { next.setHours(next.getHours() + 1); next.setMinutes(nextMin - 60); }
+      else { next.setMinutes(nextMin); next.setSeconds(0); }
+      return next.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+    return null;
+  } catch { return null; }
+}
+
+// Tab renderers
+function renderOverview(campaigns, totalSent, totalOpened, totalClicked, pending, dailySent, contactsCount, templatesCount, T, token) {
+  const openRate = totalSent?.c > 0 ? ((totalOpened?.c || 0) / totalSent.c * 100).toFixed(1) : '0';
+  const clickRate = totalOpened?.c > 0 ? ((totalClicked?.c || 0) / totalOpened.c * 100).toFixed(1) : '0';
+  const recentCampaigns = (campaigns.results || []).slice(0, 5);
+  return `
+<div class="page-head">
+<div><h1>Overview</h1><p>Status campaign, performa email, dan automasi email marketing.</p></div>
+<a href="?token=${token}&tab=composer" class="btn-amber">✍️ Buat Campaign</a>
+</div>
+
+<div class="kpi-grid">
+<div class="kpi"><span class="kpi-label">📤 Total Terkirim</span><span class="kpi-val">${(totalSent?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">${dailySent}/500 hari ini</span></div>
+<div class="kpi"><span class="kpi-label">👁 Open Rate</span><span class="kpi-val">${openRate}%</span><span class="kpi-sub">${(totalOpened?.c || 0).toLocaleString('id-ID')} dibuka</span></div>
+<div class="kpi"><span class="kpi-label">🖱 Click Rate</span><span class="kpi-val">${clickRate}%</span><span class="kpi-sub">${(totalClicked?.c || 0).toLocaleString('id-ID')} klik</span></div>
+<div class="kpi"><span class="kpi-label">⏳ Antrian</span><span class="kpi-val">${(pending?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">email pending</span></div>
+<div class="kpi"><span class="kpi-label">👥 Kontak</span><span class="kpi-val">${(contactsCount?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">dengan email valid</span></div>
+<div class="kpi"><span class="kpi-label">📝 Template</span><span class="kpi-val">${templatesCount?.c || 0}</span><span class="kpi-sub">siap pakai</span></div>
+</div>
+
+<div class="card">
+<div class="card-head"><div><h2>📨 Campaign Terbaru</h2><p>5 campaign terakhir dan progresnya.</p></div>
+<a href="?token=${token}&tab=campaigns" style="color:#0f1e3d;font-size:13px;font-weight:600;">Lihat semua →</a></div>
+${recentCampaigns.length ? `<table>
+<thead><tr><th>Nama</th><th>Status</th><th>Progres</th><th>Open</th><th>Aksi</th></tr></thead>
+<tbody>${recentCampaigns.map(c => {
+  const pct = c.total_recipients > 0 ? Math.round(c.db_sent / c.total_recipients * 100) : 0;
+  const opn = c.db_sent > 0 ? Math.round((c.open_count || 0) / c.db_sent * 100) : 0;
+  const status = c.status === 'done' ? '<span class="badge b-green">✓ Selesai</span>' : c.status === 'sending' ? '<span class="badge b-amber">⏳ Mengirim</span>' : '<span class="badge b-gray">Draft</span>';
+  return `<tr>
+<td><strong>${escHtml(c.name)}</strong><br><span style="font-size:11px;color:#6b7280;">${escHtml(c.subject || '')}</span></td>
+<td>${status}</td>
+<td><div style="font-size:12px;font-weight:600;">${c.db_sent}/${c.total_recipients}</div><div class="progress"><div style="width:${pct}%"></div></div></td>
+<td><strong>${opn}%</strong> <span style="font-size:11px;color:#6b7280;">(${c.open_count || 0})</span></td>
+<td><a href="?token=${token}&tab=campaigns&id=${c.id}" class="btn-outline" style="font-size:11px;padding:5px 10px;">Detail →</a></td>
+</tr>`;
+}).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📭</div><p>Belum ada campaign.</p><a href="?token='+token+'&tab=composer" class="btn-amber" style="margin-top:14px;">Buat Campaign Pertama</a></div>'}
+</div>
+`;
+}
+
+function renderCampaignsList(campaigns, T, token) {
+  const cs = campaigns.results || [];
+  return `
+<div class="page-head"><div><h1>Campaigns</h1><p>Semua campaign email dan riwayatnya.</p></div><a href="?token=${token}&tab=composer" class="btn-amber">✍️ Campaign Baru</a></div>
+${cs.length ? `<table>
+<thead><tr><th style="width:32%">Campaign</th><th>Template / List</th><th>Status</th><th>Progres</th><th>Open</th><th>Click</th><th>Aksi</th></tr></thead>
+<tbody>${cs.map(c => {
+  const pct = c.total_recipients > 0 ? Math.round(c.db_sent / c.total_recipients * 100) : 0;
+  const opn = c.db_sent > 0 ? Math.round((c.open_count || 0) / c.db_sent * 100) : 0;
+  const clk = (c.open_count || 0) > 0 ? Math.round((c.click_count || 0) / c.open_count * 100) : 0;
+  const status = c.status === 'done' ? '<span class="badge b-green">✓ Selesai</span>' : c.status === 'sending' ? '<span class="badge b-amber">⏳ Mengirim</span>' : '<span class="badge b-gray">Draft</span>';
+  const created = (c.created_at || '').slice(0, 16).replace('T', ' ');
+  return `<tr>
+<td><a href="?token=${token}&tab=campaigns&id=${c.id}" style="font-weight:700;color:#0f1e3d;">${escHtml(c.name)}</a><br><span style="font-size:11px;color:#6b7280;">${escHtml(c.subject || '-')}</span><br><span style="font-size:10px;color:#9ca3af;">${created}</span></td>
+<td><span style="font-size:12px;">${escHtml(c.template_name || '-')}</span><br><span style="font-size:11px;color:#6b7280;">${escHtml(c.list_name || 'Semua Kontak')}</span></td>
+<td>${status}</td>
+<td><div style="font-size:12px;font-weight:600;">${c.db_sent}/${c.total_recipients}</div><div class="progress"><div style="width:${pct}%"></div></div></td>
+<td><strong>${opn}%</strong><br><span style="font-size:11px;color:#6b7280;">${c.open_count || 0} dibuka</span></td>
+<td><strong>${clk}%</strong><br><span style="font-size:11px;color:#6b7280;">${c.click_count || 0} klik</span></td>
+<td><a href="?token=${token}&tab=campaigns&id=${c.id}" class="btn-outline" style="font-size:11px;">Detail →</a></td>
+</tr>`;
+}).join('')}</tbody></table>` : '<div class="card empty-state"><div class="ico">📨</div><p>Belum ada campaign.</p><a href="?token='+token+'&tab=composer" class="btn-amber" style="margin-top:14px;">Buat Campaign Pertama</a></div>'}
+`;
+}
+
+async function renderComposer(templates, lists, T, token, env) {
+  const tplRows = templates.results || [];
+  const listRows = lists.results || [];
+  const totalContacts = (await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL").first())?.c || 0;
+  return `
+<div class="page-head"><div><h1>Composer</h1><p>Buat campaign baru dengan template yang sudah ada.</p></div></div>
+
+<div class="card">
+<form method="POST" action="/api/email/campaigns?token=${token}&action=create">
+<div class="field"><label>Nama Campaign (internal)</label><input name="name" required placeholder="misal: Promo TikTok Ads Q3 2026"></div>
+<div class="field"><label>Subject Email</label><input name="subject" required placeholder="misal: Strategi TikTok Ads untuk {{company}}"></div>
+
+<div class="field">
+<label>Template</label>
+<select name="template_id" required id="tpl-select" onchange="updateSubject()">
+${tplRows.map(t => `<option value="${t.id}" data-subject="${escHtml(t.subject)}">${escHtml(t.name)}</option>`).join('')}
+</select>
+<div class="field-hint">Pilih template yang ingin dipakai. Subject di atas akan menimpa subject default template.</div>
+</div>
+
+<div class="field">
+<label>Target Audience</label>
+<select name="list_id">
+<option value="0">📬 Semua Kontak dengan Email Valid (${totalContacts})</option>
+${listRows.map(l => `<option value="${l.id}">${escHtml(l.name)} — ${l.total} kontak</option>`).join('')}
+</select>
+<div class="field-hint">Pilih list spesifik, atau "Semua Kontak" untuk broadcast.</div>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+<button type="submit" class="btn-amber">📤 Buat & Mulai Kirim</button>
+<a href="?token=${token}&tab=templates" class="btn-outline">Lihat template dulu</a>
+<a href="?token=${token}&tab=overview" class="btn-outline">Batal</a>
+</div>
+</form>
+</div>
+
+<div class="card">
+<div class="card-head"><h2>📋 Cara Kerja</h2></div>
+<ol style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.8;">
+<li>Pilih template dan audience di atas, klik <strong>Buat & Mulai Kirim</strong>.</li>
+<li>Campaign langsung dibuat + antrian email dimasukkan ke database.</li>
+<li>Cron email-send jalan tiap 15 menit — kirim max 20 email per batch.</li>
+<li>Free tier Resend: 500 email/hari. Untuk volume lebih besar, upgrade plan.</li>
+<li>Pantau open/click di halaman detail campaign.</li>
+</ol>
+</div>
+
+<script>
+function updateSubject() {
+  const sel = document.getElementById('tpl-select');
+  const opt = sel.options[sel.selectedIndex];
+  const subj = opt.getAttribute('data-subject');
+  if (subj && !document.querySelector('input[name=subject]').value) {
+    document.querySelector('input[name=subject]').value = subj;
+  }
+}
+</script>
+`;
+}
+
+function renderTemplates(templates, T, token) {
+  const ts = templates.results || [];
+  return `
+<div class="page-head">
+<div><h1>Templates</h1><p>${ts.length} template email siap pakai.</p></div>
+<form method="POST" action="/api/email/templates?token=${token}&action=seed" style="display:inline"><button class="btn-outline" onclick="return confirm('Re-seed semua template dengan default baru? Template custom akan ditimpa.')">🔄 Re-seed Default</button></form>
+</div>
+${ts.length ? `<table>
+<thead><tr><th>Template</th><th>Subject</th><th>Kategori</th><th>Aksi</th></tr></thead>
+<tbody>${ts.map(t => `<tr>
+<td><strong>${escHtml(t.name)}</strong></td>
+<td style="color:#475569;font-size:13px;">${escHtml(t.subject)}</td>
+<td><span class="badge b-blue">${escHtml(t.category)}</span></td>
+<td><div class="btn-row">
+<a href="/api/email/templates/preview?id=${t.id}&token=${token}" target="_blank" class="btn-outline" style="font-size:11px;padding:5px 10px;">👁 Preview</a>
+<button onclick="testSend(${t.id})" class="btn-outline" style="font-size:11px;padding:5px 10px;">✉️ Test</button>
+</div></td>
+</tr>`).join('')}</tbody></table>` : '<div class="card empty-state"><div class="ico">📝</div><p>Belum ada template. Klik "Re-seed Default" di atas.</p></div>'}
+`;
+}
+
+function renderLists(lists, T, token) {
+  const ls = lists.results || [];
+  return `
+<div class="page-head"><div><h1>Kontak & Lists</h1><p>${ls.length} lead list aktif · total ${ls.reduce((a, b) => a + (b.total || 0), 0)} kontak.</p></div>
+<a href="?token=${token}&tab=scraper" class="btn-outline">🔍 Buka Scraper</a></div>
+${ls.length ? `<table>
+<thead><tr><th>Nama List</th><th>Sumber</th><th>Kontak</th><th>Aksi</th></tr></thead>
+<tbody>${ls.map(l => `<tr>
+<td><strong>${escHtml(l.name)}</strong></td>
+<td><span class="badge b-${l.source === 'database-siap-pake' ? 'green' : 'gray'}">${escHtml(l.source || '-')}</span></td>
+<td><strong>${l.total}</strong></td>
+<td>
+<form method="POST" action="/api/email/lists?token=${token}&action=delete&id=${l.id}" onsubmit="return confirm('Hapus list ini?')" style="display:inline"><button class="btn-danger">Hapus</button></form>
+</td>
+</tr>`).join('')}</tbody></table>` : '<div class="card empty-state"><p>Belum ada list dengan kontak.</p></div>'}
+`;
+}
+
+function renderCron(cronRows, T, token) {
+  const emailCron = (cronRows.results || []).find(c => c.name === 'email-send');
+  const nextEmailRun = emailCron?.enabled ? getNextCronRun(emailCron.cron) : null;
+  return `
+<div class="page-head"><div><h1>Cron & Automasi</h1><p>Pengiriman email otomatis berjalan via Cloudflare Cron Triggers.</p></div></div>
+
+<div class="card">
+<div class="card-head"><h2>📧 Email Sender</h2>
+${emailCron?.enabled ? '<span class="badge b-green">✓ AKTIF</span>' : '<span class="badge b-red">⏸ PAUSED</span>'}
+</div>
+<div class="cron-card">
+<div class="left">
+<strong>Email Send</strong>
+<span><span class="cron">${emailCron?.cron || '*/15 * * * *'}</span> <span style="font-size:11px;color:#6b7280;">setiap 15 menit</span></span>
+<div class="next">${nextEmailRun ? `Next run: <strong>${nextEmailRun}</strong>` : 'Cron sedang pause'}</div>
+</div>
+<form method="POST" action="/api/admin/cron/toggle?token=${token}&name=email-send" style="display:inline">
+<label class="toggle"><input type="checkbox" ${emailCron?.enabled ? 'checked' : ''} onchange="this.form.submit()"><span class="slider"></span></label>
+</form>
+</div>
+<p style="margin-top:14px;color:#475569;font-size:13px;line-height:1.6;">Cron akan mengirim max <strong>20 email per eksekusi</strong> dari antrian. Free tier Resend = 500 email/hari. Untuk volume lebih besar, jalankan campaign besar-besaran dengan jeda, atau upgrade plan Resend.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><h2>⏰ Cron Lainnya</h2></div>
+${(cronRows.results || []).filter(c => c.name !== 'email-send').map(cr => `
+<div class="cron-card">
+<div class="left">
+<strong>${escHtml(cr.label || cr.name)}</strong>
+<span><span class="cron">${cr.cron || ''}</span> ${cr.enabled ? '<span style="font-size:11px;color:#10b981;font-weight:600;">✓ Aktif</span>' : '<span style="font-size:11px;color:#dc2626;font-weight:600;">⏸ Pause</span>'}</span>
+</div>
+<form method="POST" action="/api/admin/cron/toggle?token=${token}&name=${cr.name}" style="display:inline">
+<label class="toggle"><input type="checkbox" ${cr.enabled ? 'checked' : ''} onchange="this.form.submit()"><span class="slider"></span></label>
+</form>
+</div>
+`).join('')}
+</div>
+`;
+}
+
+function renderScraper(campaigns, T, token, env) {
+  return `
+<div class="page-head"><div><h1>Scraper</h1><p>Lead generation tool — sumber data eksternal.</p></div></div>
+
+<div class="card">
+<div class="card-head"><h2>📡 Sumber Data</h2></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+<div style="background:#f0fdf4;padding:14px;border-radius:10px;border-left:3px solid #10b981;">
+<strong>📊 Database Internal</strong><br><span style="font-size:12px;color:#6b7280;">15.343 kontak siap pakai</span>
+</div>
+<div style="background:#f8fafc;padding:14px;border-radius:10px;border-left:3px solid ${env.GOOGLE_PLACES_API_KEY?'#10b981':'#9ca3af'};">
+<strong>🌐 Google Places API</strong><br><span style="font-size:12px;color:#6b7280;">${env.GOOGLE_PLACES_API_KEY?'✅ Aktif':'⚠️ Butuh API key'}</span>
+</div>
+<div style="background:#fff7ed;padding:14px;border-radius:10px;border-left:3px solid #f59e0b;">
+<strong>🏭 Indonetwork</strong><br><span style="font-size:12px;color:#6b7280;">Scraping otomatis harian</span>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-head"><h2>🚀 Jalankan Scraper</h2></div>
+<div style="display:grid;gap:8px;">
+<div class="cron-card">
+<div class="left"><strong>🏭 Indonetwork Manufaktur</strong><div class="next">Decode base64 + visit website</div></div>
+<button onclick="runScraper('/api/cron/scrape/indonetwork?token=${token}&cat=0', 'Manufaktur')" class="btn-amber">▶ Jalankan</button>
+</div>
+<div class="cron-card">
+<div class="left"><strong>🏭 Indonetwork Distributor</strong><div class="next">Kategori: distributor</div></div>
+<button onclick="runScraper('/api/cron/scrape/indonetwork?token=${token}&cat=1', 'Distributor')" class="btn-amber">▶ Jalankan</button>
+</div>
+<div class="cron-card">
+<div class="left"><strong>🌐 Google Places</strong><div class="next">${env.GOOGLE_PLACES_API_KEY?'Siap pakai':'Butuh API key'}</div></div>
+<button onclick="runScraper('/api/cron/scrape/google-places?token=${token}&q=0', 'GP')" class="btn-amber" ${env.GOOGLE_PLACES_API_KEY?'':'disabled'}>▶ Jalankan</button>
+</div>
+</div>
+</div>
+`;
+}
+
+async function renderCampaignDetail(id, token, env) {
+  const c = await env.DB.prepare(`
+    SELECT c.*, t.name as template_name, l.name as list_name
+    FROM campaigns c
+    LEFT JOIN email_templates t ON c.template_id=t.id
+    LEFT JOIN lead_lists l ON c.list_id=l.id
+    WHERE c.id=?
+  `).bind(id).first();
+  if (!c) return new Response("Campaign tidak ditemukan", { status: 404 });
+
+  const stats = await env.DB.prepare(`
+    SELECT
+      COUNT(*) as total,
+      SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent,
+      SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending,
+      SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
+      SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened,
+      SUM(CASE WHEN clicked_at IS NOT NULL THEN 1 ELSE 0 END) as clicked
+    FROM email_queue WHERE campaign_id=?
+  `).bind(id).first();
+  const recentQueue = await env.DB.prepare(`
+    SELECT email, name, status, sent_at, opened_at, clicked_at, error
+    FROM email_queue WHERE campaign_id=?
+    ORDER BY id DESC LIMIT 30
+  `).bind(id).all();
+
+  const sent = stats?.sent || 0;
+  const opnRate = sent > 0 ? ((stats?.opened || 0) / sent * 100).toFixed(1) : '0';
+  const clkRate = (stats?.opened || 0) > 0 ? ((stats?.clicked || 0) / stats.opened * 100).toFixed(1) : '0';
+  const status = c.status === 'done' ? '<span class="badge b-green">✓ Selesai</span>' : c.status === 'sending' ? '<span class="badge b-amber">⏳ Mengirim</span>' : '<span class="badge b-gray">Draft</span>';
+  const recent = recentQueue.results || [];
+
+  return new Response(`<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Campaign #${id} — Beriklan Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f6fa;font-family:'Inter',-apple-system,sans-serif;color:#0f1e3d;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1400px;margin:0 auto}
+.sidebar{background:#0f1e3d;color:#cbd5e1;padding:28px 20px;display:flex;flex-direction:column;gap:4px}
+.sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:0 8px}
+.sidebar-brand img{height:28px;filter:brightness(0) invert(1)}
+.sidebar-brand span{font-weight:800;font-size:16px;color:#fff}
+.sidebar a.nav{padding:10px 14px;border-radius:8px;font-size:14px;display:flex;align-items:center;gap:10px;color:#cbd5e1;font-weight:500}
+.sidebar a.nav:hover{background:rgba(255,255,255,0.06);color:#fff}
+.sidebar a.nav.active{background:#1a2f5c;color:#fff;font-weight:600}
+.sidebar a.nav .ico{width:18px;text-align:center;opacity:0.8}
+.main{padding:28px 32px;overflow-x:hidden}
+.page-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-head h1{font-size:22px;font-weight:800}
+.page-head p{color:#6b7280;font-size:13px;margin-top:4px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:12px;padding:18px;border:1px solid #f0f1f5}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280;font-weight:700;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:800;color:#0f1e3d;line-height:1.1}
+.kpi-sub{font-size:11px;color:#6b7280;margin-top:2px}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(15,30,61,0.06);border:1px solid #f0f1f5;margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-head h2{font-size:16px;font-weight:700}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.b-green{background:#d1fae5;color:#065f46}.b-amber{background:#fef3c7;color:#92400e}.b-gray{background:#f1f5f9;color:#475569}.b-blue{background:#dbeafe;color:#1e40af}.b-red{background:#fee2e2;color:#991b1b}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#fafbfc;color:#475569;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;border-bottom:1px solid #e5e7eb}
+td{padding:12px 14px;border-bottom:1px solid #f0f1f5;font-size:13px}
+tr:last-child td{border-bottom:none}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:10px;font-weight:600;font-size:13px;border:none;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-dark{background:#0f1e3d;color:#fff}
+.btn-amber{background:#f59e0b;color:#0f1e3d}
+.btn-outline{background:#fff;color:#0f1e3d;border:1px solid #d1d5db}
+.btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+</style></head><body>
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-brand"><img src="https://beriklan.co.id/logoweb.webp" alt="Beriklan" onerror="this.style.display='none'"><span>Beriklan</span></div>
+<a href="/api/admin?token=${token}" class="nav"><span class="ico">🏠</span> Dashboard Utama</a>
+<a href="?token=${token}&tab=overview" class="nav"><span class="ico">📊</span> Overview</a>
+<a href="?token=${token}&tab=campaigns" class="nav active"><span class="ico">📨</span> Campaigns</a>
+<a href="?token=${token}&tab=composer" class="nav"><span class="ico">✍️</span> Composer</a>
+<a href="?token=${token}&tab=templates" class="nav"><span class="ico">📝</span> Templates</a>
+<a href="?token=${token}&tab=lists" class="nav"><span class="ico">👥</span> Kontak</a>
+<a href="?token=${token}&tab=cron" class="nav"><span class="ico">⏰</span> Cron</a>
+</aside>
+<div class="main">
+<div class="page-head">
+<div>
+<h1>${escHtml(c.name)} ${status}</h1>
+<p>Subject: <strong>${escHtml(c.subject || '-')}</strong> · Template: <strong>${escHtml(c.template_name || '-')}</strong> · Audience: <strong>${escHtml(c.list_name || 'Semua Kontak')}</strong></p>
+</div>
+<div class="btn-row">
+<a href="?token=${token}&tab=campaigns" class="btn btn-outline">← Kembali</a>
+${c.status !== 'sending' ? `<form method="POST" action="/api/email/campaigns?token=${token}&action=start&id=${c.id}" style="display:inline"><button class="btn btn-amber">▶ Kirim</button></form>` : ''}
+<form method="POST" action="/api/email/campaigns?token=${token}&action=delete&id=${c.id}" onsubmit="return confirm('Hapus campaign ini? Semua antrian email akan ikut terhapus.')" style="display:inline"><button class="btn btn-danger">🗑 Hapus</button></form>
+</div>
+</div>
+
+<div class="kpi-grid">
+<div class="kpi"><div class="kpi-label">📤 Total</div><div class="kpi-val">${stats?.total || 0}</div><div class="kpi-sub">antrian</div></div>
+<div class="kpi"><div class="kpi-label">✓ Sent</div><div class="kpi-val" style="color:#10b981;">${sent}</div><div class="kpi-sub">berhasil terkirim</div></div>
+<div class="kpi"><div class="kpi-label">⏳ Pending</div><div class="kpi-val" style="color:#f59e0b;">${stats?.pending || 0}</div><div class="kpi-sub">menunggu</div></div>
+<div class="kpi"><div class="kpi-label">✕ Gagal</div><div class="kpi-val" style="color:#dc2626;">${stats?.failed || 0}</div><div class="kpi-sub">gagal kirim</div></div>
+<div class="kpi"><div class="kpi-label">👁 Open</div><div class="kpi-val" style="color:#0ea5e9;">${opnRate}%</div><div class="kpi-sub">${stats?.opened || 0}/${sent}</div></div>
+<div class="kpi"><div class="kpi-label">🖱 Click</div><div class="kpi-val" style="color:#8b5cf6;">${clkRate}%</div><div class="kpi-sub">${stats?.clicked || 0}/${stats?.opened || 0}</div></div>
+</div>
+
+<div class="card">
+<div class="card-head"><h2>📨 30 Email Terakhir</h2></div>
+${recent.length ? `<table>
+<thead><tr><th>Email</th><th>Status</th><th>Sent</th><th>Opened</th><th>Clicked</th><th>Error</th></tr></thead>
+<tbody>${recent.map(q => {
+  const st = q.status === 'sent' ? '<span class="badge b-green">✓ Sent</span>' : q.status === 'pending' ? '<span class="badge b-amber">⏳ Pending</span>' : '<span class="badge b-red">✕ Failed</span>';
+  return `<tr>
+<td>${escHtml(q.email)}<br><span style="font-size:11px;color:#6b7280;">${escHtml(q.name || '-')}</span></td>
+<td>${st}</td>
+<td>${(q.sent_at || '-').slice(0, 16).replace('T', ' ')}</td>
+<td>${(q.opened_at || '-').slice(0, 16).replace('T', ' ')}</td>
+<td>${(q.clicked_at || '-').slice(0, 16).replace('T', ' ')}</td>
+<td style="color:#dc2626;font-size:11px;">${escHtml((q.error || '').slice(0, 50))}</td>
+</tr>`;
+}).join('')}</tbody></table>` : '<div class="empty-state" style="text-align:center;padding:32px;color:#9ca3af;">Belum ada antrian.</div>'}
+</div>
+</div>
+</div>
+</body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+// ─── Email Templates CRUD ─────────────────────────────────────
 
 // ─── Email Templates CRUD ─────────────────────────────────────
 async function handleEmailTemplates(request, env) {

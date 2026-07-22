@@ -33,6 +33,9 @@ export default {
     if (path === "/api/admin/env-check" || path === "/api/admin/env-check/") {
       return await handleEnvCheck(request, env);
     }
+    if (path === "/api/admin/health" || path === "/api/admin/health/") {
+      return await handleAdminHealth(request, env);
+    }
     if (path === "/api/newsletter/subscribe" || path === "/api/newsletter/subscribe/") {
       // P0.5 Rate limit: 5 req/jam per IP (anti-spam)
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/newsletter/subscribe", 5, 3600);
@@ -442,6 +445,222 @@ async function handleHealth(env) {
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
   }
+}
+
+// Admin Health Dashboard — JSON view of system health
+// Use ?token=ADMIN_TOKEN to view
+async function handleAdminHealth(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const health = {
+    timestamp: new Date().toISOString(),
+    status: "ok",
+    components: {}
+  };
+
+  // 1. Worker version & uptime
+  health.components.worker = {
+    status: "running",
+    note: "Cloudflare Workers (no native uptime metric)"
+  };
+
+  // 2. D1 Database
+  try {
+    const t0 = Date.now();
+    await env.DB.prepare("SELECT 1").first();
+    health.components.d1 = {
+      status: "healthy",
+      latency_ms: Date.now() - t0
+    };
+  } catch (e) {
+    health.components.d1 = { status: "down", error: String(e).slice(0, 200) };
+    health.status = "degraded";
+  }
+
+  // 3. Tables count
+  try {
+    const tables = await env.DB.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table'"
+    ).all();
+    health.components.tables = {
+      count: (tables.results || []).length,
+      list: (tables.results || []).map(t => t.name).sort()
+    };
+  } catch (e) {
+    health.components.tables = { error: String(e).slice(0, 200) };
+  }
+
+  // 4. Cron health (last 10 runs)
+  try {
+    const runs = await env.DB.prepare(
+      "SELECT cron_name, status, started_at, duration_ms FROM cron_runs ORDER BY id DESC LIMIT 10"
+    ).all();
+    const runsRows = runs.results || [];
+    const failedCount = runsRows.filter(r => r.status === "failed").length;
+    health.components.cron = {
+      last_10_runs: runsRows.length,
+      failed_in_last_10: failedCount,
+      status: failedCount >= 3 ? "warning" : failedCount > 0 ? "watch" : "healthy",
+      runs: runsRows.slice(0, 5).map(r => ({
+        name: r.cron_name,
+        status: r.status,
+        duration_ms: r.duration_ms,
+        at: r.started_at
+      }))
+    };
+  } catch (e) {
+    health.components.cron = { error: String(e).slice(0, 200) };
+  }
+
+  // 5. Retry queue
+  try {
+    const queue = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM cron_retry_queue WHERE status = 'pending'"
+    ).first();
+    health.components.retry_queue = { pending: queue?.c || 0 };
+  } catch (e) {
+    health.components.retry_queue = { pending: 0 };
+  }
+
+  // 6. Cron settings
+  try {
+    const settings = await env.DB.prepare(
+      "SELECT name, enabled, cron FROM cron_settings ORDER BY id"
+    ).all();
+    const totalCron = (settings.results || []).length;
+    const enabledCron = (settings.results || []).filter(c => c.enabled).length;
+    health.components.cron_settings = {
+      total: totalCron,
+      enabled: enabledCron,
+      paused: totalCron - enabledCron
+    };
+  } catch (e) {
+    health.components.cron_settings = { error: String(e).slice(0, 200) };
+  }
+
+  // 7. Email queue
+  try {
+    const pending = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM email_queue WHERE status='pending'"
+    ).first();
+    const sent = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM email_queue WHERE status='sent'"
+    ).first();
+    const today = new Date().toISOString().slice(0, 10);
+    const sentToday = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM email_queue WHERE status='sent' AND sent_at >= ?"
+    ).bind(today).first();
+    health.components.email_queue = {
+      pending: pending?.c || 0,
+      sent_total: sent?.c || 0,
+      sent_today: sentToday?.c || 0
+    };
+  } catch (e) {
+    health.components.email_queue = { error: String(e).slice(0, 200) };
+  }
+
+  // 8. Articles & SEO
+  try {
+    const articles = await env.DB.prepare("SELECT COUNT(*) as c FROM articles").first();
+    const posts = await env.DB.prepare("SELECT COUNT(*) as c FROM posts_meta").first();
+    const indexed = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'indexed'").first();
+    const pendingIdx = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'pending'").first();
+    health.components.seo = {
+      articles: articles?.c || 0,
+      posts: posts?.c || 0,
+      indexed_urls: indexed?.c || 0,
+      pending_urls: pendingIdx?.c || 0
+    };
+  } catch (e) {
+    health.components.seo = { error: String(e).slice(0, 200) };
+  }
+
+  // 9. Contact & template counts
+  try {
+    const contacts = await env.DB.prepare(
+      "SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL"
+    ).first();
+    const templates = await env.DB.prepare("SELECT COUNT(*) as c FROM email_templates").first();
+    health.components.email_assets = {
+      contacts: contacts?.c || 0,
+      templates: templates?.c || 0
+    };
+  } catch (e) {
+    health.components.email_assets = { error: String(e).slice(0, 200) };
+  }
+
+  // 10. Resend + API quota check
+  if (env.RESEND_API_KEY) {
+    health.components.resend = {
+      status: "configured",
+      daily_quota_limit: 500,
+      note: "Free tier Resend"
+    };
+  } else {
+    health.components.resend = { status: "missing" };
+    health.status = "degraded";
+  }
+
+  if (env.GOOGLE_PLACES_API_KEY) {
+    health.components.google_places = { status: "configured" };
+  } else {
+    health.components.google_places = { status: "missing", note: "Not required for SEO cron" };
+  }
+
+  // Pretty or JSON
+  if (url.searchParams.get("format") === "json" || url.searchParams.get("pretty") !== "1") {
+    return new Response(JSON.stringify(health, null, 2), {
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  // HTML view
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>System Health — Beriklan Admin</title>
+<style>
+body{font-family:monospace;background:#0f172a;color:#e2e8f0;padding:24px;margin:0;}
+.container{max-width:900px;margin:0 auto;}
+h1{color:#10b981;font-size:18px;margin-bottom:6px;}
+.status{display:inline-block;padding:4px 12px;border-radius:6px;font-weight:700;margin-left:10px;}
+.status.ok{background:#10b981;color:#fff;}
+.status.degraded{background:#f59e0b;color:#fff;}
+.component{background:#1e293b;border-radius:8px;padding:16px;margin:12px 0;border-left:3px solid #475569;}
+.component.healthy{border-left-color:#10b981;}
+.component.warning{border-left-color:#f59e0b;}
+.component.down{border-left-color:#dc2626;}
+.component h3{margin:0 0 8px;font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;}
+.component .stat{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px;}
+.component pre{background:#0f172a;padding:10px;border-radius:4px;font-size:11px;overflow-x:auto;margin:0;}
+a{color:#60a5fa;text-decoration:none;}
+.meta{color:#64748b;font-size:12px;margin-bottom:20px;}
+</style></head><body>
+<div class="container">
+<h1>🏥 System Health<span class="status ${health.status}">${health.status.toUpperCase()}</span></h1>
+<p class="meta">${health.timestamp} WIB · <a href="?format=json&token=${token}">JSON view</a></p>
+${Object.entries(health.components).map(([key, val]) => {
+  let cls = 'component';
+  if (val.status === 'healthy' || val.status === 'running' || val.status === 'ok' || val.status === 'configured') cls += ' healthy';
+  if (val.status === 'warning' || val.status === 'watch' || val.status === 'missing') cls += ' warning';
+  if (val.status === 'down' || val.status === 'degraded') cls += ' down';
+  const stat = val.latency_ms !== undefined ? val.latency_ms + 'ms' :
+    val.count !== undefined ? val.count :
+    val.pending !== undefined ? val.pending :
+    val.total !== undefined ? val.enabled + '/' + val.total :
+    val.status || '✓';
+  return `<div class="${cls}">
+<h3>${key.replace(/_/g, ' ')}</h3>
+<div class="stat">${stat}</div>
+<pre>${JSON.stringify(val, null, 2).replace(/</g, '&lt;')}</pre>
+</div>`;
+}).join('')}
+</div>
+</body></html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
 // Env check — verify which secrets are set (boolean only, no values).

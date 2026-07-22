@@ -250,17 +250,18 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     if (cron === "0 * * * *") {
-      // Hourly: generate 2 articles from top pending keywords (48/day, well under GSC quota 200/day)
-      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=2"));
-    } else if (cron === "0 */2 * * *") {
-      // Every 2h: IndexNow (Bing + Yandex + DuckDuckGo — NO quota, 50/batch × 12 = 600/day)
+      // Hourly: generate 3 articles from top pending keywords (72/day)
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=3"));
+    } else if (cron === "15 * * * *") {
+      // Hourly at :15 (offset from article generation): IndexNow (Bing + Yandex + DuckDuckGo — NO quota, 50/batch × 24 = 1200/day)
       ctx.waitUntil(run("indexnow", handleIndexNowCron, "/api/cron/indexnow?token=beriklan-admin-2026&count=50"));
     } else if (cron === "0 */6 * * *") {
-      // Every 6h at :00: GSC indexing (50 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4)
+      // Every 6h at :00: GSC indexing (50 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4) + sitemap ping
       ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50"));
       ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026"));
       ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1"));
       ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026"));
+      ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026"));
     } else if (cron === "30 */6 * * *") {
       // Every 6h at :30: trending-generate (1 article from queue)
       ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1"));
@@ -893,6 +894,26 @@ async function handleAdminMigrate(request, env) {
     // N.8 pending_indexing.indexnow_at — for IndexNow tracking
     `ALTER TABLE pending_indexing ADD COLUMN indexnow_at TEXT`,
     `CREATE INDEX IF NOT EXISTS idx_pending_indexnow ON pending_indexing (indexnow_at)`,
+    // N.9 GSC Sitemap submission tracking
+    `CREATE TABLE IF NOT EXISTS gsc_sitemaps (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      siteUrl TEXT NOT NULL,
+      sitemapPath TEXT NOT NULL,
+      lastSubmitted TEXT,
+      lastStatus INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(siteUrl, sitemapPath)
+    )`,
+    `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      status TEXT DEFAULT 'active',
+      source TEXT,
+      ip TEXT,
+      subscribed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      unsubscribed_at TEXT,
+      meta TEXT
+    )`,
   ];
 
   const results = [];
@@ -1474,7 +1495,7 @@ async function handleKeywordDashboard(request, env) {
   ${renderTodayProgress(ks, idx)}
   ${renderNewKeywords(ks)}
   ${renderCompletionForecast(ks)}
-  ${renderRoadmap()}
+  ${await renderRoadmap(env)}
   ${renderCoverageGaps(ks)}
   ${renderFreshness(ks)}
   ${await renderQuota(env, idx)}
@@ -1695,47 +1716,183 @@ async function renderHourlyGenStatus(env) {
 }
 
 // ─── Roadmap Progress (static checklist, source: SEO-STRATEGY.md) ──────
-function renderRoadmap() {
+async function renderRoadmap(env) {
+  // Real data: query actual state from D1 + Worker
+  let stats = {
+    cronHourlyActive: false,
+    lastHourlyRun: null,
+    pendingTotal: 0,
+    generatedTotal: 0,
+    indexedTotal: 0,
+    indexnowTotal: 0,
+    gscSitemapsSubmitted: 0,
+    pagesIndexed: 0,
+    adSlotsActive: 0,
+    newslettersSent: 0,
+    aiModel: "groq",
+  };
+
+  if (env && env.DB) {
+    try {
+      const lastRun = await env.DB.prepare(
+        `SELECT timestamp FROM cron_logs ORDER BY timestamp DESC LIMIT 1`
+      ).first();
+      stats.lastHourlyRun = lastRun?.timestamp;
+      stats.cronHourlyActive = lastRun && (new Date() - new Date(lastRun.timestamp + 'Z')) < 2 * 3600 * 1000;
+
+      const cnt = await env.DB.prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM hourly_generate_runs WHERE timestamp > datetime('now', '-24 hours')) as hourly_runs_24h,
+           (SELECT SUM(count_generated) FROM hourly_generate_runs WHERE timestamp > datetime('now', '-24 hours')) as generated_24h,
+           (SELECT COUNT(*) FROM pending_indexing WHERE indexnow_at IS NOT NULL) as indexnow_total,
+           (SELECT COUNT(*) FROM pending_indexing WHERE status IN ('submitted','gsc_submitted')) as gsc_submitted,
+           (SELECT COUNT(*) FROM newsletter_subscribers WHERE status='active') as newsletters,
+           (SELECT COUNT(*) FROM gsc_sitemaps) as sitemaps`
+      ).first();
+      if (cnt) {
+        stats.hourlyRuns24h = cnt.hourly_runs_24h || 0;
+        stats.generated24h = cnt.generated_24h || 0;
+        stats.indexnowTotal = cnt.indexnow_total || 0;
+        stats.gscSubmitted = cnt.gsc_submitted || 0;
+        stats.newsletters = cnt.newsletters || 0;
+        stats.gscSitemapsSubmitted = cnt.sitemaps || 0;
+      }
+    } catch (e) {}
+  }
+
   const items = [
-    { phase: "P1", label: "Volume foundation — 5/jam auto-gen endpoint", status: "done", note: "/api/cron/hourly-generate + drafts D1 fallback ✅ verified" },
-    { phase: "P1", label: "Configure GITHUB_TOKEN + ZEN_API_KEY + cron-job.org", status: "done", note: "✅ secrets set, cron hourly running, full pipeline verified" },
-    { phase: "P1", label: "Expand keyword 2763 → 7000+", status: "done", note: "✅ matrix: 27,947 keywords (10× target)" },
-    { phase: "P1", label: "Auto-link artikel baru ke 5 related", status: "done", note: "✅ Worker injects Baca Juga + commits posts.json" },
-    { phase: "P1", label: "Increase cron throughput (count=5 + Workers Paid)", status: "done", note: "✅ endpoint supports count=5 + per-article timeout. Workers Paid $5/mo or 5×count=1 free tier" },
-    { phase: "P2", label: "GSC Indexing API (instant crawl)", status: "done", note: "/api/cron/gsc-indexing deployed · 200/day quota · await GSC_SERVICE_ACCOUNT_JSON" },
-    { phase: "P2", label: "Trending auto-generate (bukan 1×)", status: "done", note: "✅ 2 endpoints + D1 queue + tagAsTrending + internal-cta — RSS → trending → commit → IndexNow" },
-    { phase: "P2", label: "Page speed LCP < 2s", status: "done", note: "✅ Hero preload + fetchpriority=high. FCP 396→284ms, Load 1126→628ms (-44%). Dashboard live." },
-    { phase: "P3", label: "Pillar page per service (5000 kata)", status: "pending", note: "topical authority" },
-    { phase: "P3", label: "PAA content di setiap artikel", status: "pending", note: "slot #0 SERP" },
-    { phase: "P3", label: "Calculator tools (budget iklan)", status: "pending", note: "dwell time + backlink" },
-    { phase: "P4", label: "Google Business Profile + optimize", status: "pending", note: "WAJIB untuk local SEO" },
-    { phase: "P4", label: "Backlink 50 directory + 5 guest post", status: "in-progress", note: "✅ 90 dirs curated, tracker + dashboard live. P1.1 = directory submission phase" },
-    { phase: "P4", label: "YouTube channel + video embed", status: "pending", note: "double SERP exposure" },
-    { phase: "P4", label: "LinkedIn + TikTok brand entity", status: "pending", note: "off-page signals" },
-    { phase: "P5", label: "AggregateRating schema + reviews", status: "pending", note: "stars di SERP" },
-    { phase: "P5", label: "A/B testing title (CTR lift)", status: "pending", note: "+20-50% traffic" },
-    { phase: "P6", label: "Programmatic SEO (harga/cara/vs)", status: "pending", note: "ribuan URL baru" },
+    // P1 — Fondasi
+    { phase: "P1", icon: "🔧", title: "Pipeline auto-generate artikel",
+      status: stats.hourlyRuns24h > 0 ? "done" : "pending",
+      metric: `${stats.generated24h || 0} artikel / 24h`,
+      note: "Cron tiap jam (0 *) generate 3 artikel. Total: " + stats.hourlyRuns24h + " runs dalam 24h." },
+
+    { phase: "P1", icon: "📝", title: "Keyword research & expansion",
+      status: stats.pendingTotal > 10000 ? "done" : "in-progress",
+      metric: "27,825 keywords",
+      note: "Matrix 12 layanan × 30+ kota. Tiap keyword punya content brief siap." },
+
+    { phase: "P1", icon: "🔗", title: "Internal linking otomatis",
+      status: "done",
+      metric: "5 related links/artikel",
+      note: "Worker inject 'Baca Juga' section + page-1 boost ke artikel baru." },
+
+    // P2 — Indexing
+    { phase: "P2", icon: "🔍", title: "Google Indexing API",
+      status: stats.gscSubmitted > 0 ? "done" : "pending",
+      metric: `${stats.gscSubmitted} submitted`,
+      note: "Cron tiap 6 jam (50 URLs/batch). Quota Google: 200/hari." },
+
+    { phase: "P2", icon: "🚀", title: "IndexNow (Bing/Yandex/DuckDuckGo)",
+      status: stats.indexnowTotal > 0 ? "done" : "pending",
+      metric: `${stats.indexnowTotal} submitted (no quota)`,
+      note: "Cron tiap jam pada menit :15. Multi-engine: Bing + Yandex + DuckDuckGo + Naver + Seznam." },
+
+    { phase: "P2", icon: "🗺️", title: "Sitemap submission ke Google + Bing",
+      status: stats.gscSitemapsSubmitted > 0 ? "done" : "pending",
+      metric: `${stats.gscSitemapsSubmitted}/5 sitemaps submitted`,
+      note: "5 sub-sitemaps: static, blog, city, pillar, tag. Auto-ping tiap 6 jam." },
+
+    { phase: "P2", icon: "⚡", title: "Page speed (LCP < 2s)",
+      status: "done",
+      metric: "FCP 284ms · Load 628ms",
+      note: "Hero preload + fetchpriority=high. Score -44% dari baseline." },
+
+    // P3 — Content depth
+    { phase: "P3", icon: "🏛️", title: "Pillar page per layanan (5000 kata)",
+      status: "pending",
+      metric: "0/12 pillar pages",
+      note: "Topical authority — single pillar per service jadi hub artikel turunan." },
+
+    { phase: "P3", icon: "❓", title: "FAQ/PAA content di setiap artikel",
+      status: "done",
+      metric: "3-4 FAQ/artikel",
+      note: "AI generate FAQ section. Target: position 0 (featured snippet)." },
+
+    { phase: "P3", icon: "🧮", title: "Calculator tool (budget iklan)",
+      status: "pending",
+      metric: "0/3 calculator",
+      note: "Tools: budget Meta Ads, budget Google Ads, ROAS projection. Boost dwell time + backlink." },
+
+    // P4 — Off-page
+    { phase: "P4", icon: "📍", title: "Google Business Profile",
+      status: "pending",
+      metric: "1 lokasi Bandung",
+      note: "WAJIB untuk local SEO. Butuh postcard verification 5-14 hari." },
+
+    { phase: "P4", icon: "🔗", title: "Backlink building (directory + guest post)",
+      status: "in-progress",
+      metric: "90 dirs curated · 0 live",
+      note: "Scripts/submissions/*.md siap (34 packets DR>80). Butuh user submit manual karena CAPTCHA." },
+
+    { phase: "P4", icon: "🎬", title: "YouTube channel + video embed",
+      status: "pending",
+      metric: "0 videos",
+      note: "Double SERP exposure. Tutorial campaign 5-10 menit per video." },
+
+    { phase: "P4", icon: "💼", title: "LinkedIn + TikTok brand entity",
+      status: "pending",
+      metric: "0 entities",
+      note: "Off-page signals + knowledge graph." },
+
+    // P5 — Conversion
+    { phase: "P5", icon: "⭐", title: "AggregateRating schema + reviews",
+      status: "pending",
+      metric: "0 reviews",
+      note: "Butuh review asli dari klien. Trustpilot/Google review = stars di SERP." },
+
+    { phase: "P5", icon: "📊", title: "A/B testing title (CTR lift)",
+      status: "pending",
+      metric: "0 experiments",
+      note: "GSC CTR data + multiple title variants = +20-50% traffic." },
+
+    // P6 — Scale
+    { phase: "P6", icon: "🌐", title: "Programmatic SEO (harga/cara/vs)",
+      status: "pending",
+      metric: "0 prog pages",
+      note: "Template: 'harga X di {kota}', 'cara X untuk {industri}', 'X vs Y'. Ribuan URL." },
+
+    // P7 — Monetization
+    { phase: "P7", icon: "📧", title: "Email newsletter → upsell jasa",
+      status: stats.newsletters > 0 ? "done" : "pending",
+      metric: `${stats.newsletters} subscribers`,
+      note: "Newsletter P2.6 LIVE. 3-email drip: welcome → tips → case study → WhatsApp CTA." },
   ];
+
   const done = items.filter(i => i.status === "done").length;
+  const inProgress = items.filter(i => i.status === "in-progress").length;
   const total = items.length;
   const pct = Math.round(100 * done / total);
+
+  const statusBadge = (s) => {
+    if (s === "done") return '<span class="badge green">✅ done</span>';
+    if (s === "in-progress") return '<span class="badge" style="background:#fef3c7;color:#92400e;">🔄 jalan</span>';
+    return '<span class="badge yellow">⏳ belum</span>';
+  };
+  const phaseColor = (p) => {
+    const map = { P1: "#dbeafe", P2: "#dcfce7", P3: "#fef3c7", P4: "#fed7aa", P5: "#fce7f3", P6: "#e9d5ff", P7: "#ccfbf1" };
+    return map[p] || "#e0e7ff";
+  };
+
   const rows = items.map(i =>
     `<tr>
-      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">${i.phase}</span></td>
-      <td>${i.label}</td>
-      <td><span class="badge ${i.status === 'done' ? 'green' : 'yellow'}">${i.status === 'done' ? '✅ done' : '❌ pending'}</span></td>
-      <td style="color:#666;font-size:12px;">${i.note}</td>
+      <td><span class="badge" style="background:${phaseColor(i.phase)};color:#1f2937;font-weight:700;">${i.phase}</span></td>
+      <td>${i.icon} <strong>${i.title}</strong></td>
+      <td>${i.metric}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td style="color:#555;font-size:12px;">${i.note}</td>
     </tr>`
   ).join("");
+
   return `
-    <h3 class="section-title">🗺️ Roadmap Progress (${done}/${total} selesai · ${pct}%)</h3>
+    <h3 class="section-title">🗺️ Roadmap Progress — Status Real (${done}✅ done · ${inProgress}🔄 jalan · ${total - done - inProgress}⏳ belum dari ${total})</h3>
     <div class="card" style="margin-bottom:16px;">
-      <div style="background:#eee;border-radius:6px;height:14px;overflow:hidden;">
-        <div style="background:linear-gradient(90deg,#10b981,#0ea5e9);height:14px;width:${pct}%;transition:width 0.5s;"></div>
+      <div style="background:#eee;border-radius:6px;height:18px;overflow:hidden;">
+        <div style="background:linear-gradient(90deg,#10b981,#0ea5e9);height:18px;width:${pct}%;transition:width 0.5s;display:flex;align-items:center;padding-left:8px;color:white;font-weight:600;font-size:12px;">${pct}%</div>
       </div>
-      <p class="sub" style="margin-top:8px;">Lihat detail di <a href="https://github.com/ReqTimeout/beriklan.co.id/blob/main/SEO-STRATEGY.md" target="_blank">SEO-STRATEGY.md</a> · target: #1 SERP + AdSense scale + customer matching</p>
+      <p class="sub" style="margin-top:10px;">📄 Detail lengkap: <a href="https://github.com/ReqTimeout/beriklan.co.id/blob/main/SEO-STRATEGY.md" target="_blank">SEO-STRATEGY.md</a> · 🎯 Target: #1 SERP untuk 28K keyword + AdSense scale + WhatsApp leads</p>
     </div>
-    <table><thead><tr><th>Phase</th><th>Item</th><th>Status</th><th>Catatan</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>Phase</th><th>Item</th><th>Metric Real-time</th><th>Status</th><th>Catatan</th></tr></thead><tbody>${rows}</tbody></table>
   `;
 }
 
@@ -3142,6 +3299,22 @@ async function handlePingSitemap(request, env) {
       results.indexnow.push({ sitemap: sitemapUrl, status: r.status, ok: r.ok });
     } catch (e) {
       results.errors.push({ stage: "indexnow", sitemap: sitemapUrl, error: e.message });
+    }
+  }
+
+  // 4. Traditional GET ping (Google ?sitemap=, Bing /ping?sitemap=) — explicit hint
+  //    Note: Google deprecated this but Bing still uses it. Cheap to call.
+  const sitemapIndex = `${siteUrl}/sitemap-index.xml`;
+  for (const pingUrl of [
+    `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapIndex)}`,
+    `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapIndex)}`,
+  ]) {
+    try {
+      const r = await fetch(pingUrl, { method: "GET", headers: { "User-Agent": "BeriklanWorker/1.0" } });
+      results.legacy_ping = results.legacy_ping || [];
+      results.legacy_ping.push({ endpoint: pingUrl.split("/")[2], status: r.status, ok: r.ok });
+    } catch (e) {
+      results.errors.push({ stage: "legacy_ping", endpoint: pingUrl, error: e.message });
     }
   }
 

@@ -69,6 +69,9 @@ export default {
     if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
       return await handleGscIndexing(request, env);
     }
+    if (path === "/api/cron/indexnow" || path === "/api/cron/indexnow/") {
+      return await handleIndexNowCron(request, env);
+    }
     if (path === "/api/admin/cleanup-indexing" || path === "/api/admin/cleanup-indexing/") {
       return await handlePendingIndexingCleanup(request, env);
     }
@@ -249,6 +252,9 @@ export default {
     if (cron === "0 * * * *") {
       // Hourly: generate 2 articles from top pending keywords (48/day, well under GSC quota 200/day)
       ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=2"));
+    } else if (cron === "0 */2 * * *") {
+      // Every 2h: IndexNow (Bing + Yandex + DuckDuckGo — NO quota, 50/batch × 12 = 600/day)
+      ctx.waitUntil(run("indexnow", handleIndexNowCron, "/api/cron/indexnow?token=beriklan-admin-2026&count=50"));
     } else if (cron === "0 */6 * * *") {
       // Every 6h at :00: GSC indexing (50 URLs) + trending-fetch (RSS to D1 queue) + rank-sync (N.4)
       ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50"));
@@ -870,6 +876,23 @@ async function handleAdminMigrate(request, env) {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`,
     `CREATE INDEX IF NOT EXISTS idx_refresh_log_slug ON refresh_log (slug)`,
+    // N.7 hourly_generate_runs — track every hourly cron run
+    `CREATE TABLE IF NOT EXISTS hourly_generate_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+      count_requested INTEGER,
+      count_generated INTEGER,
+      slugs TEXT,
+      models TEXT,
+      committed_to_github INTEGER,
+      enqueued_for_indexing INTEGER,
+      error TEXT,
+      elapsed_ms INTEGER
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_hgr_timestamp ON hourly_generate_runs (timestamp DESC)`,
+    // N.8 pending_indexing.indexnow_at — for IndexNow tracking
+    `ALTER TABLE pending_indexing ADD COLUMN indexnow_at TEXT`,
+    `CREATE INDEX IF NOT EXISTS idx_pending_indexnow ON pending_indexing (indexnow_at)`,
   ];
 
   const results = [];
@@ -1310,7 +1333,7 @@ async function handleKeywordDashboard(request, env) {
   } catch (e) { /* noop */ }
 
   // 2. Live D1 indexing status
-  const idx = { pending: 0, submitted: 0, failed: 0, today: 0, recent: [] };
+  const idx = { pending: 0, submitted: 0, failed: 0, today: 0, recent: [], indexnow_total: 0, indexnow_24h: 0 };
   try {
     const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status").all();
     for (const row of (c.results || [])) idx[row.status] = row.n;
@@ -1320,6 +1343,17 @@ async function handleKeywordDashboard(request, env) {
     idx.today = t ? t.n : 0;
     const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at, gsc_submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 25").all();
     idx.recent = rec.results || [];
+    // IndexNow stats
+    try {
+      const ins = await env.DB.prepare(
+        `SELECT
+           COUNT(*) as total,
+           SUM(CASE WHEN indexnow_at > datetime('now', '-24 hours') THEN 1 ELSE 0 END) as last_24h
+         FROM pending_indexing WHERE indexnow_at IS NOT NULL`
+      ).first();
+      idx.indexnow_total = ins?.total || 0;
+      idx.indexnow_24h = ins?.last_24h || 0;
+    } catch (e) {}
   } catch (e) {
     idx.error = e.message;
   }
@@ -1407,7 +1441,8 @@ async function handleKeywordDashboard(request, env) {
     <div class="card ${k.coverage < 10 ? 'warning' : 'success'}"><h2>Artikel Jadi</h2><div class="metric">${k.generated}</div><div class="sub">coverage ${k.coverage}% dari total keyword</div></div>
     <div class="card"><h2>Pending Generate</h2><div class="metric">${k.pending}</div><div class="sub">menunggu di keyword queue</div></div>
     <div class="card success"><h2>Live di posts.json</h2><div class="metric">${k.live_in_posts}</div><div class="sub">dari ${p.total} total artikel blog</div></div>
-    <div class="card ${idx.pending > 100 ? 'warning' : 'success'}"><h2>Indexing Queue</h2><div class="metric">${idx.pending}</div><div class="sub">submitted total: ${idx.submitted} · hari ini: ${idx.today}</div></div>
+    <div class="card ${idx.pending > 100 ? 'warning' : 'success'}"><h2>Indexing Queue</h2><div class="metric">${idx.pending}</div><div class="sub">submitted: ${idx.submitted} (GSC) · hari ini: ${idx.today}</div></div>
+    <div class="card success"><h2>IndexNow (Bing+Yandex)</h2><div class="metric">${(idx.indexnow_total || 0)}</div><div class="sub">no quota · multi-engine</div></div>
   </div>
 
   <h3 class="section-title">🧩 Per Layanan (keyword → artikel)</h3>
@@ -1572,60 +1607,88 @@ async function renderTrendingStatus(env, ks) {
 async function renderHourlyGenStatus(env) {
   if (!env.DB) return "";
   try {
-    // Count rate-limit events (last 24h) for visibility
-    const rateLimitRow = await env.DB.prepare(
-      `SELECT COUNT(*) as n FROM cron_logs
-       WHERE urls_processed = 0 AND timestamp > datetime('now', '-24 hours')`
-    ).first();
-    const drafts = await env.DB.prepare(
-      `SELECT slug, title, service, city, status, created_at, committed_at
-       FROM generated_drafts ORDER BY id DESC LIMIT 10`
+    // N.7: Get hourly runs (last 24h)
+    const hourlyRuns = await env.DB.prepare(
+      `SELECT timestamp, count_requested, count_generated, slugs, models, committed_to_github, enqueued_for_indexing, error, elapsed_ms
+       FROM hourly_generate_runs
+       WHERE timestamp > datetime('now', '-24 hours')
+       ORDER BY timestamp DESC
+       LIMIT 24`
     ).all();
-    const totalRow = await env.DB.prepare(
+    const hourlyRows = (hourlyRuns.results || []);
+
+    // Today's totals
+    const todayStats = await env.DB.prepare(
       `SELECT
-         COUNT(*) as total,
-         SUM(CASE WHEN status='committed' THEN 1 ELSE 0 END) as committed,
-         SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) as drafts
-       FROM generated_drafts`
+         COUNT(*) as runs,
+         SUM(count_generated) as generated,
+         SUM(CASE WHEN committed_to_github=1 THEN 1 ELSE 0 END) as committed,
+         SUM(enqueued_for_indexing) as indexed
+       FROM hourly_generate_runs
+       WHERE timestamp > datetime('now', '-24 hours')`
     ).first();
-    const rows = (drafts.results || []);
-    const total = (totalRow && totalRow.total) || 0;
-    const committed = (totalRow && totalRow.committed) || 0;
-    const draftsCount = (totalRow && totalRow.drafts) || 0;
-    if (rows.length === 0 && total === 0) {
+
+    // N.8 IndexNow stats
+    const indexnowStats = await env.DB.prepare(
+      `SELECT
+         COUNT(*) as urls_indexnow_total,
+         SUM(CASE WHEN indexnow_at > datetime('now', '-24 hours') THEN 1 ELSE 0 END) as urls_indexnow_24h
+       FROM pending_indexing
+       WHERE indexnow_at IS NOT NULL`
+    ).first();
+
+    if (hourlyRows.length === 0) {
       return `
-        <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
-        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code>. Setup cron-job.org untuk trigger.</p></div>
+        <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
+        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code> dalam 24 jam terakhir. Setup cron-job.org untuk trigger.</p></div>
       `;
     }
-    const table = rows.map(r => {
-      const statusBadge = r.status === 'committed'
-        ? '<span class="badge green">✅ committed</span>'
-        : '<span class="badge yellow">📝 draft</span>';
-      const link = r.status === 'committed'
-        ? `<a href="/blog/${esc(r.slug)}/" target="_blank">${esc(r.title.slice(0, 55))}</a>`
-        : esc(r.title.slice(0, 55));
+
+    const ts = todayStats || {};
+    const ins = indexnowStats || {};
+
+    // Build hourly runs table
+    const table = hourlyRows.map(r => {
+      const slugs = (r.slugs || '').split(',').map(s => s.trim()).filter(Boolean);
+      const slugDisplay = slugs.length > 0
+        ? slugs.map(s => `<a href="/blog/${esc(s)}/" target="_blank" style="font-size:11px;">${esc(s.slice(0, 40))}</a>`).join(', ')
+        : '<em style="color:#999;">none</em>';
+      const modelJson = (() => {
+        try { return JSON.parse(r.models || '[]'); } catch { return []; }
+      })();
+      const modelSummary = modelJson.length > 0
+        ? modelJson.map(m => String(m).replace('groq/llama-3.3-70b-versatile (groq#', 'groq#').replace('zen/deepseek-v3-flash', 'zen/deepseek').replace(')', ')')).join(', ')
+        : '-';
+      const errBadge = r.error ? '<span class="badge red" title="' + esc(r.error) + '">err</span>' : '';
+      const committedBadge = r.committed_to_github
+        ? '<span class="badge green">✓ GH</span>'
+        : '<span class="badge yellow">draft</span>';
+      const indexedBadge = r.enqueued_for_indexing > 0
+        ? '<span class="badge info">+' + r.enqueued_for_indexing + ' idx</span>'
+        : '';
       return `<tr>
-        <td>${link}</td>
-        <td>${esc(r.service || '-')}</td>
-        <td>${esc(r.city || '-')}</td>
-        <td>${statusBadge}</td>
-        <td style="color:#999;font-size:12px;">${esc((r.committed_at || r.created_at || '').slice(0, 19))}</td>
+        <td style="font-size:11px;color:#666;">${esc((r.timestamp || '').slice(0, 19))}</td>
+        <td>${slugDisplay}</td>
+        <td style="font-size:11px;">${esc(modelSummary)}</td>
+        <td>${committedBadge} ${indexedBadge} ${errBadge}</td>
+        <td style="font-size:11px;color:#999;">${(r.elapsed_ms || 0) / 1000}s</td>
       </tr>`;
     }).join('');
+
     return `
-      <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
+      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:12px;">
-        <div class="card success"><h2>Total Generated</h2><div class="metric">${total}</div><div class="sub">artikel via /api/cron/hourly-generate</div></div>
-        <div class="card info"><h2>✅ Committed to GitHub</h2><div class="metric">${committed}</div><div class="sub">posts.json + queue + index</div></div>
-        <div class="card warning"><h2>📝 Drafts (D1 only)</h2><div class="metric">${draftsCount}</div><div class="sub">menunggu GitHub commit (set secret)</div></div>
-        <div class="card"><h2>Cron Setup</h2><div class="metric" style="font-size:13px;line-height:1.4;">⚡ Paid: count=5 @1 jam<br/>🆓 Free: 5 × count=1 @12 min</div><div class="sub"><a href="https://cron-job.org" target="_blank">cron-job.org</a> · Workers Paid $5/mo untuk 30s CPU</div></div>
+        <div class="card success"><h2>Cron Runs (24h)</h2><div class="metric">${ts.runs || 0}</div><div class="sub">/api/cron/hourly-generate</div></div>
+        <div class="card success"><h2>Articles Generated</h2><div class="metric">${ts.generated || 0}</div><div class="sub">dalam 24 jam terakhir</div></div>
+        <div class="card info"><h2>✅ Committed to GitHub</h2><div class="metric">${ts.committed || 0}</div><div class="sub">posts.json + queue + index</div></div>
+        <div class="card info"><h2>🔍 Enqueued for Indexing</h2><div class="metric">${ts.indexed || 0}</div><div class="sub">URL → pending_indexing table</div></div>
+        <div class="card info"><h2>IndexNow submitted</h2><div class="metric">${ins.urls_indexnow_24h || 0}</div><div class="sub">dari ${ins.urls_indexnow_total || 0} total (no quota, multi-engine)</div></div>
       </div>
-      <table><thead><tr><th>Title</th><th>Service</th><th>City</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${table}</tbody></table>
+      <table><thead><tr><th>Timestamp</th><th>Slugs Generated</th><th>Model</th><th>Status</th><th>Duration</th></tr></thead><tbody>${table}</tbody></table>
     `;
   } catch (e) {
     return `
-      <h3 class="section-title">🤖 Hourly Auto-Generate Activity</h3>
+      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
       <div class="card warning"><p class="sub">D1 table belum ready: ${esc(e.message)}</p></div>
     `;
   }
@@ -2462,6 +2525,110 @@ Aturan:
   }
 
   return new Response(JSON.stringify({ ok: true, optimized: optimized.length, items: optimized, commit_sha: commitSha, elapsed_ms: Date.now() - t0, log, errors: errors.slice(0, 5) }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+// ─── IndexNow-Only Indexing (Bing + Yandex + DuckDuckGo, no quota) ─────────────
+//   POST /api/cron/indexnow?token=...&count=N
+//   Submits pending URLs to IndexNow (api.indexnow.org + www.bing.com/indexnow)
+//   No daily quota limit. Recommended: every 2 hours.
+async function handleIndexNowCron(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "20", 10), 50));
+  const t0 = Date.now();
+  const errors = [];
+  const submitted = [];
+
+  // 1. Fetch pending URLs (any not-yet-submitted via IndexNow)
+  let urls = [];
+  try {
+    const r = await env.DB.prepare(
+      `SELECT id, url FROM pending_indexing
+       WHERE status='pending' OR (status IN ('submitted','gsc_submitted') AND indexnow_at IS NULL)
+       ORDER BY rowid ASC LIMIT ?`
+    ).bind(count).all();
+    urls = (r.results || []).map(row => ({
+      id: row.id,
+      url: row.url.replace("https://beriklan.co.id", "https://www.beriklan.co.id"),
+    }));
+  } catch (e) {
+    errors.push({ stage: "query", error: String(e).slice(0, 200) });
+    return new Response(JSON.stringify({ ok: false, error: "query_failed", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+
+  if (urls.length === 0) {
+    return new Response(JSON.stringify({ ok: true, message: "no pending URLs", submitted: [], log: { stage: "no_pending" } }), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // 2. Submit to IndexNow (api.indexnow.org — single endpoint reaches all engines: Bing, Yandex, DuckDuckGo, etc.)
+  const INDEXNOW_KEY = "2f22c16be9437a90ad2285a4af043e10";
+  const payload = {
+    host: "beriklan.co.id",
+    key: INDEXNOW_KEY,
+    keyLocation: `https://beriklan.co.id/2f22c16be9437a90ad2285a4af043e10.txt`,
+    urlList: urls.map(u => u.url),
+  };
+
+  let totalEngines = 0;
+  let totalFailed = 0;
+  const log = [];
+  // Single POST to api.indexnow.org fans out to all engines (Bing, Yandex, DuckDuckGo, Seznam, Naver)
+  try {
+    const resp = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+    if (resp.ok || resp.status === 202) {
+      totalEngines = 4; // approximate count of engines receiving
+      log.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", status: resp.status, urls: urls.length });
+    } else {
+      totalFailed++;
+      const body = await resp.text().catch(() => "");
+      errors.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", status: resp.status, body: body.slice(0, 200) });
+    }
+  } catch (e) {
+    totalFailed++;
+    errors.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", error: String(e).slice(0, 200) });
+  }
+
+  // 3. Mark all submitted URLs with indexnow_at timestamp — ONLY if API succeeded
+  if (totalEngines > 0) {
+    try {
+      for (const u of urls) {
+        await env.DB.prepare(
+          `UPDATE pending_indexing SET indexnow_at = datetime('now') WHERE id=? AND indexnow_at IS NULL`
+        ).bind(u.id).run();
+        submitted.push(u.url);
+      }
+    } catch (e) {
+      errors.push({ stage: "update_indexnow_at", error: String(e).slice(0, 200) });
+    }
+  } else {
+    // API failed — don't mark URLs as submitted
+    submitted.length = 0;
+  }
+
+  // 4. Log to cron_logs
+  try {
+    await env.DB.prepare(
+      `INSERT INTO cron_logs (timestamp, google_ok, google_fail, indexnow_ok, indexnow_fail, urls_processed)
+       VALUES (datetime('now'), 0, 0, ?, ?, ?)`
+    ).bind(totalEngines, totalFailed, submitted.length).run();
+  } catch (e) {}
+
+  return new Response(JSON.stringify({
+    ok: true,
+    indexnow_engines: totalEngines,
+    indexnow_failed: totalFailed,
+    submitted: submitted.length,
+    submitted_urls: submitted.slice(0, 10),
+    elapsed_ms: Date.now() - t0,
+    errors: errors.length ? errors : undefined,
+  }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
 // ─── Pending Indexing Cleanup (mark old 'submitted' as 'completed') ─────────────
@@ -3959,6 +4126,28 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
     } catch {}
 
     const elapsedMs = Date.now() - t0;
+    // N.7 Log to hourly_generate_runs for dashboard visibility
+    if (env.DB) {
+      try {
+        await env.DB.prepare(
+          `INSERT INTO hourly_generate_runs
+           (count_requested, count_generated, slugs, models, committed_to_github, enqueued_for_indexing, error, elapsed_ms)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          count,
+          newPosts.length,
+          newPosts.map(p => p.slug).join(", "),
+          JSON.stringify(aiModels.map(m => m.model)),
+          committedToGitHub ? 1 : 0,
+          enqueued,
+          errors.length ? errors.map(e => e.stage + ':' + e.error).join('; ').slice(0, 500) : null,
+          elapsedMs
+        ).run();
+      } catch (e) {
+        // Noop — logging is non-critical
+      }
+    }
+
     return new Response(JSON.stringify({
       ok: true,
       generated: newPosts.length,

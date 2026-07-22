@@ -5698,7 +5698,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 2+", title: "Launch 30 Hari", desc: "Iklan tayang penuh di seluruh placement Facebook. Laporan tiap Senin pagi." }
     ],
     proof: "Tersertifikasi Meta Business Partner · Mengelola campaign sejak 2016",
-    cta_text: "Konsultasi Gratis 15 Menit",
+    cta_text: "Lihat Paket & Harga",
     cta_url: "https://beriklan.co.id/jasa-iklan-facebook/"
   },
   {
@@ -5724,7 +5724,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 2+", title: "Launch & Optimasi", desc: "Iklan tayang 30 hari. Optimasi mingguan berdasarkan data." }
     ],
     proof: "Tersertifikasi Meta · Portfolio fashion, F&B, lifestyle, jasa profesional",
-    cta_text: "Diskusi Strategi IG",
+    cta_text: "Lihat Paket IG Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-instagram/"
   },
   {
@@ -5750,7 +5750,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 2+", title: "Launch & Iterasi", desc: "Iklan tayang 30 hari. Iterasi materi setiap minggu." }
     ],
     proof: "TikTok Marketing Partner · Berpengalaman di F&B, fashion, beauty, edukasi",
-    cta_text: "Konsultasi TikTok Ads",
+    cta_text: "Lihat Paket TikTok Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-tiktok/"
   },
   {
@@ -5776,7 +5776,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 2+", title: "Optimasi Harian", desc: "Monitor performa, adjust bid, dan negative keywords." }
     ],
     proof: "Google Premier Partner · Bersertifikasi Search, Display, Video",
-    cta_text: "Audit Google Ads Gratis",
+    cta_text: "Lihat Paket Google Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-google/"
   },
   {
@@ -5802,7 +5802,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 2+", title: "Launch & Optimize", desc: "Iklan tayang. Optimasi berdasarkan view-through & engagement." }
     ],
     proof: "Bersertifikasi Google Video · Portfolio FMCG, tech, edukasi",
-    cta_text: "Diskusi YouTube Ads",
+    cta_text: "Lihat Paket YouTube Ads",
     cta_url: "https://beriklan.co.id/jasa-iklan-youtube/"
   },
   {
@@ -5828,7 +5828,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "ONGOING", title: "Report Mingguan", desc: "Report reach, engagement, follower growth tiap minggu." }
     ],
     proof: "Mengelola brand sejak 2016 · Puluhan akun IG aktif setiap bulan",
-    cta_text: "Lihat Portfolio",
+    cta_text: "Lihat Paket Kelola IG",
     cta_url: "https://beriklan.co.id/jasa-kelola-instagram/"
   },
   {
@@ -5854,7 +5854,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "ONGOING", title: "Optimasi FYP", desc: "Analisa performa per video, iterasi gaya & topik." }
     ],
     proof: "Tim content creator berpengalaman · Puluhan akun TikTok dikelola",
-    cta_text: "Lihat Contoh Video",
+    cta_text: "Lihat Paket Kelola TikTok",
     cta_url: "https://beriklan.co.id/jasa-kelola-tiktok/"
   },
   {
@@ -5880,7 +5880,7 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "MINGGU 4", title: "Review & Launch", desc: "Test, revisi, deployment, dan training CMS." }
     ],
     proof: "Mengembangkan website sejak 2016 · Puluhan brand berbagai industri",
-    cta_text: "Konsultasi Website",
+    cta_text: "Lihat Paket Website",
     cta_url: "https://beriklan.co.id/jasa-pembuatan-website/"
   },
   {
@@ -5913,7 +5913,7 @@ const SERVICE_CONFIGS = [
     name: "Jasa View Live TikTok",
     subject: "Viewers live TikTok untuk boost algoritma live Anda.",
     category: "view-live",
-    service_path: "/jasa-view-live-tiktok/",
+    service_path: "/jasa-view-live/",
     hero_image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=280&fit=crop&q=80",
     accent_color: "#f59e0b",
     accent_bg: "#fef3c7",
@@ -5932,8 +5932,8 @@ const SERVICE_CONFIGS = [
       { num: "03", tag: "ONGOING", title: "Repeat Order", desc: "Pesan viewers untuk sesi live berikutnya." }
     ],
     proof: "Dipercaya ratusan seller TikTok Shop Indonesia",
-    cta_text: "Order via WhatsApp",
-    cta_url: "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20jasa%20view%20live%20TikTok"
+    cta_text: "Lihat Paket View Live",
+    cta_url: "https://beriklan.co.id/jasa-view-live/"
   }
 ];
 
@@ -6044,13 +6044,13 @@ ${stepsHTML}
 <!-- Final CTA -->
 <tr><td style="padding:28px 28px;background:#f7f8fb;border-top:1px solid #e2e8f0;">
 <p style="color:#0f1e3d;font-size:16px;margin:0 0 8px;font-weight:700;text-align:center;">Mau diskusi strategi untuk {{company}}?</p>
-<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Konsultasi gratis 15 menit — kami analisis kondisi campaign Anda, lalu sarankan langkah konkret.</p>
+<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Lihat paket, harga, dan cara kerja di halaman layanan kami. Atau konsultasi gratis 15 menit — kami analisis kondisi campaign Anda.</p>
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
-<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20${encodeURIComponent(c.name)}" style="color:#0f1e3d;text-decoration:none;display:block;">Diskusi via WhatsApp &rarr;</a>
+<a href="${c.cta_url}" style="color:#0f1e3d;text-decoration:none;display:block;">${c.cta_text} &rarr;</a>
 </td></tr></table>
 <table cellpadding="0" cellspacing="0" style="margin:12px auto 0;">
-<tr><td><a href="${c.service_path}" style="color:#475569;font-size:12px;text-decoration:underline;">📄 Halaman layanan lengkap</a></td></tr></table>
+<tr><td><a href="https://beriklan.co.id${c.service_path}" style="color:#475569;font-size:12px;text-decoration:underline;">📄 Halaman layanan lengkap</a></td></tr></table>
 </td></tr>
 
 <!-- Footer -->
@@ -6102,7 +6102,7 @@ const GENERIC_TEMPLATES = [
 <tr><td style="padding:0 28px 28px;text-align:center;">
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
-<a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20konsultasi" style="color:#0f1e3d;text-decoration:none;display:block;">Konsultasi via WhatsApp &rarr;</a>
+<a href="https://beriklan.co.id/jasa-digital-marketing/" style="color:#0f1e3d;text-decoration:none;display:block;">Lihat Semua Layanan &rarr;</a>
 </td></tr></table>
 </td></tr>
 

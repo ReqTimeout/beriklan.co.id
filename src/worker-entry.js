@@ -5677,20 +5677,25 @@ async function pushToGithub({ token, owner, repo, branch, filePath, content, mes
 const SERVICE_CONFIGS = [
   {
     name: "Jasa Iklan Facebook Ads",
-    subject: "Strategi Facebook Ads untuk {{company}}",
+    subject: "120 juta orang Indonesia login ke Facebook tiap hari — bagaimana menjangkau mereka?",
     category: "meta-ads",
     service_path: "/jasa-iklan-facebook/",
     hero_image: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=600&h=280&fit=crop&q=80",
     accent_color: "#1877f2",
     accent_bg: "#e7f0ff",
     badge: "Meta Business Partner",
-    headline: "Facebook Ads yang terukur dari hari pertama.",
-    subheadline: "Sebelum jalan, kami audit dulu — lihat di mana budget Anda selama ini terbuang. Baru susun strategi yang sesuai objektif bisnis Anda.",
+    headline: "Jasa Iklan Facebook yang Menjangkau Audiens Tepat, Mendorong Chat WhatsApp.",
+    subheadline: "120 juta lebih orang Indonesia login ke Facebook & Instagram setiap hari — di dalamnya ada calon pelanggan Anda. Tapi menampilkannya saja tidak cukup. Yang penting: siapa yang Anda jangkau, dengan pesan apa, dan di mana mereka akhirnya melakukan action.",
     benefits: [
-      { short: "🎯", title: "Targeting presisi", desc: "Riset audiens dari interest, behavior, sampai lookalike 1–3%" },
-      { short: "🎨", title: "Variasi creative", desc: "5–10 materi iklan per campaign, diuji A/B otomatis" },
-      { short: "📊", title: "Dashboard real-time", desc: "Pantau ROAS, CPA, CTR kapan saja — bukan mingguan" },
-      { short: "🔄", title: "Optimasi tiap minggu", desc: "Iterasi budget, creative, dan targeting berdasarkan data" }
+      { short: "🎯", title: "Targeting interest & behavior", desc: "100+ kategori minat: perilaku, demografi, hobby spesifik audiens Anda." },
+      { short: "🔄", title: "Remarketing list", desc: "Jangkau kembali orang yang pernah interaksi dengan iklan — konversi 3-5x lebih tinggi." },
+      { short: "📍", title: "Target wilayah", desc: "Batasi ke kota, provinsi, atau radius tertentu — cocok untuk bisnis lokal." },
+      { short: "📊", title: "Lead database & lookalike", desc: "Upload kontak lama, atau buat lookalike audience dari data tersebut." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Brief & Riset", desc: "Diskusi 30 menit untuk menggali produk, target market, dan tujuan Anda." },
+      { num: "02", tag: "MINGGU 1-2", title: "Setup & Kreatif", desc: "Setup akun iklan, Meta Pixel, dan materi iklan (foto, video, copy)." },
+      { num: "03", tag: "MINGGU 2+", title: "Launch 30 Hari", desc: "Iklan tayang penuh di seluruh placement Facebook. Laporan tiap Senin pagi." }
     ],
     proof: "Tersertifikasi Meta Business Partner · Mengelola campaign sejak 2016",
     cta_text: "Konsultasi Gratis 15 Menit",
@@ -5698,20 +5703,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Iklan Instagram",
-    subject: "Strategi Instagram Ads untuk {{company}}",
+    subject: "Instagram Ads untuk menemukan pelanggan baru lewat konten visual.",
     category: "meta-ads",
     service_path: "/jasa-iklan-instagram/",
     hero_image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=600&h=280&fit=crop&q=80",
     accent_color: "#e1306c",
     accent_bg: "#fce4ec",
     badge: "Meta Business Partner",
-    headline: "Instagram Ads yang jadi sumber leads — bukan cuma likes.",
-    subheadline: "Instagram bukan cuma untuk branding. Dengan strategi yang tepat, jadi channel leads dan closing — terutama untuk B2C, F&B, fashion, lifestyle.",
+    headline: "Jasa Iklan Instagram untuk Menemukan Pelanggan Baru Lewat Konten Visual.",
+    subheadline: "Setiap hari ratusan juta orang menggunakan Instagram untuk mencari inspirasi dan produk baru. Kami bantu bisnis Anda menayangkan iklan yang tertarget di Feed, Stories, dan Reels — agar impresi berubah menjadi kunjungan profil, DM, atau chat WhatsApp.",
     benefits: [
-      { short: "📱", title: "Reels & Story Ads", desc: "Format video pendek yang disukai algoritma IG" },
-      { short: "🎯", title: "Interest targeting", desc: "Capai audiens berdasarkan minat & perilaku di IG" },
-      { short: "💬", title: "DM otomatis", desc: "Lead form + auto-reply WhatsApp untuk closing cepat" },
-      { short: "📈", title: "A/B test visual", desc: "Beberapa materi diuji sekaligus untuk cari yang terbaik" }
+      { short: "📱", title: "Reels, Story & Feed Ads", desc: "Format video pendek & image ads yang disukai algoritma IG." },
+      { short: "🎯", title: "Interest targeting", desc: "Capai audiens berdasarkan minat & perilaku Instagram." },
+      { short: "💬", title: "DM otomatis", desc: "Lead form + auto-reply WhatsApp untuk closing lebih cepat." },
+      { short: "📈", title: "A/B test visual", desc: "Beberapa materi diuji sekaligus untuk cari yang terbaik." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Riset audiens", desc: "Pahami target market Anda: usia, minat, gaya konten yang cocok." },
+      { num: "02", tag: "MINGGU 1-2", title: "Setup & Materi", desc: "Setting iklan + produksi materi (feed image, reels, story)." },
+      { num: "03", tag: "MINGGU 2+", title: "Launch & Optimasi", desc: "Iklan tayang 30 hari. Optimasi mingguan berdasarkan data." }
     ],
     proof: "Tersertifikasi Meta · Portfolio fashion, F&B, lifestyle, jasa profesional",
     cta_text: "Diskusi Strategi IG",
@@ -5719,20 +5729,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Iklan TikTok",
-    subject: "TikTok Ads untuk {{company}}",
+    subject: "TikTok Ads untuk menjangkau audiens lewat konten yang menghibur.",
     category: "tiktok",
     service_path: "/jasa-iklan-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=600&h=280&fit=crop&q=80",
     accent_color: "#ff0050",
     accent_bg: "#ffe0e8",
     badge: "TikTok Marketing Partner",
-    headline: "Muncul di FYP audiens muda Indonesia.",
-    subheadline: "Pasar muda ada di TikTok. Pertanyaannya: apakah {{company}} muncul di FYP mereka, atau cuma lewat begitu saja?",
+    headline: "Jasa Iklan TikTok untuk Menjangkau Audiens dengan Konten yang Menghibur.",
+    subheadline: "TikTok menjadi kanal penemuan produk yang paling cepat bertumbuh di Indonesia. Kami bantu bisnis Anda membuat iklan video pendek yang tertarget — agar tayangan berubah menjadi pengikut, kunjungan profil, atau chat WhatsApp yang siap berkonsultasi.",
     benefits: [
-      { short: "🎬", title: "Spark Ads", desc: "Boost UGC creators yang terbukti perform — bayar sesuai hasil" },
-      { short: "🎯", title: "Interest TikTok", desc: "Targeting khusus platform: minat, hashtag, perilaku" },
-      { short: "📊", title: "Pixel integration", desc: "Track full-funnel dari view sampai checkout" },
-      { short: "🚀", title: "Boost organik", desc: "Optimasi konten agar reach organik ikut naik" }
+      { short: "🎬", title: "Spark Ads", desc: "Boost UGC creators yang terbukti perform — bayar sesuai hasil." },
+      { short: "🎯", title: "Interest targeting", desc: "Targeting khusus platform: minat, hashtag, perilaku." },
+      { short: "📊", title: "Pixel integration", desc: "Track full-funnel dari view sampai checkout." },
+      { short: "🚀", title: "Boost organik", desc: "Optimasi konten agar reach organik ikut naik." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Brief & Riset", desc: "Diskusi target market, dan riset konten TikTok yang perform." },
+      { num: "02", tag: "MINGGU 1-2", title: "Setup & Video", desc: "Setup TikTok Ads Manager + produksi video iklan." },
+      { num: "03", tag: "MINGGU 2+", title: "Launch & Iterasi", desc: "Iklan tayang 30 hari. Iterasi materi setiap minggu." }
     ],
     proof: "TikTok Marketing Partner · Berpengalaman di F&B, fashion, beauty, edukasi",
     cta_text: "Konsultasi TikTok Ads",
@@ -5740,20 +5755,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Iklan Google Ads",
-    subject: "Google Ads untuk {{company}}",
+    subject: "Google Ads — tangkap intent tinggi saat mereka mencari.",
     category: "google-ads",
     service_path: "/jasa-iklan-google/",
     hero_image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=280&fit=crop&q=80",
     accent_color: "#4285f4",
     accent_bg: "#e3f2fd",
     badge: "Google Premier Partner",
-    headline: "Tampil saat audiens Anda sedang mencari.",
-    subheadline: "Bedanya dengan social ads: di Google, Anda muncul saat orang SEDANG mencari produk atau layanan Anda. Traffic lebih berkualitas, konversi lebih tinggi.",
+    headline: "Jasa Iklan Google — Tangkap Intent Tinggi Saat Mereka Mencari.",
+    subheadline: "Google Search Ads menjangkau orang yang sedang aktif mencari produk atau layanan Anda — bukan orang yang sedang scroll. Iklan tampil di halaman pertama dengan bid yang terkontrol. Kami mengatur strategi kata kunci, copy, dan landing page-nya.",
     benefits: [
-      { short: "🔍", title: "Search Campaigns", desc: "Tampil di halaman 1 untuk keyword yang relevan" },
-      { short: "📺", title: "YouTube Ads", desc: "Video awareness di platform video terbesar dunia" },
-      { short: "📧", title: "Gmail Ads", desc: "Promosi langsung ke inbox orang yang tepat" },
-      { short: "🛒", title: "Shopping Ads", desc: "Untuk e-commerce: produk tampil dengan gambar & harga" }
+      { short: "🔍", title: "Search Campaigns", desc: "Tampil di halaman 1 untuk keyword yang relevan." },
+      { short: "📺", title: "YouTube Ads", desc: "Video awareness di platform video terbesar dunia." },
+      { short: "📧", title: "Gmail Ads", desc: "Promosi langsung ke inbox orang yang tepat." },
+      { short: "🛒", title: "Shopping Ads", desc: "Untuk e-commerce: produk tampil dengan gambar & harga." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Riset Keyword", desc: "Analisis kata kunci yang relevan dengan biaya bid optimal." },
+      { num: "02", tag: "MINGGU 1-2", title: "Setup & Copy", desc: "Setup akun Google Ads + landing page + copy iklan." },
+      { num: "03", tag: "MINGGU 2+", title: "Optimasi Harian", desc: "Monitor performa, adjust bid, dan negative keywords." }
     ],
     proof: "Google Premier Partner · Bersertifikasi Search, Display, Video",
     cta_text: "Audit Google Ads Gratis",
@@ -5761,20 +5781,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Iklan YouTube",
-    subject: "YouTube Ads untuk {{company}}",
+    subject: "YouTube Ads — bangun brand awareness lewat video.",
     category: "google-ads",
     service_path: "/jasa-iklan-youtube/",
     hero_image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=280&fit=crop&q=80",
     accent_color: "#ff0000",
     accent_bg: "#ffe0e0",
     badge: "Google Video Partner",
-    headline: "YouTube Ads untuk brand awareness yang terukur.",
-    subheadline: "YouTube adalah TV modern — lebih murah, lebih terukur. Cocok untuk produk yang butuh penjelasan visual: jasa, software, F&B, properti, edukasi.",
+    headline: "Jasa Iklan YouTube — Bangun Brand Awareness Lewat Video.",
+    subheadline: "YouTube adalah platform video terbesar di Indonesia dengan jutaan penonton aktif setiap hari. Kami bantu bisnis Anda menayangkan iklan video yang tertarget — agar pesan Anda dilihat oleh audiens yang tepat, di channel yang tepat, di saat yang tepat.",
     benefits: [
-      { short: "▶️", title: "TrueView Ads", desc: "Bayar hanya kalau penonton tonton 30 detik atau lebih" },
-      { short: "⏱️", title: "Bumper 6 detik", desc: "Singkat, padat, langsung diingat" },
-      { short: "📱", title: "Multi-device", desc: "Tampil di TV, desktop, mobile, tablet — semua device" },
-      { short: "📈", title: "Brand Lift", desc: "Ukur dampak nyata terhadap brand awareness" }
+      { short: "▶️", title: "TrueView Ads", desc: "Bayar hanya kalau penonton tonton 30 detik atau lebih." },
+      { short: "⏱️", title: "Bumper 6 detik", desc: "Singkat, padat, langsung diingat." },
+      { short: "📱", title: "Multi-device", desc: "Tampil di TV, desktop, mobile, tablet — semua device." },
+      { short: "📈", title: "Brand Lift", desc: "Ukur dampak nyata terhadap brand awareness." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Riset Channel", desc: "Analisis channel YouTube yang relevan untuk brand Anda." },
+      { num: "02", tag: "MINGGU 1-2", title: "Setup & Video", desc: "Setup Google Ads Video + produksi materi video." },
+      { num: "03", tag: "MINGGU 2+", title: "Launch & Optimize", desc: "Iklan tayang. Optimasi berdasarkan view-through & engagement." }
     ],
     proof: "Bersertifikasi Google Video · Portfolio FMCG, tech, edukasi",
     cta_text: "Diskusi YouTube Ads",
@@ -5782,20 +5807,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Kelola Instagram",
-    subject: "Instagram {{company}} butuh strategi organik?",
+    subject: "Instagram Anda butuh konsistensi? Kami yang kelola.",
     category: "social-organic",
     service_path: "/jasa-kelola-instagram/",
     hero_image: "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=600&h=280&fit=crop&q=80",
     accent_color: "#833ab4",
     accent_bg: "#f3e5f5",
     badge: "Organic Specialist",
-    headline: "Bangun audiens Instagram yang loyal, bukan cuma follower.",
-    subheadline: "Iklan saja tidak cukup. Anda butuh audiens organik yang engaged dan loyal. Kami handle content calendar, desain, copywriting, dan community management.",
+    headline: "Jasa Kelola Instagram — Konsistensi Konten, Pertumbuhan yang Terukur.",
+    subheadline: "Instagram yang aktif dan tertata membutuhkan waktu dan konsistensi. Tim kami mengelola akun Instagram Anda secara menyeluruh — mulai dari konsep, copy, desain, penjadwalan, hingga laporan mingguan. Anda fokus pada bisnis, kami yang menjaga brand tetap hidup.",
     benefits: [
-      { short: "📅", title: "Content calendar", desc: "30 hari konten terstruktur — feed, reels, story" },
-      { short: "🎨", title: "Desain profesional", desc: "Template brand yang konsisten dan recognizable" },
-      { short: "✍️", title: "Copywriting", desc: "Caption engaging dengan CTA yang natural" },
-      { short: "💬", title: "Community management", desc: "Balas komentar & DM dengan tone brand Anda" }
+      { short: "📅", title: "Content calendar", desc: "30 hari konten terstruktur — feed, reels, story." },
+      { short: "🎨", title: "Desain profesional", desc: "Template brand yang konsisten dan recognizable." },
+      { short: "✍️", title: "Copywriting", desc: "Caption engaging dengan CTA yang natural." },
+      { short: "💬", title: "Community management", desc: "Balas komentar & DM dengan tone brand Anda." }
+    ],
+    steps: [
+      { num: "01", tag: "BULAN 1", title: "Onboarding & Setup", desc: "Brief brand, analisis kompetitor, setup content calendar." },
+      { num: "02", tag: "BULAN 2+", title: "Eksekusi Harian", desc: "Posting rutin, desain, copy, dan community management." },
+      { num: "03", tag: "ONGOING", title: "Report Mingguan", desc: "Report reach, engagement, follower growth tiap minggu." }
     ],
     proof: "Mengelola brand sejak 2016 · Puluhan akun IG aktif setiap bulan",
     cta_text: "Lihat Portfolio",
@@ -5803,20 +5833,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Kelola TikTok",
-    subject: "Konsisten di TikTok untuk {{company}}",
+    subject: "TikTok Anda perlu konsisten? Tim kami yang produksi.",
     category: "social-organic",
     service_path: "/jasa-kelola-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&h=280&fit=crop&q=80",
     accent_color: "#00f2ea",
     accent_bg: "#e0ffff",
     badge: "TikTok Specialist",
-    headline: "Konsisten di TikTok, tanpa harus viral.",
-    subheadline: "Tidak semua video harus viral. Yang penting: konsisten, sesuai algoritma, dan menarik untuk target market Anda. Kami handle semuanya.",
+    headline: "Jasa Kelola TikTok — Konten Berkualitas, Followers Bertumbuh.",
+    subheadline: "TikTok membutuhkan konten yang konsisten dan relevan dengan algoritma FYP. Tim kami mengelola akun TikTok Anda secara menyeluruh — mulai dari riset musik, konsep, produksi video, editing, hingga optimasi engagement. Anda fokus pada produk, kami menjaga brand tetap terdengar.",
     benefits: [
-      { short: "🎬", title: "Video production", desc: "Paket video bulanan dengan scripting, shooting, editing" },
-      { short: "🎵", title: "Trending sounds", desc: "Riset sound & hashtag yang sedang naik" },
-      { short: "📊", title: "Analytics mingguan", desc: "Report view, engagement, follower growth" },
-      { short: "💬", title: "Live streaming", desc: "Opsional: jadwal & script untuk live commerce" }
+      { short: "🎬", title: "Video production", desc: "Paket video bulanan dengan scripting, shooting, editing." },
+      { short: "🎵", title: "Trending sounds", desc: "Riset sound & hashtag yang sedang naik." },
+      { short: "📊", title: "Analytics mingguan", desc: "Report view, engagement, follower growth." },
+      { short: "💬", title: "Live streaming", desc: "Opsional: jadwal & script untuk live commerce." }
+    ],
+    steps: [
+      { num: "01", tag: "BULAN 1", title: "Riset Musik & Hashtag", desc: "Riset sound & trend yang relevan untuk niche Anda." },
+      { num: "02", tag: "BULAN 1+", title: "Produksi Video", desc: "Script, shooting, editing untuk beberapa video per minggu." },
+      { num: "03", tag: "ONGOING", title: "Optimasi FYP", desc: "Analisa performa per video, iterasi gaya & topik." }
     ],
     proof: "Tim content creator berpengalaman · Puluhan akun TikTok dikelola",
     cta_text: "Lihat Contoh Video",
@@ -5824,20 +5859,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Pembuatan Website",
-    subject: "Website profesional untuk {{company}}",
+    subject: "Website profesional, cepat, siap menarik pelanggan.",
     category: "website",
     service_path: "/jasa-pembuatan-website/",
     hero_image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=280&fit=crop&q=80",
     accent_color: "#0ea5e9",
     accent_bg: "#e0f2fe",
     badge: "Custom Development",
-    headline: "Website yang dirancang untuk konversi.",
-    subheadline: "Website bukan sekadar brosur online. Setiap halaman didesain untuk membawa pengunjung ke satu aksi — kontak, beli, atau daftar.",
+    headline: "Jasa Pembuatan Website Profesional, Cepat, Siap Menarik Pelanggan.",
+    subheadline: "Website yang baik bukan sekadar tampil — ia harus load dengan cepat, responsif di semua device, mudah ditemukan di Google, dan conversion-ready. Kami bangun website Anda dengan teknologi modern dan standar industri.",
     benefits: [
-      { short: "🎨", title: "Custom design", desc: "Bukan template pasaran — sesuai brand identity Anda" },
-      { short: "📱", title: "Mobile-first", desc: "Optimal di semua device, loading cepat" },
-      { short: "🔍", title: "SEO ready", desc: "Struktur SEO-friendly dari awal — muncul di Google" },
-      { short: "⚙️", title: "CMS custom", desc: "Update konten sendiri tanpa tergantung developer" }
+      { short: "🎨", title: "Custom design", desc: "Bukan template pasaran — sesuai brand identity Anda." },
+      { short: "📱", title: "Mobile-first", desc: "Optimal di semua device, loading cepat." },
+      { short: "🔍", title: "SEO ready", desc: "Struktur SEO-friendly dari awal — muncul di Google." },
+      { short: "⚙️", title: "CMS custom", desc: "Update konten sendiri tanpa tergantung developer." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Brief & Wireframe", desc: "Diskusi kebutuhan, target audience, dan alur website." },
+      { num: "02", tag: "MINGGU 2-3", title: "Desain & Development", desc: "Desain UI → development dengan teknologi modern." },
+      { num: "03", tag: "MINGGU 4", title: "Review & Launch", desc: "Test, revisi, deployment, dan training CMS." }
     ],
     proof: "Mengembangkan website sejak 2016 · Puluhan brand berbagai industri",
     cta_text: "Konsultasi Website",
@@ -5845,20 +5885,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Pembuatan Landing Page",
-    subject: "Landing page untuk campaign {{company}}",
+    subject: "Landing Page + Google Ads — langsung dapat leads dari hari pertama.",
     category: "website",
     service_path: "/jasa-pembuatan-landing-page/",
     hero_image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&h=280&fit=crop&q=80",
     accent_color: "#10b981",
     accent_bg: "#d1fae5",
     badge: "Conversion Focused",
-    headline: "Landing page yang fokus pada satu aksi.",
-    subheadline: "Bundle landing page + Google Ads = kombinasi paling efisien untuk campaign. Satu halaman, satu penawaran, satu CTA — tanpa distraksi.",
+    headline: "Landing Page + Google Ads — Langsung Dapat Leads dari Hari Pertama.",
+    subheadline: "Paket promo khusus untuk Anda yang ingin langsung mendatangkan pelanggan lewat internet: 1 landing page profesional + 1 bulan Google Ads. Kami yang bangun halaman, tulis copy, jalankan iklan — Anda tinggal terima leads.",
     benefits: [
-      { short: "🎯", title: "Single goal", desc: "1 halaman, 1 CTA, 1 conversion path" },
-      { short: "⚡", title: "Load < 2 detik", desc: "Optimal Core Web Vitals untuk Google Ads Quality Score" },
-      { short: "📊", title: "A/B testing", desc: "2 versi diuji untuk cari yang konversinya lebih tinggi" },
-      { short: "📱", title: "Mobile optimized", desc: "Mayoritas traffic dari mobile — layout disesuaikan" }
+      { short: "🎯", title: "Single goal", desc: "1 halaman, 1 CTA, 1 conversion path — tanpa distraksi." },
+      { short: "⚡", title: "Load < 2 detik", desc: "Optimal Core Web Vitals untuk Google Ads Quality Score." },
+      { short: "📊", title: "A/B testing", desc: "2 versi diuji untuk cari yang konversinya lebih tinggi." },
+      { short: "📱", title: "Mobile optimized", desc: "Mayoritas traffic dari mobile — layout disesuaikan." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Brief Landing Page", desc: "Tentukan produk/penawaran, target market, dan CTA utama." },
+      { num: "02", tag: "MINGGU 2", title: "Build + Copy", desc: "Desain landing page + copywriting + integrasi form WhatsApp." },
+      { num: "03", tag: "MINGGU 3+", title: "Google Ads Live", desc: "Setup campaign Google Ads, landing page siap menerima leads." }
     ],
     proof: "Bundle paket LP + Google Ads · Dipakai campaign berbagai industri",
     cta_text: "Lihat Paket Landing Page",
@@ -5866,20 +5911,25 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa View Live TikTok",
-    subject: "Viewers live TikTok untuk {{company}}",
+    subject: "Viewers live TikTok untuk boost algoritma live Anda.",
     category: "view-live",
     service_path: "/jasa-view-live-tiktok/",
     hero_image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=280&fit=crop&q=80",
     accent_color: "#f59e0b",
     accent_bg: "#fef3c7",
     badge: "Trusted sejak 2016",
-    headline: "Viewers live TikTok yang real dan aktif.",
-    subheadline: "Live commerce butuh viewers awal untuk boost algoritma. Kami sediakan viewers akun aktif Indonesia yang bantu live Anda tetap tayang.",
+    headline: "View Live TikTok — Penonton Real untuk Live Commerce Anda.",
+    subheadline: "Live commerce butuh viewers awal untuk boost algoritma. Kami sediakan viewers akun aktif Indonesia yang bantu live Anda tetap tayang dan viral. Cocok untuk seller TikTok Shop yang push omset harian.",
     benefits: [
-      { short: "👥", title: "Viewers real", desc: "Akun aktif Indonesia, bukan bot kosong" },
-      { short: "🎯", title: "Sesuai target", desc: "Cocokkan dengan niche Anda: beauty, fashion, F&B, dll" },
-      { short: "⏱️", title: "Sambil tayang", desc: "Viewer masuk selama live berlangsung" },
-      { short: "💬", title: "Interaksi", desc: "Viewers aktif tinggalkan like & komentar" }
+      { short: "👥", title: "Viewers real", desc: "Akun aktif Indonesia, bukan bot kosong." },
+      { short: "🎯", title: "Sesuai target", desc: "Cocokkan dengan niche: beauty, fashion, F&B, dll." },
+      { short: "⏱️", title: "Sambil tayang", desc: "Viewer masuk selama live berlangsung." },
+      { short: "💬", title: "Interaksi", desc: "Viewers aktif tinggalkan like & komentar." }
+    ],
+    steps: [
+      { num: "01", tag: "HARI 1", title: "Brief Live", desc: "Tentukan jadwal live, target niche, dan jumlah viewer." },
+      { num: "02", tag: "HARI LIVE", title: "Sesi Live", desc: "Kami kirim viewers real ke live stream Anda." },
+      { num: "03", tag: "ONGOING", title: "Repeat Order", desc: "Pesan viewers untuk sesi live berikutnya." }
     ],
     proof: "Dipercaya ratusan seller TikTok Shop Indonesia",
     cta_text: "Order via WhatsApp",
@@ -5911,6 +5961,20 @@ ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 </td>` : '<td style="width:50%;"></td>'}
 </tr>`);
   }
+
+  // Steps (numbered timeline)
+  const stepsHTML = (c.steps || []).map(s => `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;">
+<tr><td style="padding:14px 18px;">
+<table width="100%"><tr>
+<td width="48" valign="top" style="background:${c.accent_color};color:#fff;border-radius:8px;width:48px;height:48px;text-align:center;line-height:48px;font-weight:800;font-size:18px;font-family:monospace;">${s.num}</td>
+<td style="padding-left:14px;vertical-align:top;">
+<div style="display:inline-block;background:${c.accent_bg};color:${c.accent_color};font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:4px;margin-bottom:4px;">${s.tag}</div>
+<div style="color:#0f1e3d;font-size:14px;font-weight:700;margin-bottom:3px;">${s.title}</div>
+<div style="color:#6b7280;font-size:12px;line-height:1.5;">${s.desc}</div>
+</td></tr></table>
+</td></tr></table>
+`).join("");
 
   return `<table width="100%" cellpadding="0" cellspacing="0" style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f3f4f8;margin:0;padding:0;">
 <tr><td align="center" style="padding:24px 16px;">
@@ -5952,6 +6016,13 @@ ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 <h2 style="color:#0f1e3d;font-size:16px;margin:0 0 18px;text-align:center;font-weight:800;letter-spacing:-0.01em;">Apa yang Anda dapatkan</h2>
 <table width="100%" cellpadding="0" cellspacing="0">${benefitPairs.join("")}</table>
 </td></tr>
+
+<!-- Cara Kerja (Steps Timeline) -->
+${c.steps && c.steps.length ? `<tr><td style="padding:24px 28px 8px;">
+<h2 style="color:#0f1e3d;font-size:16px;margin:0 0 14px;text-align:center;font-weight:800;letter-spacing:-0.01em;">Cara kerjanya</h2>
+${stepsHTML}
+</td></tr>
+<tr><td style="padding:0 28px;"><div style="border-top:1px solid #e2e8f0;"></div></td></tr>` : ''}
 
 <!-- Stats Strip -->
 <tr><td style="background:${c.accent_bg};padding:22px 28px;">

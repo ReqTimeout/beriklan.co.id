@@ -45,6 +45,25 @@ export default {
     if (path === "/api/newsletter/unsubscribe" || path === "/api/newsletter/unsubscribe/") {
       return await handleNewsletterUnsubscribe(request, env);
     }
+    if (path === "/api/track/open" || path === "/api/track/open/") {
+      const url = new URL(request.url);
+      const trackingId = url.searchParams.get("id") || "";
+      if (env.DB && trackingId) {
+        await env.DB.prepare("UPDATE email_queue SET opened_at = COALESCE(opened_at, CURRENT_TIMESTAMP) WHERE tracking_id = ?").bind(trackingId).run();
+        await env.DB.prepare("UPDATE campaigns SET open_count = (SELECT COUNT(DISTINCT tracking_id) FROM email_queue WHERE campaign_id IN (SELECT campaign_id FROM email_queue WHERE tracking_id = ?) AND opened_at IS NOT NULL) WHERE id IN (SELECT campaign_id FROM email_queue WHERE tracking_id = ?)").bind(trackingId, trackingId).run();
+      }
+      const pixel = new Uint8Array([0x47,0x49,0x46,0x38,0x39,0x61,0x01,0x00,0x01,0x00,0x80,0x00,0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0x21,0xF9,0x04,0x01,0x00,0x00,0x00,0x00,0x2C,0x00,0x00,0x00,0x00,0x01,0x00,0x01,0x00,0x00,0x02,0x02,0x44,0x01,0x00,0x3B]);
+      return new Response(pixel, { status: 200, headers: { "Content-Type": "image/gif", "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" } });
+    }
+    if (path === "/api/track/click" || path === "/api/track/click/") {
+      const url = new URL(request.url);
+      const trackingId = url.searchParams.get("id") || "";
+      const redirect = url.searchParams.get("url") || "https://beriklan.co.id";
+      if (env.DB && trackingId) {
+        await env.DB.prepare("UPDATE email_queue SET clicked_at = COALESCE(clicked_at, CURRENT_TIMESTAMP) WHERE tracking_id = ?").bind(trackingId).run();
+      }
+      return Response.redirect(redirect, 302);
+    }
     if (path === "/api/newsletter/admin" || path === "/api/newsletter/admin/") {
       return await handleNewsletterAdmin(request, env);
     }
@@ -6262,8 +6281,9 @@ async function runScraper(url, label) {
 </div>
 <div class="form-row">
 <div class="form-group"><label>Template</label><select name="template_id" required>${(templateRows.results||[]).map(t => `<option value="${t.id}">${escHtml(t.name)}</option>`).join('')}</select></div>
-<div class="form-group"><label>Target List</label><select name="list_id" required>
-<option value="">-- Pilih --</option>${(listRows.results||[]).map(l => `<option value="${l.id}">${escHtml(l.name)} (${l.total||0})</option>`).join('')}</select></div>
+<div class="form-group"><label>Target List</label><select name="list_id">
+<option value="0">📬 Semua Kontak (${(await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL").first())?.c || 0})</option>
+${(listRows.results||[]).map(l => `<option value="${l.id}">${escHtml(l.name)} (${l.total||0})</option>`).join('')}</select></div>
 </div>
 <button style="${T.btn}background:#f59e0b;color:#0f1e3d;padding:10px 28px;margin-top:8px;">📤 Buat & Kirim</button>
 </form>
@@ -6357,11 +6377,14 @@ async function handleEmailCampaigns(request, env) {
         const template_id = parseInt(body.get ? body.get("template_id") : (body.template_id || 0));
         const list_id = parseInt(body.get ? body.get("list_id") : (body.list_id || 0));
         if (!name) return new Response(JSON.stringify({ ok: false, error: "name required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+        if (!template_id) return new Response(JSON.stringify({ ok: false, error: "template required" }), { status: 400, headers: { "Content-Type": "application/json" } });
 
-        // Count contacts from list
         let total = 0;
-        if (list_id) {
-          const cnt = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE list_id=?").bind(list_id).first();
+        if (list_id > 0) {
+          const cnt = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE list_id=? AND email != '' AND email IS NOT NULL").bind(list_id).first();
+          total = cnt?.c || 0;
+        } else {
+          const cnt = await env.DB.prepare("SELECT COUNT(*) as c FROM lead_contacts WHERE email != '' AND email IS NOT NULL").first();
           total = cnt?.c || 0;
         }
 
@@ -6370,13 +6393,16 @@ async function handleEmailCampaigns(request, env) {
         ).bind(name, template_id, list_id, subject, "draft", total).run();
         const campaignId = r.meta?.last_row_id || 0;
 
-        // Auto start if list has contacts
+        let queued = 0;
         if (total > 0 && campaignId) {
-          await queueCampaignContacts(env, campaignId, list_id, template_id, subject);
-          await env.DB.prepare("UPDATE campaigns SET status='sending' WHERE id=?").bind(campaignId).run();
+          const result = await queueCampaignContacts(env, campaignId, list_id, template_id, subject);
+          if (result.ok) {
+            queued = result.count;
+            await env.DB.prepare("UPDATE campaigns SET status='sending' WHERE id=?").bind(campaignId).run();
+          }
         }
 
-        return new Response(JSON.stringify({ ok: true, id: campaignId, total_contacts: total }), { headers: { "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ ok: true, id: campaignId, total_contacts: total, queued }), { headers: { "Content-Type": "application/json" } });
       } catch (e) {
         return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
       }
@@ -6386,9 +6412,12 @@ async function handleEmailCampaigns(request, env) {
       const camp = await env.DB.prepare("SELECT * FROM campaigns WHERE id=?").bind(id).first();
       if (!camp) return new Response(JSON.stringify({ ok: false, error: "Campaign not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
       if (camp.status === "sending") return new Response(JSON.stringify({ ok: false, error: "Already sending" }), { status: 400, headers: { "Content-Type": "application/json" } });
-      await queueCampaignContacts(env, id, camp.list_id, camp.template_id, camp.subject);
+      const dup = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE campaign_id=? AND status IN ('pending','sent')").bind(id).first();
+      if ((dup?.c || 0) > 0) return new Response(JSON.stringify({ ok: false, error: "Sudah ada email di queue untuk campaign ini", existing: dup.c }), { status: 400, headers: { "Content-Type": "application/json" } });
+      const result = await queueCampaignContacts(env, id, camp.list_id, camp.template_id, camp.subject);
+      if (!result.ok) return new Response(JSON.stringify(result), { status: 400, headers: { "Content-Type": "application/json" } });
       await env.DB.prepare("UPDATE campaigns SET status='sending' WHERE id=?").bind(id).run();
-      return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, queued: result.count }), { headers: { "Content-Type": "application/json" } });
     }
     if (action === "delete") {
       const id = parseInt(url.searchParams.get("id") || "0");
@@ -6402,23 +6431,35 @@ async function handleEmailCampaigns(request, env) {
 
 async function queueCampaignContacts(env, campaignId, listId, templateId, subject) {
   const tpl = await env.DB.prepare("SELECT * FROM email_templates WHERE id=?").bind(templateId).first();
-  const contacts = await env.DB.prepare("SELECT * FROM lead_contacts WHERE list_id=?").bind(listId).all();
+  if (!tpl && !subject) {
+    return { ok: false, error: "Template tidak ditemukan", count: 0 };
+  }
   let count = 0;
-  for (const c of contacts.results || []) {
-    if (!c.email) continue;
-    const tid = genTrackingId();
-    let html = tpl?.html_body || subject || "";
-    html = html.replace(/\{\{name\}\}/g, c.name || "").replace(/\{\{company\}\}/g, c.company || "");
-    html = html.replace(/\{\{unsubscribe_url\}\}/g, `https://beriklan.co.id/api/newsletter/unsubscribe?email=${encodeURIComponent(c.email)}`);
-    html = html.replace(/\{\{date\}\}/g, new Date().toLocaleDateString("id-ID"));
-    await env.DB.prepare(
-      "INSERT INTO email_queue (campaign_id, email, name, status, tracking_id) VALUES (?,?,?,'pending',?)"
-    ).bind(campaignId, c.email, c.name || "", tid).run();
-    count++;
+  let offset = 0;
+  const PAGE = 500;
+  while (true) {
+    const stmt = listId > 0
+      ? env.DB.prepare("SELECT email, name FROM lead_contacts WHERE list_id=? AND email != '' AND email IS NOT NULL LIMIT ? OFFSET ?").bind(listId, PAGE, offset)
+      : env.DB.prepare("SELECT email, name FROM lead_contacts WHERE email != '' AND email IS NOT NULL LIMIT ? OFFSET ?").bind(PAGE, offset);
+    const page = await stmt.all();
+    if (!page.results?.length) break;
+    const rows = [];
+    for (const c of page.results) {
+      if (!c.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) continue;
+      const tid = genTrackingId();
+      rows.push([campaignId, c.email.toLowerCase().trim(), c.name || "", "pending", tid]);
+      count++;
+    }
+    if (rows.length) {
+      await env.DB.batch(rows.map(r => env.DB.prepare("INSERT INTO email_queue (campaign_id, email, name, status, tracking_id) VALUES (?,?,?,?,?)").bind(...r)));
+    }
+    offset += PAGE;
+    if (page.results.length < PAGE) break;
   }
   if (count > 0) {
     await env.DB.prepare("UPDATE campaigns SET total_recipients=? WHERE id=?").bind(count, campaignId).run();
   }
+  return { ok: true, count };
 }
 
 // ─── Lead Lists CRUD ──────────────────────────────────────────
@@ -6519,32 +6560,47 @@ async function handleCronSendEmail(request, env) {
 
     for (const item of batch.results) {
       try {
-        // Get campaign's template
-        let html = item.subject || "Promo Beriklan";
-        let subject = item.subject || "Promo Beriklan";
+        let html = "";
+        let subject = "Promo Beriklan";
         if (item.campaign_id && !templateCache[item.campaign_id]) {
           const camp = await env.DB.prepare("SELECT * FROM campaigns WHERE id=?").bind(item.campaign_id).first();
           if (camp) {
-            const tpl = await env.DB.prepare("SELECT * FROM email_templates WHERE id=?").bind(camp.template_id).first();
-            if (tpl) {
-              html = tpl.html_body;
-              subject = camp.subject || tpl.subject;
+            subject = camp.subject || "Promo Beriklan";
+            if (camp.template_id) {
+              const tpl = await env.DB.prepare("SELECT * FROM email_templates WHERE id=?").bind(camp.template_id).first();
+              if (tpl) {
+                html = tpl.html_body || "";
+                if (!camp.subject && tpl.subject) subject = tpl.subject;
+              }
             }
-            templateCache[item.campaign_id] = { html, subject };
-          } else {
-            templateCache[item.campaign_id] = { html, subject };
           }
+          templateCache[item.campaign_id] = { html, subject };
         }
         const tmpl = templateCache[item.campaign_id] || { html, subject };
 
+        if (!tmpl.html) {
+          await env.DB.prepare("UPDATE email_queue SET status='failed', error=? WHERE id=?").bind("Template kosong", item.id).run();
+          failed++;
+          continue;
+        }
+
         let bodyHtml = tmpl.html;
         const name = item.name || "";
+        const trackingId = item.tracking_id || "";
+        const unsubUrl = `https://beriklan.co.id/api/newsletter/unsubscribe?email=${encodeURIComponent(item.email)}`;
+        const unsubFooter = `<br><p style="margin:12px 0 0;text-align:center;color:#94a3b8;font-size:11px;">Tidak tertarik? <a href="${unsubUrl}" style="color:#94a3b8;text-decoration:underline;">Berhenti berlangganan</a></p>`;
         bodyHtml = bodyHtml.replace(/\{\{name\}\}/g, name).replace(/\{\{company\}\}/g, name);
-        bodyHtml = bodyHtml.replace(/\{\{unsubscribe_url\}\}/g, `https://beriklan.co.id/api/newsletter/unsubscribe?email=${encodeURIComponent(item.email)}`);
+        bodyHtml = bodyHtml.replace(/\{\{unsubscribe_url\}\}/g, unsubUrl);
         bodyHtml = bodyHtml.replace(/\{\{date\}\}/g, new Date().toLocaleDateString("id-ID"));
         bodyHtml = bodyHtml.replace(/\{\{headline\}\}/g, subject);
         bodyHtml = bodyHtml.replace(/\{\{excerpt\}\}/g, "Tips dan strategi digital marketing terbaru dari tim Beriklan.");
         bodyHtml = bodyHtml.replace(/\{\{articles\}\}/g, "");
+        bodyHtml = bodyHtml.replace(/\{\{cta_url\}\}/g, "https://wa.me/62811919328?text=" + encodeURIComponent(`Halo Beriklan, saya tertarik info lebih lanjut setelah menerima email "${subject}".`));
+        bodyHtml = bodyHtml.replace(/\{\{cta_text\}\}/g, "Diskusi via WhatsApp");
+        bodyHtml = bodyHtml.replace(/\{\{title\}\}/g, subject);
+        bodyHtml = bodyHtml.replace(/\{\{subtitle\}\}/g, "Konsultasi gratis 15 menit untuk campaign Anda.");
+        bodyHtml = bodyHtml.replace(/\{\{tracking_pixel\}\}/g, `<img src="https://beriklan.co.id/api/track/open?id=${trackingId}" width="1" height="1" alt="" style="display:none;">`);
+        if (!bodyHtml.includes("Berhenti berlangganan") && !bodyHtml.includes("unsubscribe_url")) bodyHtml += unsubFooter;
 
         const res = await sendEmailViaResend(env, { email: item.email, name: item.name }, tmpl.subject, bodyHtml, item.tracking_id);
 
@@ -6917,83 +6973,66 @@ async function handleScrapeGooglePlaces(request, env) {
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   if (!env.DB) return new Response("DB not available", { status: 503 });
+  if (!env.GOOGLE_PLACES_API_KEY) return new Response(JSON.stringify({ ok: false, error: "GOOGLE_PLACES_API_KEY not set" }), { status: 200, headers: { "Content-Type": "application/json" } });
 
-  const queries = [
-    { q: "jasa manufaktur bandung", cat: "manufaktur" },
-    { q: "toko bangunan jakarta", cat: "retail" },
-    { q: "distributor makanan surabaya", cat: "distributor" },
-    { q: "fashion retail bandung", cat: "fashion" },
-    { q: "properti developer jakarta", cat: "properti" },
-    { q: "toko elektronik jakarta", cat: "elektronik" },
-    { q: "rumah makan medan", cat: "makanan" },
-    { q: "percetakan bandung", cat: "percetakan" },
-    { q: "jasa konsultan jakarta", cat: "jasa" },
-    { q: "toko bunga surabaya", cat: "retail" },
-    { q: "bengkel mobil bandung", cat: "otomotif" },
-    { q: "salon kecantikan jakarta", cat: "jasa" },
-    { q: "toko sembako surabaya", cat: "retail" },
-    { q: "jasa catering bandung", cat: "makanan" },
-    { q: "toko furniture jakarta", cat: "retail" },
+  const categories = [
+    { q: "perusahaan manufaktur", label: "Manufaktur" },
+    { q: "perusahaan distributor", label: "Distributor" },
+    { q: "perusahaan jasa kontraktor", label: "Jasa" },
+    { q: "developer properti", label: "Properti" },
+    { q: "toko retail", label: "Retail" },
+    { q: "perusahaan logistik", label: "Logistik" },
+    { q: "klinik dokter", label: "Klinik" },
+    { q: "sekolah yayasan pendidikan", label: "Pendidikan" },
+    { q: "hotel restoran", label: "Hotel Restoran" },
+    { q: "bengkel otomotif", label: "Otomotif" },
+    { q: "percetakan digital percetakan", label: "Percetakan" },
+    { q: "toko bangunan material", label: "Material" },
   ];
+  const catIdx = parseInt(url.searchParams.get("q") || "0");
+  const category = categories[catIdx] || categories[0];
+  const cities = ["Bandung","Jakarta","Surabaya","Tangerang","Bekasi","Depok","Bogor","Semarang","Yogyakarta","Malang","Medan","Palembang","Makassar","Denpasar","Balikpapan","Solo","Cimahi","Tasikmalaya","Banjarmasin","Manado"];
 
-  const qIdx = parseInt(url.searchParams.get("q") || "0");
-  if (qIdx >= queries.length) {
-    return new Response(JSON.stringify({ ok: true, done: true, message: "Semua query selesai" }), { headers: { "Content-Type": "application/json" } });
+  let totalSaved = 0;
+  let dbg = [];
+  const fieldMask = "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating";
+  for (let ci = 0; ci < Math.min(cities.length, 8); ci++) {
+    const city = cities[ci];
+    try {
+      if (ci > 0) await new Promise(r => setTimeout(r, 800));
+      const body = JSON.stringify({ textQuery: `${category.q} di ${city}`, maxResultCount: 10 });
+      const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": env.GOOGLE_PLACES_API_KEY, "X-Goog-FieldMask": fieldMask },
+        body,
+      });
+      if (resp.status === 429) { dbg.push(`${city}: 429 rate limited`); break; }
+      if (!resp.ok) { dbg.push(`${city}: HTTP ${resp.status}`); continue; }
+      const data = await resp.json();
+      if (!data.places || !data.places.length) { dbg.push(`${city}: 0 places`); continue; }
+      let citySaved = 0;
+      for (const place of data.places) {
+        const phone = place.nationalPhoneNumber || "";
+        const website = place.websiteUri || "";
+        const name = place.displayName?.text || place.displayName || "Unknown";
+        const placeId = place.id || "";
+        if (!phone && !website) continue;
+        const { rows } = await env.DB.prepare("SELECT id FROM lead_contacts WHERE source_id = ?").bind(placeId).all();
+        if (rows.length > 0) continue;
+        const listR = await env.DB.prepare("INSERT INTO lead_lists (name, source) VALUES (?,?)").bind(`google-${category.label}-${city}-${new Date().toISOString().slice(0,10)}`, "google_places").run();
+        const listId = listR.meta?.last_row_id || 0;
+        await env.DB.prepare("INSERT INTO lead_contacts (list_id, email, phone, name, company, website, city, category, extra, source_id) VALUES (?,?,?,?,?,?,?,?,?,?)")
+          .bind(listId, "", phone, name, name, website, city, category.label, JSON.stringify({ rating: place.rating || 0, source: "google_places_v1" }), placeId).run();
+        await env.DB.prepare("UPDATE lead_lists SET total = (SELECT COUNT(*) FROM lead_contacts WHERE list_id = ?) WHERE id = ?").bind(listId, listId).run();
+        citySaved++;
+      }
+      totalSaved += citySaved;
+      dbg.push(`${city}: ${citySaved} saved (${data.places.length} places)`);
+    } catch (e) {
+      dbg.push(`${city}: ERR ${e.message}`);
+    }
   }
-
-  const { q, cat } = queries[qIdx];
-
-  try {
-    const resp = await fetch(
-      `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(q)}&key=${env.GOOGLE_PLACES_API_KEY}`,
-      { headers: { "User-Agent": "BeriklanBot/1.0" } }
-    );
-    if (!resp.ok) {
-      return new Response(JSON.stringify({ ok: false, error: `Places API HTTP ${resp.status}` }), { headers: { "Content-Type": "application/json" } });
-    }
-    const data = await resp.json();
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      return new Response(JSON.stringify({ ok: false, error: `Places API: ${data.status}`, message: data.error_message || "" }), { headers: { "Content-Type": "application/json" } });
-    }
-
-    const listName = `google-${cat}-${q.replace(/\s+/g,"-")}-${new Date().toISOString().slice(0, 10)}`;
-    const listR = await env.DB.prepare("INSERT INTO lead_lists (name, source) VALUES (?,?)").bind(listName, "google_places").run();
-    const listId = listR.meta?.last_row_id || 0;
-
-    let totalContacts = 0;
-    for (const place of data.results || []) {
-      // Filter: prefer businesses WITHOUT website (need digital marketing)
-      const hasWebsite = place.formatted_address && place.name;
-      const phone = ""; // Places API text search doesn't return phone; need Place Details
-      const city = place.formatted_address?.split(",").slice(-2)[0]?.trim() || "";
-      const company = place.name || "";
-
-      // If no website detected, this is a HOT lead for website services
-      const extra = { rating: place.rating, types: place.types, has_website: false };
-
-      await env.DB.prepare(
-        "INSERT OR IGNORE INTO lead_contacts (list_id, email, phone, name, company, website, city, category, extra) VALUES (?,?,?,?,?,?,?,?,?)"
-      ).bind(listId, "", phone, company, company, "", city, cat, JSON.stringify(extra)).run();
-      totalContacts++;
-    }
-
-    await env.DB.prepare("UPDATE lead_lists SET total=? WHERE id=?").bind(totalContacts, listId).run();
-
-    const nextQ = qIdx + 1;
-    return new Response(JSON.stringify({
-      ok: true,
-      query: q,
-      category: cat,
-      list_name: listName,
-      list_id: listId,
-      places_found: data.results?.length || 0,
-      contacts_saved: totalContacts,
-      next_query: nextQ < queries.length ? queries[nextQ].q : null,
-      next_q_idx: nextQ
-    }), { headers: { "Content-Type": "application/json" } });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
-  }
+  return new Response(JSON.stringify({ ok: true, query: category.q, label: category.label, contacts_saved: totalSaved, cities: cities.length, debug: dbg }), { headers: { "Content-Type": "application/json" } });
 }
 
 // P0.7 build-signature 2026-07-17T06:08:00Z  (forces redeploy)

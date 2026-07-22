@@ -6284,53 +6284,57 @@ const SERVICE_CONFIGS = [
   },
   {
     name: "Jasa Pembuatan Website",
-    subject: "Website profesional, cepat, siap menarik pelanggan.",
+    subject: "Website modern pakai Svelte + Astro + Cloudflare — load < 1 detik.",
     category: "website",
     service_path: "/jasa-pembuatan-website/",
     hero_image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=280&fit=crop&q=80",
     accent_color: "#0ea5e9",
     accent_bg: "#e0f2fe",
-    badge: "Custom Development",
-    headline: "Jasa Pembuatan Website Profesional, Cepat, Siap Menarik Pelanggan.",
-    subheadline: "Website yang baik bukan sekadar tampil — ia harus load dengan cepat, responsif di semua device, mudah ditemukan di Google, dan conversion-ready. Kami bangun website Anda dengan teknologi modern dan standar industri.",
+    badge: "Built with Svelte · Astro · Cloudflare",
+    headline: "Website Modern yang Cepat, SEO-Ready, dan Dikembangkan dengan Stack Terbaik.",
+    subheadline: "Kami bangun website Anda dengan teknologi yang sama dipakai brand-brand besar: Svelte untuk interaksi yang halus, Astro untuk performa static site terbaik, dan Cloudflare untuk CDN global dengan load time di bawah 1 detik. Bukan template WordPress lambat — ini website yang dirancang untuk konversi.",
     benefits: [
-      { short: "🎨", title: "Custom design", desc: "Bukan template pasaran — sesuai brand identity Anda." },
-      { short: "📱", title: "Mobile-first", desc: "Optimal di semua device, loading cepat." },
-      { short: "🔍", title: "SEO ready", desc: "Struktur SEO-friendly dari awal — muncul di Google." },
-      { short: "⚙️", title: "CMS custom", desc: "Update konten sendiri tanpa tergantung developer." }
+      { short: "⚡", title: "Load < 1 detik", desc: "Cloudflare CDN global + Astro static rendering. Skor PageSpeed 95-100." },
+      { short: "🎨", title: "Svelte untuk UI", desc: "Interaksi smooth tanpa JavaScript berat — komponen reaktif, bundle kecil." },
+      { short: "🌐", title: "Astro untuk SEO", desc: "Static HTML untuk Google, islands untuk dinamis. SEO-friendly by default." },
+      { short: "📱", title: "Mobile-first", desc: "Responsif di semua device — dari iPhone sampai tablet landscape." },
+      { short: "🔍", title: "SEO-friendly", desc: "Schema markup, sitemap otomatis, meta tags optimal. Cepat ranking di Google." },
+      { short: "⚙️", title: "CMS custom", desc: "Update konten sendiri tanpa developer — dashboard yang intuitif." }
     ],
     steps: [
-      { num: "01", tag: "MINGGU 1", title: "Brief & Wireframe", desc: "Diskusi kebutuhan, target audience, dan alur website." },
-      { num: "02", tag: "MINGGU 2-3", title: "Desain & Development", desc: "Desain UI → development dengan teknologi modern." },
-      { num: "03", tag: "MINGGU 4", title: "Review & Launch", desc: "Test, revisi, deployment, dan training CMS." }
+      { num: "01", tag: "MINGGU 1", title: "Brief & Wireframe", desc: "Diskusi kebutuhan, target audience, dan alur website. Riset kompetitor." },
+      { num: "02", tag: "MINGGU 2-3", title: "Desain & Development", desc: "Desain UI di Figma → develop dengan Svelte + Astro → deploy ke Cloudflare." },
+      { num: "03", tag: "MINGGU 4", title: "Review & Launch", desc: "Test performa & SEO, revisi, training CMS, handover akun Cloudflare." }
     ],
-    proof: "Mengembangkan website sejak 2016 · Puluhan brand berbagai industri",
+    proof: "Tech stack modern · Svelte 5 · Astro 5 · Cloudflare Workers · Dipercaya brand Bandung & Jabodetabek",
     cta_text: "Lihat Paket Website",
     cta_url: "https://beriklan.co.id/jasa-pembuatan-website/"
   },
   {
     name: "Jasa Pembuatan Landing Page",
-    subject: "Landing Page + Google Ads — langsung dapat leads dari hari pertama.",
+    subject: "Landing Page + Google Ads — bundle siap dapat leads dari hari pertama.",
     category: "website",
     service_path: "/jasa-pembuatan-landing-page/",
     hero_image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&h=280&fit=crop&q=80",
     accent_color: "#10b981",
     accent_bg: "#d1fae5",
-    badge: "Conversion Focused",
-    headline: "Landing Page + Google Ads — Langsung Dapat Leads dari Hari Pertama.",
-    subheadline: "Paket promo khusus untuk Anda yang ingin langsung mendatangkan pelanggan lewat internet: 1 landing page profesional + 1 bulan Google Ads. Kami yang bangun halaman, tulis copy, jalankan iklan — Anda tinggal terima leads.",
+    badge: "Conversion Bundle · Astro + Cloudflare",
+    headline: "Landing Page + Google Ads — Bundle Siap Dapat Leads dari Hari Pertama.",
+    subheadline: "Paket khusus untuk Anda yang ingin langsung mendatangkan pelanggan lewat internet: 1 landing page profesional (built dengan Astro + Cloudflare untuk load time terbaik) + 1 bulan Google Ads. Kami yang bangun halaman, tulis copy, jalankan iklan, optimasi — Anda tinggal terima leads di WhatsApp.",
     benefits: [
-      { short: "🎯", title: "Single goal", desc: "1 halaman, 1 CTA, 1 conversion path — tanpa distraksi." },
-      { short: "⚡", title: "Load < 2 detik", desc: "Optimal Core Web Vitals untuk Google Ads Quality Score." },
-      { short: "📊", title: "A/B testing", desc: "2 versi diuji untuk cari yang konversinya lebih tinggi." },
-      { short: "📱", title: "Mobile optimized", desc: "Mayoritas traffic dari mobile — layout disesuaikan." }
+      { short: "⚡", title: "Load < 1 detik", desc: "Astro static + Cloudflare CDN. Google Ads Quality Score tinggi = biaya per klik lebih murah." },
+      { short: "🎯", title: "1 halaman, 1 tujuan", desc: "Single conversion path — tidak ada menu, sidebar, atau link distraksi." },
+      { short: "📊", title: "A/B testing built-in", desc: "2 versi diuji bersamaan — kami cari mana yang dapat leads lebih banyak." },
+      { short: "📱", title: "Mobile-first design", desc: "Mayoritas traffic dari mobile — layout dioptimasi untuk tap & scroll." },
+      { short: "💬", title: "Integrasi WhatsApp", desc: "Tombol CTA mengarah ke WhatsApp dengan pesan template siap kirim." },
+      { short: "📈", title: "Conversion tracking", desc: "Pixel Meta + Google Analytics — tahu persis dari mana leads datang." }
     ],
     steps: [
-      { num: "01", tag: "MINGGU 1", title: "Brief Landing Page", desc: "Tentukan produk/penawaran, target market, dan CTA utama." },
-      { num: "02", tag: "MINGGU 2", title: "Build + Copy", desc: "Desain landing page + copywriting + integrasi form WhatsApp." },
-      { num: "03", tag: "MINGGU 3+", title: "Google Ads Live", desc: "Setup campaign Google Ads, landing page siap menerima leads." }
+      { num: "01", tag: "MINGGU 1", title: "Brief Landing Page", desc: "Tentukan produk/penawaran, target market, dan CTA utama. Riset kompetitor." },
+      { num: "02", tag: "MINGGU 2", title: "Build + Copy", desc: "Copywriting persuasif + design di Figma + develop dengan Astro + deploy ke Cloudflare." },
+      { num: "03", tag: "MINGGU 3+", title: "Google Ads + Optimasi", desc: "Setup campaign Google Ads, A/B test 2 versi, optimasi mingguan untuk turunkan CPA." }
     ],
-    proof: "Bundle paket LP + Google Ads · Dipakai campaign berbagai industri",
+    proof: "Bundle LP + Google Ads · Tech stack modern (Astro + Cloudflare) · Cepat dapat leads",
     cta_text: "Lihat Paket Landing Page",
     cta_url: "https://beriklan.co.id/jasa-pembuatan-landing-page/"
   },
@@ -6359,6 +6363,35 @@ const SERVICE_CONFIGS = [
     proof: "Dipercaya ratusan seller TikTok Shop Indonesia",
     cta_text: "Lihat Paket View Live",
     cta_url: "https://beriklan.co.id/jasa-view-live/"
+  },
+  {
+    name: "Jasa Digital Marketing",
+    subject: "Strategi digital marketing lengkap untuk {{company}} — dari riset sampai eksekusi.",
+    category: "digital-marketing",
+    service_path: "/jasa-digital-marketing/",
+    hero_image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=280&fit=crop&q=80",
+    accent_color: "#0f1e3d",
+    accent_bg: "#f0f1f5",
+    badge: "Multi-Channel Strategy",
+    headline: "Jasa Digital Marketing — Strategi Lengkap dari Satu Tim Senior.",
+    subheadline: "Daripada hire 5 agency berbeda untuk Meta Ads, Google Ads, TikTok Ads, SEO, dan website — Anda cukup pegang satu tim. Kami audit total, susun strategi terpadu, eksekusi lintas kanal, dan laporkan hasilnya dalam satu dashboard. Cocok untuk bisnis yang sudah jalan dan butuh sentuhan profesional.",
+    benefits: [
+      { short: "🎯", title: "Audit & strategi terpadu", desc: "Cek kondisi semua channel Anda, identifikasi kebocoran budget, susun rencana 90 hari." },
+      { short: "📣", title: "Multi-channel paid ads", desc: "Meta Ads (FB + IG), TikTok Ads, Google Ads (Search + YouTube) — dijalankan bareng." },
+      { short: "🔍", title: "SEO organik", desc: "Optimasi website + produksi artikel rutin agar muncul di halaman 1 Google." },
+      { short: "🌐", title: "Website + landing page", desc: "Bangun atau optimasi website & landing page conversion-ready (Astro + Cloudflare)." },
+      { short: "📊", title: "Dashboard terpusat", desc: "Laporan mingguan dari semua channel dalam 1 file — bukan 5 laporan terpisah." },
+      { short: "🤝", title: "1 account manager", desc: "Satu kontak untuk semua kebutuhan digital marketing Anda. Tidak ada miskomunikasi." }
+    ],
+    steps: [
+      { num: "01", tag: "MINGGU 1", title: "Audit Gratis", desc: "Kami audit semua channel digital Anda — website, ads, SEO, social. Temukan kebocoran budget." },
+      { num: "02", tag: "MINGGU 2-3", title: "Strategi & Setup", desc: "Susun rencana 90 hari. Setup pixel, tracking, campaign awal di semua channel prioritas." },
+      { num: "03", tag: "BULAN 2+", title: "Eksekusi & Optimasi", desc: "Jalankan campaign, produksi artikel SEO, optimasi mingguan berdasarkan data." },
+      { num: "04", tag: "ONGOING", title: "Report & Scale Up", desc: "Laporan bulanan bahasa manusia. Scale up channel yang perform, cut yang tidak." }
+    ],
+    proof: "9 tahun mengelola campaign · Multi-channel specialist · Tersertifikasi Meta & Google",
+    cta_text: "Lihat Paket Lengkap",
+    cta_url: "https://beriklan.co.id/jasa-digital-marketing/"
   }
 ];
 

@@ -7669,7 +7669,7 @@ ${tab === 'overview' ? renderOverview(campaigns, totalSent, totalOpened, totalCl
 
 <script>
 async function testSend(id) {
-  const email = prompt("Kirim test ke email mana?", "3smedianet@gmail.com");
+  const email = prompt("Kirim test ke email mana?\\n\\n(Subject akan ada prefix [INTERNAL-TEST])\\n\\nDefault: admin@3smedianet.com", "admin@3smedianet.com");
   if (!email) return;
   const btn = event.target;
   btn.disabled = true; btn.innerHTML = "⏳ Mengirim...";
@@ -8543,7 +8543,7 @@ async function handleEmailTestSend(request, env) {
   if (!env.RESEND_API_KEY) return new Response(JSON.stringify({ ok: false, error: "RESEND_API_KEY not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
 
   const templateId = parseInt(url.searchParams.get("template_id") || url.searchParams.get("id") || "0");
-  const toEmail = url.searchParams.get("to") || "3smedianet@gmail.com";
+  const toEmail = url.searchParams.get("to") || "admin@3smedianet.com"; // Default ke admin internal, bukan customer
   const tpl = await env.DB.prepare("SELECT * FROM email_templates WHERE id=?").bind(templateId).first();
   if (!tpl) return new Response(JSON.stringify({ ok: false, error: "Template not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
 
@@ -8564,7 +8564,8 @@ const sample = {
   html = html.replace(/\{\{excerpt\}\}/g, "Contoh preview template.");
   html = html.replace(/\{\{articles\}\}/g, "");
 
-  const subject = `[TEST] ${subj}`;
+  // Test send SELALU pakai prefix [INTERNAL-TEST] supaya tidak keliru dengan campaign real
+  const subject = `[INTERNAL-TEST] ${subj}`;
   const res = await sendEmailViaResend(env, toEmail, subject, html, genTrackingId());
 
   return new Response(JSON.stringify({

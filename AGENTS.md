@@ -851,6 +851,46 @@ Isi file tersebut:
 
 ---
 
-**Versi dokumen:** 1.2
-**Update terakhir:** 13 Juli 2026 (added deployment section + DEPLOY_OPERATIONS.md)
+## 📧 EMAIL SYSTEM (campaign + automation)
+
+### Resend Free Tier Limits
+- **100 email/hari** (bukan 500 — fix salah asumsi)
+- 10 requests/detik rate limit
+- Quota reset jam 00:00 UTC
+
+### Cron email-send behavior
+- Trigger: `*/15 * * * *` (tiap 15 menit)
+- Batch size: **25 email** per run (max 100/hari = 4 batch/hari)
+- Smart scaling: kalau queue banyak + quota masih sisa, batch bisa naik
+- Kalau quota habis: `skipped: true` + pesan jelas, queue tetap di D1 untuk besok
+- Auto-retry besok otomatis (cron jalan tiap 15 menit, jadi cuma delay max 15 menit setelah 00:00 UTC)
+
+### Key Endpoints
+- `POST /api/cron/email/send?token=...` — trigger manual cron
+- `POST /api/admin/email/queue/reset?token=...&campaign_id=N` — reset failed → pending
+- `GET /api/admin/email?token=...&tab=overview` — dashboard
+- `GET /api/admin/drafts?token=...` — manage drafts
+
+### Crons aktif (9 total)
+- `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
+- `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)
+- `gsc-indexing` (0 */6 * * *) — GSC + sitemap + rank
+- `trending-generate` (30 */6 * * *) — Trending article dari Google Trends
+- `content-refresh` (0 0 1 * *) — Refresh artikel lama (bulanan)
+- `snippet-optimize` (0 0 * * 1) — Optimasi snippet (mingguan)
+- `scrape-indonetwork` (30 6 * * *) — Scrape Indonetwork
+- `scrape-google-places` (0 7 * * *) — Scrape Google Places (perlu API key)
+- `email-send` (*/15 * * * *) — **PAUSED by default** — toggle manual di dashboard
+
+### Tabel Email Flow
+- `email_templates` (12 templates, 11 service + 1 follow-up)
+- `email_queue` (status: pending/sent/failed; tracking_id untuk open/click)
+- `campaigns` (status: draft/sending/done; auto-pause setelah 3 gagal berturut)
+- `cron_runs` (log setiap cron run + retry logic)
+- `cron_retry_queue` (auto-retry dengan backoff)
+
+---
+
+**Versi dokumen:** 1.3
+**Update terakhir:** 23 Juli 2026 (added email system section + Resend quota fix)
 **Maintainer:** Beriklan Digital Agency + Codex AI

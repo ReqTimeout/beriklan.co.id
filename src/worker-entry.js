@@ -444,6 +444,12 @@ export default {
       ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
     } else if (cron === "0 0 * * 1") {
       ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
+    } else if (cron === "0 1 * * *") {
+      // Daily 01:00 UTC: sync D1 posts → posts.json → commit GitHub
+      ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
+    } else if (cron === "0 3 * * *") {
+      // Daily 03:00 UTC: seed new keywords for all services (catches up with market trends)
+      ctx.waitUntil(run("seed-keywords", handleAdminSeedKeywords, "/api/admin/keywords/seed?token=beriklan-admin-2026&target=all", "seed-keywords"));
     } else {
       const c = cronMap[cron];
       if (c) {
@@ -1432,12 +1438,43 @@ async function handleAdminSyncPosts(request, env) {
       commitResult = { ok: false, error: "GITHUB_TOKEN not set" };
     }
 
+    // 6. Auto-enqueue NEW URLs to pending_indexing (so they get submitted next cron run)
+    let enqueued = 0;
+    if (commitResult?.ok && env.DB) {
+      try {
+        // Get existing URLs in pending_indexing
+        const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
+        const existingSet = new Set((existing.results || []).map(r => r.url));
+
+        // Get all slugs from final posts.json that look like blog posts
+        const candidates = finalPosts
+          .filter(p => p.get('generated') && p.get('slug'))
+          .slice(0, 200); // cap per run to avoid huge insert
+
+        for (const p of candidates) {
+          const slug = p.slug;
+          // Skip if looks like city page (e.g. 'jasa-iklan-facebook-bandung' has 'jasa-iklan' prefix)
+          const url = `https://beriklan.co.id/blog/${slug}/`;
+          if (existingSet.has(url)) continue;
+          try {
+            await env.DB.prepare(
+              "INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))"
+            ).bind(url).run();
+            enqueued++;
+          } catch {}
+        }
+      } catch (e) {
+        // log silently
+      }
+    }
+
     return new Response(JSON.stringify({
       ok: true,
       total_in_d1: posts.length,
       existing_in_git: existing.length,
       final_count: finalPosts.length,
       commit: commitResult,
+      auto_index_enqueued: enqueued,
       elapsed_ms: Date.now() - t0,
     }, null, 2), { headers: { "Content-Type": "application/json" } });
   } catch (e) {

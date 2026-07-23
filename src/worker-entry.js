@@ -48,6 +48,9 @@ export default {
     if (path === "/api/admin/email/metrics" || path === "/api/admin/email/metrics/") {
       return await handleEmailMetrics(request, env);
     }
+    if (path === "/api/admin/sync/posts" || path === "/api/admin/sync/posts/") {
+      return await handleAdminSyncPosts(request, env);
+    }
     if (path.startsWith("/api/admin/campaigns/") && path.endsWith("/metrics")) {
       const id = parseInt(path.split("/")[4]);
       return await handleCampaignMetrics(request, id, env);
@@ -1325,6 +1328,118 @@ async function handleCampaignMetrics(request, id, env) {
       return new Response(JSON.stringify(summary, null, 2), { headers: { "Content-Type": "application/json" } });
     }
     return new Response(JSON.stringify(summary, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
+}
+
+
+// ─── Admin: Sync posts_meta → posts.json → commit GitHub → re-deploy ────
+async function handleAdminSyncPosts(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const t0 = Date.now();
+  try {
+    // 1. Read ALL posts_meta from D1
+    const all = await env.DB.prepare(`
+      SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated
+      FROM posts_meta
+      ORDER BY iso_date DESC
+    `).all();
+    const posts = (all.results || []).map(p => ({
+      ...p,
+      generated: p.generated === 1 || p.generated === true,
+      excerpt: p.excerpt || p.title,
+      tags: p.tags || [p.service, p.city || 'Indonesia'],
+      readTime: p.readTime || '3 min',
+      category: p.category || 'trending',
+      featured: p.featured === 1 || p.featured === true,
+    }));
+
+    // 2. Cap future dates
+    const nowIso = new Date().toISOString();
+    for (const p of posts) {
+      if (!p.iso_date || p.iso_date > nowIso) {
+        p.iso_date = nowIso;
+        p.date = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " ");
+      }
+    }
+
+    // 3. Get current posts.json from GitHub (root) for merge
+    const owner = "ReqTimeout";
+    const repo = "beriklan.co.id";
+    const filePath = "src/data/posts.json";
+
+    let existing = [];
+    let fileSha = null;
+    try {
+      const getResp = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+        { headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+      );
+      if (getResp.ok) {
+        const fd = await getResp.json();
+        fileSha = fd.sha;
+        if (fd.content) {
+          existing = JSON.parse(atob(fd.content.replace(/\n/g, "")));
+        }
+      }
+    } catch (e) { /* fallback to D1 only */ }
+
+    // 4. Merge: D1 takes priority (newer iso_date), existing fills gaps
+    const merged = new Map();
+    for (const p of existing) merged.set(p.slug, p);
+    for (const p of posts) merged.set(p.slug, p);
+    const finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+
+    // 5. Commit to GitHub
+    let commitResult = null;
+    if (env.GITHUB_TOKEN) {
+      try {
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(finalPosts, null, 2))));
+        const putResp = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `token ${env.GITHUB_TOKEN}`,
+              "Content-Type": "application/json",
+              "User-Agent": "BeriklanWorker/1.0",
+            },
+            body: JSON.stringify({
+              message: `sync: ${finalPosts.length} posts (${posts.length} dari D1 + ${existing.length} dari git)`,
+              content: updatedContent,
+              sha: fileSha,
+              branch: "main",
+            }),
+          }
+        );
+        if (putResp.ok) {
+          const d = await putResp.json();
+          commitResult = { ok: true, sha: d.commit?.sha, url: d.content?.html_url };
+        } else {
+          const errBody = await putResp.text();
+          commitResult = { ok: false, status: putResp.status, body: errBody.slice(0, 200) };
+        }
+      } catch (e) {
+        commitResult = { ok: false, error: e.message };
+      }
+    } else {
+      commitResult = { ok: false, error: "GITHUB_TOKEN not set" };
+    }
+
+    return new Response(JSON.stringify({
+      ok: true,
+      total_in_d1: posts.length,
+      existing_in_git: existing.length,
+      final_count: finalPosts.length,
+      commit: commitResult,
+      elapsed_ms: Date.now() - t0,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
   }

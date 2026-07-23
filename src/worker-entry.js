@@ -45,6 +45,13 @@ export default {
     if (path === "/api/admin/email/queue/reset" || path === "/api/admin/email/queue/reset/") {
       return await handleEmailQueueReset(request, env);
     }
+    if (path === "/api/admin/email/metrics" || path === "/api/admin/email/metrics/") {
+      return await handleEmailMetrics(request, env);
+    }
+    if (path.startsWith("/api/admin/campaigns/") && path.endsWith("/metrics")) {
+      const id = parseInt(path.split("/")[4]);
+      return await handleCampaignMetrics(request, id, env);
+    }
     if (path === "/api/newsletter/subscribe" || path === "/api/newsletter/subscribe/") {
       // P0.5 Rate limit: 5 req/jam per IP (anti-spam)
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/newsletter/subscribe", 5, 3600);
@@ -1086,6 +1093,239 @@ async function handleAdminSeedKeywords(request, env) {
   }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
+
+
+// ─── Admin: Email metrics aggregate ───────────────────────────────
+async function handleEmailMetrics(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  try {
+    // Aggregate by campaign
+    const campaigns = await env.DB.prepare(`
+      SELECT 
+        c.id, c.name, c.subject, c.status, c.created_at,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id) as total,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='sent') as sent,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') as pending,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='failed') as failed,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND opened_at IS NOT NULL) as opened,
+        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND clicked_at IS NOT NULL) as clicked
+      FROM campaigns c
+      ORDER BY c.id DESC LIMIT 20
+    `).all();
+
+    const dailySent = await getDailyEmailCount(env);
+    const isHtml = url.searchParams.get("format") !== "json";
+
+    const data = (campaigns.results || []).map(c => {
+      const sent = c.sent || 0;
+      const opened = c.opened || 0;
+      const clicked = c.clicked || 0;
+      return {
+        id: c.id,
+        name: c.name,
+        subject: c.subject,
+        status: c.status,
+        created_at: c.created_at,
+        total: c.total,
+        sent,
+        pending: c.pending,
+        failed: c.failed,
+        opened,
+        clicked,
+        open_rate: sent > 0 ? Math.round(opened / sent * 1000) / 10 : 0,
+        ctr: opened > 0 ? Math.round(clicked / opened * 1000) / 10 : 0,
+        click_to_send: sent > 0 ? Math.round(clicked / sent * 1000) / 10 : 0,
+      };
+    });
+
+    const summary = {
+      timestamp: new Date().toISOString(),
+      daily_quota: { sent: dailySent, limit: 100, remaining: Math.max(0, 100 - dailySent) },
+      campaigns: data,
+      totals: {
+        campaigns: data.length,
+        total_sent: data.reduce((a, c) => a + c.sent, 0),
+        total_opened: data.reduce((a, c) => a + c.opened, 0),
+        total_clicked: data.reduce((a, c) => a + c.clicked, 0),
+        total_failed: data.reduce((a, c) => a + c.failed, 0),
+        avg_open_rate: data.length > 0 ? Math.round(data.reduce((a, c) => a + c.open_rate, 0) / data.length * 10) / 10 : 0,
+        avg_ctr: data.length > 0 ? Math.round(data.reduce((a, c) => a + c.ctr, 0) / data.length * 10) / 10 : 0,
+      }
+    };
+
+    if (!isHtml) {
+      return new Response(JSON.stringify(summary, null, 2), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // HTML view
+    const t = (v) => v || 0;
+    const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Email Metrics</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f7fa;color:#1f2937;padding:20px}
+.container{max-width:1200px;margin:0 auto}
+h1{font-size:22px;margin-bottom:6px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:white;padding:16px;border-radius:12px;border:1px solid #eef0f5}
+.kpi .lbl{font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+.kpi .val{font-size:24px;font-weight:800;line-height:1.1}
+.kpi .sub{font-size:11px;color:#9ca3af;margin-top:4px}
+.kpi.good{border-left:3px solid #10b981}
+.kpi.warn{border-left:3px solid #f59e0b}
+.kpi.bad{border-left:3px solid #dc2626}
+.section{background:white;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:1px solid #eef0f5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#fafbfc;color:#6b7280;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.05em;padding:10px 12px;text-align:left;border-bottom:1px solid #eef0f5}
+td{padding:10px 12px;border-bottom:1px solid #f5f6fa}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600}
+.badge.green{background:#d1fae5;color:#065f46}
+.badge.amber{background:#fef3c7;color:#92400e}
+.badge.red{background:#fee2e2;color:#991b1b}
+.bar{height:6px;background:#f0f1f5;border-radius:3px;overflow:hidden;margin-top:4px}
+.bar>div{height:100%;border-radius:3px}
+a{color:#0f1e3d;text-decoration:none}
+a:hover{text-decoration:underline}
+</style></head><body>
+<div class="container">
+<div style="display:flex;justify-content:space-between;align-items:start">
+<div>
+<h1>📧 Email Metrics — Real-time</h1>
+<p class="sub">Snapshot: ${new Date().toISOString()} · Resend free tier: ${summary.daily_quota.sent}/100 today</p>
+</div>
+<a href="?format=json&token=${token}" class="kpi" style="text-decoration:none">📋 JSON</a>
+</div>
+
+<div class="kpi-grid">
+<div class="kpi"><div class="lbl">📤 Total Terkirim</div><div class="val">${t(summary.totals.total_sent)}</div><div class="sub">all-time</div></div>
+<div class="kpi good"><div class="lbl">👁 Total Opened</div><div class="val">${t(summary.totals.total_opened)}</div><div class="sub">${summary.totals.avg_open_rate}% avg open rate</div></div>
+<div class="kpi"><div class="lbl">🖱 Total Clicked</div><div class="val">${t(summary.totals.total_clicked)}</div><div class="sub">${summary.totals.avg_ctr}% avg CTR</div></div>
+<div class="kpi ${summary.daily_quota.remaining < 10 ? 'warn' : ''}"><div class="lbl">📊 Quota Hari Ini</div><div class="val">${summary.daily_quota.sent}/100</div><div class="sub">${summary.daily_quota.remaining} remaining</div></div>
+<div class="kpi ${summary.totals.total_failed > 0 ? 'bad' : 'good'}"><div class="lbl">✕ Failed</div><div class="val">${t(summary.totals.total_failed)}</div><div class="sub">all-time</div></div>
+<div class="kpi"><div class="lbl">📨 Campaigns</div><div class="val">${summary.totals.campaigns}</div><div class="sub">tracked</div></div>
+</div>
+
+<div class="section">
+<h2 style="margin-bottom:14px;font-size:16px">📊 Per-Campaign Breakdown</h2>
+<table>
+<thead><tr>
+<th>ID</th>
+<th>Campaign</th>
+<th>Status</th>
+<th>Total</th>
+<th>Sent</th>
+<th>Pending</th>
+<th>Failed</th>
+<th>Opened</th>
+<th>Open Rate</th>
+<th>Clicked</th>
+<th>CTR</th>
+</tr></thead>
+<tbody>
+${data.map(c => `<tr>
+<td><strong>${c.id}</strong></td>
+<td><a href="?token=${token}&id=${c.id}">${c.name || '-'}</a><br><span style="font-size:11px;color:#6b7280">${(c.subject || '').slice(0,50)}...</span></td>
+<td><span class="badge ${c.status === 'done' ? 'green' : c.status === 'sending' ? 'amber' : 'red'}">${c.status || 'draft'}</span></td>
+<td>${c.total}</td>
+<td><strong>${c.sent}</strong></td>
+<td>${c.pending || 0}</td>
+<td style="color:#dc2626">${c.failed || 0}</td>
+<td>${c.opened || 0}</td>
+<td>
+<div><strong>${c.open_rate}%</strong></div>
+<div class="bar"><div style="width:${Math.min(c.open_rate, 100)}%;background:#10b981"></div></div>
+</td>
+<td>${c.clicked || 0}</td>
+<td>
+<div><strong>${c.ctr}%</strong></div>
+<div class="bar"><div style="width:${Math.min(c.ctr, 100)}%;background:#f59e0b"></div></div>
+</td>
+</tr>`).join('')}
+</tbody>
+</table>
+<p style="margin-top:12px;font-size:12px;color:#6b7280">Open rate = opened / sent. CTR = clicked / opened. Tracking pixel + click redirect aktif via Resend headers.</p>
+</div>
+</div></body></html>`;
+
+    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
+}
+
+async function handleCampaignMetrics(request, id, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+  if (!id) return new Response("Campaign ID required", { status: 400 });
+
+  try {
+    const c = await env.DB.prepare("SELECT * FROM campaigns WHERE id=?").bind(id).first();
+    if (!c) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+
+    const stats = await env.DB.prepare(`
+      SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent,
+        SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
+        SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened,
+        SUM(CASE WHEN clicked_at IS NOT NULL THEN 1 ELSE 0 END) as clicked,
+        MIN(sent_at) as first_sent,
+        MAX(sent_at) as last_sent,
+        MIN(opened_at) as first_open,
+        MAX(opened_at) as last_open
+      FROM email_queue WHERE campaign_id=?
+    `).bind(id).first();
+
+    const recent = await env.DB.prepare(`
+      SELECT email, name, status, sent_at, opened_at, clicked_at, error
+      FROM email_queue WHERE campaign_id=?
+      ORDER BY (opened_at IS NOT NULL OR clicked_at IS NOT NULL) DESC, sent_at DESC LIMIT 30
+    `).bind(id).all();
+
+    const sent = stats?.sent || 0;
+    const opened = stats?.opened || 0;
+    const clicked = stats?.clicked || 0;
+
+    const summary = {
+      campaign: { id: c.id, name: c.name, subject: c.subject, status: c.status, created_at: c.created_at },
+      metrics: {
+        total: stats?.total || 0,
+        sent, pending: stats?.pending || 0, failed: stats?.failed || 0,
+        opened, clicked,
+        open_rate: sent > 0 ? Math.round(opened / sent * 1000) / 10 : 0,
+        ctr: opened > 0 ? Math.round(clicked / opened * 1000) / 10 : 0,
+        click_to_send: sent > 0 ? Math.round(clicked / sent * 1000) / 10 : 0,
+        first_sent: stats?.first_sent,
+        last_sent: stats?.last_sent,
+        first_open: stats?.first_open,
+        last_open: stats?.last_open,
+      },
+      recent_activity: (recent.results || []).map(r => ({
+        email: r.email,
+        name: r.name,
+        status: r.status,
+        sent_at: r.sent_at,
+        opened_at: r.opened_at,
+        clicked_at: r.clicked_at,
+        error: r.error,
+      })),
+    };
+
+    if (url.searchParams.get("format") === "json") {
+      return new Response(JSON.stringify(summary, null, 2), { headers: { "Content-Type": "application/json" } });
+    }
+    return new Response(JSON.stringify(summary, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
+}
 
 // ─── Admin: Reset email queue (failed → pending) ────────────────
 async function handleEmailQueueReset(request, env) {
@@ -7491,7 +7731,10 @@ function renderOverview(campaigns, totalSent, totalOpened, totalClicked, pending
   return `
 <div class="page-head">
 <div><h1>Overview</h1><p>Status campaign, performa email, dan automasi email marketing.</p></div>
+<div class="btn-row">
 <a href="?token=${token}&tab=composer" class="btn-amber">✍️ Buat Campaign</a>
+<a href="/api/admin/email/metrics?token=${token}" class="btn-outline" target="_blank">📊 Metrics Detail</a>
+</div>
 </div>
 
 <div class="kpi-grid">

@@ -295,9 +295,12 @@ export default {
           headers: {
             "Location": redirectTarget,
             "Cache-Control": "public, max-age=3600",
-          },
+           },
         });
       }
+      // Handle 301 redirects for legacy/invalid URL patterns
+      const legacyRedirect = await handleGenericCityRedirect(request, env);
+      if (legacyRedirect) return legacyRedirect;
       const assetResp = await env.ASSETS.fetch(request);
       // Force correct content-type for HTML so browsers never download .txt/.html
       const ct = assetResp.headers.get("content-type") || "";
@@ -8896,6 +8899,21 @@ const SCRAPE_CITIES = [
   "Solo","Cimahi","Tasikmalaya","Banjarmasin","Manado","Pontianak","Pekanbaru",
   "Padang","Jambi","Bengkulu","Lampung","Cirebon","Sukabumi","Garut","Cianjur"
 ];
+
+async function handleGenericCityRedirect(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  // /jasa-iklan-ads-{city}/ → /jasa-digital-marketing/{city}/
+  const m = path.match(/^\/jasa-iklan-ads\/([a-z\-]+)\/?$/);
+  if (m) {
+    return Response.redirect(`https://beriklan.co.id/jasa-digital-marketing/${m[1]}/`, 301);
+  }
+  return null;
+}
+
+// ───────────────────────────────────────────────────────────────
+// scrape.beriklan.co.id — Consumer-facing scraping trial portal
+// ───────────────────────────────────────────────────────────────
 
 async function handleScrapePortal(request, env, ctx) {
   const url = new URL(request.url);

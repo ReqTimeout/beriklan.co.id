@@ -42,6 +42,9 @@ export default {
     if (path === "/api/admin/drafts/commit" || path === "/api/admin/drafts/commit/") {
       return await handleAdminDraftsCommit(request, env);
     }
+    if (path === "/api/admin/email/queue/reset" || path === "/api/admin/email/queue/reset/") {
+      return await handleEmailQueueReset(request, env);
+    }
     if (path === "/api/newsletter/subscribe" || path === "/api/newsletter/subscribe/") {
       // P0.5 Rate limit: 5 req/jam per IP (anti-spam)
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/newsletter/subscribe", 5, 3600);
@@ -1081,6 +1084,36 @@ async function handleAdminSeedKeywords(request, env) {
     skipped,
     errors: errors.length ? errors.slice(0, 5) : undefined,
   }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+
+// ─── Admin: Reset email queue (failed → pending) ────────────────
+async function handleEmailQueueReset(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const campaignId = url.searchParams.get("campaign_id"); // optional, all if not specified
+
+  try {
+    let q, params;
+    if (campaignId) {
+      q = "UPDATE email_queue SET status='pending', error=NULL WHERE campaign_id=? AND status='failed'";
+      params = [parseInt(campaignId)];
+    } else {
+      q = "UPDATE email_queue SET status='pending', error=NULL WHERE status='failed'";
+      params = [];
+    }
+    const r = await env.DB.prepare(q).bind(...params).run();
+    const reset = r.meta?.changes || 0;
+    return new Response(JSON.stringify({ ok: true, reset_to_pending: reset, campaign_id: campaignId || "all" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
 }
 
 // ─── Newsletter Subscribe (P2.6) ─────────────────────────────────
@@ -7377,7 +7410,7 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#3741
 <a href="?token=${token}&tab=scraper" class="nav ${tab==='scraper'?'active':''}"><span class="ico">🔍</span> Scraper</a>
 <div class="sidebar-foot">
 Email · Resend API<br>
-Quota hari ini: ${dailySent}/500
+Quota hari ini: ${dailySent}/100 (Resend free)
 ${nextEmailRun ? `<br>Next send: <strong>${nextEmailRun}</strong>` : '<br>⏸️ Email cron paused'}
 </div>
 </aside>
@@ -7462,7 +7495,7 @@ function renderOverview(campaigns, totalSent, totalOpened, totalClicked, pending
 </div>
 
 <div class="kpi-grid">
-<div class="kpi"><span class="kpi-label">📤 Total Terkirim</span><span class="kpi-val">${(totalSent?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">${dailySent}/500 hari ini</span></div>
+<div class="kpi"><span class="kpi-label">📤 Total Terkirim</span><span class="kpi-val">${(totalSent?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">${dailySent}/100 hari ini (Resend free)</span></div>
 <div class="kpi"><span class="kpi-label">👁 Open Rate</span><span class="kpi-val">${openRate}%</span><span class="kpi-sub">${(totalOpened?.c || 0).toLocaleString('id-ID')} dibuka</span></div>
 <div class="kpi"><span class="kpi-label">🖱 Click Rate</span><span class="kpi-val">${clickRate}%</span><span class="kpi-sub">${(totalClicked?.c || 0).toLocaleString('id-ID')} klik</span></div>
 <div class="kpi"><span class="kpi-label">⏳ Antrian</span><span class="kpi-val">${(pending?.c || 0).toLocaleString('id-ID')}</span><span class="kpi-sub">email pending</span></div>
@@ -7571,7 +7604,7 @@ ${listRows.map(l => `<option value="${l.id}">${escHtml(l.name)} — ${l.total} k
 <ol style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.8;">
 <li>Pilih template dan audience di atas, klik <strong>Buat & Mulai Kirim</strong>.</li>
 <li>Campaign langsung dibuat + antrian email dimasukkan ke database.</li>
-<li>Cron email-send jalan tiap 15 menit — kirim max 20 email per batch.</li>
+<li>Cron email-send jalan tiap 15 menit — kirim 25 email per batch (100/hari di Resend free tier).</li>
 <li>Free tier Resend: 500 email/hari. Untuk volume lebih besar, upgrade plan.</li>
 <li>Pantau open/click di halaman detail campaign.</li>
 </ol>
@@ -7649,7 +7682,7 @@ ${emailCron?.enabled ? '<span class="badge b-green">✓ AKTIF</span>' : '<span c
 <label class="toggle"><input type="checkbox" ${emailCron?.enabled ? 'checked' : ''} onchange="this.form.submit()"><span class="slider"></span></label>
 </form>
 </div>
-<p style="margin-top:14px;color:#475569;font-size:13px;line-height:1.6;">Cron akan mengirim max <strong>20 email per eksekusi</strong> dari antrian. Free tier Resend = 500 email/hari. Untuk volume lebih besar, jalankan campaign besar-besaran dengan jeda, atau upgrade plan Resend.</p>
+<p style="margin-top:14px;color:#475569;font-size:13px;line-height:1.6;">Cron mengirim <strong>25 email per eksekusi</strong> dari antrian. Tiap 15 menit = 100/jam, max <strong>100/hari</strong> (Resend free tier). Untuk volume lebih besar, upgrade plan Resend atau pakai beberapa hari untuk campaign besar.</p>
 </div>
 
 <div class="card">
@@ -7800,6 +7833,7 @@ tr:last-child td{border-bottom:none}
 <div class="btn-row">
 <a href="?token=${token}&tab=campaigns" class="btn btn-outline">← Kembali</a>
 ${c.status !== 'sending' ? `<form method="POST" action="/api/email/campaigns?token=${token}&action=start&id=${c.id}" style="display:inline"><button class="btn btn-amber">▶ Kirim</button></form>` : ''}
+<form method="POST" action="/api/admin/email/queue/reset?token=${token}&campaign_id=${c.id}" onsubmit="return confirm('Reset semua email failed ke pending?')" style="display:inline"><button class="btn btn-outline">↻ Reset Failed</button></form>
 <form method="POST" action="/api/email/campaigns?token=${token}&action=delete&id=${c.id}" onsubmit="return confirm('Hapus campaign ini? Semua antrian email akan ikut terhapus.')" style="display:inline"><button class="btn btn-danger">🗑 Hapus</button></form>
 </div>
 </div>
@@ -8082,14 +8116,33 @@ async function handleCronSendEmail(request, env) {
   try {
     // Check daily limit (Resend free: 500/day)
     const dailySent = await getDailyEmailCount(env);
-    if (dailySent >= 450) {
-      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "Daily limit approached", daily_sent: dailySent }), { headers: { "Content-Type": "application/json" } });
+    // Resend free tier: 100 email/hari (bukan 500), 10 req/detik rate limit
+    const DAILY_LIMIT = 100;
+    if (dailySent >= DAILY_LIMIT - 5) {
+      return new Response(JSON.stringify({
+        ok: true,
+        skipped: true,
+        reason: `Daily Resend limit reached (${dailySent}/${DAILY_LIMIT}). Akan lanjut besok.`,
+        daily_sent: dailySent,
+        daily_limit: DAILY_LIMIT,
+        reset_at: "besok 00:00 UTC",
+        next_retry_hours: 24,
+      }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // Batch size: max 20 per run (every 15 min = ~80/hr = well under 500/day)
+    // Batch size: 25 per run (every 15 min = 100/hr = 100/day at Resend free tier)
+    // Smart: kalau pending banyak + daily masih sisa, pakai batch besar
+    const remainingToday = DAILY_LIMIT - dailySent;
+    const pendingCount = (await env.DB.prepare("SELECT COUNT(*) as n FROM email_queue WHERE status='pending'").first())?.n || 0;
+    let batchSize = 25;
+    if (pendingCount > 5000) batchSize = Math.min(40, Math.max(15, Math.floor(remainingToday / 3)));
+    else if (pendingCount > 1000) batchSize = Math.min(30, Math.max(15, Math.floor(remainingToday / 4)));
+    else if (pendingCount > 100) batchSize = Math.min(25, remainingToday);
+    else batchSize = Math.min(20, remainingToday);
+
     const batch = await env.DB.prepare(
-      "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' ORDER BY q.id ASC LIMIT 20"
-    ).all();
+      "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' ORDER BY q.id ASC LIMIT ?"
+    ).bind(batchSize).all();
 
     if (!batch.results?.length) {
       return new Response(JSON.stringify({ ok: true, sent: 0, daily_sent: dailySent }), { headers: { "Content-Type": "application/json" } });

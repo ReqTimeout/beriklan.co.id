@@ -36,6 +36,12 @@ export default {
     if (path === "/api/admin/health" || path === "/api/admin/health/") {
       return await handleAdminHealth(request, env);
     }
+    if (path === "/api/admin/drafts" || path === "/api/admin/drafts/") {
+      return await handleAdminDrafts(request, env);
+    }
+    if (path === "/api/admin/drafts/commit" || path === "/api/admin/drafts/commit/") {
+      return await handleAdminDraftsCommit(request, env);
+    }
     if (path === "/api/newsletter/subscribe" || path === "/api/newsletter/subscribe/") {
       // P0.5 Rate limit: 5 req/jam per IP (anti-spam)
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/newsletter/subscribe", 5, 3600);
@@ -689,6 +695,250 @@ async function handleEnvCheck(request, env) {
     groq_status: groqKeys.length >= 3 ? "OK (3+ keys for rotation)" : (groqKeys.length === 2 ? "PARTIAL (2 keys — add 1 more)" : (groqKeys.length === 1 ? "MINIMAL (1 key — add 2 more for TPD headroom)" : "MISSING")),
   };
   return new Response(JSON.stringify(result, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
+// ─── Admin Drafts — list & view AI-generated drafts not yet committed to GitHub ───
+async function handleAdminDrafts(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  try {
+    const rows = await env.DB.prepare(
+      `SELECT id, slug, title, service, city, source, status, created_at, committed_at
+       FROM generated_drafts
+       ORDER BY id DESC LIMIT 100`
+    ).all();
+    const drafts = rows.results || [];
+    const total = drafts.length;
+    const pending = drafts.filter(d => d.status === "draft" || d.status === "pending").length;
+    const committed = drafts.filter(d => d.status === "committed").length;
+
+    if (url.searchParams.get("format") === "json") {
+      return new Response(JSON.stringify({ ok: true, total, pending, committed, drafts }, null, 2), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // HTML view
+    const html = `<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Generated Drafts — Beriklan Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px}
+.container{max-width:1100px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:#666;font-size:13px;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:16px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+.card-head h2{font-size:14px;font-weight:700}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #f0f0f0}
+.kpi .val{font-size:24px;font-weight:800;color:#0f1e3d}
+.kpi .lbl{font-size:11px;color:#666;text-transform:uppercase;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #f0f0f0}
+th{background:#fafafa;color:#666;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
+.badge.draft{background:#fef3c7;color:#856404}
+.badge.committed{background:#d1fae5;color:#155724}
+.badge.pending{background:#dbeafe;color:#1e40af}
+.action-bar{margin:14px 0;display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#0f1e3d;color:#fff}
+.btn-amber{background:#f59e0b;color:#0f1e3d}
+.btn-outline{background:#fff;color:#0f1e3d;border:1px solid #d1d5db}
+</style></head><body>
+<div class="container">
+<h1>📝 Generated Drafts</h1>
+<p class="sub">Artikel yang sudah di-generate AI tapi belum ter-commit ke GitHub (karena GITHUB_TOKEN error / expired). Bisa di-review di sini, lalu di-commit manual.</p>
+
+<div class="kpi-grid">
+<div class="kpi"><div class="val">${total}</div><div class="lbl">Total Drafts</div></div>
+<div class="kpi"><div class="val" style="color:#dc2626;">${pending}</div><div class="lbl">Pending</div></div>
+<div class="kpi"><div class="val" style="color:#10b981;">${committed}</div><div class="lbl">Committed</div></div>
+</div>
+
+<div class="action-bar">
+<a href="?format=json&token=${token}" class="btn btn-outline">📋 Lihat JSON</a>
+<button onclick="commitAll()" class="btn btn-amber" id="commitBtn">⬆️ Commit Semua Pending ke GitHub</button>
+<a href="?token=${token}" class="btn btn-outline">🔄 Refresh</a>
+</div>
+
+<div class="card">
+<table>
+<thead><tr><th>ID</th><th>Slug</th><th>Service</th><th>City</th><th>Source</th><th>Status</th><th>Dibuat</th></tr></thead>
+<tbody>
+${drafts.map(d => `<tr>
+<td>${d.id}</td>
+<td><strong>${escHtml(d.slug)}</strong><br><small style="color:#9ca3af;">${escHtml((d.title || '').slice(0, 60))}...</small></td>
+<td>${escHtml(d.service || '-')}</td>
+<td>${escHtml(d.city || '-')}</td>
+<td>${escHtml(d.source || '-')}</td>
+<td><span class="badge ${d.status}">${d.status}</span></td>
+<td>${escHtml((d.created_at || '').slice(0, 16))}</td>
+</tr>`).join('')}
+</tbody>
+</table>
+</div>
+</div>
+
+<script>
+async function commitAll() {
+  if (!confirm('Commit semua draft pending ke GitHub? Pastikan GITHUB_TOKEN valid.')) return;
+  const btn = document.getElementById('commitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Committing...';
+  try {
+    const r = await fetch('/api/admin/drafts/commit?token=${token}', { method: 'POST' });
+    const d = await r.json();
+    alert(d.ok ? '✅ Commit selesai: ' + (d.committed || 0) + ' dari ' + (d.total_pending || 0) + ' pending' : '❌ Gagal: ' + (d.error || 'unknown'));
+    location.reload();
+  } catch (e) { alert('Error: ' + e.message); }
+  btn.disabled = false; btn.textContent = '⬆️ Commit Semua Pending ke GitHub';
+}
+</script>
+</body></html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Admin Drafts Commit — push pending drafts to GitHub ───
+async function handleAdminDraftsCommit(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+  if (!env.GITHUB_TOKEN) return new Response(JSON.stringify({ ok: false, error: "GITHUB_TOKEN tidak di-set di Worker secrets" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const t0 = Date.now();
+  const errors = [];
+  let committed = 0;
+  let failed = 0;
+
+  try {
+    // 1. Fetch all pending drafts
+    const pending = await env.DB.prepare(
+      "SELECT id, slug, title, content, service, city, source FROM generated_drafts WHERE status IN ('draft', 'pending') ORDER BY id LIMIT 50"
+    ).all();
+    const drafts = pending.results || [];
+
+    if (drafts.length === 0) {
+      return new Response(JSON.stringify({ ok: true, message: "no drafts", committed: 0 }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2. Fetch current posts.json from GitHub
+    const owner = "ReqTimeout";
+    const repo = "beriklan.co.id";
+    const filePath = "src/data/posts.json";
+
+    let posts = [];
+    let fileSha = null;
+    try {
+      const getResp = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+        { headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+      );
+      if (getResp.ok) {
+        const fd = await getResp.json();
+        fileSha = fd.sha;
+        if (fd.content) {
+          try {
+            posts = JSON.parse(atob(fd.content.replace(/\n/g, "")));
+          } catch (e) {
+            errors.push("parse_error: " + e.message);
+          }
+        }
+      } else {
+        const errBody = await getResp.text();
+        errors.push(`github_get_${getResp.status}: ${errBody.slice(0, 200)}`);
+      }
+    } catch (e) {
+      errors.push("github_get_exception: " + e.message);
+    }
+
+    // 3. For each draft, add to posts (if not exists) and mark committed
+    for (const draft of drafts) {
+      try {
+        if (!posts.find(p => p.slug === draft.slug)) {
+          const newPost = {
+            slug: draft.slug,
+            title: draft.title,
+            excerpt: (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200),
+            content: draft.content,
+            date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " "),
+            iso_date: new Date().toISOString(),
+            category: "trending",
+            readTime: Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min",
+            tags: [draft.service].filter(Boolean),
+            featured: false,
+            generated: true,
+            trending: true,
+            service: draft.service,
+            city: draft.city,
+            publish_date: new Date().toLocaleDateString("en-GB"),
+          };
+          posts.unshift(newPost);
+        }
+        // Mark committed
+        await env.DB.prepare(
+          "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE id=?"
+        ).bind(draft.id).run();
+        committed++;
+      } catch (e) {
+        failed++;
+        errors.push(`draft_${draft.id}: ${e.message}`);
+      }
+    }
+
+    // 4. Sort + commit
+    posts.sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+    const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+
+    if (fileSha) {
+      const putResp = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${env.GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+            "User-Agent": "BeriklanWorker/1.0",
+          },
+          body: JSON.stringify({
+            message: `admin: commit ${committed} drafts`,
+            content: updatedContent,
+            sha: fileSha,
+            branch: "main",
+          }),
+        }
+      );
+      if (!putResp.ok) {
+        const errBody = await putResp.text();
+        errors.push(`github_put_${putResp.status}: ${errBody.slice(0, 200)}`);
+        // Rollback DB status
+        for (const draft of drafts) {
+          await env.DB.prepare("UPDATE generated_drafts SET status='draft' WHERE id=?").bind(draft.id).run().catch(() => {});
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({
+      ok: true,
+      total_pending: drafts.length,
+      committed,
+      failed,
+      elapsed_ms: Date.now() - t0,
+      errors: errors.length ? errors : undefined,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
 }
 
 // ─── Newsletter Subscribe (P2.6) ─────────────────────────────────
@@ -1847,6 +2097,7 @@ function renderDashboard(stats, token) {
     <a href="/api/admin/keywords?token=${token}">🎯 Keyword Pipeline</a>
     <a href="/api/admin/env-check?token=${token}">🔑 Env Check</a>
     <a href="/api/admin/health?token=${token}">🏥 Health JSON</a>
+    <a href="/api/admin/drafts?token=${token}">📝 Drafts</a>
     <a href="https://beriklan.co.id" target="_blank">🌐 View Site</a>
   </div>
 
@@ -4157,7 +4408,9 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
       try {
         const owner = "ReqTimeout";
         const repo = "beriklan.co.id";
-        const filePath = "src/data/posts.json";  // Repo root path
+        // Commit ke root repo (src/data/posts.json) — file ini ada di git
+        // CF Pages build script akan copy ke src/data/posts.json
+        const filePath = "src/data/posts.json";  // Astro baca via build copy
 
         // Get current file + sha
         const getResp = await fetch(

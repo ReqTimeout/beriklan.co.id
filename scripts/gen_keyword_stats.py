@@ -140,12 +140,12 @@ def main():
     # Recent generated
     recent = sorted(
         (r for r in queue if r.get("status") == "generated"),
-        key=lambda r: r.get("created_at", ""), reverse=True,
+        key=lambda r: r.get("created_at") or "", reverse=True,
     )[:40]
     recent_out = [{
         "keyword": r["keyword"], "slug": r["slug"],
         "service": r["_svc_name"], "city": r["_city_name"],
-        "live": r["_live"], "created_at": r.get("created_at", "")[:19],
+        "live": r["_live"], "created_at": (r.get("created_at") or "")[:19],
         "url": f"https://beriklan.co.id/blog/{r['slug']}/",
     } for r in recent]
 

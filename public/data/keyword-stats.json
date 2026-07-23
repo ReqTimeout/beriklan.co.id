@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-07-22T00:03:22",
+  "generated_at": "2026-07-23T06:58:33",
   "keywords": {
-    "total": 27825,
-    "generated": 80,
-    "pending": 27745,
-    "live_in_posts": 118,
-    "coverage": 0.3
+    "total": 100,
+    "generated": 3,
+    "pending": 97,
+    "live_in_posts": 5,
+    "coverage": 3.0
   },
   "posts": {
-    "total": 2051,
-    "generated": 1224,
+    "total": 2056,
+    "generated": 1229,
     "by_service": {
-      "jasa-digital-marketing": 588,
+      "jasa-digital-marketing": 593,
       "jasa-iklan-facebook": 311,
       "jasa-iklan-google": 127,
       "jasa-pembuatan-website": 81,
@@ -24,671 +24,240 @@
   },
   "by_service": [
     {
-      "key": "Jasa View Live",
-      "total": 4112,
-      "generated": 9,
-      "pending": 4103,
-      "coverage": 0.2
-    },
-    {
-      "key": "Jasa Pembuatan Website",
-      "total": 2901,
-      "generated": 31,
-      "pending": 2870,
-      "coverage": 1.1
-    },
-    {
-      "key": "Jasa Iklan Google",
-      "total": 2573,
-      "generated": 2,
-      "pending": 2571,
-      "coverage": 0.1
-    },
-    {
       "key": "Jasa Iklan Facebook",
-      "total": 2433,
-      "generated": 5,
-      "pending": 2428,
-      "coverage": 0.2
-    },
-    {
-      "key": "Jasa Iklan TikTok",
-      "total": 2353,
-      "generated": 2,
-      "pending": 2351,
-      "coverage": 0.1
-    },
-    {
-      "key": "Jasa Pembuatan Landing Page",
-      "total": 2352,
-      "generated": 2,
-      "pending": 2350,
-      "coverage": 0.1
-    },
-    {
-      "key": "Jasa Iklan Instagram",
-      "total": 2329,
+      "total": 66,
       "generated": 0,
-      "pending": 2329,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa Iklan YouTube",
-      "total": 2324,
-      "generated": 4,
-      "pending": 2320,
-      "coverage": 0.2
-    },
-    {
-      "key": "Jasa Kelola Instagram",
-      "total": 2322,
-      "generated": 0,
-      "pending": 2322,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa Kelola TikTok",
-      "total": 2216,
-      "generated": 0,
-      "pending": 2216,
+      "pending": 66,
       "coverage": 0.0
     },
     {
       "key": "Jasa Digital Marketing",
-      "total": 1464,
-      "generated": 25,
-      "pending": 1439,
-      "coverage": 1.7
-    },
-    {
-      "key": "Lainnya / Umum",
-      "total": 446,
-      "generated": 0,
-      "pending": 446,
-      "coverage": 0.0
+      "total": 34,
+      "generated": 3,
+      "pending": 31,
+      "coverage": 8.8
     }
   ],
   "by_city": [
     {
-      "key": "Jakarta",
-      "total": 1062,
-      "generated": 7,
-      "pending": 1055,
-      "coverage": 0.7
-    },
-    {
-      "key": "Surabaya",
-      "total": 1057,
-      "generated": 4,
-      "pending": 1053,
-      "coverage": 0.4
-    },
-    {
-      "key": "Bandung",
-      "total": 1056,
-      "generated": 7,
-      "pending": 1049,
-      "coverage": 0.7
-    },
-    {
-      "key": "Yogyakarta",
-      "total": 1054,
-      "generated": 4,
-      "pending": 1050,
-      "coverage": 0.4
-    },
-    {
-      "key": "Semarang",
-      "total": 1050,
-      "generated": 2,
-      "pending": 1048,
-      "coverage": 0.2
-    },
-    {
-      "key": "Makassar",
-      "total": 1011,
-      "generated": 2,
-      "pending": 1009,
-      "coverage": 0.2
-    },
-    {
-      "key": "Pekanbaru",
-      "total": 1011,
-      "generated": 1,
-      "pending": 1010,
-      "coverage": 0.1
-    },
-    {
-      "key": "Balikpapan",
-      "total": 1010,
-      "generated": 2,
-      "pending": 1008,
-      "coverage": 0.2
-    },
-    {
-      "key": "Banjarmasin",
-      "total": 1009,
-      "generated": 1,
-      "pending": 1008,
-      "coverage": 0.1
-    },
-    {
-      "key": "Manado",
-      "total": 1009,
+      "key": "Batam",
+      "total": 6,
       "generated": 0,
-      "pending": 1009,
+      "pending": 6,
       "coverage": 0.0
     },
     {
-      "key": "Solo",
-      "total": 1009,
+      "key": "Bogor",
+      "total": 6,
       "generated": 1,
-      "pending": 1008,
-      "coverage": 0.1
+      "pending": 5,
+      "coverage": 16.7
+    },
+    {
+      "key": "Depok",
+      "total": 6,
+      "generated": 0,
+      "pending": 6,
+      "coverage": 0.0
+    },
+    {
+      "key": "Malang",
+      "total": 6,
+      "generated": 0,
+      "pending": 6,
+      "coverage": 0.0
+    },
+    {
+      "key": "Palembang",
+      "total": 6,
+      "generated": 0,
+      "pending": 6,
+      "coverage": 0.0
+    },
+    {
+      "key": "Pekanbaru",
+      "total": 6,
+      "generated": 0,
+      "pending": 6,
+      "coverage": 0.0
     },
     {
       "key": "Tangerang",
-      "total": 1009,
+      "total": 6,
+      "generated": 2,
+      "pending": 4,
+      "coverage": 33.3
+    },
+    {
+      "key": "Bandung",
+      "total": 4,
       "generated": 0,
-      "pending": 1009,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Bekasi",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Denpasar",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jakarta",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Makassar",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Medan",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Semarang",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Sidoarjo",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Surabaya",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Yogyakarta",
+      "total": 4,
+      "generated": 0,
+      "pending": 4,
+      "coverage": 0.0
+    },
+    {
+      "key": "Balikpapan",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
+      "coverage": 0.0
+    },
+    {
+      "key": "Banjarmasin",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
+      "coverage": 0.0
+    },
+    {
+      "key": "Cimahi",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
       "coverage": 0.0
     },
     {
       "key": "Jambi",
-      "total": 1008,
+      "total": 2,
       "generated": 0,
-      "pending": 1008,
-      "coverage": 0.0
-    },
-    {
-      "key": "Depok",
-      "total": 1007,
-      "generated": 1,
-      "pending": 1006,
-      "coverage": 0.1
-    },
-    {
-      "key": "Bekasi",
-      "total": 1006,
-      "generated": 2,
-      "pending": 1004,
-      "coverage": 0.2
-    },
-    {
-      "key": "Medan",
-      "total": 1005,
-      "generated": 2,
-      "pending": 1003,
-      "coverage": 0.2
-    },
-    {
-      "key": "Sidoarjo",
-      "total": 1005,
-      "generated": 1,
-      "pending": 1004,
-      "coverage": 0.1
-    },
-    {
-      "key": "Denpasar",
-      "total": 1003,
-      "generated": 3,
-      "pending": 1000,
-      "coverage": 0.3
-    },
-    {
-      "key": "Malang",
-      "total": 1003,
-      "generated": 2,
-      "pending": 1001,
-      "coverage": 0.2
-    },
-    {
-      "key": "Pontianak",
-      "total": 1003,
-      "generated": 1,
-      "pending": 1002,
-      "coverage": 0.1
-    },
-    {
-      "key": "Bogor",
-      "total": 1002,
-      "generated": 0,
-      "pending": 1002,
+      "pending": 2,
       "coverage": 0.0
     },
     {
       "key": "Lampung",
-      "total": 1002,
+      "total": 2,
       "generated": 0,
-      "pending": 1002,
+      "pending": 2,
+      "coverage": 0.0
+    },
+    {
+      "key": "Manado",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
       "coverage": 0.0
     },
     {
       "key": "Padang",
-      "total": 1002,
-      "generated": 1,
-      "pending": 1001,
-      "coverage": 0.1
-    },
-    {
-      "key": "Palembang",
-      "total": 1002,
-      "generated": 2,
-      "pending": 1000,
-      "coverage": 0.2
-    },
-    {
-      "key": "Batam",
-      "total": 1001,
-      "generated": 1,
-      "pending": 1000,
-      "coverage": 0.1
-    },
-    {
-      "key": "Cimahi",
-      "total": 1001,
-      "generated": 1,
-      "pending": 1000,
-      "coverage": 0.1
-    },
-    {
-      "key": "Bali",
-      "total": 53,
-      "generated": 2,
-      "pending": 51,
-      "coverage": 3.8
-    },
-    {
-      "key": "Samarinda",
-      "total": 3,
+      "total": 2,
       "generated": 0,
-      "pending": 3,
+      "pending": 2,
+      "coverage": 0.0
+    },
+    {
+      "key": "Pontianak",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
+      "coverage": 0.0
+    },
+    {
+      "key": "Solo",
+      "total": 2,
+      "generated": 0,
+      "pending": 2,
       "coverage": 0.0
     }
   ],
   "by_source": [
     {
       "key": "expansion_v1",
-      "total": 25080,
-      "generated": 18,
-      "pending": 25062,
-      "coverage": 0.1
-    },
-    {
-      "key": "suggest+combo",
-      "total": 1608,
-      "generated": 22,
-      "pending": 1586,
-      "coverage": 1.4
-    },
-    {
-      "key": "miner",
-      "total": 1137,
-      "generated": 40,
-      "pending": 1097,
-      "coverage": 3.5
+      "total": 100,
+      "generated": 3,
+      "pending": 97,
+      "coverage": 3.0
     }
   ],
   "recent_generated": [
     {
-      "keyword": "Harga Jasa Digital Marketing Di Jakarta 2026",
-      "slug": "harga-jasa-digital-marketing-di-jakarta-2026",
+      "keyword": "Harga Jasa Digital Marketing Di Tangerang 2026",
+      "slug": "harga-jasa-digital-marketing-di-tangerang-2026",
       "service": "Jasa Digital Marketing",
-      "city": "Jakarta",
-      "live": false,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-jakarta-2026/"
+      "city": "Tangerang",
+      "live": true,
+      "created_at": "",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-tangerang-2026/"
     },
     {
-      "keyword": "Harga Jasa Digital Marketing Di Jakarta 2027",
-      "slug": "harga-jasa-digital-marketing-di-jakarta-2027",
+      "keyword": "Harga Jasa Digital Marketing Di Tangerang 2027",
+      "slug": "harga-jasa-digital-marketing-di-tangerang-2027",
       "service": "Jasa Digital Marketing",
-      "city": "Jakarta",
+      "city": "Tangerang",
       "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-jakarta-2027/"
+      "created_at": "",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-tangerang-2027/"
     },
     {
-      "keyword": "Harga Jasa Digital Marketing Di Bandung 2026",
-      "slug": "harga-jasa-digital-marketing-di-bandung-2026",
+      "keyword": "Harga Jasa Digital Marketing Di Bogor 2026",
+      "slug": "harga-jasa-digital-marketing-di-bogor-2026",
       "service": "Jasa Digital Marketing",
-      "city": "Bandung",
+      "city": "Bogor",
       "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bandung-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Bandung 2027",
-      "slug": "harga-jasa-digital-marketing-di-bandung-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Bandung",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bandung-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Surabaya 2026",
-      "slug": "harga-jasa-digital-marketing-di-surabaya-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Surabaya",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-surabaya-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Surabaya 2027",
-      "slug": "harga-jasa-digital-marketing-di-surabaya-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Surabaya",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-surabaya-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Yogyakarta 2026",
-      "slug": "harga-jasa-digital-marketing-di-yogyakarta-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Yogyakarta",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-yogyakarta-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Yogyakarta 2027",
-      "slug": "harga-jasa-digital-marketing-di-yogyakarta-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Yogyakarta",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-yogyakarta-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Semarang 2026",
-      "slug": "harga-jasa-digital-marketing-di-semarang-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Semarang",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-semarang-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Semarang 2027",
-      "slug": "harga-jasa-digital-marketing-di-semarang-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Semarang",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-semarang-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Medan 2026",
-      "slug": "harga-jasa-digital-marketing-di-medan-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Medan",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-medan-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Medan 2027",
-      "slug": "harga-jasa-digital-marketing-di-medan-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Medan",
-      "live": false,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-medan-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Makassar 2026",
-      "slug": "harga-jasa-digital-marketing-di-makassar-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Makassar",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Makassar 2027",
-      "slug": "harga-jasa-digital-marketing-di-makassar-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Makassar",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-makassar-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Denpasar 2026",
-      "slug": "harga-jasa-digital-marketing-di-denpasar-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Denpasar",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-denpasar-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Denpasar 2027",
-      "slug": "harga-jasa-digital-marketing-di-denpasar-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Denpasar",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-denpasar-2027/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Bekasi 2026",
-      "slug": "harga-jasa-digital-marketing-di-bekasi-2026",
-      "service": "Jasa Digital Marketing",
-      "city": "Bekasi",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bekasi-2026/"
-    },
-    {
-      "keyword": "Harga Jasa Digital Marketing Di Bekasi 2027",
-      "slug": "harga-jasa-digital-marketing-di-bekasi-2027",
-      "service": "Jasa Digital Marketing",
-      "city": "Bekasi",
-      "live": true,
-      "created_at": "2026-07-20T12:00:00",
-      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bekasi-2027/"
-    },
-    {
-      "keyword": "jasa iklan facebook depok murah",
-      "slug": "jasa-iklan-facebook-depok-murah",
-      "service": "Jasa Iklan Facebook",
-      "city": "Depok",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-depok-murah/"
-    },
-    {
-      "keyword": "jasa iklan google malang murah",
-      "slug": "jasa-iklan-google-malang-murah",
-      "service": "Jasa Iklan Google",
-      "city": "Malang",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-google-malang-murah/"
-    },
-    {
-      "keyword": "jasa viewers youtube bandung murah",
-      "slug": "jasa-viewers-youtube-bandung-murah",
-      "service": "Jasa View Live",
-      "city": "Bandung",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-youtube-bandung-murah/"
-    },
-    {
-      "keyword": "jasa viewers youtube denpasar murah",
-      "slug": "jasa-viewers-youtube-denpasar-murah",
-      "service": "Jasa View Live",
-      "city": "Denpasar",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-youtube-denpasar-murah/"
-    },
-    {
-      "keyword": "jasa penonton live bali murah",
-      "slug": "jasa-penonton-live-bali-murah",
-      "service": "Jasa View Live",
-      "city": "Bali",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-penonton-live-bali-murah/"
-    },
-    {
-      "keyword": "jasa iklan youtube palembang murah",
-      "slug": "jasa-iklan-youtube-palembang-murah",
-      "service": "Jasa Iklan YouTube",
-      "city": "Palembang",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-youtube-palembang-murah/"
-    },
-    {
-      "keyword": "jasa iklan facebook solo murah",
-      "slug": "jasa-iklan-facebook-solo-murah",
-      "service": "Jasa Iklan Facebook",
-      "city": "Solo",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-solo-murah/"
-    },
-    {
-      "keyword": "jasa iklan youtube jakarta murah",
-      "slug": "jasa-iklan-youtube-jakarta-murah",
-      "service": "Jasa Iklan YouTube",
-      "city": "Jakarta",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-youtube-jakarta-murah/"
-    },
-    {
-      "keyword": "jasa pembuatan website sidoarjo murah",
-      "slug": "jasa-pembuatan-website-sidoarjo-murah",
-      "service": "Jasa Pembuatan Website",
-      "city": "Sidoarjo",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-sidoarjo-murah/"
-    },
-    {
-      "keyword": "jasa viewers live batam murah",
-      "slug": "jasa-viewers-live-batam-murah",
-      "service": "Jasa View Live",
-      "city": "Batam",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-live-batam-murah/"
-    },
-    {
-      "keyword": "jasa iklan tiktok balikpapan murah",
-      "slug": "jasa-iklan-tiktok-balikpapan-murah",
-      "service": "Jasa Iklan TikTok",
-      "city": "Balikpapan",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-tiktok-balikpapan-murah/"
-    },
-    {
-      "keyword": "jasa viewers tiktok balikpapan murah",
-      "slug": "jasa-viewers-tiktok-balikpapan-murah",
-      "service": "Jasa View Live",
-      "city": "Balikpapan",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-tiktok-balikpapan-murah/"
-    },
-    {
-      "keyword": "jasa iklan tiktok malang murah",
-      "slug": "jasa-iklan-tiktok-malang-murah",
-      "service": "Jasa Iklan TikTok",
-      "city": "Malang",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-tiktok-malang-murah/"
-    },
-    {
-      "keyword": "jasa viewers youtube pontianak murah",
-      "slug": "jasa-viewers-youtube-pontianak-murah",
-      "service": "Jasa View Live",
-      "city": "Pontianak",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-youtube-pontianak-murah/"
-    },
-    {
-      "keyword": "jasa viewers instagram bali murah",
-      "slug": "jasa-viewers-instagram-bali-murah",
-      "service": "Jasa View Live",
-      "city": "Bali",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-instagram-bali-murah/"
-    },
-    {
-      "keyword": "jasa penonton live yogyakarta murah",
-      "slug": "jasa-penonton-live-yogyakarta-murah",
-      "service": "Jasa View Live",
-      "city": "Yogyakarta",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-penonton-live-yogyakarta-murah/"
-    },
-    {
-      "keyword": "jasa iklan facebook pekanbaru murah",
-      "slug": "jasa-iklan-facebook-pekanbaru-murah",
-      "service": "Jasa Iklan Facebook",
-      "city": "Pekanbaru",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-pekanbaru-murah/"
-    },
-    {
-      "keyword": "jasa viewers instagram yogyakarta murah",
-      "slug": "jasa-viewers-instagram-yogyakarta-murah",
-      "service": "Jasa View Live",
-      "city": "Yogyakarta",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-viewers-instagram-yogyakarta-murah/"
-    },
-    {
-      "keyword": "jasa iklan youtube banjarmasin murah",
-      "slug": "jasa-iklan-youtube-banjarmasin-murah",
-      "service": "Jasa Iklan YouTube",
-      "city": "Banjarmasin",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-youtube-banjarmasin-murah/"
-    },
-    {
-      "keyword": "jasa iklan youtube cimahi murah",
-      "slug": "jasa-iklan-youtube-cimahi-murah",
-      "service": "Jasa Iklan YouTube",
-      "city": "Cimahi",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-youtube-cimahi-murah/"
-    },
-    {
-      "keyword": "jasa pembuatan website palembang murah",
-      "slug": "jasa-pembuatan-website-palembang-murah",
-      "service": "Jasa Pembuatan Website",
-      "city": "Palembang",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-pembuatan-website-palembang-murah/"
-    },
-    {
-      "keyword": "jasa iklan facebook padang murah",
-      "slug": "jasa-iklan-facebook-padang-murah",
-      "service": "Jasa Iklan Facebook",
-      "city": "Padang",
-      "live": true,
-      "created_at": "2026-07-19T21:12:14",
-      "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-padang-murah/"
+      "created_at": "",
+      "url": "https://beriklan.co.id/blog/harga-jasa-digital-marketing-di-bogor-2026/"
     }
   ]
 }

@@ -42,6 +42,14 @@ SERVICES = [
     ('jasa-kelola-tiktok', 'kelola tiktok'),
     ('jasa-pembuatan-website', 'bikin website'),
     ('jasa-pembuatan-landing-page', 'landing page'),
+    ('jasa-view-live-tiktok', 'view live tiktok'),
+    ('jasa-view-live-tiktok', 'live streaming tiktok'),
+    ('jasa-view-live-tiktok', 'viewers tiktok'),
+    ('jasa-shopee-affiliate', 'shopee affiliate'),
+    ('jasa-shopee-affiliate', 'jualan shopee'),
+    ('jasa-shopee-affiliate', 'shopee store'),
+    ('jasa-tokopedia-affiliate', 'tokopedia affiliate'),
+    ('jasa-tokopedia-affiliate', 'jualan tokopedia'),
 ]
 
 # Top 25 Indonesian cities (matches the existing /jasa-*/[city]/ pages)

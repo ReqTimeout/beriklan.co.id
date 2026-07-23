@@ -227,6 +227,9 @@ export default {
     if (path === "/api/admin/keywords" || path === "/api/admin/keywords/") {
       return await handleKeywordDashboard(request, env);
     }
+    if (path === "/api/admin/keywords/seed" || path === "/api/admin/keywords/seed/") {
+      return await handleAdminSeedKeywords(request, env);
+    }
     if (path === "/api/admin" || path === "/api/admin/") {
       // P0.4 Admin Dashboard HTML
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/admin/dashboard", 60, 3600);
@@ -939,6 +942,145 @@ async function handleAdminDraftsCommit(request, env) {
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
+}
+
+
+// ─── Admin: Seed keywords for View Live + Shopee + Tokopedia ─────
+async function handleAdminSeedKeywords(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const target = url.searchParams.get("target") || "all"; // 'all', 'view-live', 'shopee', 'tokopedia'
+
+  // Keyword templates per service
+  const CITIES = ["jakarta", "bandung", "surabaya", "medan", "semarang", "makassar", "palembang", "tangerang", "depok", "bekasi", "bogor", "yogyakarta", "malang", "denpasar", "cikarang", "serang", "cilegon", "batam", "pekanbaru", "banjarmasin"];
+
+  const TEMPLATES = {
+    "view-live": [
+      "jasa view live tiktok",
+      "tambah viewers tiktok live",
+      "viewers tiktok live streaming",
+      "jasa live streaming tiktok",
+      "live tiktok viewers indonesia",
+      "live tiktok rame",
+      "beli viewers tiktok",
+      "view live tiktok shop",
+      "live tiktok sepi",
+      "boost viewers tiktok",
+      "jasa viewers tiktok 24 jam",
+      "tiktok live viewers aktif",
+      "live streaming tiktok profesional",
+      "viewers tiktok murah",
+      "jasa live tiktok e-commerce",
+      "tambah viewers live tiktok",
+      "live tiktok affiliate",
+      "live viewers tiktok shop",
+      "viewers live tiktok real",
+      "live tiktok conversion",
+      "jasa live streaming e-commerce",
+      "live viewers tiktok aman",
+      "viewers tiktok untuk seller",
+      "live tiktok ramai konsisten",
+    ],
+    "shopee": [
+      "jasa shopee affiliate",
+      "jualan shopee pemula",
+      "shopee affiliate pemula",
+      "cara daftar shopee affiliate",
+      "shopee affiliate marketing",
+      "jasa buka toko shopee",
+      "optimasi toko shopee",
+      "shopee seller profesional",
+      "belajar shopee affiliate",
+      "shopee affiliate 2026",
+      "komisi shopee affiliate",
+      "shopee store setup",
+      "jasa kelola shopee",
+      "shopee traffic booster",
+      "produk shopee viral",
+      "shopee marketing strategy",
+      "shopee seller center",
+      "naikkan penjualan shopee",
+      "shopee plus seller",
+      "shopee live streaming",
+      "shopee video produk",
+      "shopee seller optimization",
+      "shopee affiliate Indonesia",
+      "cara jualan di shopee",
+    ],
+    "tokopedia": [
+      "jasa tokopedia affiliate",
+      "jualan tokopedia pemula",
+      "tokopedia affiliate marketing",
+      "cara daftar tokopedia affiliate",
+      "tokopedia seller profesional",
+      "belajar tokopedia affiliate",
+      "optimasi toko tokopedia",
+      "jasa buka toko tokopedia",
+      "tokopedia seller optimization",
+      "naikkan penjualan tokopedia",
+      "produk viral tokopedia",
+      "tokopedia marketing strategy",
+      "jasa kelola tokopedia",
+      "tokopedia affiliate 2026",
+      "komisi tokopedia affiliate",
+    ]
+  };
+
+  let inserted = 0;
+  let skipped = 0;
+  let errors = [];
+
+  try {
+    for (const [svc, keywords] of Object.entries(TEMPLATES)) {
+      if (target !== "all" && target !== svc) continue;
+      for (const kw of keywords) {
+        // Skip if service == "view-live" only target
+        if (svc === "view-live") {
+          for (const city of CITIES.slice(0, 10)) {
+            const fullKw = `${kw} ${city}`;
+            const slug = `view-live-tiktok-${city}-${kw.replace(/\s+/g, "-").toLowerCase().slice(0, 30)}-${Math.random().toString(36).slice(2, 8)}`;
+            try {
+              const existing = await env.DB.prepare("SELECT id FROM keyword_queue WHERE keyword = ?").bind(fullKw).first();
+              if (existing) { skipped++; continue; }
+              await env.DB.prepare(`INSERT INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent)
+                VALUES (?, ?, ?, ?, ?, datetime('now'), 'pending', ?, ?, ?, ?)`)
+                .bind(`seed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, fullKw, fullKw.toLowerCase().trim(),
+                  "admin_seed_v1", fullKw.toLowerCase().trim(), "jasa-view-live-tiktok", city, 50, "informational").run();
+              inserted++;
+            } catch (e) { errors.push(`${fullKw}: ${e.message.slice(0, 80)}`); }
+          }
+        } else {
+          for (const city of CITIES.slice(0, 10)) {
+            const fullKw = `${kw} ${city}`;
+            const slug = `${svc}-${city}-${kw.replace(/\s+/g, "-").toLowerCase().slice(0, 30)}-${Math.random().toString(36).slice(2, 8)}`;
+            try {
+              const existing = await env.DB.prepare("SELECT id FROM keyword_queue WHERE keyword = ?").bind(fullKw).first();
+              if (existing) { skipped++; continue; }
+              await env.DB.prepare(`INSERT INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent)
+                VALUES (?, ?, ?, ?, ?, datetime('now'), 'pending', ?, ?, ?, ?)`)
+                .bind(`seed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, fullKw, fullKw.toLowerCase().trim(),
+                  "admin_seed_v1", fullKw.toLowerCase().trim(), `jasa-${svc}`, city, 50, "informational").run();
+              inserted++;
+            } catch (e) { errors.push(`${fullKw}: ${e.message.slice(0, 80)}`); }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
+
+  return new Response(JSON.stringify({
+    ok: true,
+    target,
+    inserted,
+    skipped,
+    errors: errors.length ? errors.slice(0, 5) : undefined,
+  }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
 // ─── Newsletter Subscribe (P2.6) ─────────────────────────────────
@@ -2210,169 +2352,370 @@ async function handleKeywordDashboard(request, env) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  // 1. Build-time keyword stats (from repo data, exported at build)
-  let ks = null;
+  // ===== DATA FETCH =====
+  const data = {
+    buildStats: null,
+    keywordQueue: { total: 0, byStatus: {}, byService: {}, bySource: {} },
+    postsMeta: { total: 0, generated: 0, byService: {} },
+    indexing: { pending: 0, submitted: 0, failed: 0, today: 0, recent: [] },
+    indexnow: { total: 0, last24h: 0 },
+    cron: [],
+    trending: { total: 0, recent: [] },
+    drafts: { total: 0, pending: 0, committed: 0 }
+  };
+
+  // 1. Build-time stats (snapshot dari repo)
   try {
     const r = await env.ASSETS.fetch(new URL("https://assets/data/keyword-stats.json"));
-    if (r.ok) ks = await r.json();
-  } catch (e) { /* noop */ }
+    if (r.ok) {
+      const ks = await r.json();
+      data.buildStats = {
+        totalKeywords: ks.keywords?.total || 0,
+        generated: ks.keywords?.generated || 0,
+        liveInPosts: ks.keywords?.live_in_posts || 0,
+        postsTotal: ks.posts?.total || 0,
+        postsGenerated: ks.posts?.generated || 0,
+        byService: ks.by_service || [],
+        byCity: ks.by_city || [],
+        bySource: ks.by_source || [],
+        recentGenerated: ks.recent_generated || []
+      };
+    }
+  } catch (e) {}
 
-  // 2. Live D1 indexing status
-  const idx = { pending: 0, submitted: 0, failed: 0, today: 0, recent: [], indexnow_total: 0, indexnow_24h: 0 };
+  // 2. Live keyword queue dari D1
+  try {
+    const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM keyword_queue GROUP BY status").all();
+    for (const r of (c.results || [])) data.keywordQueue.byStatus[r.status] = r.n;
+    data.keywordQueue.total = Object.values(data.keywordQueue.byStatus).reduce((a, b) => a + b, 0);
+    const svcQ = await env.DB.prepare("SELECT service, COUNT(*) as n FROM keyword_queue WHERE service IS NOT NULL AND service != '' GROUP BY service").all();
+    for (const r of (svcQ.results || [])) data.keywordQueue.byService[r.service] = r.n;
+    const srcQ = await env.DB.prepare("SELECT source, COUNT(*) as n FROM keyword_queue WHERE source IS NOT NULL GROUP BY source ORDER BY n DESC LIMIT 15").all();
+    for (const r of (srcQ.results || [])) data.keywordQueue.bySource[r.source] = r.n;
+  } catch (e) {}
+
+  // 3. Posts coverage per service (LIVE D1)
+  try {
+    const total = await env.DB.prepare("SELECT COUNT(*) as n FROM posts_meta").first();
+    data.postsMeta.total = total?.n || 0;
+    const gen = await env.DB.prepare("SELECT COUNT(*) as n FROM posts_meta WHERE generated = 1").first();
+    data.postsMeta.generated = gen?.n || 0;
+    // Coverage per service — handle missing services
+    const svcMap = {
+      "Jasa Iklan Facebook Ads": ["facebook", "fb-ads", "iklan-facebook"],
+      "Jasa Iklan Instagram": ["instagram", "ig-ads", "ig "],
+      "Jasa Iklan TikTok": ["tiktok"],
+      "Jasa Iklan Google Ads": ["google-ads", "google ads", "google_ads", "adwords"],
+      "Jasa Iklan YouTube": ["youtube"],
+      "Jasa Kelola Instagram": ["kelola-instagram", "admin-instagram"],
+      "Jasa Kelola TikTok": ["kelola-tiktok", "admin-tiktok"],
+      "Jasa Pembuatan Website": ["website", "pembuatan-website", "web "],
+      "Jasa Pembuatan Landing Page": ["landing-page", "landing page"],
+      "Jasa View Live TikTok": ["view-live", "live-tiktok", "live-streaming"],
+      "Jasa Shopee Affiliate": ["shopee", "shopee-affiliate"],
+      "Jasa Digital Marketing": ["digital-marketing", "digital marketing"]
+    };
+    for (const [display, patterns] of Object.entries(svcMap)) {
+      const placeholders = patterns.map(() => "slug LIKE ? OR slug LIKE ?").join(" OR ");
+      const params = [];
+      patterns.forEach(p => { params.push("%" + p + "%"); params.push("%" + p + "%"); });
+      const c = await env.DB.prepare(`SELECT COUNT(*) as n FROM posts_meta WHERE ${placeholders}`).bind(...params).first();
+      data.postsMeta.byService[display] = c?.n || 0;
+    }
+  } catch (e) {}
+
+  // 4. Indexing status
   try {
     const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status").all();
-    for (const row of (c.results || [])) idx[row.status] = row.n;
-    // Count gsc_submitted as 'submitted' for dashboard display
-    idx.submitted = (idx.submitted || 0) + (idx.gsc_submitted || 0);
+    for (const r of (c.results || [])) data.indexing[r.status] = r.n;
+    data.indexing.submitted = (data.indexing.submitted || 0) + (data.indexing.gsc_submitted || 0);
     const t = await env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status IN ('submitted','gsc_submitted') AND date(COALESCE(gsc_submitted_at, submitted_at, created_at))=date('now')").first();
-    idx.today = t ? t.n : 0;
-    const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at, gsc_submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 25").all();
-    idx.recent = rec.results || [];
-    // IndexNow stats
-    try {
-      const ins = await env.DB.prepare(
-        `SELECT
-           COUNT(*) as total,
-           SUM(CASE WHEN indexnow_at > datetime('now', '-24 hours') THEN 1 ELSE 0 END) as last_24h
-         FROM pending_indexing WHERE indexnow_at IS NOT NULL`
-      ).first();
-      idx.indexnow_total = ins?.total || 0;
-      idx.indexnow_24h = ins?.last_24h || 0;
-    } catch (e) {}
-  } catch (e) {
-    idx.error = e.message;
-  }
+    data.indexing.today = t?.n || 0;
+    const rec = await env.DB.prepare("SELECT url, status, created_at, submitted_at, gsc_submitted_at FROM pending_indexing ORDER BY rowid DESC LIMIT 30").all();
+    data.indexing.recent = rec.results || [];
+    const ins = await env.DB.prepare("SELECT COUNT(*) as total, SUM(CASE WHEN indexnow_at > datetime('now', '-24 hours') THEN 1 ELSE 0 END) as last_24h FROM pending_indexing WHERE indexnow_at IS NOT NULL").first();
+    data.indexnow.total = ins?.total || 0;
+    data.indexnow.last24h = ins?.last_24h || 0;
+  } catch (e) {}
 
-  const k = (ks && ks.keywords) || { total: 0, generated: 0, pending: 0, live_in_posts: 0, coverage: 0 };
-  const p = (ks && ks.posts) || { total: 0, generated: 0, by_service: {} };
+  // 5. Cron settings
+  try {
+    const r = await env.DB.prepare("SELECT name, enabled, cron, label FROM cron_settings ORDER BY id").all();
+    data.cron = r.results || [];
+  } catch (e) {}
 
-  const svcRows = ((ks && ks.by_service) || []).map(s =>
-    `<tr><td><strong>${esc(s.key)}</strong></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${bar(s.coverage, '#f59e0b')} ${s.coverage}%</td></tr>`
-  ).join("");
+  // 6. Trending articles
+  try {
+    const t = await env.DB.prepare("SELECT COUNT(*) as n FROM trending_articles").first();
+    data.trending.total = t?.n || 0;
+    const rec = await env.DB.prepare("SELECT slug, source, created_at FROM trending_articles ORDER BY id DESC LIMIT 8").all();
+    data.trending.recent = rec.results || [];
+  } catch (e) {}
 
-  const cityRows = ((ks && ks.by_city) || []).map(s =>
-    `<tr><td><strong>${esc(s.key)}</strong></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${bar(s.coverage, '#0ea5e9')} ${s.coverage}%</td></tr>`
-  ).join("");
+  // 7. Drafts
+  try {
+    const t = await env.DB.prepare("SELECT status, COUNT(*) as n FROM generated_drafts GROUP BY status").all();
+    for (const r of (t.results || [])) data.drafts[r.status] = r.n;
+    data.drafts.total = (data.drafts.draft || 0) + (data.drafts.pending || 0) + (data.drafts.committed || 0);
+    data.drafts.pending = data.drafts.draft || 0;
+    data.drafts.committed = data.drafts.committed || 0;
+  } catch (e) {}
 
-  const srcRows = ((ks && ks.by_source) || []).map(s =>
-    `<tr><td><code>${esc(s.key)}</code></td><td>${s.total}</td><td><span class="badge green">${s.generated}</span></td><td><span class="badge yellow">${s.pending}</span></td><td>${s.coverage}%</td></tr>`
-  ).join("");
+  // ===== RENDER HELPERS =====
+  const num = n => (n || 0).toLocaleString('id-ID');
+  const pct = (a, b) => b > 0 ? Math.round((a / b) * 100) : 0;
+  const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const recentRows = ((ks && ks.recent_generated) || []).map(r =>
-    `<tr><td>${esc(r.keyword)}</td><td>${esc(r.service || '-')}</td><td>${esc(r.city || '-')}</td><td>${r.live ? '<span class="badge green">live</span>' : '<span class="badge yellow">queued</span>'}</td><td><a href="${esc(r.url)}" target="_blank">buka ↗</a></td><td style="color:#999;">${esc(r.created_at)}</td></tr>`
-  ).join("");
+  // Health banner status
+  const failedCrons = data.cron.filter(c => c.enabled).length;
+  const totalCrons = data.cron.length;
+  const healthStatus = data.drafts.pending > 5 ? "warning" : (data.indexing.pending > 50 ? "watch" : "healthy");
 
-  const idxRows = idx.recent.map(r =>
-    `<tr><td style="word-break:break-all;"><a href="${esc(r.url)}" target="_blank">${esc(r.url.replace('https://beriklan.co.id', ''))}</a></td><td>${r.status === 'submitted' ? '<span class="badge green">submitted</span>' : r.status === 'failed' ? '<span class="badge red">failed</span>' : '<span class="badge yellow">pending</span>'}</td><td style="color:#999;">${esc(r.submitted_at || r.created_at || '')}</td></tr>`
-  ).join("");
-
-  const html = `<!DOCTYPE html>
+  return new Response(`<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex,nofollow">
-  <title>Keyword Pipeline — Beriklan Admin</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.5; }
-    .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
-    h1 { font-size: 24px; margin-bottom: 4px; }
-    .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-    .card h2 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .card .metric { font-size: 30px; font-weight: 700; }
-    .card .sub { font-size: 12px; color: #666; margin-top: 4px; }
-    .card.warning { background: #fff3cd; border-left: 4px solid #f59e0b; }
-    .card.success { background: #d4edda; border-left: 4px solid #10b981; }
-    .card.info { background: #e0f2fe; border-left: 4px solid #0ea5e9; }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 24px; }
-    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-    th { background: #fafafa; color: #666; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #eee; color: #333; }
-    .badge.green { background: #d4edda; color: #155724; }
-    .badge.yellow { background: #fff3cd; color: #856404; }
-    .badge.red { background: #f8d7da; color: #721c24; }
-    a { color: #2563eb; text-decoration: none; }
-    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
-    .section-title { font-size: 16px; font-weight: 700; margin: 32px 0 12px; }
-    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0 24px; font-size: 13px; }
-    .flow .step { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-    .flow .arrow { color: #9ca3af; font-weight: 700; }
-    .nav { margin-bottom: 16px; font-size: 13px; }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SEO Pipeline — Beriklan Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;color:#1f2937;line-height:1.5}
+.container{max-width:1320px;margin:0 auto;padding:24px}
+h1{font-size:22px;font-weight:800;letter-spacing:-0.01em}
+h2{font-size:15px;font-weight:700;margin-bottom:12px;letter-spacing:-0.005em}
+h3{font-size:13px;font-weight:600;color:#6b7280;margin-bottom:8px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:24px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:24px 0;padding:18px;background:white;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.flow-step{padding:14px;border-radius:10px;text-align:center;position:relative;background:linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%)}
+.flow-step.active{background:linear-gradient(135deg,#0f1e3d 0%,#1a2f5c 100%);color:#fff}
+.flow-step .icon{font-size:24px;margin-bottom:8px}
+.flow-step .label{font-size:11px;text-transform:uppercase;letter-spacing:0.04em;opacity:0.7;margin-bottom:4px}
+.flow-step .value{font-size:20px;font-weight:800}
+.flow-arrow{display:none}
+@media(max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:white;padding:16px;border-radius:12px;border:1px solid #eef0f5}
+.kpi .label{font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:700;letter-spacing:0.06em;margin-bottom:6px}
+.kpi .value{font-size:22px;font-weight:800;line-height:1.1}
+.kpi .sub{font-size:11px;color:#9ca3af;margin-top:4px}
+.kpi.highlight{border-left:3px solid #f59e0b}
+.kpi.good{border-left:3px solid #10b981}
+.kpi.warn{border-left:3px solid #dc2626}
+.section{background:white;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:1px solid #eef0f5}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f0f1f5}
+.section-head h2{display:flex;align-items:center;gap:8px}
+.section-head .meta{font-size:12px;color:#9ca3af}
+.bar{height:8px;background:#f0f1f5;border-radius:4px;overflow:hidden;margin-top:4px}
+.bar>div{height:100%;border-radius:4px;transition:width 0.3s}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#fafbfc;color:#6b7280;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:0.05em;padding:10px 12px;text-align:left;border-bottom:1px solid #eef0f5}
+td{padding:10px 12px;border-bottom:1px solid #f5f6fa;vertical-align:middle}
+tr:hover td{background:#fafbfc}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;line-height:1.4}
+.badge.green{background:#d1fae5;color:#065f46}
+.badge.amber{background:#fef3c7;color:#92400e}
+.badge.red{background:#fee2e2;color:#991b1b}
+.badge.blue{background:#dbeafe;color:#1e40af}
+.badge.gray{background:#f3f4f6;color:#4b5563}
+.health-banner{padding:14px 20px;border-radius:10px;margin-bottom:20px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px}
+.health-banner.healthy{background:#d1fae5;color:#065f46}
+.health-banner.watch{background:#dbeafe;color:#1e40af}
+.health-banner.warning{background:#fef3c7;color:#92400e}
+.health-banner.critical{background:#fee2e2;color:#991b1b}
+.cron-row{display:grid;grid-template-columns:1fr 1fr 80px;gap:12px;padding:10px 14px;border-bottom:1px solid #f5f6fa;align-items:center}
+.cron-row:last-child{border-bottom:none}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;inset:0;background:#d1d5db;border-radius:11px;transition:0.2s}
+.toggle .slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:2px;left:2px;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle input:checked+.slider{background:#10b981}
+.toggle input:checked+.slider::before{transform:translateX(18px)}
+.coverage-good{border-left:3px solid #10b981}
+.coverage-warn{border-left:3px solid #f59e0b}
+.coverage-low{border-left:3px solid #dc2626}
+a{color:#0f1e3d;text-decoration:none}
+a:hover{text-decoration:underline}
+.action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.btn{padding:9px 16px;border-radius:10px;border:none;font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#0f1e3d;color:#fff}
+.btn-amber{background:#f59e0b;color:#0f1e3d}
+.btn-outline{background:#fff;color:#0f1e3d;border:1px solid #d1d5db}
+.muted{color:#9ca3af;font-size:11px}
+.empty-state{text-align:center;padding:40px 20px;color:#9ca3af}
+.empty-state .ico{font-size:36px;opacity:0.4;margin-bottom:8px}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="container">
-  <div class="nav"><a href="/api/admin?token=${esc(token)}">← Admin Dashboard</a></div>
-  <h1>🎯 Keyword Pipeline Dashboard</h1>
-  <p class="subtitle">Snapshot data: ${esc((ks && ks.generated_at) || 'n/a')} · Indexing live dari D1 · <a href="">refresh</a></p>
+<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+<div>
+<h1>🎯 SEO Pipeline Dashboard</h1>
+<p class="sub">Alur lengkap dari keyword research → artikel AI → publish → indexing. Pantau semua channel di sini.</p>
+</div>
+<a href="?token=${token}&format=json" class="btn btn-outline">📋 JSON View</a>
+</div>
 
-  <div class="flow">
-    <span class="step">⛏️ Miner + Google Suggest → <strong>${k.total} keyword</strong></span>
-    <span class="arrow">→</span>
-    <span class="step">🤖 AI generate → <strong>${k.generated} artikel</strong></span>
-    <span class="arrow">→</span>
-    <span class="step">📦 Publish (posts.json) → <strong>${k.live_in_posts} live</strong></span>
-    <span class="arrow">→</span>
-    <span class="step">🔍 Indexer → <strong>${idx.submitted} submitted</strong> (${idx.pending} antri)</span>
-  </div>
+<!-- HEALTH BANNER -->
+<div class="health-banner ${healthStatus}">
+${healthStatus === 'healthy' ? '✅' : healthStatus === 'watch' ? '👀' : healthStatus === 'warning' ? '⚠️' : '🚨'}
+${healthStatus === 'healthy'
+  ? `Semua sehat — ${data.keywordQueue.byStatus.pending || 0} keyword pending siap di-generate.`
+  : healthStatus === 'watch'
+  ? `Perhatian — ${data.indexing.pending} URL belum ter-index.`
+  : `${data.drafts.pending} draft belum ter-commit ke GitHub. Cek tab Drafts.`}
+</div>
 
-  <div class="grid">
-    <div class="card info"><h2>Total Keyword</h2><div class="metric">${k.total}</div><div class="sub">semua layanan × kota (suggest + miner)</div></div>
-    <div class="card ${k.coverage < 10 ? 'warning' : 'success'}"><h2>Artikel Jadi</h2><div class="metric">${k.generated}</div><div class="sub">coverage ${k.coverage}% dari total keyword</div></div>
-    <div class="card"><h2>Pending Generate</h2><div class="metric">${k.pending}</div><div class="sub">menunggu di keyword queue</div></div>
-    <div class="card success"><h2>Live di posts.json</h2><div class="metric">${k.live_in_posts}</div><div class="sub">dari ${p.total} total artikel blog</div></div>
-    <div class="card ${idx.pending > 100 ? 'warning' : 'success'}"><h2>Indexing Queue</h2><div class="metric">${idx.pending}</div><div class="sub">submitted: ${idx.submitted} (GSC) · hari ini: ${idx.today}</div></div>
-    <div class="card success"><h2>IndexNow (Bing+Yandex)</h2><div class="metric">${(idx.indexnow_total || 0)}</div><div class="sub">no quota · multi-engine</div></div>
-  </div>
+<!-- WORKFLOW VISUAL -->
+<div class="flow">
+<div class="flow-step">
+<div class="icon">🔍</div>
+<div class="label">Step 1 — Sources</div>
+<div class="value">${num(Object.values(data.keywordQueue.bySource).reduce((a,b)=>a+b,0) || Object.keys(data.keywordQueue.bySource).length)}</div>
+</div>
+<div class="flow-step">
+<div class="icon">📋</div>
+<div class="label">Step 2 — Queue</div>
+<div class="value">${num(data.keywordQueue.total)}</div>
+</div>
+<div class="flow-step active">
+<div class="icon">🤖</div>
+<div class="label">Step 3 — AI Generate</div>
+<div class="value">${num(data.keywordQueue.byStatus.generated || 0)}</div>
+</div>
+<div class="flow-step">
+<div class="icon">📝</div>
+<div class="label">Step 4 — Drafts</div>
+<div class="value">${num(data.drafts.total)}</div>
+</div>
+<div class="flow-step">
+<div class="icon">📤</div>
+<div class="label">Step 5 — Indexed</div>
+<div class="value">${num(data.indexnow.total)}</div>
+</div>
+</div>
 
-  <h3 class="section-title">🧩 Per Layanan (keyword → artikel)</h3>
-  <table><thead><tr><th>Layanan</th><th>Total Keyword</th><th>Artikel Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${svcRows}</tbody></table>
+<!-- TOP KPI -->
+<div class="kpi-grid">
+<div class="kpi good"><div class="label">📋 Total Keyword</div><div class="value">${num(data.keywordQueue.total)}</div><div class="sub">${num(data.keywordQueue.byStatus.pending || 0)} pending · ${num(data.keywordQueue.byStatus.generated || 0)} generated</div></div>
+<div class="kpi ${data.drafts.pending > 0 ? 'highlight' : 'good'}"><div class="label">📝 Drafts</div><div class="value">${num(data.drafts.total)}</div><div class="sub">${num(data.drafts.pending)} pending · ${num(data.drafts.committed)} committed</div></div>
+<div class="kpi"><div class="label">📰 Artikel Live</div><div class="value">${num(data.postsMeta.total)}</div><div class="sub">${num(data.postsMeta.generated)} AI-generated</div></div>
+<div class="kpi ${data.indexing.pending > 20 ? 'warn' : 'good'}"><div class="label">⏳ Indexing Pending</div><div class="value">${num(data.indexing.pending)}</div><div class="sub">${num(data.indexing.today)} hari ini</div></div>
+<div class="kpi"><div class="label">📡 IndexNow 24h</div><div class="value">${num(data.indexnow.last24h)}</div><div class="sub">${num(data.indexnow.total)} total</div></div>
+<div class="kpi"><div class="label">🔥 Trending</div><div class="value">${num(data.trending.total)}</div><div class="sub">artikel fetched</div></div>
+</div>
 
-  <div class="two-col">
-    <div>
-      <h3 class="section-title">📍 Per Kota</h3>
-      <table><thead><tr><th>Kota</th><th>Keyword</th><th>Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${cityRows}</tbody></table>
-    </div>
-    <div>
-      <h3 class="section-title">⛏️ Sumber Keyword</h3>
-      <table><thead><tr><th>Sumber</th><th>Total</th><th>Jadi</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${srcRows}</tbody></table>
+<!-- SERVICE COVERAGE -->
+<div class="section">
+<div class="section-head">
+<h2>🎯 Coverage per Layanan (Article Coverage)</h2>
+<span class="meta">Target: minimal 30 artikel per layanan untuk SEO kuat</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+${Object.entries(data.postsMeta.byService).sort((a,b) => b[1] - a[1]).map(([svc, count]) => {
+  const target = 30;
+  const cov = pct(count, target);
+  const cls = cov >= 80 ? 'coverage-good' : cov >= 30 ? 'coverage-warn' : 'coverage-low';
+  const icon = cov >= 80 ? '✓' : cov >= 30 ? '⚠️' : '❌';
+  return `<div class="${cls}" style="background:#fafbfc;padding:14px;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<strong style="font-size:13px">${esc(svc)}</strong>
+<span style="font-size:18px">${icon}</span>
+</div>
+<div style="font-size:24px;font-weight:800;color:${cov >= 80 ? '#10b981' : cov >= 30 ? '#f59e0b' : '#dc2626'}">${num(count)}</div>
+<div class="bar"><div style="width:${Math.min(cov, 100)}%;background:${cov >= 80 ? '#10b981' : cov >= 30 ? '#f59e0b' : '#dc2626'}"></div></div>
+<div class="muted" style="margin-top:4px">${cov}% dari target 30</div>
+</div>`;
+}).join('')}
+</div>
+<p style="margin-top:12px;font-size:12px;color:#6b7280">Coverage dihitung dari jumlah artikel dengan slug yang match nama layanan. Shopee & View Live perlu prioritas karena masih rendah.</p>
+</div>
 
-      <h3 class="section-title">📦 Artikel per Layanan (posts.json)</h3>
-      <table><thead><tr><th>Layanan</th><th>Artikel</th></tr></thead><tbody>${Object.entries(p.by_service).map(([s, n]) => `<tr><td><code>${esc(s)}</code></td><td>${n}</td></tr>`).join('')}</tbody></table>
-    </div>
-  </div>
+<div class="grid-2">
+<!-- LEFT: KEYWORD SOURCES + QUEUE BY SERVICE -->
+<div>
+<div class="section">
+<div class="section-head"><h2>📊 Keyword Sources</h2><span class="meta">dari mana keyword berasal</span></div>
+${Object.keys(data.keywordQueue.bySource).length ? `<table>
+<thead><tr><th>Source</th><th>Total</th><th>Status</th></tr></thead>
+<tbody>${Object.entries(data.keywordQueue.bySource).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([src, count]) => {
+  const desc = src.startsWith('sheet_') ? 'Google Sheet' : src === 'miner' ? 'Keyword Miner' : src === 'expansion_v1' ? 'AI Expansion' : src === 'suggest+combo' ? 'Suggest + Combo' : 'Lainnya';
+  return `<tr><td><code>${esc(src)}</code><br><span class="muted">${desc}</span></td><td><strong>${num(count)}</strong></td><td><span class="badge ${count > 1000 ? 'green' : count > 100 ? 'amber' : 'gray'}">${count > 1000 ? '✓ aktif' : count > 100 ? 'monitor' : 'idle'}</span></td></tr>`;
+}).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📋</div>Belum ada keyword</div>'}
+</div>
 
-  <h3 class="section-title">🔍 Indexing Activity (live D1, 25 terakhir)</h3>
-  <table><thead><tr><th>URL</th><th>Status</th><th>Waktu</th></tr></thead><tbody>${idxRows || '<tr><td colspan="3" style="color:#999;">belum ada aktivitas</td></tr>'}</tbody></table>
+<div class="section">
+<div class="section-head"><h2>📋 Antrian per Layanan</h2><span class="meta">siap di-generate</span></div>
+${Object.keys(data.keywordQueue.byService).length ? `<table>
+<thead><tr><th>Layanan</th><th>Antrian</th></tr></thead>
+<tbody>${Object.entries(data.keywordQueue.byService).sort((a,b)=>b[1]-a[1]).map(([svc, count]) => `<tr><td>${esc(svc)}</td><td><strong>${num(count)}</strong></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📋</div>Belum ada antrian</div>'}
+</div>
+</div>
 
-  <h3 class="section-title">🆕 Artikel Terbaru dari Queue (40)</h3>
-  <table><thead><tr><th>Keyword</th><th>Layanan</th><th>Kota</th><th>Status</th><th>Link</th><th>Dibuat</th></tr></thead><tbody>${recentRows}</tbody></table>
+<!-- RIGHT: INDEXING + TRENDING + CRON -->
+<div>
+<div class="section">
+<div class="section-head"><h2>📡 Indexing Pipeline</h2><span class="meta">URL → IndexNow + Google</span></div>
+<div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px">
+<div class="kpi"><div class="label">Pending</div><div class="value" style="color:${data.indexing.pending > 20 ? '#dc2626' : '#0f1e3d'}">${num(data.indexing.pending)}</div></div>
+<div class="kpi good"><div class="label">Submitted</div><div class="value">${num(data.indexing.submitted || 0)}</div></div>
+<div class="kpi ${data.indexing.failed > 0 ? 'warn' : ''}"><div class="label">Failed</div><div class="value">${num(data.indexing.failed || 0)}</div></div>
+<div class="kpi"><div class="label">Hari Ini</div><div class="value">${num(data.indexing.today)}</div></div>
+</div>
+<div class="muted" style="text-align:center">IndexNow last 24h: <strong>${num(data.indexnow.last24h)}</strong> URLs · Total: ${num(data.indexnow.total)}</div>
+</div>
 
-  ${await renderHourlyGenStatus(env)}
-  ${await renderTrendingStatus(env, ks)}
-  ${await renderDirectoryBacklinks(env)}
-  ${renderTodayProgress(ks, idx)}
-  ${renderNewKeywords(ks)}
-  ${renderCompletionForecast(ks)}
-  ${await renderRoadmap(env)}
-  ${renderCoverageGaps(ks)}
-  ${renderFreshness(ks)}
-  ${await renderQuota(env, idx)}
-  ${await renderPageSpeed()}
-  ${await renderCronHealth(env)}
-  ${await renderRankTracker(env)}
+<div class="section">
+<div class="section-head"><h2>🔥 Trending Articles</h2><span class="meta">auto-fetch dari Google Trends</span></div>
+${data.trending.recent.length ? `<table>
+<thead><tr><th>Topic</th><th>Source</th><th>Date</th></tr></thead>
+<tbody>${data.trending.recent.map(r => `<tr><td><strong>${esc(r.slug)}</strong></td><td><span class="badge blue">${esc(r.source)}</span></td><td class="muted">${esc((r.created_at||'').slice(0,16))}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">🔥</div>Belum ada</div>'}
+</div>
+</div>
+</div>
 
-  <p style="text-align:center;color:#999;font-size:11px;margin-top:40px;">Beriklan.co.id Keyword Pipeline · noindex · ${new Date().toISOString()}</p>
+<!-- CRON JOBS -->
+<div class="section">
+<div class="section-head">
+<h2>⏰ Cron Jobs (${data.cron.length} total, ${failedCrons} aktif)</h2>
+<span class="meta">Klik toggle untuk pause / enable</span>
+</div>
+${data.cron.length ? data.cron.map(c => {
+  const isLast = c.name === 'email-send' ? true : false; // mark special
+  return `<form method="POST" action="/api/admin/cron/toggle?token=${token}&name=${c.name}" style="margin:0">
+<div class="cron-row">
+<div>
+<strong>${esc(c.name)}</strong>
+<code style="background:#f0f1f5;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:8px">${esc(c.cron)}</code>
+${c.name === 'email-send' ? '<span class="badge red" style="margin-left:6px">⚠️ Email blast — toggle hati-hati</span>' : ''}
+<br><span class="muted">${esc(c.label || '')}</span>
+</div>
+<div></div>
+<label class="toggle">
+<input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="this.form.submit()">
+<span class="slider"></span>
+</label>
+</div>
+</form>`;
+}).join('') : '<div class="empty-state">Belum ada cron</div>'}
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="action-bar">
+<a href="/api/admin/drafts?token=${token}" class="btn btn-amber">📝 Manage Drafts (${data.drafts.pending} pending)</a>
+<a href="/api/admin/cron/toggle?token=${token}&format=json" class="btn btn-outline">⏰ Cron Settings</a>
+<a href="/api/admin/env-check?token=${token}" class="btn btn-outline">🔑 Env Check</a>
+<a href="/api/admin/health?token=${token}" class="btn btn-outline">🏥 Health</a>
+</div>
+
+<p class="muted" style="text-align:center;margin-top:32px">Snapshot: ${new Date().toISOString()} · auto-refresh setiap reload</p>
 </div>
 </body>
-</html>`;
-  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
+</html>`, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
 }
+
 
 // ─── Directory Backlinks (P1.1) ────────────────
 async function renderDirectoryBacklinks(env) {

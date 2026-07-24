@@ -42,8 +42,11 @@ export default {
     if (path === "/api/admin/drafts/commit" || path === "/api/admin/drafts/commit/") {
       return await handleAdminDraftsCommit(request, env);
     }
-    if (path === "/api/admin/email/queue/reset" || path === "/api/admin/email/queue/reset/") {
+    if (path === "/api/admin/email/queue/reset" || path === "/api/admin/email/reset/") {
       return await handleEmailQueueReset(request, env);
+    }
+    if (path === "/api/admin/email/test-alert" || path === "/api/admin/email/test-alert/") {
+      return await handleTestAlert(request, env);
     }
     if (path === "/api/admin/email/metrics" || path === "/api/admin/email/metrics/") {
       return await handleEmailMetrics(request, env);
@@ -410,6 +413,37 @@ export default {
             await env.DB.prepare(
               "INSERT INTO cron_retry_queue (cron_name, last_error, attempts, next_retry_at, status) VALUES (?, ?, 1, datetime('now', '+30 minutes'), 'pending')"
             ).bind(cronName, "AUTO-PAUSED: " + errorMsg.slice(0, 200)).run();
+
+            // Email alert ke aramadhi92@gmail.com (auto-paused)
+            try {
+              if (env.RESEND_API_KEY) {
+                const now = new Date();
+                const errorDetails = (recentRows.map((r, i) => `${i+1}. ${r.status}`).join(", "));
+                const alertHtml = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto;">
+<div style="background:#fee2e2;border-left:4px solid #dc2626;padding:16px;border-radius:8px;margin-bottom:16px;">
+<h2 style="color:#dc2626;margin:0 0 8px;">🚨 Beriklan Cron AUTO-PAUSED</h2>
+<p style="margin:0;color:#7f1d1d;">Cron job <strong>${cronName}</strong> gagal 3 kali berturut-turut dan sekarang di-pause otomatis.</p>
+</div>
+<h3 style="color:#0f1e3d;margin:20px 0 8px;">Detail</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px;">
+<tr><td style="padding:6px 0;color:#6b7280;width:120px;">Cron</td><td style="padding:6px 0;"><code>${cronName}</code></td></tr>
+<tr><td style="padding:6px 0;color:#6b7280;">Schedule</td><td style="padding:6px 0;">lihat tab Cron di dashboard</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280;">Last Error</td><td style="padding:6px 0;">${errorMsg.slice(0, 300)}</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280;">3 Recent Runs</td><td style="padding:6px 0;">${errorDetails}</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280;">Paused at</td><td style="padding:6px 0;">${now.toISOString()}</td></tr>
+</table>
+<h3 style="color:#0f1e3d;margin:20px 0 8px;">Action Required</h3>
+<p style="color:#475569;line-height:1.6;">1. Cek error di log (tab Cron dashboard)<br>2. Fix root cause (API key, rate limit, dll)<br>3. Re-enable cron manual di dashboard setelah yakin aman</p>
+<p style="margin-top:24px;"><a href="https://beriklan.co.id/api/admin?token=beriklan-admin-2026" style="background:#0f1e3d;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Buka Dashboard Admin →</a></p>
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+<p style="font-size:11px;color:#9ca3af;">Email ini auto-generated dari Beriklan.co.id monitoring system. Dikirim otomatis saat cron job gagal 3x berturut-turut.</p>
+</body></html>`;
+                await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan cron ${cronName} auto-paused (3 consecutive failures)`, alertHtml, "alert-" + Date.now());
+                console.log(`[scheduled:${label}] Alert email sent to aramadhi92@gmail.com`);
+              }
+            } catch (alertErr) {
+              console.error(`[scheduled:${label}] Alert email error:`, String(alertErr).slice(0, 200));
+            }
           } else {
             // Add ke retry queue dengan exponential backoff
             await env.DB.prepare(
@@ -425,7 +459,7 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     const cronMap = {
-      "0 * * * *":     { cronName: "hourly", handler: handleHourlyGenerate, path: "/api/cron/hourly-generate?token=beriklan-admin-2026&count=3" },
+      "0 * * * *":     { cronName: "hourly", handler: handleHourlyGenerate, path: "/api/cron/hourly-generate?token=beriklan-admin-2026&count=3&mode=draft" },
       "15 * * * *":    { cronName: "indexnow", handler: handleIndexNowCron, path: "/api/cron/indexnow?token=beriklan-admin-2026&count=50" },
       "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: "/api/cron/scrape/indonetwork?token=beriklan-admin-2026" },
       "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: "/api/cron/scrape/google-places?token=beriklan-admin-2026" },
@@ -1479,6 +1513,54 @@ async function handleAdminSyncPosts(request, env) {
     }, null, 2), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+  }
+}
+
+
+// ─── Admin: Send test alert email ────────────────────────────────
+async function handleTestAlert(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.RESEND_API_KEY) return new Response(JSON.stringify({ ok: false, error: "RESEND_API_KEY not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const toEmail = url.searchParams.get("to") || "aramadhi92@gmail.com";
+  const subject = "[ALERT TEST] Beriklan.co.id — Cron monitoring aktif";
+  const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto;background:#f9fafb;">
+<div style="background:#fff;padding:32px;border-radius:12px;border:1px solid #e5e7eb;">
+<div style="background:#d1fae5;border-left:4px solid #10b981;padding:16px;border-radius:8px;margin-bottom:16px;">
+<h2 style="color:#065f46;margin:0 0 8px;">✅ Test Alert Berhasil</h2>
+<p style="margin:0;color:#064e3b;">Cron monitoring email alert sudah aktif. Email ini akan dikirim ke <strong>${toEmail}</strong> saat ada cron job yang auto-pause.</p>
+</div>
+<h3 style="color:#0f1e3d;margin:20px 0 8px;font-size:15px;">Kapan alert dikirim?</h3>
+<ul style="color:#475569;line-height:1.8;font-size:13px;padding-left:20px;">
+<li>Cron job gagal 3 kali berturut-turut → auto-paused</li>
+<li>Email alert dikirim ke ${toEmail} (admin)</li>
+<li>Subject: <code>[ALERT] Beriklan cron [name] auto-paused (3 consecutive failures)</code></li>
+</ul>
+<h3 style="color:#0f1e3d;margin:20px 0 8px;font-size:15px;">Cron yang dimonitor</h3>
+<ul style="color:#475569;line-height:1.8;font-size:13px;padding-left:20px;">
+<li>hourly — generate artikel AI</li>
+<li>indexnow — submit IndexNow (Bing/Yandex)</li>
+<li>gsc-indexing — Google Indexing API</li>
+<li>trending-generate — trending articles</li>
+<li>scrape-indonetwork — Indonetwork scrape</li>
+<li>scrape-google-places — Google Places scrape</li>
+</ul>
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+<p style="font-size:12px;color:#6b7280;">Test alert ini dipicu manual via endpoint <code>/api/admin/email/test-alert</code>.<br>Dikirim: ${new Date().toISOString()}<br>Beriklan.co.id monitoring system.</p>
+</div>
+</body></html>`;
+
+  try {
+    const res = await sendEmailViaResend(env, toEmail, subject, html, "alert-test-" + Date.now());
+    if (res.ok) {
+      return new Response(JSON.stringify({ ok: true, sent_to: toEmail, resend_id: res.id }), { headers: { "Content-Type": "application/json" } });
+    }
+    return new Response(JSON.stringify({ ok: false, error: res.error }), { status: 500, headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -5533,6 +5615,7 @@ async function handleHourlyGenerate(request, env) {
 //   Free tier alternative: schedule 5 cron-job.org triggers with count=1.
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 5));
   const debug = url.searchParams.get("debug") === "1";
+  const draftMode = url.searchParams.get("mode") === "draft"; // draft = simpan ke D1, tidak commit GitHub
   const perArticleTimeoutMs = parseInt(url.searchParams.get("timeout") || "25000", 10);
 
   const t0 = Date.now();
@@ -5540,23 +5623,41 @@ async function handleHourlyGenerate(request, env) {
   const errors = [];
 
   try {
-    // 1. Fetch keyword-queue.json from ASSETS (Worker cannot reach repo files directly)
-    let queue = [];
+    // 1. Fetch pending keywords from D1 (29K+ keywords) — fallback ke ASSETS jika D1 unavailable
+    let pending = [];
+    let queueTotal = 0;
     try {
-      const qr = await env.ASSETS.fetch(new URL("https://assets/data/keyword-queue.json"));
-      if (qr.ok) queue = await qr.json();
+      const qr = await env.DB.prepare(
+        "SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug FROM keyword_queue WHERE status = 'pending' AND (article_slug IS NULL OR article_slug = '') ORDER BY priority_score DESC LIMIT ?"
+      ).bind(count).all();
+      pending = (qr.results || []).map(r => ({
+        slug: r.id,
+        keyword: r.keyword,
+        keyword_normalized: r.keyword_normalized,
+        service: r.service,
+        city: r.city,
+        priority_score: r.priority_score,
+        intent: r.intent,
+        article_slug: r.article_slug,
+      }));
+      // Get total pending count
+      const tc = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status = 'pending'").first();
+      queueTotal = tc?.n || 0;
     } catch (e) {
-      errors.push({ stage: "queue_fetch", error: e.message });
-      return new Response(JSON.stringify({ ok: false, error: "queue_fetch failed", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+      errors.push({ stage: "queue_fetch_d1", error: e.message });
+      // Fallback ke ASSETS (100 keyword) kalau D1 gagal
+      try {
+        const qr = await env.ASSETS.fetch(new URL("https://assets/data/keyword-queue.json"));
+        if (qr.ok) {
+          const queue = await qr.json();
+          pending = queue.filter(q => q.status === "pending" && !q.has_post).sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)).slice(0, count);
+          queueTotal = queue.filter(q => q.status === "pending").length;
+        }
+      } catch (e2) {
+        return new Response(JSON.stringify({ ok: false, error: "queue_fetch failed (D1 + ASSETS)", errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+      }
     }
-    log.push({ stage: "queue_fetch", count: queue.length });
-
-    // 2. Pick top N pending by priority_score DESC
-    const pending = queue
-      .filter(q => q.status === "pending" && !q.has_post)
-      .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))
-      .slice(0, count);
-    log.push({ stage: "queue_pick", picked: pending.length, total_pending: queue.filter(q => q.status === "pending").length });
+    log.push({ stage: "queue_fetch", count: pending.length, total_pending: queueTotal });
     if (pending.length === 0) {
       return new Response(JSON.stringify({ ok: true, generated: 0, message: "no pending keywords", log, errors }), { headers: { "Content-Type": "application/json" } });
     }
@@ -5614,7 +5715,10 @@ async function handleHourlyGenerate(request, env) {
     let commitSha = null;
     let committedToGitHub = false;
 
-    if (hasGitHub) {
+    // Draft mode: skip GitHub commit, simpan ke D1 generated_drafts saja
+    if (draftMode) {
+      log.push({ stage: "draft_mode", message: "Draft mode ON — skip GitHub commit, simpan ke D1 generated_drafts" });
+    } else if (hasGitHub) {
       // 4. Fetch current posts.json from GitHub, append new posts, sort, PUT back
       const owner = "ReqTimeout";
       const repo = "beriklan.co.id";
@@ -5625,7 +5729,8 @@ async function handleHourlyGenerate(request, env) {
         { headers: { "Authorization": `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
       );
       if (!getResp.ok) {
-        errors.push({ stage: "github_get_posts", status: getResp.status });
+        const errBody = await getResp.text().catch(() => "");
+        errors.push({ stage: "github_get_posts", status: getResp.status, body: errBody.slice(0, 200) });
       } else {
         const fileData = await getResp.json();
         let postsContent = "";

@@ -7,11 +7,12 @@
     "city": "depok",
     "source": "expansion_v1",
     "priority_score": 80,
-    "status": "pending",
-    "has_post": 0,
+    "status": "generated",
+    "has_post": true,
     "rank": null,
     "created_at": null,
-    "url": ""
+    "url": "",
+    "generated_at": "2026-07-24T13:30:01.827Z"
   },
   {
     "keyword": "Harga Jasa Digital Marketing Di Depok 2027",
@@ -21,11 +22,12 @@
     "city": "depok",
     "source": "expansion_v1",
     "priority_score": 80,
-    "status": "pending",
-    "has_post": 0,
+    "status": "generated",
+    "has_post": true,
     "rank": null,
     "created_at": null,
-    "url": ""
+    "url": "",
+    "generated_at": "2026-07-24T13:30:01.827Z"
   },
   {
     "keyword": "Harga Jasa Digital Marketing Di Tangerang 2026",
@@ -80,11 +82,12 @@
     "city": "bogor",
     "source": "expansion_v1",
     "priority_score": 80,
-    "status": "pending",
-    "has_post": 0,
+    "status": "generated",
+    "has_post": true,
     "rank": null,
     "created_at": null,
-    "url": ""
+    "url": "",
+    "generated_at": "2026-07-24T13:30:01.827Z"
   },
   {
     "keyword": "Harga Jasa Digital Marketing Di Malang 2026",

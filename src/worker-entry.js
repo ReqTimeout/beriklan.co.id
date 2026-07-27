@@ -10647,6 +10647,255 @@ async function handleIndexNowSubmit(request, env) {
   }
 }
 
+// ─── Template cache: fetches reference Astro blog post — auto-syncs CSS/JS hashes ───
+let _blogTpl = null;
+
+async function _getBlogTpl(env) {
+  if (_blogTpl) return _blogTpl;
+  try {
+    const refReq = new Request('https://beriklan.co.id/blog/apa-itu-facebook-ads/');
+    const refResp = await env.ASSETS.fetch(refReq);
+    if (!refResp.ok) return null;
+    const html = await refResp.text();
+    const splitMarker = 'setTimeout(window.__loadAdSense, 3000);\n    </script>';
+    const splitIdx = html.indexOf(splitMarker);
+    if (splitIdx < 0) return null;
+    const prefix = html.substring(0, splitIdx + splitMarker.length);
+    const footerIdx = html.indexOf('<footer class="bg-ink');
+    if (footerIdx < 0) return null;
+    _blogTpl = { prefix, suffix: html.substring(footerIdx) };
+    return _blogTpl;
+  } catch (e) {
+    console.error('Blog template fetch error:', e);
+    return null;
+  }
+}
+
+// ─── Build middle section: Article schema + header + article + sidebar + related ───
+function _buildArticleBody(slug, meta, content, relatedRows) {
+  const title = escHtml(meta.title || slug);
+  const cat = escHtml(meta.category || 'Blog');
+  const date = escHtml(meta.date || '');
+  const isoDate = meta.iso_date || '';
+  const readTime = escHtml(meta.readTime || '3 min');
+  const excerpt = escHtml(meta.excerpt || '');
+  const body = content?.content || '';
+  let tags = [];
+  try { tags = JSON.parse(meta.tags || '[]'); } catch {}
+  const canonical = `https://beriklan.co.id/blog/${slug}/`;
+
+  const articleSchema = `<script type="application/ld+json">${JSON.stringify({
+    "@context":"https://schema.org","@type":"Article",headline:meta.title||slug,
+    description:meta.excerpt||'',datePublished:meta.iso_date||null,dateModified:meta.iso_date||null,
+    author:{"@type":"Person","name":"Tim Beriklan","jobTitle":"Performance Marketing Strategist",
+      "url":"https://beriklan.co.id/tentang-kami/",
+      "worksFor":{"@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id/",
+        "logo":{"@type":"ImageObject","url":"https://beriklan.co.id/logoweb.webp"}}},
+    publisher:{"@type":"Organization","name":"Beriklan.co.id",
+      "logo":{"@type":"ImageObject","url":"https://beriklan.co.id/logoweb.webp"}},
+    mainEntityOfPage:{"@type":"WebPage","@id":canonical},articleSection:cat,
+    keywords:tags.slice(0,5).join(', ')
+  })}</script>`;
+
+  const breadcrumb = `<nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
+  <a href="/" class="hover:text-accent transition">Beranda</a>
+  <span class="text-muted/40">›</span>
+  <a href="/blog" class="hover:text-accent transition">Blog</a>
+  <span class="text-muted/40">›</span>
+  <span class="text-ink font-semibold">${cat}</span>
+</nav>`;
+
+  const catPill = `<div class="mb-5 anim-fade-up" style="animation-delay: 60ms;">
+  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink text-[11px] font-bold uppercase tracking-wider rounded-full">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-tag w-3 h-3"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+    ${cat}
+  </span>
+</div>`;
+
+  const authorName = meta.author || 'Tim Beriklan';
+  const metaBar = `<div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted anim-fade-up" style="animation-delay: 180ms;">
+  <span class="flex items-center gap-1.5">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-calendar w-3.5 h-3.5"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+    <time datetime="${escHtml(isoDate)}">${date ? 'Dipublikasikan ' + date : ''}</time>
+  </span>
+  <span class="flex items-center gap-1.5">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    ${readTime}
+  </span>
+  <span class="flex items-center gap-1.5">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-book-open w-3.5 h-3.5"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+    Oleh ${escHtml(authorName)}
+  </span>
+</div>`;
+
+  const headerSection = `<header class="relative pt-28 md:pt-40 pb-12 md:pb-16 bg-gradient-to-br from-white via-soft to-beige overflow-hidden">
+  <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+  <div class="abs-blob abs-blob-1"></div>
+  <div class="abs-blob abs-blob-2"></div>
+  <div class="container mx-auto px-6 max-w-3xl relative z-10">
+    ${breadcrumb}
+    ${catPill}
+    <h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6 anim-fade-up" style="animation-delay: 120ms;">${title}</h1>
+    ${metaBar}
+  </div>
+</header>`;
+
+  const adSlot1 = `<div class="my-8 p-4 bg-soft/30 rounded-xl border border-gray-100">
+  <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+  <ins class="adsbygoogle" style="display:block" data-ad-format="autorelaxed" data-ad-client="ca-pub-4438184351486735" data-ad-slot="1101825065"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>`;
+  const adSlot2 = `<div class="mt-8 p-4 bg-soft/30 rounded-xl border border-gray-100">
+  <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+  <ins class="adsbygoogle" style="display:block;text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-4438184351486735" data-ad-slot="6162580059"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>`;
+  const adSlot3 = `<div class="mt-10 p-4 bg-soft/30 rounded-xl border border-gray-100">
+  <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+  <ins class="adsbygoogle" style="display:block" data-ad-format="autorelaxed" data-ad-client="ca-pub-4438184351486735" data-ad-slot="4505315237"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>`;
+
+  const tagChips = tags.length > 0
+    ? `<div class="mt-12 pt-8 border-t border-gray-100">
+  <p class="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">Topik Terkait:</p>
+  <div class="flex flex-wrap gap-2">${tags.map(t => `<span class="px-3 py-1.5 bg-soft text-ink text-xs font-semibold rounded-full border border-gray-100">#${escHtml(t)}</span>`).join('\n    ')}</div>
+</div>` : '';
+
+  const ctaCard = `<div class="mt-12 p-6 md:p-8 bg-gradient-to-br from-ink via-primary-2 to-ink rounded-2xl text-white relative overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(245,158,11,0.2) 0%,transparent 50%);"></div>
+  <div class="relative flex flex-col md:flex-row items-start md:items-center gap-5">
+    <div class="flex-1">
+      <h3 class="font-display font-extrabold text-xl md:text-2xl leading-tight mb-2">Butuh strategi iklan untuk bisnis Anda?</h3>
+      <p class="text-white/70 text-sm leading-relaxed">Diskusi gratis 15-30 menit via WhatsApp. Tim kami akan tinjau kondisi campaign Anda saat ini.</p>
+    </div>
+    <a href="https://wa.me/62811919328?text=${encodeURIComponent('Halo Beriklan, saya tertarik dengan topik "' + (meta.title || slug) + '" — mohon info lebih lanjut.')}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink px-5 py-3 rounded-full font-bold text-sm shadow-lg hover:shadow-pop transition-all btn-shine-accent shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-message-circle w-4 h-4"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+      Chat Tim
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-arrow-right w-4 h-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+</div>`;
+
+  const authorBio = `<div class="mt-10 p-6 md:p-7 bg-white border border-gray-100 rounded-2xl shadow-soft flex items-start gap-4">
+  <div class="shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-2 flex items-center justify-center text-white font-display font-extrabold text-lg">TB</div>
+  <div class="flex-1 min-w-0">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-accent mb-1">Ditulis oleh</p>
+    <a href="https://beriklan.co.id/tentang-kami/" class="font-display font-bold text-ink text-base hover:text-accent transition-colors">${escHtml(authorName)}</a>
+    <p class="text-xs text-muted font-semibold mb-1.5">Performance Marketing Strategist</p>
+    <p class="text-xs text-muted leading-relaxed">Tim bersertifikasi Meta &amp; Google sejak 2016 &middot; mengelola campaign untuk ratusan UMKM &amp; bisnis menengah Indonesia</p>
+  </div>
+</div>`;
+
+  const backLink = `<div class="mt-10">
+  <a href="/blog" class="inline-flex items-center gap-2 text-sm font-bold text-ink hover:text-accent transition">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-arrow-left w-4 h-4"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    Kembali ke semua artikel
+  </a>
+</div>`;
+
+  const sidebarRecent = relatedRows && relatedRows.length > 0
+    ? relatedRows.slice(0, 4).map(r => `<li><a href="/blog/${escHtml(r.slug)}/" class="flex items-start gap-3 group">
+  <div class="flex-1 min-w-0">
+    <h4 class="font-bold text-sm text-ink leading-tight line-clamp-2 group-hover:text-accent transition-colors">${escHtml(r.title || r.slug)}</h4>
+    <p class="text-[11px] text-muted mt-1">${escHtml((r.date||'').slice(0,10))}</p>
+  </div>
+</a></li>`).join('\n      ')
+    : '<li><p class="text-xs text-muted">Belum ada artikel.</p></li>';
+
+  const sidebarTags = tags.length > 0
+    ? tags.map(t => `<span class="px-2.5 py-1 bg-soft text-ink text-[11px] font-semibold rounded-full border border-gray-100">#${escHtml(t)}</span>`).join('\n      ')
+    : '<span class="text-xs text-muted">-</span>';
+
+  const sidebar = `<aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-32 lg:self-start">
+  <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-soft">
+    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-muted mb-4">Kategori</h3>
+    <ul class="space-y-2">
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>Semua Topik</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>Facebook &amp; Instagram</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>TikTok</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>Google Ads</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>YouTube</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>Strategi</span></a></li>
+      <li><a href="/blog" class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5"><span>Studi Kasus</span></a></li>
+    </ul>
+  </div>
+  <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-soft">
+    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-muted mb-4">Artikel Terbaru</h3>
+    <ul class="space-y-4">${sidebarRecent}</ul>
+  </div>
+  <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-soft">
+    <h3 class="font-display font-bold text-sm uppercase tracking-wider text-muted mb-4">Tag</h3>
+    <div class="flex flex-wrap gap-2">${sidebarTags}</div>
+  </div>
+  <div class="hidden lg:block p-4 bg-soft/30 rounded-2xl border border-gray-100">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4438184351486735" data-ad-slot="1237556436" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  <div class="bg-gradient-to-br from-ink via-primary-2 to-ink rounded-2xl p-6 text-white relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(245,158,11,0.18) 0%,transparent 60%);"></div>
+    <div class="relative">
+      <h3 class="font-display font-extrabold text-lg leading-tight mb-2">Diskusi Gratis 15 Menit</h3>
+      <p class="text-white/70 text-xs leading-relaxed mb-4">Tim kami tinjau campaign Anda, kasih rekomendasi konkret.</p>
+      <a href="https://wa.me/62811919328?text=${encodeURIComponent('Halo Beriklan, saya baca artikel "' + (meta.title || slug) + '" dan ingin diskusi.')}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 bg-accent text-ink px-4 py-2 rounded-full font-bold text-xs shadow-md hover:shadow-pop transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-message-circle w-3.5 h-3.5"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+        Chat WhatsApp
+      </a>
+    </div>
+  </div>
+</aside>`;
+
+  const articleSection = `<article class="py-14 md:py-20 bg-white overflow-x-clip">
+  <div class="container mx-auto px-6 max-w-6xl">
+    <div class="grid lg:grid-cols-12 gap-10">
+      <div class="lg:col-span-8 min-w-0 overflow-x-clip">
+        ${adSlot1}
+        <div class="prose prose-lg max-w-none text-ink leading-relaxed overflow-x-hidden">${body}</div>
+        ${adSlot2}
+        ${adSlot3}
+        ${tagChips}
+        ${ctaCard}
+        ${authorBio}
+        ${backLink}
+      </div>
+      ${sidebar}
+    </div>
+  </div>
+</article>`;
+
+  let relatedSection = '';
+  if (relatedRows && relatedRows.length > 0) {
+    const relatedCards = relatedRows.map(r => {
+      const rt = escHtml(r.title || r.slug);
+      const rd = escHtml((r.date||'').slice(0,10));
+      const rt2 = escHtml(r.readTime||'3 min');
+      const re = escHtml((r.excerpt||'').slice(0,120));
+      const rs = escHtml(r.slug||'');
+      return `<a href="/blog/${rs}/" class="related-card group block bg-white rounded-2xl border border-gray-100 hover:border-accent/40 hover:shadow-pop transition-all p-5">
+  <span class="inline-block px-2 py-0.5 bg-soft text-accent text-[10px] font-bold uppercase tracking-wider rounded mb-3">${cat}</span>
+  <h3 class="font-display font-bold text-base text-ink leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">${rt}</h3>
+  <p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">${re}</p>
+  <div class="flex items-center gap-3 text-[10px] text-muted">
+    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-calendar w-3 h-3"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>${rd}</span>
+    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-clock w-3 h-3"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${rt2}</span>
+  </div>
+</a>`;
+    }).join('\n    ');
+    relatedSection = `<section class="py-16 md:py-20 bg-soft">
+  <div class="container mx-auto px-6 max-w-5xl">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="w-8 h-px bg-accent"></span>
+      <h2 class="text-xs font-bold uppercase tracking-[0.18em] text-accent">Artikel Serupa</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5 reveal-stagger">${relatedCards}</div>
+  </div>
+</section>`;
+  }
+
+  return articleSchema + headerSection + articleSection + relatedSection;
+}
+
 // ─── Dynamic blog post render (fallback when static page doesn't exist) ───
 async function renderBlogPost(slug, env) {
   if (!env.DB) return null;
@@ -10680,402 +10929,59 @@ async function renderBlogPost(slug, env) {
         return null;
       }
     }
-    let tags = [];
-    try { tags = JSON.parse(meta.tags || '[]'); } catch {}
-    const tagChips = tags.map(t => `<span class="inline-block px-2.5 py-0.5 bg-soft text-muted text-xs rounded-full">${escHtml(t)}</span>`).join(' ');
-    const cat = escHtml(meta.category || 'Blog');
-    const readTime = escHtml(meta.readTime || '');
-    const date = escHtml(meta.date || '');
+
     const title = escHtml(meta.title || slug);
     const excerpt = escHtml(meta.excerpt || '');
     const canonical = `https://beriklan.co.id/blog/${slug}/`;
     const ogTitle = escHtml(meta.title || slug);
 
-    const orgJson = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "Beriklan.co.id",
-      "description": "Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.",
-      "url": "https://beriklan.co.id",
-      "logo": "https://beriklan.co.id/logoweb.webp",
-      "image": "https://beriklan.co.id/logoweb.webp",
-      "priceRange": "Rp 2.500.000 - Rp 10.000.000",
-      "telephone": "+62-22-XXXXXXX",
-      "address": { "@type": "PostalAddress", "addressCountry": "ID", "addressLocality": "Bandung", "addressRegion": "Jawa Barat" },
-      "areaServed": { "@type": "Country", "name": "Indonesia" },
-      "openingHours": "Mo-Sa 09:00-18:00",
-      "knowsAbout": ["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]
-    });
-    const org2Json = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Beriklan.co.id",
-      "url": "https://beriklan.co.id",
-      "logo": "https://beriklan.co.id/logoweb.webp",
-      "description": "Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.",
-      "foundingDate": "2016",
-      "sameAs": ["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id"]
-    });
-    const articleJson = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": meta.title || slug,
-      "description": meta.excerpt || '',
-      "datePublished": meta.iso_date || null,
-      "author": { "@type": "Organization", "name": "Beriklan Digital Agency" }
-    });
-
-    const body = content?.content || '';
-
-    // Related posts (3 from same category)
-    let relatedHtml = '';
+    let relatedRows = [];
     try {
       const related = await env.DB.prepare(
         "SELECT slug, title, date, readTime, excerpt FROM posts_content WHERE slug != ? AND (service = ? OR ? = '' OR category LIKE ?) ORDER BY RANDOM() LIMIT 3"
-      ).bind(slug, meta.service || '', meta.service || '', '%' + (meta.category || 'Blog') + '%').all();
-      if (related.results?.length) {
-        relatedHtml = related.results.map(r => {
-          const rt = escHtml(r.readTime || '3 min');
-          const rd = escHtml((r.date || '').slice(0, 10));
-          const rt2 = escHtml(r.title || r.slug);
-          return `<a href="/blog/${escHtml(r.slug)}/" class="related-card group block bg-white rounded-2xl border border-gray-100 hover:border-accent/40 hover:shadow-pop transition-all p-5">
-<span class="inline-block px-2 py-0.5 bg-soft text-accent text-[10px] font-bold uppercase tracking-wider rounded mb-3">${cat}</span>
-<h3 class="font-display font-bold text-base text-ink leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">${rt2}</h3>
-<p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">${escHtml((r.excerpt || '').slice(0, 120))}</p>
-<div class="flex items-center gap-3 text-[10px] text-muted"><span class="flex items-center gap-1"><svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${rd}</span><span class="flex items-center gap-1"><svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${rt}</span></div>
-</a>`;
-        }).join('');
-      }
+      ).bind(slug, meta.service||'', meta.service||'', '%' + (meta.category||'Blog') + '%').all();
+      if (related.results?.length) relatedRows = related.results;
     } catch (e) {}
 
-    const html = `<!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${title} — Blog Beriklan.co.id</title>
-<meta name="description" content="${excerpt}">
-<meta name="keywords" content="jasa digital marketing, agency digital marketing indonesia, facebook ads, google ads, tiktok ads, instagram ads, landing page, jasa iklan, agency iklan">
-<meta name="robots" content="index, follow">
-<meta name="language" content="Indonesian">
-<meta name="author" content="Beriklan.co.id">
-<link rel="canonical" href="${canonical}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="${canonical}">
-<meta property="og:title" content="${ogTitle}">
-<meta property="og:description" content="${excerpt}">
-<meta property="og:image" content="https://beriklan.co.id/og-image.png">
-<meta property="og:site_name" content="Beriklan.co.id">
-<meta property="og:locale" content="id_ID">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="${canonical}">
-<meta name="twitter:title" content="${ogTitle}">
-<meta name="twitter:description" content="${excerpt}">
-<meta name="twitter:image" content="https://beriklan.co.id/og-image.png">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=2">
-<link rel="shortcut icon" href="/favicon.ico?v=2">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png?v=2">
-<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png?v=2">
-<link rel="preload" href="/fonts/PlusJakartaSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/fonts/fonts.css">
-<script type="application/ld+json">${orgJson}</script>
-<script type="application/ld+json">${org2Json}</script>
-<script type="application/ld+json">${articleJson}</script>
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MJXSNCSD');</script>
-<style>
-*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid}
-html{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;scroll-behavior:smooth}
-body{margin:0;font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;color:#0f1e3d;background:#fff;-webkit-font-smoothing:antialiased}
-.font-display{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;font-weight:800}
-.font-sans{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif}
-.text-primary{color:#0f1e3d}
-.bg-white{background:#fff}
-.container{width:100%;margin:0 auto;padding:0 1.5rem}
-.max-w-5xl{max-width:64rem}
-.mx-auto{margin:0 auto}
-.px-6{padding:0 1.5rem}
-.py-20{padding:5rem 0}
-.md\\:py-28{padding:7rem 0}
-.grid{display:grid}
-.grid-cols-1{grid-template-columns:repeat(1,1fr)}
-.gap-6{gap:1.5rem}
-.gap-8{gap:2rem}
-.items-center{align-items:center}
-.justify-center{justify-content:center}
-.relative{position:relative}
-.w-full{width:100%}
-.h-1{height:0.25rem}
-.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}
-.from-transparent{--tw-gradient-from:transparent;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,transparent)}
-.via-accent{--tw-gradient-via:#f59e0b}
-.to-transparent{--tw-gradient-to:transparent}
-.overflow-hidden{overflow:hidden}
-.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-.pb-24{padding-bottom:6rem}
-.lg\\:pb-0{padding-bottom:0}
-.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.transition-all{transition:all .3s ease}
-.transition-colors{transition:color .3s ease}
-.duration-300{transition-duration:.3s}
-.shadow-pop{box-shadow:0 12px 32px rgba(15,30,61,0.10),0 4px 8px rgba(15,30,61,0.06)}
-.text-accent{color:#f59e0b}
-.text-ink{color:#0b1426}
-.text-muted{color:#6b7280}
-.text-white{color:#fff}
-.bg-accent{background:#f59e0b}
-.bg-soft{background:#f7f8fb}
-.bg-ink{background:#0b1426}
-.border-gray-100{border-color:#f3f4f6}
-.border-accent\\/40{border-color:rgba(245,158,11,0.4)}
-.rounded-2xl{border-radius:1rem}
-.hover\\:border-accent\\/40:hover{border-color:rgba(245,158,11,0.4)}
-.hover\\:shadow-pop:hover{box-shadow:0 12px 32px rgba(15,30,61,0.10),0 4px 8px rgba(15,30,61,0.06)}
-.hover\\:text-accent:hover{color:#f59e0b}
-.hover\\:bg-accent\\/10:hover{background:rgba(245,158,11,0.1)}
-.group:hover .group-hover\\:text-accent{color:#f59e0b}
-.text-xs{font-size:.75rem;line-height:1rem}
-.text-sm{font-size:.875rem;line-height:1.25rem}
-.text-base{font-size:1rem;line-height:1.5rem}
-.text-lg{font-size:1.125rem;line-height:1.75rem}
-.text-xl{font-size:1.25rem;line-height:1.75rem}
-.text-2xl{font-size:1.5rem;line-height:2rem}
-.text-3xl{font-size:1.875rem;line-height:2.25rem}
-.text-4xl{font-size:2.25rem;line-height:2.5rem}
-.font-bold{font-weight:700}
-.font-extrabold{font-weight:800}
-.font-semibold{font-weight:600}
-.uppercase{text-transform:uppercase}
-.tracking-\\[0\\.18em\\]{letter-spacing:0.18em}
-.tracking-\\[0\\.2em\\]{letter-spacing:0.2em}
-.tracking-wider{letter-spacing:.05em}
-.leading-relaxed{line-height:1.625}
-.leading-snug{line-height:1.375}
-.leading-tight{line-height:1.25}
-.mb-1{margin-bottom:.25rem}
-.mb-2{margin-bottom:.5rem}
-.mb-3{margin-bottom:.75rem}
-.mb-4{margin-bottom:1rem}
-.mb-6{margin-bottom:1.5rem}
-.mb-8{margin-bottom:2rem}
-.mt-2{margin-top:.5rem}
-.mt-3{margin-top:.75rem}
-.mt-4{margin-top:1rem}
-.mt-5{margin-top:1.25rem}
-.mt-6{margin-top:1.5rem}
-.mt-8{margin-top:2rem}
-.mt-10{margin-top:2.5rem}
-.mr-2{margin-right:.5rem}
-.ml-2{margin-left:.5rem}
-.p-5{padding:1.25rem}
-.p-6{padding:1.5rem}
-.p-8{padding:2rem}
-.px-3{padding:0 .75rem}
-.px-4{padding:0 1rem}
-.px-5{padding:0 1.25rem}
-.px-6{padding:0 1.5rem}
-.py-2{padding:.5rem 0}
-.py-3{padding:.75rem 0}
-.py-4{padding:1rem 0}
-.py-8{padding:2rem 0}
-.py-12{padding:3rem 0}
-.py-16{padding:4rem 0}
-.py-20{padding:5rem 0}
-.gap-2{gap:.5rem}
-.gap-3{gap:.75rem}
-.gap-4{gap:1rem}
-.gap-5{gap:1.25rem}
-.flex{display:flex}
-.flex-col{flex-direction:column}
-.flex-wrap{flex-wrap:wrap}
-.items-center{align-items:center}
-.justify-center{justify-content:center}
-.justify-between{justify-content:space-between}
-.inline-flex{display:inline-flex}
-.inline-block{display:inline-block}
-.block{display:block}
-.hidden{display:none}
-.shrink-0{flex-shrink:0}
-.w-8{width:2rem}
-.w-3{width:.75rem}
-.h-px{height:1px}
-.h-3{height:.75rem}
-.h-5{height:1.25rem}
-.h-10{height:2.5rem}
-.max-w-md{max-width:28rem}
-.max-w-3xl{max-width:48rem}
-.max-w-5xl{max-width:64rem}
-.space-y-2>*+*{margin-top:.5rem}
-.space-y-2\\.5>*+*{margin-top:.625rem}
-.space-y-4>*+*{margin-top:1rem}
-.space-y-6>*+*{margin-top:1.5rem}
-.space-x-2>*+*{margin-left:.5rem}
-.space-x-3>*+*{margin-left:.75rem}
-.border{border-width:1px}
-.border-t{border-top-width:1px}
-.border-b{border-bottom-width:1px}
-.border-white\\/10{border-color:rgba(255,255,255,0.1)}
-.border-white\\/20{border-color:rgba(255,255,255,0.2)}
-.border-accent\\/20{border-color:rgba(245,158,11,0.2)}
-.rounded-full{border-radius:9999px}
-.rounded-xl{border-radius:.75rem}
-.pointer-events-none{pointer-events:none}
-.object-cover{object-fit:cover}
-.aspect-\\[16\\/9\\]{aspect-ratio:16/9}
-.md\\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
-.md\\:grid-cols-3{grid-template-columns:repeat(3,1fr)}
-.md\\:flex{display:flex}
-.md\\:hidden{display:none}
-.md\\:items-center{align-items:center}
-.md\\:justify-end{justify-content:flex-end}
-.md\\:text-lg{font-size:1.125rem}
-.md\\:text-xl{font-size:1.25rem}
-.md\\:text-2xl{font-size:1.5rem}
-.md\\:text-3xl{font-size:1.875rem}
-.lg\\:flex{display:flex}
-.lg\\:gap-10{gap:2.5rem}
-.lg\\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
-.lg\\:grid-cols-6{grid-template-columns:repeat(6,1fr)}
-.lg\\:col-span-1{grid-column:span 1 / span 1}
-@media(max-width:1023px){.lg\\:hidden{display:block}}
-@media(max-width:767px){.md\\:hidden{display:block!important}.md\\:flex{display:none!important}}
-.pill-accent{display:inline-block;background:rgba(245,158,11,0.12);color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:999px;margin-bottom:12px}
-.breadcrumb{font-size:13px;color:#6b7280;margin-bottom:12px}
-.breadcrumb a{color:#0f1e3d;text-decoration:none}
-.breadcrumb a:hover{text-decoration:underline}
-/* Prose styles matching old post */
-.prose{color:#374151;overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%}
-.prose a,.prose code{overflow-wrap:anywhere;word-break:break-word}
-.prose pre{overflow-x:auto;max-width:100%}
-.prose img,.prose iframe,.prose video,.prose table{max-width:100%}
-.prose h1{font-size:1.875rem;font-weight:800;margin:2rem 0 1rem;color:#0f1e3d;line-height:1.2}
-.prose h2{font-size:1.5rem;font-weight:800;margin:2.5rem 0 1rem;color:#0f1e3d;line-height:1.25}
-.prose h3{font-size:1.25rem;font-weight:700;margin:2rem 0 .75rem;color:#0f1e3d;line-height:1.3}
-.prose p{margin:0 0 1.25rem;line-height:1.8;font-size:1rem}
-.prose a{color:#f59e0b;text-decoration:underline;text-underline-offset:3px}
-.prose a:hover{color:#ea580c}
-.prose strong{font-weight:700;color:#0f1e3d}
-.prose ul{list-style:disc;padding-left:1.5rem;margin:1rem 0 1.5rem}
-.prose ol{list-style:decimal;padding-left:1.5rem;margin:1rem 0 1.5rem}
-.prose li{margin-bottom:.5rem;line-height:1.7}
-.prose blockquote{border-left:4px solid #f59e0b;padding:.75rem 1rem;background:#fffbeb;margin:1.5rem 0;font-style:italic;color:#1f2937}
-.prose img{max-width:100%;height:auto;border-radius:.75rem;margin:1.5rem 0}
-.prose table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.875rem}
-.prose th{background:#f3f4f6;padding:.625rem .75rem;text-align:left;font-weight:700;color:#0f1e3d;border:1px solid #e5e7eb}
-.prose td{padding:.625rem .75rem;border:1px solid #e5e7eb}
-.prose code{background:#f3f4f6;padding:.125rem .375rem;border-radius:.25rem;font-size:.875em}
-.prose hr{border:0;border-top:1px solid #e5e7eb;margin:2rem 0}
-/* Article header */
-.article-header{padding:2rem 0 1.5rem;max-width:48rem;margin:0 auto}
-.article-header h1{font-size:2rem;line-height:1.2;font-weight:800;margin:.5rem 0 1rem;color:#0f1e3d}
-.article-meta{display:flex;flex-wrap:wrap;gap:.75rem;font-size:.875rem;color:#6b7280;margin-bottom:.5rem}
-.article-body{max-width:48rem;margin:0 auto;padding:0 0 2rem}
-/* Article CTA card */
-.cta-inline{background:#f7f8fb;border-radius:1rem;padding:2rem;margin:2.5rem auto;text-align:center;max-width:48rem}
-.cta-inline h3{margin:0 0 .5rem;font-size:1.25rem;color:#0f1e3d;font-weight:700}
-.cta-inline p{font-size:.875rem;color:#6b7280;margin:0 0 1rem}
-.cta-inline a{display:inline-block;background:#f59e0b;color:#fff;font-weight:700;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none;font-size:.9375rem}
-.cta-inline a:hover{background:#fb923c}
-/* Navbar */
-.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #f3f4f6}
-.navbar-inner{max-width:80rem;margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.navbar-logo{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:#0f1e3d;font-weight:800;font-size:1.25rem}
-.navbar-links{display:flex;gap:1.5rem;align-items:center}
-.navbar-links a{text-decoration:none;color:#4b5563;font-size:.875rem;font-weight:600;transition:color .2s}
-.navbar-links a:hover{color:#f59e0b}
-.navbar-cta{background:#f59e0b;color:#0f1e3d!important;padding:.5rem 1.25rem;border-radius:999px;font-weight:700}
-.navbar-hamburger{display:none;background:none;border:none;cursor:pointer;padding:.5rem}
-.navbar-hamburger span{display:block;width:24px;height:2px;background:#0f1e3d;margin:5px 0;border-radius:2px}
-@media(max-width:767px){.navbar-links{display:none}.navbar-hamburger{display:block}}
-/* Footer */
-.footer{background:#0b1426;color:#fff;padding:5rem 0 2.5rem;position:relative;overflow:hidden}
-.footer-top-bar{position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(to right,transparent,#f59e0b,transparent)}
-.footer-glow{position:absolute;inset:0;pointer-events:none}
-.footer inner{max-width:80rem;margin:0 auto;padding:0 1.5rem}
-.footer-grid{display:grid;grid-template-columns:1fr;gap:2rem;padding-bottom:3rem;border-bottom:1px solid rgba(255,255,255,0.1)}
-@media(min-width:768px){.footer-grid{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1024px){.footer-grid{grid-template-columns:repeat(6,1fr)}}
-@media(min-width:1024px){.footer-col-1{grid-column:span 1 / span 1}}
-.footer-headline{font-size:1.5rem;font-weight:800;line-height:1.2}
-@media(min-width:768px){.footer-headline{font-size:1.875rem}}
-.footer-desc{color:rgba(255,255,255,0.6);margin-top:.75rem;font-size:.875rem;line-height:1.625;max-width:28rem}
-.footer-desc2{color:rgba(255,255,255,0.6);font-size:.875rem;margin-top:.75rem;line-height:1.625}
-.footer-column h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,0.5);margin-bottom:.75rem}
-.footer-column ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem}
-.footer-column ul li a{color:rgba(255,255,255,0.8);text-decoration:none;font-size:.875rem;transition:color .2s}
-.footer-column ul li a:hover{color:#f59e0b}
-.footer-bottom{border-top:1px solid rgba(255,255,255,0.1);margin-top:2rem;padding-top:2rem;display:flex;flex-direction:column;gap:1rem;align-items:center;font-size:.75rem;color:rgba(255,255,255,0.5)}
-@media(min-width:768px){.footer-bottom{flex-direction:row;justify-content:space-between}}
-.footer-bottom-links{display:flex;gap:1.5rem}
-.footer-bottom-links a{color:rgba(255,255,255,0.5);text-decoration:none;transition:color .2s}
-.footer-bottom-links a:hover{color:#f59e0b}
-.social-icon{width:2.25rem;height:2.25rem;border-radius:9999px;background:rgba(255,255,255,0.05);display:inline-flex;align-items:center;justify-content:center;transition:all .2s;color:rgba(255,255,255,0.8)}
-.social-icon:hover{background:#f59e0b;color:#0b1426}
-</style>
-</head>
-<body class="font-sans text-primary bg-white antialiased pb-24 lg:pb-0">
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<header class="navbar">
-<div class="navbar-inner">
-<a href="/" class="navbar-logo"><img src="/logoweb.webp" alt="Beriklan.co.id" class="h-10 w-auto">Beriklan</a>
-<div class="navbar-links">
-<a href="/jasa-digital-marketing/">Digital Marketing</a>
-<a href="/jasa-iklan-facebook/">Facebook Ads</a>
-<a href="/jasa-iklan-google/">Google Ads</a>
-<a href="/jasa-iklan-tiktok/">TikTok Ads</a>
-<a href="/blog/">Blog</a>
-<a href="https://wa.me/62811919328" class="navbar-cta">Konsultasi Gratis</a>
-</div>
-<button class="navbar-hamburger" onclick="this.nextElementSibling.classList.toggle('hidden')" aria-label="Menu"><span></span><span></span><span></span></button>
-</div>
-</header>
-<main>
-<div class="article-header">
-<nav class="breadcrumb"><a href="/">Beranda</a> › <a href="/blog/">Blog</a> › ${cat}</nav>
-<span class="pill-accent">${cat}</span>
-<h1>${title}</h1>
-<div class="article-meta">${date ? '<span>📅 ' + date + '</span>' : ''}${readTime ? '<span>⏱ ' + readTime + ' baca</span>' : ''}</div>
-</div>
-<div class="article-body prose">${body}</div>
-${tagChips ? '<div style="max-width:48rem;margin:0 auto;padding:0 1.5rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap">' + tagChips + '</div>' : ''}
-<div class="cta-inline"><h3>Butuh Bantuan Iklan?</h3><p>Konsultasi gratis 15 menit dengan tim performance marketing kami.</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20beriklan%20(setelah%20baca%20artikel%20${encodeURIComponent(slug)}).%20Mohon%20info%20lebih%20lanjut." target="_blank">Diskusi via WhatsApp</a></div>
-</article>
-${relatedHtml ? '<section class="py-16 md:py-20 bg-soft"><div class="container mx-auto px-6 max-w-5xl"><div class="flex items-center gap-3 mb-8"><span class="w-8 h-px bg-accent"></span><h2 class="text-xs font-bold uppercase tracking-[0.18em] text-accent">Artikel Serupa</h2></div><div class="grid md:grid-cols-3 gap-5">' + relatedHtml + '</div></div></section>' : ''}
-</main>
-<footer class="footer">
-<div class="footer-top-bar"></div>
-<div class="footer-glow" style="background:radial-gradient(circle at 90% 0%,rgba(245,158,11,0.08) 0%,transparent 40%),radial-gradient(circle at 10% 100%,rgba(14,165,233,0.06) 0%,transparent 40%)"></div>
-<div class="" style="max-width:80rem;margin:0 auto;padding:0 1.5rem">
-<div class="footer-grid">
-<div><h3 class="footer-headline">Siap merumuskan strategi<br/>yang selaras dengan bisnis Anda?</h3><p class="footer-desc">Sesi konsultasi awal selama 15 menit melalui WhatsApp — tanpa biaya. Tim kami akan merespons dalam waktu 1 jam pada jam kerja.</p></div>
-<div style="display:flex;flex-direction:column;gap:.75rem;align-items:flex-start;justify-content:center" class="md:items-end lg:justify-end"><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;background:#f59e0b;color:#0b1426;font-weight:700;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none;box-shadow:0 14px 30px rgba(245,158,11,0.45)"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg> Chat WhatsApp</a><a href="mailto:info@beriklan.co.id" style="display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none">info@beriklan.co.id</a></div>
-</div>
-<div class="grid" style="grid-template-columns:1fr;gap:2rem;padding:2.5rem 0;border-bottom:1px solid rgba(255,255,255,0.1)">
-<div><h4 style="font-weight:700;font-size:1.25rem">Update Bulanan dari Tim Beriklan</h4><p style="color:rgba(255,255,255,0.6);margin-top:.5rem;font-size:.875rem;line-height:1.625;max-width:28rem">Tips iklan Meta, Google, TikTok, YouTube + data industri. Dikirim 1x sebulan. Tanpa spam, berhenti kapan saja.</p></div>
-<div style="max-width:28rem"><form id="nl-form" style="display:flex;flex-direction:column;gap:.625rem"><input type="text" name="name" placeholder="Nama (opsional)" style="width:100%;padding:.625rem .875rem;font-size:.875rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:999px;color:#fff;outline:none" /><div style="display:flex;gap:.5rem"><input type="email" name="email" placeholder="email@bisnis.com" required style="flex:1;min-width:0;padding:.625rem .875rem;font-size:.875rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:999px;color:#fff;outline:none"/><button type="submit" style="padding:.625rem 1.25rem;font-size:.875rem;font-weight:700;background:#f59e0b;color:#0b1426;border-radius:999px;border:none;cursor:pointer">Daftar</button></div><input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;left:-9999px" aria-hidden="true"/><p class="nl-status" style="font-size:11px;color:rgba(255,255,255,0.4)">Kami kirim 1 update/bulan. Berhenti kapan saja.</p></form></div>
-</div>
-<div class="grid" style="grid-template-columns:repeat(2,1fr);gap:2rem;padding:3rem 0" class="lg:grid-cols-6">
-<div><a href="/" style="display:flex;align-items:center;gap:.5rem;text-decoration:none"><img src="/logoweb.webp" alt="Beriklan.co.id" style="height:2.5rem;width:auto;filter:brightness(0) invert(1)"/></a><p class="footer-desc2">Agency performance marketing yang berbasis di Bandung. Mulai dari riset, eksekusi, hingga optimasi — kami kelola secara end-to-end agar Anda fokus pada bisnis.</p><div style="display:flex;gap:.75rem;margin-top:1.25rem"><a href="https://instagram.com/beriklan.co.id" target="_blank" class="social-icon" aria-label="Instagram"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a><a href="https://facebook.com/beriklan.co.id" target="_blank" class="social-icon" aria-label="Facebook"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg></a><a href="https://www.linkedin.com/company/beriklan" target="_blank" class="social-icon" aria-label="LinkedIn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg></a></div></div>
-<div class="footer-column"><h4>Layanan</h4><ul><li><a href="/jasa-iklan-facebook/">Facebook Ads</a></li><li><a href="/jasa-iklan-instagram/">Instagram Ads</a></li><li><a href="/jasa-iklan-google/">Google Search Ads</a></li><li><a href="/jasa-iklan-tiktok/">TikTok Ads</a></li><li><a href="/jasa-iklan-youtube/">YouTube Ads</a></li><li><a href="/jasa-pembuatan-landing-page/">Landing Page</a></li><li><a href="/jasa-pembuatan-website/">Website</a></li></ul></div>
-<div class="footer-column"><h4>Harga</h4><ul><li><a href="/harga-iklan-facebook/bandung">Facebook Ads</a></li><li><a href="/harga-iklan-instagram/bandung">Instagram Ads</a></li><li><a href="/harga-iklan-google/bandung">Google Ads</a></li><li><a href="/harga-iklan-tiktok/bandung">TikTok Ads</a></li><li><a href="/harga-iklan-youtube/bandung">YouTube Ads</a></li></ul></div>
-<div class="footer-column"><h4>Live</h4><ul><li><a href="/jasa-view-live/tiktok">TikTok Live</a></li><li><a href="/jasa-view-live/shopee">Shopee Live</a></li><li><a href="/jasa-view-live/youtube">YouTube Live</a></li><li><a href="/jasa-view-live/instagram">Instagram Live</a></li><li><a href="/jasa-view-live/twitch">Twitch Live</a></li></ul></div>
-<div class="footer-column"><h4>Tools</h4><ul><li><a href="/kalkulator-budget-iklan">Kalkulator Budget</a></li><li><a href="/kalkulator-roas">Kalkulator ROAS</a></li><li><a href="/kalkulator-roi">Kalkulator ROI</a></li></ul></div>
-<div class="footer-column"><h4>Perusahaan</h4><ul><li><a href="/tentang-kami">Tentang Kami</a></li><li><a href="/blog">Blog</a></li><li><a href="/kontak">Kontak</a></li><li><a href="/privacy-policy">Privacy Policy</a></li><li><a href="/terms-of-service">Terms of Service</a></li></ul></div>
-</div>
-<div class="footer-bottom"><p>© 2026 Beriklan.co.id. All rights reserved.</p><div class="footer-bottom-links"><a href="/privacy-policy">Privacy Policy</a><a href="/terms-of-service">Terms of Service</a><a href="/disclaimer">Disclaimer</a><a href="/sitemap-index.xml">Sitemap</a></div></div>
-</div>
-</footer>
-<script>(function(){var form=document.getElementById('nl-form');if(!form||form.__attached)return;form.__attached=true;var st=form.querySelector('.nl-status');var btn=form.querySelector('button[type="submit"]');form.addEventListener('submit',async function(e){e.preventDefault();if(btn.disabled)return;var hp=form.querySelector('input[name="website"]').value;if(hp){st.textContent='Terima kasih!';return}var em=form.querySelector('input[name="email"]').value.trim().toLowerCase();var nm=form.querySelector('input[name="name"]').value.trim();if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(em)){st.textContent='Format email tidak valid.';return}btn.disabled=true;btn.textContent='...';try{var r=await fetch('/api/newsletter/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,name:nm,page_url:location.pathname,source:document.referrer||''})});var d=await r.json();if(d.ok){st.textContent=d.already?'Anda sudah terdaftar.':'Terima kasih!';form.querySelector('input[name="email"]').value='';form.querySelector('input[name="name"]').value=''}else{st.textContent=d.error||'Gagal. Coba lagi.'}}catch(err){st.textContent='Gagal menghubungi server.'}btn.disabled=false;btn.textContent='Daftar'})})();</script>
-</body>
-</html>`;
-    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
-  } catch {
+    const tpl = await _getBlogTpl(env);
+    let prefix = tpl ? tpl.prefix : _fallbackPrefix(canonical, ogTitle, excerpt, title);
+    const suffix = tpl ? tpl.suffix : _fallbackSuffix();
+
+    if (tpl) {
+      prefix = prefix
+        .replace(/<title>[^<]*<\/title>/, `<title>${title} — Blog Beriklan.co.id</title>`)
+        .replace(/<link rel="preload" as="image"[^>]*>\n?/, '')
+        .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${excerpt}"`)
+        .replace(/<link rel="canonical" href="[^"]*"/, `<link rel="canonical" href="${canonical}"`)
+        .replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${ogTitle}"`)
+        .replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${excerpt}"`)
+        .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${canonical}"`)
+        .replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${ogTitle}"`)
+        .replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${excerpt}"`)
+        .replace(/<meta name="twitter:url" content="[^"]*"/, `<meta name="twitter:url" content="${canonical}"`);
+    }
+
+    const middle = _buildArticleBody(slug, meta, content, relatedRows);
+    const html = prefix + middle + suffix;
+
+    return new Response(html, {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" }
+    });
+  } catch (e) {
+    console.error('renderBlogPost error:', e);
     return null;
   }
+}
+
+// ─── Fallback prefix/suffix when ASSETS fetch fails ───
+function _fallbackPrefix(canonical, ogTitle, excerpt, title) {
+  const orgJson = JSON.stringify({"@context":"https://schema.org","@type":"ProfessionalService","name":"Beriklan.co.id","description":"Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","image":"https://beriklan.co.id/logoweb.webp","priceRange":"Rp 2.500.000 - Rp 10.000.000","telephone":"+62-22-XXXXXXX","address":{"@type":"PostalAddress","addressCountry":"ID","addressLocality":"Bandung","addressRegion":"Jawa Barat"},"areaServed":{"@type":"Country","name":"Indonesia"},"openingHours":"Mo-Sa 09:00-18:00","knowsAbout":["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]});
+  const org2Json = JSON.stringify({"@context":"https://schema.org","@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","description":"Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.","foundingDate":"2016","sameAs":["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id"]});
+  const gtm = '(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=\'https://www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);})(window,document,\'script\',\'dataLayer\',\'GTM-MJXSNCSD\');';
+  return `<!DOCTYPE html><html lang="id" class="scroll-smooth"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} — Blog Beriklan.co.id</title><meta name="description" content="${excerpt}"><meta name="robots" content="index,follow"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:url" content="${canonical}"><meta property="og:title" content="${ogTitle}"><meta property="og:description" content="${excerpt}"><meta property="og:image" content="https://beriklan.co.id/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="${canonical}"><meta name="twitter:title" content="${ogTitle}"><meta name="twitter:description" content="${excerpt}"><meta name="twitter:image" content="https://beriklan.co.id/og-image.png"><link rel="stylesheet" href="/fonts/fonts.css"><script type="application/ld+json">${orgJson}</script><script type="application/ld+json">${org2Json}</script><script>${gtm}</script></head><body class="font-sans text-primary bg-white antialiased"><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
+}
+function _fallbackSuffix() {
+  return `</body></html>`;
 }
 
 // P0.7 build-signature 2026-07-17T06:08:00Z  (forces redeploy)

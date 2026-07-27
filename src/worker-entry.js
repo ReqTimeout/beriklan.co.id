@@ -300,7 +300,15 @@ export default {
     // Dynamic blog posts: intercept before ASSETS so new slugs render immediately
     const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
     if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
-      const dynamic = await renderBlogPost(blogMatch[1], env);
+      const slug = blogMatch[1];
+      // Check if slug exists in generated_drafts
+      if (slug === "debug-check") {
+        const gd = await env.DB.prepare("SELECT slug, status, length(coalesce(content,'')) as clen, service, city, committed_at FROM generated_drafts ORDER BY id DESC LIMIT 3").all();
+        const pm = await env.DB.prepare("SELECT COUNT(*) as n FROM posts_meta").first();
+        const check = await env.DB.prepare("SELECT slug, status, length(coalesce(content,'')) as clen FROM generated_drafts WHERE slug=?").bind("harga-jasa-digital-marketing-di-bogor-2027").first();
+        return new Response(JSON.stringify({ recent: gd.results, posts_meta_count: pm?.n, specific: check }), { headers: { "Content-Type": "application/json" } });
+      }
+      const dynamic = await renderBlogPost(slug, env);
       if (dynamic) return dynamic;
     }
 

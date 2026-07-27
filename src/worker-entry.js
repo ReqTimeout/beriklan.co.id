@@ -310,6 +310,18 @@ export default {
       return await handlePostsIndex(env);
     }
 
+    // Dynamic sitemap-blog.xml — includes committed drafts from queue
+    if (path === "/sitemap-blog.xml") {
+      return await handleBlogSitemap(env);
+    }
+
+    // IndexNow trigger — submit new URLs
+    if (path === "/api/indexnow/submit" || path === "/api/indexnow/submit/") {
+      const token = new URL(request.url).searchParams.get("token");
+      if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+      return await handleIndexNowSubmit(request, env);
+    }
+
     // Static assets fallback
     try {
       // 1. Check _redirects (compiled at build time, inlined)
@@ -10229,6 +10241,71 @@ async function handlePostsIndex(env) {
     });
   } catch {
     return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Dynamic sitemap-blog.xml ───────────────────────────────────
+async function handleBlogSitemap(env) {
+  if (!env.DB) return new Response("DB unavailable", { status: 503 });
+  try {
+    const posts = await env.DB.prepare("SELECT slug, iso_date FROM posts_meta ORDER BY iso_date DESC").all();
+    const drafts = await env.DB.prepare("SELECT slug, committed_at FROM generated_drafts WHERE status='committed'").all();
+    const urls = [];
+    for (const p of (posts.results || [])) {
+      urls.push({ loc: p.slug, lastmod: p.iso_date });
+    }
+    for (const d of (drafts.results || [])) {
+      if (!urls.find(u => u.loc === d.slug)) {
+        urls.push({ loc: d.slug, lastmod: d.committed_at });
+      }
+    }
+    urls.sort((a, b) => (b.lastmod || '').localeCompare(a.lastmod || ''));
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url>
+    <loc>https://beriklan.co.id/blog/${escHtml(u.loc)}/</loc>
+    <lastmod>${escHtml((u.lastmod || '').slice(0, 10))}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('\n')}
+</urlset>`;
+    return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  } catch(e) {
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
+  }
+}
+
+// ─── IndexNow submit for new URLs ────────────────────────────────
+async function handleIndexNowSubmit(request, env) {
+  try {
+    const url = new URL(request.url);
+    const count = parseInt(url.searchParams.get("count")) || 50;
+    if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB unavailable" }), { headers: { "Content-Type": "application/json" } });
+    const now = new Date().toISOString().slice(0, 10);
+    const drafts = await env.DB.prepare(
+      "SELECT slug, committed_at FROM generated_drafts WHERE status='committed' AND committed_at >= ? ORDER BY committed_at DESC LIMIT ?"
+    ).bind(now, count).all();
+    const recentPosts = await env.DB.prepare(
+      "SELECT slug, iso_date FROM posts_meta WHERE iso_date >= ? ORDER BY iso_date DESC LIMIT ?"
+    ).bind(now, count).all();
+    const urls = [];
+    for (const d of (drafts.results || [])) urls.push(`https://beriklan.co.id/blog/${d.slug}/`);
+    for (const p of (recentPosts.results || [])) {
+      const slug = `https://beriklan.co.id/blog/${p.slug}/`;
+      if (!urls.includes(slug)) urls.push(slug);
+    }
+    const results = [];
+    for (const pageUrl of urls.slice(0, count)) {
+      try {
+        const resp = await fetch(`https://api.indexnow.org/indexnow?url=${encodeURIComponent(pageUrl)}&key=2dac33f6303f4041b9ec7e2f2910ea80`);
+        results.push({ url: pageUrl, status: resp.status });
+      } catch(e) {
+        results.push({ url: pageUrl, error: String(e).slice(0, 100) });
+      }
+    }
+    return new Response(JSON.stringify({ ok: true, submitted: results.length, results }), { headers: { "Content-Type": "application/json" } });
+  } catch(e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

@@ -1585,17 +1585,15 @@ async function handleAdminSyncPosts(request, env) {
     const publishedTodayR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
     const publishedToday = publishedTodayR?.n || 0;
 
-    // Calculate daily limit (ramp up from first draft)
+    // Calculate daily limit — user request: 15/jam
     const firstDraftR = await env.DB.prepare("SELECT MIN(created_at) as d FROM generated_drafts").first();
     const firstDraftDate = firstDraftR?.d ? new Date(firstDraftR.d) : new Date();
     const daysSinceStart = Math.floor((Date.now() - firstDraftDate.getTime()) / 86400000);
-    let dailyLimit = 20;
-    if (daysSinceStart > 30) dailyLimit = 400;
-    else if (daysSinceStart > 21) dailyLimit = 200;
-    else if (daysSinceStart > 14) dailyLimit = 100;
-    else if (daysSinceStart > 7) dailyLimit = 50;
+    let dailyLimit = 360;
+    if (daysSinceStart > 30) dailyLimit = 720;
+    else if (daysSinceStart > 14) dailyLimit = 480;
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
-    const batchSize = Math.min(2, remainingToday); // sebarlah 2 per jam, biar Google crawl santai
+    const batchSize = Math.min(15, remainingToday); // 15 per cron trigger
 
     // 1. Get drafts to publish (status='draft', limit = batchSize)
     const draftsToPublish = await env.DB.prepare(

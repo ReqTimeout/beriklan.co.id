@@ -310,6 +310,9 @@ export default {
         const all = await env.DB.prepare("SELECT slug, status, length(coalesce(content,'')) as clen FROM generated_drafts ORDER BY id DESC LIMIT 10").all();
         return new Response(JSON.stringify((all.results || [])), { headers: { "Content-Type": "application/json" } });
       }
+      if (slug === "test-render") {
+        return await renderBlogPostDebug("harga-jasa-digital-marketing-di-bogor-2027", env);
+      }
       const dynamic = await renderBlogPost(slug, env);
       if (dynamic) return dynamic;
     }
@@ -10353,6 +10356,47 @@ ${tagChips ? `<div class="tags">${tagChips}</div>` : ''}
     return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
   } catch {
     return null;
+  }
+}
+
+// Debug render — same as renderBlogPost but returns JSON with error info instead of HTML
+async function renderBlogPostDebug(slug, env) {
+  if (!env.DB) return new Response(JSON.stringify({error:"no DB"}), {headers:{"Content-Type":"application/json"}});
+  try {
+    let meta = await env.DB.prepare("SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city FROM posts_meta WHERE slug=?").bind(slug).first();
+    let content = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
+    if (!meta || !content?.content) {
+      const draft = await env.DB.prepare("SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE slug=? AND status='committed'").bind(slug).first();
+      if (draft) {
+        const draftContent = draft.content || '';
+        meta = {
+          slug: draft.slug, title: draft.title || '',
+          excerpt: draftContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 200),
+          date: draft.committed_at ? draft.committed_at.slice(0, 10) : '',
+          iso_date: draft.committed_at || '',
+          category: 'trending',
+          readTime: Math.max(1, Math.round(draftContent.split(/\s+/).length / 200)) + ' min',
+          tags: JSON.stringify([draft.service, draft.city].filter(Boolean)),
+          service: draft.service || '', city: draft.city || '',
+        };
+        content = { content: draftContent };
+      } else {
+        return new Response(JSON.stringify({error:"no draft found", slug, queries: "posts_meta+posts_content returned null, generated_drafts with status=committed returned null"}), {headers:{"Content-Type":"application/json"}});
+      }
+    }
+    const body = content?.content || '';
+    return new Response(JSON.stringify({
+      ok: true, slug,
+      meta_title: meta.title,
+      meta_excerpt_len: (meta.excerpt||'').length,
+      body_len: body.length,
+      body_first_100: body.replace(/<[^>]+>/g,'').slice(0,100),
+      category: meta.category,
+      readTime: meta.readTime,
+      tags: meta.tags
+    }), {headers:{"Content-Type":"application/json"}});
+  } catch(e) {
+    return new Response(JSON.stringify({error:String(e), stack:(e.stack||'').slice(0,500)}), {headers:{"Content-Type":"application/json"}});
   }
 }
 

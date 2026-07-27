@@ -10293,6 +10293,7 @@ async function renderBlogPost(slug, env) {
       datePublished: meta.iso_date || null,
       author: { "@type": "Organization", name: "Beriklan Digital Agency" }
     });
+    const body = content?.content || '';
 
     const html = `<!DOCTYPE html>
 <html lang="id">

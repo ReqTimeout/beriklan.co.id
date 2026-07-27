@@ -302,12 +302,19 @@ export default {
       return await handleImportDatabase(request, env);
     }
 
-    // Dynamic blog posts: intercept before ASSETS so new slugs render immediately
+    // Dynamic blog posts: NEW posts (no static Astro file) render via renderBlogPost.
+    // Old Astro-built posts fall through to env.ASSETS.fetch() so they keep the polished layout.
+    // This ensures consistent formatting across all single-post pages.
     const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
     if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
       const slug = blogMatch[1];
-      const dynamic = await renderBlogPost(slug, env);
-      if (dynamic) return dynamic;
+      const exists = await env.DB.prepare(
+        "SELECT 1 FROM generated_drafts WHERE slug=?"
+      ).bind(slug).first();
+      if (exists) {
+        const dynamic = await renderBlogPost(slug, env);
+        if (dynamic) return dynamic;
+      }
     }
 
     // Dynamic posts-index.json (daftar semua artikel untuk BlogFilter)

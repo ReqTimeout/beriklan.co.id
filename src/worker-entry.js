@@ -302,7 +302,12 @@ export default {
     if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
       const slug = blogMatch[1];
       if (slug === "dump-slugs") {
-        const all = await env.DB.prepare("SELECT slug, status FROM generated_drafts ORDER BY id DESC LIMIT 10").all();
+        const q = url.searchParams.get("q") || "";
+        if (q) {
+          const s = await env.DB.prepare("SELECT slug, status, length(coalesce(content,'')) as clen, service, city, committed_at, created_at FROM generated_drafts WHERE slug=?").bind(q).first();
+          return new Response(JSON.stringify({specific: s}), { headers: { "Content-Type": "application/json" } });
+        }
+        const all = await env.DB.prepare("SELECT slug, status, length(coalesce(content,'')) as clen FROM generated_drafts ORDER BY id DESC LIMIT 10").all();
         return new Response(JSON.stringify((all.results || [])), { headers: { "Content-Type": "application/json" } });
       }
       const dynamic = await renderBlogPost(slug, env);

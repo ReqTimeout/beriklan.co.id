@@ -1569,20 +1569,23 @@ async function handleAdminSyncPosts(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
-  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
   if (!env.DB) return new Response("DB not available", { status: 503 });
 
+  // Accept GET (cron-job.org, EasyCron) or POST
+  if (request.method !== "POST" && request.method !== "GET") {
+    return new Response("Method not allowed", { status: 405 });
+  }
   const t0 = Date.now();
   try {
     // 0. Gradual publish: ambil N draft dari generated_drafts (status='draft')
-    // Ramp: minggu 1 = 10/hari, minggu 2 = 20, minggu 3 = 30, minggu 4+ = 50
+    // Ramp: minggu 1 = 20/hari, minggu 2 = 50, minggu 3 = 100, minggu 4+ = 200, minggu 5+ = 400
     const draftCount = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first();
     const totalDrafts = draftCount?.n || 0;
     const todayStr = new Date().toISOString().slice(0, 10);
     const publishedTodayR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
     const publishedToday = publishedTodayR?.n || 0;
 
-    // Calculate daily limit (ramp up)
+    // Calculate daily limit (ramp up from first draft)
     const firstDraftR = await env.DB.prepare("SELECT MIN(created_at) as d FROM generated_drafts").first();
     const firstDraftDate = firstDraftR?.d ? new Date(firstDraftR.d) : new Date();
     const daysSinceStart = Math.floor((Date.now() - firstDraftDate.getTime()) / 86400000);

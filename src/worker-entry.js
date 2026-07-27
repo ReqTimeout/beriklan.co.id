@@ -1450,29 +1450,36 @@ async function handleQueueRefill(request, env) {
       const shardText = await shardObj.text();
       const lines = shardText.split('\n').filter(l => l.trim());
       let lineNum = cursor.line;
+      const batch = [];
+      const INSERT_SQL = "INSERT OR IGNORE INTO generated_drafts (slug, title, content, service, city, source, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'draft', datetime('now'))";
 
       while (lineNum < lines.length && totalInserted < maxInsert) {
         try {
           const entry = JSON.parse(lines[lineNum]);
           if (entry.slug && entry.title && entry.content) {
-            // INSERT OR IGNORE to skip duplicates
-            await env.DB.prepare(
-              "INSERT OR IGNORE INTO generated_drafts (slug, title, content, service, city, source, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'draft', datetime('now'))"
-            ).bind(
-              entry.slug,
-              entry.title,
-              entry.content,
-              entry.service || '',
-              entry.city || '',
-              entry.source || 'r2-queue'
-            ).run();
+            batch.push(
+              env.DB.prepare(INSERT_SQL).bind(
+                entry.slug, entry.title, entry.content,
+                entry.service || '', entry.city || '', entry.source || 'r2-queue'
+              )
+            );
             inserted++;
             totalInserted++;
           }
         } catch (e) {
           errors.push(`line ${lineNum} shard ${cursor.shard}: ${e.message.slice(0, 100)}`);
         }
+        // Flush every 500 to stay under 1000 subrequest limit
+        if (batch.length >= 500) {
+          await env.DB.batch(batch);
+          batch.length = 0;
+        }
         lineNum++;
+      }
+
+      // Flush remaining
+      if (batch.length > 0) {
+        await env.DB.batch(batch);
       }
 
       // Update cursor

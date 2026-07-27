@@ -10191,10 +10191,32 @@ ${(users.results||[]).map(u => `<tr><td>${u.id}</td><td>${escHtml(u.name)}</td><
 async function handlePostsIndex(env) {
   if (!env.DB) return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
   try {
-    const posts = await env.DB.prepare(
+    const existing = await env.DB.prepare(
       "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, featured FROM posts_meta ORDER BY iso_date DESC"
     ).all();
-    return new Response(JSON.stringify(posts.results || []), {
+    const committed = await env.DB.prepare(
+      "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE status='committed'"
+    ).all();
+    const map = new Map();
+    for (const p of (existing.results || [])) map.set(p.slug, p);
+    for (const d of (committed.results || [])) {
+      if (!map.has(d.slug)) {
+        const content = d.content || '';
+        const excerpt = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 200);
+        map.set(d.slug, {
+          slug: d.slug,
+          title: d.title || '',
+          excerpt: excerpt,
+          date: d.committed_at ? d.committed_at.slice(0, 10) : '',
+          iso_date: d.committed_at || '',
+          category: 'trending',
+          readTime: Math.max(1, Math.round(content.split(/\s+/).length / 200)) + ' min',
+          tags: [d.service, d.city].filter(Boolean),
+          featured: 0,
+        });
+      }
+    }
+    return new Response(JSON.stringify(Array.from(map.values())), {
       headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" }
     });
   } catch {
@@ -10206,14 +10228,36 @@ async function handlePostsIndex(env) {
 async function renderBlogPost(slug, env) {
   if (!env.DB) return null;
   try {
-    const meta = await env.DB.prepare(
+    let meta = await env.DB.prepare(
       "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city FROM posts_meta WHERE slug=?"
     ).bind(slug).first();
-    if (!meta) return null;
-    const content = await env.DB.prepare(
+    let content = await env.DB.prepare(
       "SELECT content FROM posts_content WHERE slug=?"
     ).bind(slug).first();
-    const body = content?.content || "<p>Konten tidak tersedia.</p>";
+    // Fallback: check committed drafts if not in posts_meta yet
+    if (!meta || !content?.content) {
+      const draft = await env.DB.prepare(
+        "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE slug=? AND status='committed'"
+      ).bind(slug).first();
+      if (draft) {
+        const draftContent = draft.content || '';
+        meta = {
+          slug: draft.slug,
+          title: draft.title || '',
+          excerpt: draftContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 200),
+          date: draft.committed_at ? draft.committed_at.slice(0, 10) : '',
+          iso_date: draft.committed_at || '',
+          category: 'trending',
+          readTime: Math.max(1, Math.round(draftContent.split(/\s+/).length / 200)) + ' min',
+          tags: JSON.stringify([draft.service, draft.city].filter(Boolean)),
+          service: draft.service || '',
+          city: draft.city || '',
+        };
+        content = { content: draftContent };
+      } else {
+        return null;
+      }
+    }
     let tags = [];
     try { tags = JSON.parse(meta.tags || '[]'); } catch {}
     const tagChips = tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join(' ');

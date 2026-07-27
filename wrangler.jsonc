@@ -9,6 +9,12 @@
       "database_id": "0e71d6e3-231f-40a1-ac6b-6defc3976efd"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "QUEUE",
+      "bucket_name": "idberiklan"
+    }
+  ],
   "ai": {
     "binding": "AI"
   },

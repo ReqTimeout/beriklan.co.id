@@ -54,6 +54,9 @@ export default {
     if (path === "/api/admin/sync/posts" || path === "/api/admin/sync/posts/") {
       return await handleAdminSyncPosts(request, env);
     }
+    if (path === "/api/admin/queue/refill" || path === "/api/admin/queue/refill/") {
+      return await handleQueueRefill(request, env);
+    }
     if (path.startsWith("/api/admin/campaigns/") && path.endsWith("/metrics")) {
       const id = parseInt(path.split("/")[4]);
       return await handleCampaignMetrics(request, id, env);
@@ -245,6 +248,9 @@ export default {
     }
     if (path === "/api/admin/keywords/seed" || path === "/api/admin/keywords/seed/") {
       return await handleAdminSeedKeywords(request, env);
+    }
+    if (path === "/api/admin/keywords/expand" || path === "/api/admin/keywords/expand/") {
+      return await handleAdminKeywordExpand(request, env);
     }
     if (path === "/api/admin" || path === "/api/admin/") {
       // P0.4 Admin Dashboard HTML
@@ -459,7 +465,7 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     const cronMap = {
-      "0 * * * *":     { cronName: "hourly", handler: handleHourlyGenerate, path: "/api/cron/hourly-generate?token=beriklan-admin-2026&count=3&mode=draft" },
+      "0 * * * *":     { cronName: "hourly", handler: handleHourlyGenerate, path: "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft" },
       "15 * * * *":    { cronName: "indexnow", handler: handleIndexNowCron, path: "/api/cron/indexnow?token=beriklan-admin-2026&count=50" },
       "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: "/api/cron/scrape/indonetwork?token=beriklan-admin-2026" },
       "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: "/api/cron/scrape/google-places?token=beriklan-admin-2026" },
@@ -479,7 +485,8 @@ export default {
     } else if (cron === "0 0 * * 1") {
       ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
     } else if (cron === "0 1 * * *") {
-      // Daily 01:00 UTC: sync D1 posts → posts.json → commit GitHub
+      // Daily 01:00 UTC: refill D1 buffer from R2 queue, then sync posts
+      ctx.waitUntil(run("queue-refill", handleQueueRefill, "/api/admin/queue/refill?token=beriklan-admin-2026", "sync-posts"));
       ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
     } else if (cron === "0 3 * * *") {
       // Daily 03:00 UTC: seed new keywords for all services (catches up with market trends)
@@ -866,6 +873,15 @@ async function commitAll() {
   }
 }
 
+// ─── WIB (Asia/Jakarta) publish timestamp — display date never ahead of "now" ───
+function wibPublishStamp() {
+  const d = new Date();
+  return {
+    date: d.toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric" }),
+    iso: d.toISOString(),
+  };
+}
+
 // ─── Admin Drafts Commit — push pending drafts to GitHub ───
 async function handleAdminDraftsCommit(request, env) {
   const url = new URL(request.url);
@@ -930,8 +946,8 @@ async function handleAdminDraftsCommit(request, env) {
             title: draft.title,
             excerpt: (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200),
             content: draft.content,
-            date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " "),
-            iso_date: new Date().toISOString(),
+            date: wibPublishStamp().date,
+            iso_date: wibPublishStamp().iso,
             category: "trending",
             readTime: Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min",
             tags: [draft.service].filter(Boolean),
@@ -940,7 +956,7 @@ async function handleAdminDraftsCommit(request, env) {
             trending: true,
             service: draft.service,
             city: draft.city,
-            publish_date: new Date().toLocaleDateString("en-GB"),
+            publish_date: wibPublishStamp().date,
           };
           posts.unshift(newPost);
         }
@@ -1374,6 +1390,134 @@ async function handleCampaignMetrics(request, id, env) {
 }
 
 
+// ─── Admin: Queue Refill — load drafts from R2 shard into D1 buffer ────
+// Called at start of "0 1 * * *" cron (before handleAdminSyncPosts)
+// Buffer ≤ 2000 draft. Cursor in cron_settings (key: queue_cursor, format: {shard:N,line:M})
+async function handleQueueRefill(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+  if (!env.QUEUE) return new Response("R2 QUEUE binding not available", { status: 503 });
+
+  const t0 = Date.now();
+  const errors = [];
+  let inserted = 0;
+
+  try {
+    // 1. Check current buffer
+    const draftCountR = await env.DB.prepare(
+      "SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'"
+    ).first();
+    const draftCount = draftCountR?.n || 0;
+
+    if (draftCount >= 1000) {
+      return new Response(JSON.stringify({
+        ok: true,
+        message: "buffer sufficient",
+        buffer_count: draftCount,
+        inserted: 0,
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2. Get cursor from cron_settings
+    let cursor = { shard: 0, line: 0 };
+    const cursorR = await env.DB.prepare(
+      "SELECT value FROM cron_settings WHERE name='queue_cursor'"
+    ).first();
+    if (cursorR?.value) {
+      try {
+        cursor = JSON.parse(cursorR.value);
+      } catch {
+        cursor = { shard: 0, line: 0 };
+      }
+    }
+
+    // 3. Read shard from R2 and insert until buffer ~2000 or shards exhausted
+    const maxInsert = 2000 - draftCount;
+    let totalInserted = 0;
+
+    while (totalInserted < maxInsert && cursor.shard < 78) {
+      const shardKey = `publish-queue/queue_${String(cursor.shard).padStart(5, '0')}.ndjson`;
+      const shardObj = await env.QUEUE.get(shardKey);
+      if (!shardObj) {
+        errors.push(`shard ${cursor.shard} not found in R2`);
+        cursor.shard++;
+        cursor.line = 0;
+        continue;
+      }
+
+      const shardText = await shardObj.text();
+      const lines = shardText.split('\n').filter(l => l.trim());
+      let lineNum = cursor.line;
+
+      while (lineNum < lines.length && totalInserted < maxInsert) {
+        try {
+          const entry = JSON.parse(lines[lineNum]);
+          if (entry.slug && entry.title && entry.content) {
+            // INSERT OR IGNORE to skip duplicates
+            await env.DB.prepare(
+              "INSERT OR IGNORE INTO generated_drafts (slug, title, content, service, city, source, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'draft', datetime('now'))"
+            ).bind(
+              entry.slug,
+              entry.title,
+              entry.content,
+              entry.service || '',
+              entry.city || '',
+              entry.source || 'r2-queue'
+            ).run();
+            inserted++;
+            totalInserted++;
+          }
+        } catch (e) {
+          errors.push(`line ${lineNum} shard ${cursor.shard}: ${e.message.slice(0, 100)}`);
+        }
+        lineNum++;
+      }
+
+      // Update cursor
+      if (lineNum >= lines.length) {
+        cursor.shard++;
+        cursor.line = 0;
+      } else {
+        cursor.line = lineNum;
+      }
+
+      // Save cursor after each shard
+      await env.DB.prepare(
+        "INSERT INTO cron_settings (name, value, updated_at) VALUES ('queue_cursor', ?, datetime('now')) ON CONFLICT(name) DO UPDATE SET value=excluded.value, updated_at=datetime('now')"
+      ).bind(JSON.stringify(cursor)).run();
+
+      // If buffer is full, stop
+      if (totalInserted >= maxInsert) break;
+    }
+
+    // 4. If all shards exhausted, mark done
+    if (cursor.shard >= 78) {
+      await env.DB.prepare(
+        "INSERT INTO cron_settings (name, value, updated_at) VALUES ('queue_cursor', 'done', datetime('now')) ON CONFLICT(name) DO UPDATE SET value='done', updated_at=datetime('now')"
+      ).run();
+    }
+
+    return new Response(JSON.stringify({
+      ok: true,
+      buffer_count: draftCount,
+      inserted: totalInserted,
+      cursor: cursor,
+      elapsed_ms: Date.now() - t0,
+      errors: errors.slice(0, 10),
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({
+      ok: false,
+      error: String(e),
+      inserted: inserted,
+      elapsed_ms: Date.now() - t0,
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+
 // ─── Admin: Sync posts_meta → posts.json → commit GitHub → re-deploy ────
 async function handleAdminSyncPosts(request, env) {
   const url = new URL(request.url);
@@ -1384,7 +1528,42 @@ async function handleAdminSyncPosts(request, env) {
 
   const t0 = Date.now();
   try {
-    // 1. Read ALL posts_meta from D1
+    // 0. Gradual publish: ambil N draft dari generated_drafts (status='draft')
+    // Ramp: minggu 1 = 10/hari, minggu 2 = 20, minggu 3 = 30, minggu 4+ = 50
+    const draftCount = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first();
+    const totalDrafts = draftCount?.n || 0;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const publishedTodayR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
+    const publishedToday = publishedTodayR?.n || 0;
+
+    // Calculate daily limit (ramp up)
+    const firstDraftR = await env.DB.prepare("SELECT MIN(created_at) as d FROM generated_drafts").first();
+    const firstDraftDate = firstDraftR?.d ? new Date(firstDraftR.d) : new Date();
+    const daysSinceStart = Math.floor((Date.now() - firstDraftDate.getTime()) / 86400000);
+    let dailyLimit = 20;
+    if (daysSinceStart > 30) dailyLimit = 400;
+    else if (daysSinceStart > 21) dailyLimit = 200;
+    else if (daysSinceStart > 14) dailyLimit = 100;
+    else if (daysSinceStart > 7) dailyLimit = 50;
+    const remainingToday = Math.max(0, dailyLimit - publishedToday);
+
+    // 1. Get drafts to publish (status='draft', limit = remainingToday)
+    const draftsToPublish = await env.DB.prepare(
+      "SELECT slug, title, content, service, city FROM generated_drafts WHERE status='draft' ORDER BY id ASC LIMIT ?"
+    ).bind(remainingToday).all();
+    const drafts = draftsToPublish.results || [];
+
+    if (drafts.length === 0) {
+      return new Response(JSON.stringify({
+        ok: true,
+        message: "No drafts to publish",
+        total_drafts: totalDrafts,
+        published_today: publishedToday,
+        daily_limit: dailyLimit,
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 2. Read ALL posts_meta from D1
     const all = await env.DB.prepare(`
       SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated
       FROM posts_meta
@@ -1400,16 +1579,17 @@ async function handleAdminSyncPosts(request, env) {
       featured: p.featured === 1 || p.featured === true,
     }));
 
-    // 2. Cap future dates
+    // 3. Cap future dates
     const nowIso = new Date().toISOString();
+    const nowWibDate = wibPublishStamp().date;
     for (const p of posts) {
       if (!p.iso_date || p.iso_date > nowIso) {
         p.iso_date = nowIso;
-        p.date = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " ");
+        p.date = nowWibDate;
       }
     }
 
-    // 3. Get current posts.json from GitHub (root) for merge
+    // 4. Get current posts.json from GitHub
     const owner = "ReqTimeout";
     const repo = "beriklan.co.id";
     const filePath = "src/data/posts.json";
@@ -1428,13 +1608,58 @@ async function handleAdminSyncPosts(request, env) {
           existing = JSON.parse(atob(fd.content.replace(/\n/g, "")));
         }
       }
-    } catch (e) { /* fallback to D1 only */ }
+    } catch (e) {}
 
-    // 4. Merge: D1 takes priority (newer iso_date), existing fills gaps
-    const merged = new Map();
-    for (const p of existing) merged.set(p.slug, p);
-    for (const p of posts) merged.set(p.slug, p);
-    const finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+     // 5. Merge: existing + D1 + new drafts
+     const merged = new Map();
+     for (const p of existing) merged.set(p.slug, p);
+     for (const p of posts) merged.set(p.slug, p);
+
+     // ─── Self-check (§3.4) — reject invalid drafts ────
+     let rejected = 0;
+     let committed = 0;
+     let failed = 0;
+     const safeDrafts = [];
+     for (const draft of drafts) {
+       const c = draft.content || "";
+       const title = draft.title || "";
+       if (!title || c.length < 1000
+         || c.includes("<h1") || c.includes("<!DOCTYPE") || c.includes("<script")
+         || /\bdi\s{2,}|\bdi\s*(<\/|[.,])/.test(c)) {
+         try {
+           await env.DB.prepare(
+             "UPDATE generated_drafts SET status='rejected' WHERE slug=?"
+           ).bind(draft.slug).run();
+           rejected++;
+         } catch {}
+         continue;
+       }
+       safeDrafts.push(draft);
+     }
+
+     // Add new drafts as posts
+     for (const draft of safeDrafts) {
+       if (!merged.has(draft.slug)) {
+         const dateStr = wibPublishStamp().date;
+         merged.set(draft.slug, {
+           slug: draft.slug,
+           title: draft.title,
+           excerpt: (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200),
+           content: draft.content,
+           date: dateStr,
+           iso_date: nowIso,
+           category: "trending",
+           readTime: Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min",
+           tags: [draft.service, draft.city].filter(Boolean),
+           featured: false,
+           generated: true,
+           service: draft.service,
+           city: draft.city,
+           publish_date: dateStr,
+         });
+       }
+     }
+     const finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
 
     // 5. Commit to GitHub
     let commitResult = null;
@@ -1461,6 +1686,14 @@ async function handleAdminSyncPosts(request, env) {
         if (putResp.ok) {
           const d = await putResp.json();
           commitResult = { ok: true, sha: d.commit?.sha, url: d.content?.html_url };
+           // Mark drafts as committed
+           for (const draft of safeDrafts) {
+             try {
+               await env.DB.prepare(
+                 "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
+               ).bind(draft.slug).run();
+             } catch {}
+           }
         } else {
           const errBody = await putResp.text();
           commitResult = { ok: false, status: putResp.status, body: errBody.slice(0, 200) };
@@ -1482,7 +1715,7 @@ async function handleAdminSyncPosts(request, env) {
 
         // Get all slugs from final posts.json that look like blog posts
         const candidates = finalPosts
-          .filter(p => p.get('generated') && p.get('slug'))
+          .filter(p => p.generated && p.slug)
           .slice(0, 200); // cap per run to avoid huge insert
 
         for (const p of candidates) {
@@ -1502,19 +1735,53 @@ async function handleAdminSyncPosts(request, env) {
       }
     }
 
-    return new Response(JSON.stringify({
-      ok: true,
-      total_in_d1: posts.length,
-      existing_in_git: existing.length,
-      final_count: finalPosts.length,
-      commit: commitResult,
-      auto_index_enqueued: enqueued,
-      elapsed_ms: Date.now() - t0,
-    }, null, 2), { headers: { "Content-Type": "application/json" } });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
-  }
-}
+     // ─── Alert email if publish failed or empty (§3.5) ────
+     try {
+       const needsAlert = (safeDrafts.length === 0 && totalDrafts > 0) || failed > 0;
+       if (needsAlert && env.RESEND_API_KEY) {
+         const alertHtml = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto;background:#f9fafb;">
+ <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;border-radius:8px;margin-bottom:16px;">
+ <h2 style="color:#d97706;margin:0 0 8px;">⚠️ Beriklan Sync Posts Alert</h2>
+ <p style="margin:0;color:#78350f;">Sync posts run at ${new Date().toISOString()} dengan issue berikut:</p>
+ </div>
+ <h3 style="color:#0f1e3d;margin:20px 0 8px;font-size:15px;">Ringkasan</h3>
+ <table style="width:100%;border-collapse:collapse;font-size:13px;">
+ <tr><td style="padding:6px 0;color:#6b7280;width:180px;">Drafts pending</td><td>${totalDrafts}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Published today</td><td>${publishedToday}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Safe drafts this run</td><td>${safeDrafts.length}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Rejected (self-check)</td><td>${rejected}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Commit failed</td><td>${failed > 0 ? 'YES' : 'no'}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Daily limit</td><td>${dailyLimit}</td></tr>
+ <tr><td style="padding:6px 0;color:#6b7280;">Commit result</td><td>${commitResult ? JSON.stringify(commitResult).slice(0, 300) : 'no commit'}</td></tr>
+ </table>
+ <p style="margin-top:24px;font-size:12px;color:#6b7280;">Dikirim otomatis oleh cron sync-posts di beriklan.co.id.</p>
+ </body></html>`;
+         await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan sync-posts ${safeDrafts.length === 0 && totalDrafts > 0 ? "0 published" : "failed"}, pending: ${totalDrafts}`, alertHtml, "alert-syncposts-" + Date.now());
+       }
+     } catch (alertErr) {
+       console.error("[sync-posts] alert email error:", String(alertErr).slice(0, 200));
+     }
+
+     return new Response(JSON.stringify({
+       ok: true,
+       total_in_d1: posts.length,
+       existing_in_git: existing.length,
+       final_count: finalPosts.length,
+       commit: commitResult,
+       auto_index_enqueued: enqueued,
+       published_this_run: safeDrafts.length,
+       published_today: publishedToday + safeDrafts.length,
+       daily_limit: dailyLimit,
+       remaining_today: Math.max(0, dailyLimit - publishedToday - safeDrafts.length),
+       total_drafts_pending: totalDrafts,
+       total_rejected: rejected,
+       elapsed_ms: Date.now() - t0,
+     }, null, 2), { headers: { "Content-Type": "application/json" } });
+   } catch (e) {
+     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
+   }
+ }
+
 
 
 // ─── Admin: Send test alert email ────────────────────────────────
@@ -1563,6 +1830,150 @@ async function handleTestAlert(request, env) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
+
+
+// ─── Admin: Keyword Expansion (Phase 1) — mass insert ke D1 ────
+// 9 industri × 10 layanan × 25 kota + question/comparison/pain + View Live
+async function handleAdminKeywordExpand(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const t0 = Date.now();
+  const layer = url.searchParams.get("layer") || "all"; // all, industri, question, comparison, pain, view-live
+  let inserted = 0;
+  let skipped = 0;
+  let errors = [];
+
+  const SERVICES = [
+    "jasa-iklan-facebook", "jasa-iklan-instagram", "jasa-iklan-tiktok",
+    "jasa-iklan-google", "jasa-iklan-youtube", "jasa-kelola-instagram",
+    "jasa-kelola-tiktok", "jasa-pembuatan-website", "jasa-pembuatan-landing-page",
+    "jasa-digital-marketing"
+  ];
+  const SERVICE_NAMES = {
+    "jasa-iklan-facebook": "facebook ads", "jasa-iklan-instagram": "instagram ads",
+    "jasa-iklan-tiktok": "tiktok ads", "jasa-iklan-google": "google ads",
+    "jasa-iklan-youtube": "youtube ads", "jasa-kelola-instagram": "kelola instagram",
+    "jasa-kelola-tiktok": "kelola tiktok", "jasa-pembuatan-website": "pembuatan website",
+    "jasa-pembuatan-landing-page": "landing page", "jasa-digital-marketing": "digital marketing"
+  };
+  const CITIES = ["jakarta","bandung","surabaya","medan","semarang","makassar","palembang","tangerang","depok","bekasi","bogor","batam","pekanbaru","denpasar","yogyakarta","malang","solo","balikpapan","samarinda","pontianak","banjarmasin","manado","padang","sidoarjo","cikarang"];
+  const INDUSTRIES = ["e-commerce","properti","pendidikan","kesehatan","fnb","fashion","travel","otomotif","jasa-profesional"];
+  const INDUSTRY_NAMES = {"e-commerce":"online shop","properti":"properti","pendidikan":"pendidikan","kesehatan":"klinik","fnb":"restoran","fashion":"fashion","travel":"travel","otomotif":"otomotif","jasa-profesional":"jasa profesional"};
+  const VIEW_LIVE_PLATFORMS = ["tiktok","shopee","youtube","instagram","twitch"];
+  const VIEW_LIVE_SEGMENTS = ["seller","fashion-beauty","fnb","gaming","brand-event","affiliate"];
+  const SEGMENT_NAMES = {"seller":"live commerce seller","fashion-beauty":"fashion & beauty live","fnb":"kuliner live","gaming":"gaming streamer","brand-event":"brand launching","affiliate":"affiliate creator"};
+
+  // Helper: insert keyword to D1 with dedupe
+  async function addKw(keyword, service, city, intent, priority) {
+    const slug = keyword.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+    const id = `exp-${slug}-${Math.random().toString(36).slice(2, 6)}`;
+    try {
+      const existing = await env.DB.prepare("SELECT id FROM keyword_queue WHERE keyword = ? OR keyword_normalized = ?").bind(keyword, keyword.toLowerCase()).first();
+      if (existing) { skipped++; return; }
+      await env.DB.prepare(
+        "INSERT INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent) VALUES (?, ?, ?, ?, ?, datetime('now'), 'pending', ?, ?, ?, ?)"
+      ).bind(id, keyword, keyword.toLowerCase(), "expand_v2", keyword.toLowerCase(), service, city, priority || 50, intent || "informational").run();
+      inserted++;
+    } catch (e) { if (!errors.includes(e.message.slice(0, 80))) errors.push(e.message.slice(0, 80)); }
+  }
+
+  // Layer: industri × layanan × kota
+  if (layer === "all" || layer === "industri") {
+    for (const svc of SERVICES) {
+      const svcName = SERVICE_NAMES[svc];
+      for (const ind of INDUSTRIES) {
+        const indName = INDUSTRY_NAMES[ind];
+        // industri × layanan (no city)
+        await addKw(`jasa ${svcName} untuk ${indName}`, svc, null, "commercial", 70);
+        // industri × kota (digital marketing only — umbrella)
+        if (svc === "jasa-digital-marketing") {
+          for (const city of CITIES.slice(0, 15)) {
+            await addKw(`jasa digital marketing untuk ${indName} di ${city}`, svc, city, "commercial", 65);
+          }
+        }
+      }
+    }
+  }
+
+  // Layer: question (apa/bagaimana/berapa/kenapa)
+  if (layer === "all" || layer === "question") {
+    const questionTemplates = [
+      "apa itu {svc}", "bagaimana cara {svc}", "berapa biaya {svc}",
+      "kenapa harus pakai {svc}", "tips memilih {svc}", "cara kerja {svc}"
+    ];
+    for (const svc of SERVICES) {
+      const svcName = SERVICE_NAMES[svc];
+      for (const tmpl of questionTemplates) {
+        const kw = tmpl.replace("{svc}", svcName);
+        await addKw(kw, svc, null, "question", 60);
+        // + kota (top 10)
+        for (const city of CITIES.slice(0, 10)) {
+          await addKw(`${kw} di ${city}`, svc, city, "question", 55);
+        }
+      }
+    }
+  }
+
+  // Layer: comparison (A vs B)
+  if (layer === "all" || layer === "comparison") {
+    const pairs = [
+      ["facebook ads", "google ads", "jasa-iklan-facebook"],
+      ["instagram ads", "tiktok ads", "jasa-iklan-instagram"],
+      ["facebook ads", "tiktok ads", "jasa-iklan-facebook"],
+      ["google ads", "youtube ads", "jasa-iklan-google"],
+      ["kelola instagram", "kelola tiktok", "jasa-kelola-instagram"],
+    ];
+    for (const [a, b, svc] of pairs) {
+      await addKw(`${a} vs ${b}`, svc, null, "comparison", 65);
+      await addKw(`${a} atau ${b}`, svc, null, "comparison", 60);
+      for (const city of CITIES.slice(0, 8)) {
+        await addKw(`${a} vs ${b} di ${city}`, svc, city, "comparison", 55);
+      }
+    }
+  }
+
+  // Layer: pain-point (boncos/tidak closing/rugi)
+  if (layer === "all" || layer === "pain") {
+    const painTemplates = [
+      "{svc} boncos", "iklan {svc} tidak closing", "budget {svc} terbuang",
+      "roas rendah {svc}", "{svc} sepi viewers"
+    ];
+    for (const svc of SERVICES) {
+      const svcName = SERVICE_NAMES[svc];
+      for (const tmpl of painTemplates) {
+        const kw = tmpl.replace("{svc}", svcName);
+        await addKw(kw, svc, null, "pain-point", 70);
+      }
+    }
+  }
+
+  // Layer: View Live (5 platform × 6 segmen × 25 kota)
+  if (layer === "all" || layer === "view-live") {
+    for (const platform of VIEW_LIVE_PLATFORMS) {
+      for (const seg of VIEW_LIVE_SEGMENTS) {
+        const segName = SEGMENT_NAMES[seg];
+        await addKw(`jasa view live ${platform} untuk ${segName}`, "jasa-view-live-tiktok", null, "commercial", 75);
+        // + kota (top 15)
+        for (const city of CITIES.slice(0, 15)) {
+          await addKw(`jasa view live ${platform} ${segName} di ${city}`, "jasa-view-live-tiktok", city, "commercial", 70);
+        }
+        // pain: "live sepi viewers"
+        await addKw(`live ${platform} sepi viewers untuk ${segName}`, "jasa-view-live-tiktok", null, "pain-point", 75);
+      }
+    }
+  }
+
+  return new Response(JSON.stringify({
+    ok: true, layer, inserted, skipped,
+    errors: errors.length ? errors.slice(0, 3) : undefined,
+    elapsed_ms: Date.now() - t0,
+  }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
 
 // ─── Admin: Reset email queue (failed → pending) ────────────────
 async function handleEmailQueueReset(request, env) {
@@ -4438,11 +4849,11 @@ async function handleIndexNowCron(request, env) {
   }
 
   // 2. Submit to IndexNow (api.indexnow.org — single endpoint reaches all engines: Bing, Yandex, DuckDuckGo, etc.)
-  const INDEXNOW_KEY = "2f22c16be9437a90ad2285a4af043e10";
+  const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
   const payload = {
     host: "beriklan.co.id",
     key: INDEXNOW_KEY,
-    keyLocation: `https://beriklan.co.id/2f22c16be9437a90ad2285a4af043e10.txt`,
+    keyLocation: `https://beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt`,
     urlList: urls.map(u => u.url),
   };
 
@@ -5297,7 +5708,7 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
 
           // Add if not exists
           if (!posts.find(p => p.slug === slug)) {
-            const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).replace(/ /g, " ");
+            const dateStr = wibPublishStamp().date;
             const excerpt = article.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200);
             const newPost = {
               slug,
@@ -5630,16 +6041,19 @@ async function handleHourlyGenerate(request, env) {
       const qr = await env.DB.prepare(
         "SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug FROM keyword_queue WHERE status = 'pending' AND (article_slug IS NULL OR article_slug = '') ORDER BY priority_score DESC LIMIT ?"
       ).bind(count).all();
-      pending = (qr.results || []).map(r => ({
-        slug: r.id,
-        keyword: r.keyword,
-        keyword_normalized: r.keyword_normalized,
-        service: r.service,
-        city: r.city,
-        priority_score: r.priority_score,
-        intent: r.intent,
-        article_slug: r.article_slug,
-      }));
+      pending = (qr.results || []).map(r => {
+        const slug = (r.keyword || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+        return {
+          slug: r.id || slug,
+          keyword: r.keyword,
+          keyword_normalized: r.keyword_normalized,
+          service: r.service,
+          city: r.city,
+          priority_score: r.priority_score,
+          intent: r.intent,
+          article_slug: r.article_slug,
+        };
+      });
       // Get total pending count
       const tc = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status = 'pending'").first();
       queueTotal = tc?.n || 0;

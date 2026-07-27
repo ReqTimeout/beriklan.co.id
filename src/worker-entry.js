@@ -1420,18 +1420,18 @@ async function handleQueueRefill(request, env) {
       }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // 2. Get cursor from cron_settings
-    let cursor = { shard: 0, line: 0 };
-    const cursorR = await env.DB.prepare(
-      "SELECT value FROM cron_settings WHERE name='queue_cursor'"
-    ).first();
-    if (cursorR?.value) {
-      try {
-        cursor = JSON.parse(cursorR.value);
-      } catch {
-        cursor = { shard: 0, line: 0 };
-      }
-    }
+     // 2. Get cursor from cron_settings (stored in cron column as JSON for queue_cursor)
+     let cursor = { shard: 0, line: 0 };
+     try {
+       const cursorR = await env.DB.prepare(
+         "SELECT cron FROM cron_settings WHERE name='queue_cursor'"
+       ).first();
+       if (cursorR?.cron) {
+         cursor = JSON.parse(cursorR.cron);
+       }
+     } catch {
+       cursor = { shard: 0, line: 0 };
+     }
 
     // 3. Read shard from R2 and insert until buffer ~2000 or shards exhausted
     const maxInsert = 2000 - draftCount;
@@ -1485,7 +1485,7 @@ async function handleQueueRefill(request, env) {
 
       // Save cursor after each shard
       await env.DB.prepare(
-        "INSERT INTO cron_settings (name, value, updated_at) VALUES ('queue_cursor', ?, datetime('now')) ON CONFLICT(name) DO UPDATE SET value=excluded.value, updated_at=datetime('now')"
+        "INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('queue_cursor', ?, 1, 'Publish queue cursor') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron"
       ).bind(JSON.stringify(cursor)).run();
 
       // If buffer is full, stop
@@ -1495,7 +1495,7 @@ async function handleQueueRefill(request, env) {
     // 4. If all shards exhausted, mark done
     if (cursor.shard >= 78) {
       await env.DB.prepare(
-        "INSERT INTO cron_settings (name, value, updated_at) VALUES ('queue_cursor', 'done', datetime('now')) ON CONFLICT(name) DO UPDATE SET value='done', updated_at=datetime('now')"
+        "INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('queue_cursor', 'done', 1, 'Publish queue cursor') ON CONFLICT(name) DO UPDATE SET cron='done'"
       ).run();
     }
 

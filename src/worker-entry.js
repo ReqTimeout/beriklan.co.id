@@ -11,7 +11,7 @@ import { matchRedirect } from "./redirects.generated.mjs";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const path = url.pathname;
+    const path = url.pathname.toLowerCase();
     const hostname = url.hostname || request.headers.get("Host") || "";
 
     // scrape.beriklan.co.id — consumer-facing scraping trial
@@ -53,6 +53,11 @@ export default {
     }
     if (path === "/api/admin/sync/posts" || path === "/api/admin/sync/posts/") {
       return await handleAdminSyncPosts(request, env);
+    }
+    if (path === "/api/admin/publish" || path === "/api/admin/publish/") {
+      const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/admin/publish", 60, 3600);
+      if (!rl.allowed) return new Response(JSON.stringify({ ok: false, error: "Rate limit exceeded" }), { status: 429, headers: { "Content-Type": "application/json" } });
+      return await handlePublishDashboard(request, env);
     }
     if (path === "/api/admin/queue/refill" || path === "/api/admin/queue/refill/") {
       return await handleQueueRefill(request, env);
@@ -530,6 +535,9 @@ export default {
     } else if (cron === "0 3 * * *") {
       // Daily 03:00 UTC: seed new keywords for all services (catches up with market trends)
       ctx.waitUntil(run("seed-keywords", handleAdminSeedKeywords, "/api/admin/keywords/seed?token=beriklan-admin-2026&target=all", "seed-keywords"));
+    } else if (cron === "0 * * * *") {
+      // Hourly: publish sync (batch 50/jam, max 200/hari indexing). R2 sudah 386rb artikel.
+      ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
     } else {
       const c = cronMap[cron];
       if (c) {
@@ -1564,6 +1572,137 @@ async function handleQueueRefill(request, env) {
 }
 
 
+// ─── Core: Refill D1 buffer dari R2 (tanpa auth — dipanggil dari sync-posts juga) ──
+async function refillBufferCore(env) {
+  if (!env.DB || !env.QUEUE) return { refilled: 0, error: "DB or QUEUE unavailable" };
+  const draftCountR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first();
+  const draftCount = draftCountR?.n || 0;
+  if (draftCount >= 300) return { refilled: 0, buffer_count: draftCount };
+  let cursor = { shard: 0, line: 0 };
+  try {
+    const cursorR = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='queue_cursor'").first();
+    if (cursorR?.cron) cursor = JSON.parse(cursorR.cron);
+  } catch {}
+  const maxInsert = 2000 - draftCount;
+  let totalInserted = 0;
+  const errors = [];
+  const INSERT_SQL = "INSERT OR IGNORE INTO generated_drafts (slug, title, content, service, city, source, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'draft', datetime('now'))";
+  while (totalInserted < maxInsert && cursor.shard < 78) {
+    const shardKey = `publish-queue/queue_${String(cursor.shard).padStart(5, '0')}.ndjson`;
+    const shardObj = await env.QUEUE.get(shardKey);
+    if (!shardObj) { cursor.shard++; cursor.line = 0; continue; }
+    const lines = (await shardObj.text()).split('\n').filter(l => l.trim());
+    let lineNum = cursor.line;
+    const batch = [];
+    while (lineNum < lines.length && totalInserted + batch.length < maxInsert) {
+      try {
+        const obj = JSON.parse(lines[lineNum]);
+        if (obj.slug) {
+          const service = obj.service || (obj.keyword || '').toLowerCase().includes('tiktok') ? 'jasa-iklan-tiktok' : 'jasa-digital-marketing';
+          batch.push(env.DB.prepare(INSERT_SQL).bind(
+            obj.slug, obj.title || '', obj.content || '',
+            service, obj.city || '', 'r2-queue'
+          ));
+        }
+      } catch {}
+      lineNum++;
+      if (batch.length >= 500) {
+        try {
+          await env.DB.batch(batch);
+          totalInserted += batch.length;
+          batch.length = 0;
+        } catch (e) { errors.push(`chunk_err: ${String(e).slice(0,100)}`); }
+      }
+    }
+    if (batch.length > 0) {
+      try {
+        await env.DB.batch(batch);
+        totalInserted += batch.length;
+      } catch (e) { errors.push(`final_chunk: ${String(e).slice(0,100)}`); }
+      batch.length = 0;
+    }
+    cursor.line = lineNum;
+    if (lineNum >= lines.length) { cursor.shard++; cursor.line = 0; }
+  }
+  if (cursor.shard >= 78) {
+    await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('queue_cursor', 'done', 1, 'Publish queue cursor') ON CONFLICT(name) DO UPDATE SET cron='done'").run();
+  } else {
+    await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('queue_cursor', ?, 1, 'Publish queue cursor') ON CONFLICT(name) DO UPDATE SET cron=?").bind(JSON.stringify(cursor), JSON.stringify(cursor)).run();
+  }
+  return { refilled: totalInserted, buffer_count: draftCount + totalInserted, errors: errors.slice(0, 5) };
+}
+
+// ─── Core: Submit URL ke GSC Indexing API (batasi 200/hari, auto-retry 429) ──
+async function submitToGscCore(env, urls) {
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) return { submitted: 0, error: "no GSC secret" };
+  if (!urls.length) return { submitted: 0 };
+  // Check daily quota
+  const today = new Date().toISOString().slice(0, 10);
+  const quotaR = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_date'").first();
+  const quotaDate = quotaR?.value || '';
+  let used = 0;
+  if (quotaDate === today) {
+    const usedR = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_used'").first();
+    used = parseInt(usedR?.value || '0');
+  } else {
+    await env.DB.prepare("INSERT INTO cron_settings (name, cron, value) VALUES ('gsc_quota_date', '1', ?) ON CONFLICT(name) DO UPDATE SET value=?").bind(today, today).run();
+    await env.DB.prepare("INSERT INTO cron_settings (name, cron, value) VALUES ('gsc_quota_used', '1', '0') ON CONFLICT(name) DO UPDATE SET value='0'").run();
+    used = 0;
+  }
+  const maxSubmit = Math.min(urls.length, Math.max(0, 200 - used));
+  if (maxSubmit === 0) return { submitted: 0, error: "quota_exhausted" };
+  try {
+    const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+    const accessToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/indexing");
+    let submitted = 0;
+    for (const pageUrl of urls.slice(0, maxSubmit)) {
+      try {
+        const r = await fetch("https://indexing.googleapis.com/v3/urlNotifications:publish", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ url: pageUrl, type: "URL_UPDATED" }),
+        });
+        if (r.ok) {
+          submitted++;
+          used++;
+          await env.DB.prepare("INSERT INTO cron_settings (name, cron, value) VALUES ('gsc_quota_used', '1', ?) ON CONFLICT(name) DO UPDATE SET value=?").bind(String(used), String(used)).run();
+         } else if (r.status === 429) {
+           await env.DB.prepare("INSERT INTO cron_settings (name, cron, value) VALUES ('gsc_backoff_until', '1', datetime('now', '+1 hour')) ON CONFLICT(name) DO UPDATE SET value=datetime('now', '+1 hour')").run();
+          break;
+        }
+      } catch {}
+    }
+    return { submitted, quota_remaining: 200 - used };
+  } catch (e) {
+    return { submitted: 0, error: String(e).slice(0, 200) };
+  }
+}
+
+// ─── Core: Submit URL ke IndexNow (hindari 429) ──────────────────
+async function submitToIndexNowCore(env, urls) {
+  if (!urls.length) return { submitted: 0 };
+  // Check backoff
+  const backoffR = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='indexnow_backoff_until'").first();
+  if (backoffR?.value && backoffR.value > new Date().toISOString()) return { submitted: 0, error: "backoff_active" };
+  try {
+    const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
+    const resp = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ host: "beriklan.co.id", key: INDEXNOW_KEY, urlList: urls.slice(0, 100) }),
+    });
+    if (resp.ok) return { submitted: urls.slice(0, 100).length };
+    if (resp.status === 429) {
+      await env.DB.prepare("INSERT INTO cron_settings (name, cron, value) VALUES ('indexnow_backoff_until', '1', datetime('now', '+1 hour')) ON CONFLICT(name) DO UPDATE SET value=datetime('now', '+1 hour')").run();
+      return { submitted: 0, error: "rate_limited_429" };
+    }
+    return { submitted: 0, error: `http_${resp.status}` };
+  } catch (e) {
+    return { submitted: 0, error: String(e).slice(0, 200) };
+  }
+}
+
+
 // ─── Admin: Sync posts_meta → posts.json → commit GitHub → re-deploy ────
 async function handleAdminSyncPosts(request, env) {
   const url = new URL(request.url);
@@ -1577,23 +1716,20 @@ async function handleAdminSyncPosts(request, env) {
   }
   const t0 = Date.now();
   try {
-    // 0. Gradual publish: ambil N draft dari generated_drafts (status='draft')
-    // Ramp: minggu 1 = 20/hari, minggu 2 = 50, minggu 3 = 100, minggu 4+ = 200, minggu 5+ = 400
+    // A. Refill buffer dari R2 jika stok menipis
+    const refill = await refillBufferCore(env);
+
+    // B. Gradual publish: ambil N draft dari generated_drafts (status='draft')
     const draftCount = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first();
     const totalDrafts = draftCount?.n || 0;
     const todayStr = new Date().toISOString().slice(0, 10);
     const publishedTodayR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
     const publishedToday = publishedTodayR?.n || 0;
 
-    // Calculate daily limit — user request: 15/jam
-    const firstDraftR = await env.DB.prepare("SELECT MIN(created_at) as d FROM generated_drafts").first();
-    const firstDraftDate = firstDraftR?.d ? new Date(firstDraftR.d) : new Date();
-    const daysSinceStart = Math.floor((Date.now() - firstDraftDate.getTime()) / 86400000);
-    let dailyLimit = 360;
-    if (daysSinceStart > 30) dailyLimit = 720;
-    else if (daysSinceStart > 14) dailyLimit = 480;
+    // Daily limit = 200/hari (match GSC Indexing API quota). batch = 50 per cron trigger.
+    let dailyLimit = 200;
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
-    const batchSize = Math.min(15, remainingToday); // 15 per cron trigger
+    const batchSize = Math.min(50, remainingToday);
 
     // 1. Get drafts to publish (status='draft', limit = batchSize)
     const draftsToPublish = await env.DB.prepare(
@@ -1609,6 +1745,8 @@ async function handleAdminSyncPosts(request, env) {
         published_today: publishedToday,
         daily_limit: dailyLimit,
         batch_size: batchSize,
+        buffer_refilled: refill.refilled,
+        buffer_count: refill.buffer_count,
       }), { headers: { "Content-Type": "application/json" } });
     }
 
@@ -1805,6 +1943,20 @@ async function handleAdminSyncPosts(request, env) {
       }
     }
 
+    // C. Submit new URLs to GSC Indexing API (max 200/hari, auto-retry 429)
+    let gsc = { submitted: 0 };
+    if (safeDrafts.length > 0 && env.GSC_SERVICE_ACCOUNT_JSON) {
+      const gscUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${d.slug}/`);
+      gsc = await submitToGscCore(env, gscUrls);
+    }
+
+    // D. Submit to IndexNow (hindari rate limit, backoff otomatis)
+    let indexnow = { submitted: 0 };
+    if (safeDrafts.length > 0) {
+      const inUrls = safeDrafts.map(d => `https://beriklan.co.id/blog/${d.slug}/`);
+      indexnow = await submitToIndexNowCore(env, inUrls);
+    }
+
      // ─── Alert email if publish failed or empty (§3.5) ────
      try {
        const needsAlert = (safeDrafts.length === 0 && totalDrafts > 0) || failed > 0;
@@ -1839,6 +1991,11 @@ async function handleAdminSyncPosts(request, env) {
         final_count: finalPosts.length,
         commit: commitResult,
         auto_index_enqueued: enqueued,
+        gsc_submitted: gsc.submitted,
+        gsc_quota_remaining: gsc.quota_remaining,
+        indexnow_submitted: indexnow.submitted,
+        buffer_refilled: refill.refilled,
+        buffer_count: refill.buffer_count,
         published_this_run: safeDrafts.length,
         published_today: publishedToday + safeDrafts.length,
         daily_limit: dailyLimit,
@@ -2743,6 +2900,7 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-indonetwork', '30 6 * * *', 1, 'Scrape Indonetwork (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-google-places', '0 7 * * *', 1, 'Scrape Google Places (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('email-send', '*/15 * * * *', 1, 'Kirim antrian email (tiap 15 menit)')`,
+    `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3453,6 +3611,29 @@ async function handleKeywordDashboard(request, env) {
     data.drafts.committed = data.drafts.committed || 0;
   } catch (e) {}
 
+  // 8. Publish pipeline (sync-posts status)
+  try {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const committedToday = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
+    const draftCount = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first();
+    const committedTotal = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed'").first();
+    const gscQuotaDate = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_date'").first();
+    const gscQuotaUsed = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_used'").first();
+    const gscBackoff = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_backoff_until'").first();
+    const indexnowBackoff = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='indexnow_backoff_until'").first();
+    const lastRun = await env.DB.prepare("SELECT started_at, status, error FROM cron_runs WHERE cron_name='sync-posts' ORDER BY id DESC LIMIT 1").first();
+    data.publish = {
+      committed_today: committedToday?.n || 0,
+      draft_pending: draftCount?.n || 0,
+      committed_total: committedTotal?.n || 0,
+      daily_limit: 200,
+      gsc_used_today: gscQuotaDate?.value === todayStr ? parseInt(gscQuotaUsed?.value || '0') : 0,
+      gsc_backoff: gscBackoff?.value || null,
+      indexnow_backoff: indexnowBackoff?.value || null,
+      last_run: lastRun || null,
+    };
+  } catch (e) {}
+
   // ===== RENDER HELPERS =====
   const num = n => (n || 0).toLocaleString('id-ID');
   const pct = (a, b) => b > 0 ? Math.round((a / b) * 100) : 0;
@@ -3665,6 +3846,23 @@ ${data.trending.recent.length ? `<table>
 <thead><tr><th>Topic</th><th>Source</th><th>Date</th></tr></thead>
 <tbody>${data.trending.recent.map(r => `<tr><td><strong>${esc(r.slug)}</strong></td><td><span class="badge blue">${esc(r.source)}</span></td><td class="muted">${esc((r.created_at||'').slice(0,16))}</td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">🔥</div>Belum ada</div>'}
 </div>
+
+<div class="section">
+<div class="section-head">
+<h2>🚀 Publish Pipeline</h2>
+<span class="meta">sync-posts: batch 50/jam · ${data.publish.daily_limit || 200}/hari</span>
+</div>
+<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+<div class="kpi ${data.publish.committed_today >= (data.publish.daily_limit || 200) ? 'warn' : 'good'}"><div class="label">📤 Published Hari Ini</div><div class="value">${num(data.publish.committed_today)}</div><div class="sub">dari ${num(data.publish.daily_limit || 200)} limit</div></div>
+<div class="kpi"><div class="label">📝 Buffer Drafts</div><div class="value">${num(data.publish.draft_pending)}</div><div class="sub">${num(data.publish.committed_total)} total committed</div></div>
+<div class="kpi ${(data.publish.gsc_used_today || 0) >= 200 ? 'warn' : 'good'}"><div class="label">🔍 GSC Kuota</div><div class="value">${data.publish.gsc_used_today || 0}/200</div><div class="sub">${data.publish.gsc_backoff ? 'backoff: '+String(data.publish.gsc_backoff).slice(0,10) : 'tersedia'}</div></div>
+</div>
+<div style="margin-top:8px;font-size:12px">
+${data.publish.last_run ? `<span class="muted">Run terakhir: ${String(data.publish.last_run.started_at||'').slice(0,16)} — <span class="badge ${data.publish.last_run.status === 'ok' ? 'green' : 'red'}">${data.publish.last_run.status}</span>${data.publish.last_run.error ? ' ' + String(data.publish.last_run.error).slice(0,80) : ''}</span>` : '<span class="muted">Belum ada run tercatat</span>'}
+ · ${data.publish.indexnow_backoff ? 'IndexNow backoff aktif' : 'IndexNow siap'}
+ · <a href="/api/admin/publish?token=${token}" style="color:#0f1e3d;font-weight:600">Dashboard Detail →</a>
+</div>
+</div>
 </div>
 </div>
 
@@ -3706,6 +3904,125 @@ ${c.name === 'email-send' ? '<span class="badge red" style="margin-left:6px">⚠
 </div>
 </body>
 </html>`, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
+}
+
+
+// ─── Publish Dashboard — realtime status ─────────────────────
+async function handlePublishDashboard(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+  try {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const [draftCountR, committedTodayR, dailyLimitR, gscQuotaR, cursorR, indexnowBackoffR, gscBackoffR, cronRunsR, queueR] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='draft'").first(),
+      env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first(),
+      env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_date'").first(),
+      env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_used'").first(),
+      env.DB.prepare("SELECT cron FROM cron_settings WHERE name='queue_cursor'").first(),
+      env.DB.prepare("SELECT value FROM cron_settings WHERE name='indexnow_backoff_until'").first(),
+      env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_backoff_until'").first(),
+      env.DB.prepare("SELECT cron_name, status, started_at, duration_ms, error FROM cron_runs WHERE cron_name='sync-posts' OR cron_name='queue-refill' ORDER BY id DESC LIMIT 10").all(),
+      env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status='pending'").first(),
+    ]);
+    const draftCount = draftCountR?.n || 0;
+    const committedToday = committedTodayR?.n || 0;
+    const dailyLimit = 200;
+    const gscUsed = parseInt(gscQuotaR?.value || '0');
+    const gscDate = dailyLimitR?.value || '';
+    const cursor = cursorR?.cron || 'unknown';
+    const indexnowBackoff = indexnowBackoffR?.value || null;
+    const gscBackoff = gscBackoffR?.value || null;
+    const pendingIndexing = queueR?.n || 0;
+    const runs = (cronRunsR?.results || []).map(r => ({ name: r.cron_name, status: r.status, at: r.started_at, ms: r.duration_ms, error: r.error }));
+    const lastRun = runs.find(r => r.name === 'sync-posts');
+    const recapRate = 386690; // total in R2 queue
+    const r2Remaining = cursor === 'done' ? 0 : recapRate - (draftCount + committedToday);
+
+    // R2 progress estimate
+    const totalInR2 = 386690;
+    const publishedTotal = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed'").first();
+    const pct = ((publishedTotal?.n || 0) / totalInR2 * 100).toFixed(1);
+
+    if (url.searchParams.get("format") === "json") {
+      return new Response(JSON.stringify({
+        ok: true,
+        timestamp: new Date().toISOString(),
+        publish: {
+          published_today: committedToday,
+          daily_limit: dailyLimit,
+          remaining_today: Math.max(0, dailyLimit - committedToday),
+          batch_size: 50,
+          buffer_drafts: draftCount,
+        },
+        gsc: { quota_used_today: gscDate === todayStr ? gscUsed : 0, quota_limit: 200, backoff_until: gscBackoff },
+        indexnow: { backoff_until: indexnowBackoff },
+        pending_indexing: pendingIndexing,
+        r2_queue: { total: totalInR2, remaining_estimate: r2Remaining, pct_done: pct, cursor },
+        last_run: lastRun || null,
+        recent_runs: runs.slice(0, 5),
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // HTML view
+    const title = "Publish Pipeline — Beriklan Admin";
+    const html = `<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px}
+.container{max-width:1000px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:#666;font-size:13px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.card .label{font-size:10px;text-transform:uppercase;color:#666;font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+.card .value{font-size:28px;font-weight:800;line-height:1.1}
+.card .sub{font-size:11px;color:#999;margin-top:4px}
+.card.good{border-left:3px solid #10b981}
+.card.warn{border-left:3px solid #f59e0b}
+.card.bad{border-left:3px solid #dc2626}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th{color:#666;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.5px;padding:8px 10px;text-align:left;border-bottom:1px solid #eee}
+td{padding:8px 10px;border-bottom:1px solid #f0f0f0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
+.badge.ok{background:#d1fae5;color:#155724}
+.badge.fail{background:#fee2e2;color:#991b1b}
+.badge.running{background:#dbeafe;color:#1e40af}
+.bar{height:8px;background:#f0f1f5;border-radius:4px;overflow:hidden;margin-top:6px}
+.bar>div{height:100%;border-radius:4px;background:#10b981;transition:width .3s}
+.bar.warn>div{background:#f59e0b}
+.alert{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#92400e}
+a{color:#0f1e3d}
+.btn{display:inline-block;padding:8px 14px;border-radius:8px;background:#0f1e3d;color:#fff;font-weight:600;font-size:13px;text-decoration:none;margin-right:8px}
+</style></head><body>
+<div class="container">
+<h1>📊 Publish Pipeline</h1>
+<p class="sub">Realtime status — ${new Date().toISOString().slice(0,19)}</p>
+${lastRun?.status === 'failed' ? '<div class="alert">⚠️ Run terakhir GAGAL: ' + (lastRun.error || 'unknown') + '</div>' : ''}
+<div class="grid">
+  <div class="card good"><div class="label">📤 Published Hari Ini</div><div class="value">${committedToday}</div><div class="sub">dari ${dailyLimit} limit harian</div></div>
+  <div class="card ${committedToday >= dailyLimit ? 'bad' : 'warn'}"><div class="label">⏳ Sisa Hari Ini</div><div class="value">${Math.max(0, dailyLimit - committedToday)}</div><div class="sub">batch 50/trigger</div></div>
+  <div class="card"><div class="label">📝 Buffer D1</div><div class="value">${draftCount}</div><div class="sub">draft siap publish</div></div>
+  <div class="card"><div class="label">📡 Pending Indexing</div><div class="value">${pendingIndexing}</div><div class="sub">menunggu GSC + IndexNow</div></div>
+  <div class="card ${gscUsed >= 200 ? 'warn' : 'good'}"><div class="label">🔍 GSC Quota</div><div class="value">${gscDate === todayStr ? gscUsed : 0}/200</div><div class="sub">${gscBackoff ? 'backoff: ' + gscBackoff.slice(0, 16) : 'tersedia'}</div></div>
+  <div class="card"><div class="label">🗄️ R2 Queue Progress</div><div class="value">${pct}%</div><div class="bar"><div style="width:${pct}%"></div></div><div class="sub">${publishedTotal?.n || 0} dari ${totalInR2.toLocaleString()} artikel</div></div>
+</div>
+<div class="card">
+  <div class="label">Recent Runs</div>
+  <table><thead><tr><th>Cron</th><th>Status</th><th>Waktu</th><th>Durasi</th><th>Error</th></tr></thead>
+  <tbody>${runs.slice(0, 5).map(r => '<tr><td>' + r.name + '</td><td><span class="badge ' + (r.status === 'ok' ? 'ok' : r.status === 'failed' ? 'fail' : 'running') + '">' + r.status + '</span></td><td>' + (r.at || '').slice(0, 16) + '</td><td>' + (r.ms ? r.ms + 'ms' : '-') + '</td><td style="font-size:11px;color:#999">' + (r.error || '').slice(0, 60) + '</td></tr>').join('')}</tbody></table>
+</div>
+<div style="margin-top:16px">
+<a href="?token=${token}&format=json" class="btn">📋 JSON</a>
+<a href="/api/admin?token=${token}" class="btn" style="background:#f59e0b;">⚙️ Main Dashboard</a>
+</div>
+</div></body></html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  } catch(e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
 }
 
 
@@ -10333,7 +10650,6 @@ async function renderBlogPost(slug, env) {
     let content = await env.DB.prepare(
       "SELECT content FROM posts_content WHERE slug=?"
     ).bind(slug).first();
-    // Fallback: check committed drafts if not in posts_meta yet
     if (!meta || !content?.content) {
       const draft = await env.DB.prepare(
         "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE slug=? AND status='committed'"
@@ -10346,7 +10662,7 @@ async function renderBlogPost(slug, env) {
           excerpt: draftContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 200),
           date: draft.committed_at ? draft.committed_at.slice(0, 10) : '',
           iso_date: draft.committed_at || '',
-          category: 'trending',
+          category: draft.service || 'Blog',
           readTime: Math.max(1, Math.round(draftContent.split(/\s+/).length / 200)) + ' min',
           tags: JSON.stringify([draft.service, draft.city].filter(Boolean)),
           service: draft.service || '',
@@ -10359,77 +10675,395 @@ async function renderBlogPost(slug, env) {
     }
     let tags = [];
     try { tags = JSON.parse(meta.tags || '[]'); } catch {}
-    const tagChips = tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join(' ');
+    const tagChips = tags.map(t => `<span class="inline-block px-2.5 py-0.5 bg-soft text-muted text-xs rounded-full">${escHtml(t)}</span>`).join(' ');
     const cat = escHtml(meta.category || 'Blog');
     const readTime = escHtml(meta.readTime || '');
     const date = escHtml(meta.date || '');
     const title = escHtml(meta.title || slug);
     const excerpt = escHtml(meta.excerpt || '');
     const canonical = `https://beriklan.co.id/blog/${slug}/`;
+    const ogTitle = escHtml(meta.title || slug);
 
-    const ldJson = JSON.stringify({
+    const orgJson = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Beriklan.co.id",
+      "description": "Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.",
+      "url": "https://beriklan.co.id",
+      "logo": "https://beriklan.co.id/logoweb.webp",
+      "image": "https://beriklan.co.id/logoweb.webp",
+      "priceRange": "Rp 2.500.000 - Rp 10.000.000",
+      "telephone": "+62-22-XXXXXXX",
+      "address": { "@type": "PostalAddress", "addressCountry": "ID", "addressLocality": "Bandung", "addressRegion": "Jawa Barat" },
+      "areaServed": { "@type": "Country", "name": "Indonesia" },
+      "openingHours": "Mo-Sa 09:00-18:00",
+      "knowsAbout": ["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]
+    });
+    const org2Json = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Beriklan.co.id",
+      "url": "https://beriklan.co.id",
+      "logo": "https://beriklan.co.id/logoweb.webp",
+      "description": "Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.",
+      "foundingDate": "2016",
+      "sameAs": ["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id"]
+    });
+    const articleJson = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Article",
-      headline: meta.title || slug,
-      description: meta.excerpt || '',
-      datePublished: meta.iso_date || null,
-      author: { "@type": "Organization", name: "Beriklan Digital Agency" }
+      "headline": meta.title || slug,
+      "description": meta.excerpt || '',
+      "datePublished": meta.iso_date || null,
+      "author": { "@type": "Organization", "name": "Beriklan Digital Agency" }
     });
+
     const body = content?.content || '';
 
+    // Related posts (3 from same category)
+    let relatedHtml = '';
+    try {
+      const related = await env.DB.prepare(
+        "SELECT slug, title, date, readTime, excerpt FROM posts_content WHERE slug != ? AND (service = ? OR ? = '' OR category LIKE ?) ORDER BY RANDOM() LIMIT 3"
+      ).bind(slug, meta.service || '', meta.service || '', '%' + (meta.category || 'Blog') + '%').all();
+      if (related.results?.length) {
+        relatedHtml = related.results.map(r => {
+          const rt = escHtml(r.readTime || '3 min');
+          const rd = escHtml((r.date || '').slice(0, 10));
+          const rt2 = escHtml(r.title || r.slug);
+          return `<a href="/blog/${escHtml(r.slug)}/" class="related-card group block bg-white rounded-2xl border border-gray-100 hover:border-accent/40 hover:shadow-pop transition-all p-5">
+<span class="inline-block px-2 py-0.5 bg-soft text-accent text-[10px] font-bold uppercase tracking-wider rounded mb-3">${cat}</span>
+<h3 class="font-display font-bold text-base text-ink leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">${rt2}</h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">${escHtml((r.excerpt || '').slice(0, 120))}</p>
+<div class="flex items-center gap-3 text-[10px] text-muted"><span class="flex items-center gap-1"><svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${rd}</span><span class="flex items-center gap-1"><svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${rt}</span></div>
+</a>`;
+        }).join('');
+      }
+    } catch (e) {}
+
     const html = `<!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title} — Blog Beriklan.co.id</title>
 <meta name="description" content="${excerpt}">
+<meta name="keywords" content="jasa digital marketing, agency digital marketing indonesia, facebook ads, google ads, tiktok ads, instagram ads, landing page, jasa iklan, agency iklan">
+<meta name="robots" content="index, follow">
+<meta name="language" content="Indonesian">
+<meta name="author" content="Beriklan.co.id">
 <link rel="canonical" href="${canonical}">
-<meta property="og:title" content="${title}">
-<meta property="og:description" content="${excerpt}">
+<meta property="og:type" content="website">
 <meta property="og:url" content="${canonical}">
+<meta property="og:title" content="${ogTitle}">
+<meta property="og:description" content="${excerpt}">
+<meta property="og:image" content="https://beriklan.co.id/og-image.png">
+<meta property="og:site_name" content="Beriklan.co.id">
+<meta property="og:locale" content="id_ID">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">${ldJson}</script>
+<meta name="twitter:url" content="${canonical}">
+<meta name="twitter:title" content="${ogTitle}">
+<meta name="twitter:description" content="${excerpt}">
+<meta name="twitter:image" content="https://beriklan.co.id/og-image.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=2">
+<link rel="shortcut icon" href="/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png?v=2">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png?v=2">
+<link rel="preload" href="/fonts/PlusJakartaSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<script type="application/ld+json">${orgJson}</script>
+<script type="application/ld+json">${org2Json}</script>
+<script type="application/ld+json">${articleJson}</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MJXSNCSD');</script>
 <style>
-body{font-family:system-ui,-apple-system,sans-serif;line-height:1.8;margin:0;padding:0;color:#1a1a2e;background:#fff;}
-.container{max-width:740px;margin:0 auto;padding:24px 20px;}
-.breadcrumb{font-size:13px;color:#6b7280;margin-bottom:12px;}
-.breadcrumb a{color:#0f1e3d;text-decoration:none;}
-.breadcrumb a:hover{text-decoration:underline;}
-.cat-pill{display:inline-block;background:#f59e0b20;color:#f59e0b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:4px 10px;border-radius:999px;margin-bottom:12px;}
-h1{font-size:28px;line-height:1.3;margin:0 0 12px;color:#0f1e3d;}
-.meta{font-size:14px;color:#6b7280;margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;}
-.prose{font-size:17px;color:#374151;}
-.prose h2{font-size:22px;margin-top:32px;color:#0f1e3d;}
-.prose h3{font-size:18px;margin-top:24px;color:#0f1e3d;}
-.prose p{margin:16px 0;}
-.prose a{color:#0ea5e9;text-decoration:underline;}
-.prose img{max-width:100%;height:auto;border-radius:8px;margin:24px 0;}
-.prose ul,.prose ol{padding-left:24px;}
-.prose li{margin:8px 0;}
-.tags{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0;padding-top:16px;border-top:1px solid #e5e7eb;}
-.tag{background:#f7f8fb;color:#6b7280;font-size:12px;padding:4px 12px;border-radius:999px;}
-.cta-card{background:#f7f8fb;border-radius:12px;padding:24px;margin:32px 0;text-align:center;}
-.cta-card h3{margin:0 0 8px;font-size:18px;color:#0f1e3d;}
-.cta-card p{font-size:14px;color:#6b7280;margin:0 0 16px;}
-.cta-btn{display:inline-block;background:#f59e0b;color:#fff;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;font-size:15px;}
-.back-link{text-align:center;margin:32px 0;}
-.back-link a{color:#6b7280;text-decoration:none;font-size:14px;}
-.back-link a:hover{text-decoration:underline;}
-@media(max-width:640px){.container{padding:16px;}h1{font-size:24px;}.prose{font-size:16px;}}
+*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid}
+html{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;scroll-behavior:smooth}
+body{margin:0;font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;color:#0f1e3d;background:#fff;-webkit-font-smoothing:antialiased}
+.font-display{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;font-weight:800}
+.font-sans{font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif}
+.text-primary{color:#0f1e3d}
+.bg-white{background:#fff}
+.container{width:100%;margin:0 auto;padding:0 1.5rem}
+.max-w-5xl{max-width:64rem}
+.mx-auto{margin:0 auto}
+.px-6{padding:0 1.5rem}
+.py-20{padding:5rem 0}
+.md\\:py-28{padding:7rem 0}
+.grid{display:grid}
+.grid-cols-1{grid-template-columns:repeat(1,1fr)}
+.gap-6{gap:1.5rem}
+.gap-8{gap:2rem}
+.items-center{align-items:center}
+.justify-center{justify-content:center}
+.relative{position:relative}
+.w-full{width:100%}
+.h-1{height:0.25rem}
+.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}
+.from-transparent{--tw-gradient-from:transparent;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,transparent)}
+.via-accent{--tw-gradient-via:#f59e0b}
+.to-transparent{--tw-gradient-to:transparent}
+.overflow-hidden{overflow:hidden}
+.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.pb-24{padding-bottom:6rem}
+.lg\\:pb-0{padding-bottom:0}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.transition-all{transition:all .3s ease}
+.transition-colors{transition:color .3s ease}
+.duration-300{transition-duration:.3s}
+.shadow-pop{box-shadow:0 12px 32px rgba(15,30,61,0.10),0 4px 8px rgba(15,30,61,0.06)}
+.text-accent{color:#f59e0b}
+.text-ink{color:#0b1426}
+.text-muted{color:#6b7280}
+.text-white{color:#fff}
+.bg-accent{background:#f59e0b}
+.bg-soft{background:#f7f8fb}
+.bg-ink{background:#0b1426}
+.border-gray-100{border-color:#f3f4f6}
+.border-accent\\/40{border-color:rgba(245,158,11,0.4)}
+.rounded-2xl{border-radius:1rem}
+.hover\\:border-accent\\/40:hover{border-color:rgba(245,158,11,0.4)}
+.hover\\:shadow-pop:hover{box-shadow:0 12px 32px rgba(15,30,61,0.10),0 4px 8px rgba(15,30,61,0.06)}
+.hover\\:text-accent:hover{color:#f59e0b}
+.hover\\:bg-accent\\/10:hover{background:rgba(245,158,11,0.1)}
+.group:hover .group-hover\\:text-accent{color:#f59e0b}
+.text-xs{font-size:.75rem;line-height:1rem}
+.text-sm{font-size:.875rem;line-height:1.25rem}
+.text-base{font-size:1rem;line-height:1.5rem}
+.text-lg{font-size:1.125rem;line-height:1.75rem}
+.text-xl{font-size:1.25rem;line-height:1.75rem}
+.text-2xl{font-size:1.5rem;line-height:2rem}
+.text-3xl{font-size:1.875rem;line-height:2.25rem}
+.text-4xl{font-size:2.25rem;line-height:2.5rem}
+.font-bold{font-weight:700}
+.font-extrabold{font-weight:800}
+.font-semibold{font-weight:600}
+.uppercase{text-transform:uppercase}
+.tracking-\\[0\\.18em\\]{letter-spacing:0.18em}
+.tracking-\\[0\\.2em\\]{letter-spacing:0.2em}
+.tracking-wider{letter-spacing:.05em}
+.leading-relaxed{line-height:1.625}
+.leading-snug{line-height:1.375}
+.leading-tight{line-height:1.25}
+.mb-1{margin-bottom:.25rem}
+.mb-2{margin-bottom:.5rem}
+.mb-3{margin-bottom:.75rem}
+.mb-4{margin-bottom:1rem}
+.mb-6{margin-bottom:1.5rem}
+.mb-8{margin-bottom:2rem}
+.mt-2{margin-top:.5rem}
+.mt-3{margin-top:.75rem}
+.mt-4{margin-top:1rem}
+.mt-5{margin-top:1.25rem}
+.mt-6{margin-top:1.5rem}
+.mt-8{margin-top:2rem}
+.mt-10{margin-top:2.5rem}
+.mr-2{margin-right:.5rem}
+.ml-2{margin-left:.5rem}
+.p-5{padding:1.25rem}
+.p-6{padding:1.5rem}
+.p-8{padding:2rem}
+.px-3{padding:0 .75rem}
+.px-4{padding:0 1rem}
+.px-5{padding:0 1.25rem}
+.px-6{padding:0 1.5rem}
+.py-2{padding:.5rem 0}
+.py-3{padding:.75rem 0}
+.py-4{padding:1rem 0}
+.py-8{padding:2rem 0}
+.py-12{padding:3rem 0}
+.py-16{padding:4rem 0}
+.py-20{padding:5rem 0}
+.gap-2{gap:.5rem}
+.gap-3{gap:.75rem}
+.gap-4{gap:1rem}
+.gap-5{gap:1.25rem}
+.flex{display:flex}
+.flex-col{flex-direction:column}
+.flex-wrap{flex-wrap:wrap}
+.items-center{align-items:center}
+.justify-center{justify-content:center}
+.justify-between{justify-content:space-between}
+.inline-flex{display:inline-flex}
+.inline-block{display:inline-block}
+.block{display:block}
+.hidden{display:none}
+.shrink-0{flex-shrink:0}
+.w-8{width:2rem}
+.w-3{width:.75rem}
+.h-px{height:1px}
+.h-3{height:.75rem}
+.h-5{height:1.25rem}
+.h-10{height:2.5rem}
+.max-w-md{max-width:28rem}
+.max-w-3xl{max-width:48rem}
+.max-w-5xl{max-width:64rem}
+.space-y-2>*+*{margin-top:.5rem}
+.space-y-2\\.5>*+*{margin-top:.625rem}
+.space-y-4>*+*{margin-top:1rem}
+.space-y-6>*+*{margin-top:1.5rem}
+.space-x-2>*+*{margin-left:.5rem}
+.space-x-3>*+*{margin-left:.75rem}
+.border{border-width:1px}
+.border-t{border-top-width:1px}
+.border-b{border-bottom-width:1px}
+.border-white\\/10{border-color:rgba(255,255,255,0.1)}
+.border-white\\/20{border-color:rgba(255,255,255,0.2)}
+.border-accent\\/20{border-color:rgba(245,158,11,0.2)}
+.rounded-full{border-radius:9999px}
+.rounded-xl{border-radius:.75rem}
+.pointer-events-none{pointer-events:none}
+.object-cover{object-fit:cover}
+.aspect-\\[16\\/9\\]{aspect-ratio:16/9}
+.md\\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
+.md\\:grid-cols-3{grid-template-columns:repeat(3,1fr)}
+.md\\:flex{display:flex}
+.md\\:hidden{display:none}
+.md\\:items-center{align-items:center}
+.md\\:justify-end{justify-content:flex-end}
+.md\\:text-lg{font-size:1.125rem}
+.md\\:text-xl{font-size:1.25rem}
+.md\\:text-2xl{font-size:1.5rem}
+.md\\:text-3xl{font-size:1.875rem}
+.lg\\:flex{display:flex}
+.lg\\:gap-10{gap:2.5rem}
+.lg\\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
+.lg\\:grid-cols-6{grid-template-columns:repeat(6,1fr)}
+.lg\\:col-span-1{grid-column:span 1 / span 1}
+@media(max-width:1023px){.lg\\:hidden{display:block}}
+@media(max-width:767px){.md\\:hidden{display:block!important}.md\\:flex{display:none!important}}
+.pill-accent{display:inline-block;background:rgba(245,158,11,0.12);color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:999px;margin-bottom:12px}
+.breadcrumb{font-size:13px;color:#6b7280;margin-bottom:12px}
+.breadcrumb a{color:#0f1e3d;text-decoration:none}
+.breadcrumb a:hover{text-decoration:underline}
+/* Prose styles matching old post */
+.prose{color:#374151;overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%}
+.prose a,.prose code{overflow-wrap:anywhere;word-break:break-word}
+.prose pre{overflow-x:auto;max-width:100%}
+.prose img,.prose iframe,.prose video,.prose table{max-width:100%}
+.prose h1{font-size:1.875rem;font-weight:800;margin:2rem 0 1rem;color:#0f1e3d;line-height:1.2}
+.prose h2{font-size:1.5rem;font-weight:800;margin:2.5rem 0 1rem;color:#0f1e3d;line-height:1.25}
+.prose h3{font-size:1.25rem;font-weight:700;margin:2rem 0 .75rem;color:#0f1e3d;line-height:1.3}
+.prose p{margin:0 0 1.25rem;line-height:1.8;font-size:1rem}
+.prose a{color:#f59e0b;text-decoration:underline;text-underline-offset:3px}
+.prose a:hover{color:#ea580c}
+.prose strong{font-weight:700;color:#0f1e3d}
+.prose ul{list-style:disc;padding-left:1.5rem;margin:1rem 0 1.5rem}
+.prose ol{list-style:decimal;padding-left:1.5rem;margin:1rem 0 1.5rem}
+.prose li{margin-bottom:.5rem;line-height:1.7}
+.prose blockquote{border-left:4px solid #f59e0b;padding:.75rem 1rem;background:#fffbeb;margin:1.5rem 0;font-style:italic;color:#1f2937}
+.prose img{max-width:100%;height:auto;border-radius:.75rem;margin:1.5rem 0}
+.prose table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.875rem}
+.prose th{background:#f3f4f6;padding:.625rem .75rem;text-align:left;font-weight:700;color:#0f1e3d;border:1px solid #e5e7eb}
+.prose td{padding:.625rem .75rem;border:1px solid #e5e7eb}
+.prose code{background:#f3f4f6;padding:.125rem .375rem;border-radius:.25rem;font-size:.875em}
+.prose hr{border:0;border-top:1px solid #e5e7eb;margin:2rem 0}
+/* Article header */
+.article-header{padding:2rem 0 1.5rem;max-width:48rem;margin:0 auto}
+.article-header h1{font-size:2rem;line-height:1.2;font-weight:800;margin:.5rem 0 1rem;color:#0f1e3d}
+.article-meta{display:flex;flex-wrap:wrap;gap:.75rem;font-size:.875rem;color:#6b7280;margin-bottom:.5rem}
+.article-body{max-width:48rem;margin:0 auto;padding:0 0 2rem}
+/* Article CTA card */
+.cta-inline{background:#f7f8fb;border-radius:1rem;padding:2rem;margin:2.5rem auto;text-align:center;max-width:48rem}
+.cta-inline h3{margin:0 0 .5rem;font-size:1.25rem;color:#0f1e3d;font-weight:700}
+.cta-inline p{font-size:.875rem;color:#6b7280;margin:0 0 1rem}
+.cta-inline a{display:inline-block;background:#f59e0b;color:#fff;font-weight:700;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none;font-size:.9375rem}
+.cta-inline a:hover{background:#fb923c}
+/* Navbar */
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #f3f4f6}
+.navbar-inner{max-width:80rem;margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.navbar-logo{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:#0f1e3d;font-weight:800;font-size:1.25rem}
+.navbar-links{display:flex;gap:1.5rem;align-items:center}
+.navbar-links a{text-decoration:none;color:#4b5563;font-size:.875rem;font-weight:600;transition:color .2s}
+.navbar-links a:hover{color:#f59e0b}
+.navbar-cta{background:#f59e0b;color:#0f1e3d!important;padding:.5rem 1.25rem;border-radius:999px;font-weight:700}
+.navbar-hamburger{display:none;background:none;border:none;cursor:pointer;padding:.5rem}
+.navbar-hamburger span{display:block;width:24px;height:2px;background:#0f1e3d;margin:5px 0;border-radius:2px}
+@media(max-width:767px){.navbar-links{display:none}.navbar-hamburger{display:block}}
+/* Footer */
+.footer{background:#0b1426;color:#fff;padding:5rem 0 2.5rem;position:relative;overflow:hidden}
+.footer-top-bar{position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(to right,transparent,#f59e0b,transparent)}
+.footer-glow{position:absolute;inset:0;pointer-events:none}
+.footer inner{max-width:80rem;margin:0 auto;padding:0 1.5rem}
+.footer-grid{display:grid;grid-template-columns:1fr;gap:2rem;padding-bottom:3rem;border-bottom:1px solid rgba(255,255,255,0.1)}
+@media(min-width:768px){.footer-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.footer-grid{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:1024px){.footer-col-1{grid-column:span 1 / span 1}}
+.footer-headline{font-size:1.5rem;font-weight:800;line-height:1.2}
+@media(min-width:768px){.footer-headline{font-size:1.875rem}}
+.footer-desc{color:rgba(255,255,255,0.6);margin-top:.75rem;font-size:.875rem;line-height:1.625;max-width:28rem}
+.footer-desc2{color:rgba(255,255,255,0.6);font-size:.875rem;margin-top:.75rem;line-height:1.625}
+.footer-column h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,0.5);margin-bottom:.75rem}
+.footer-column ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem}
+.footer-column ul li a{color:rgba(255,255,255,0.8);text-decoration:none;font-size:.875rem;transition:color .2s}
+.footer-column ul li a:hover{color:#f59e0b}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.1);margin-top:2rem;padding-top:2rem;display:flex;flex-direction:column;gap:1rem;align-items:center;font-size:.75rem;color:rgba(255,255,255,0.5)}
+@media(min-width:768px){.footer-bottom{flex-direction:row;justify-content:space-between}}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,0.5);text-decoration:none;transition:color .2s}
+.footer-bottom-links a:hover{color:#f59e0b}
+.social-icon{width:2.25rem;height:2.25rem;border-radius:9999px;background:rgba(255,255,255,0.05);display:inline-flex;align-items:center;justify-content:center;transition:all .2s;color:rgba(255,255,255,0.8)}
+.social-icon:hover{background:#f59e0b;color:#0b1426}
 </style>
 </head>
-<body>
-<div class="container">
-<nav class="breadcrumb"><a href="/">Beranda</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; ${cat}</nav>
-<div class="cat-pill">${cat}</div>
-<h1>${title}</h1>
-<div class="meta">${date ? `<span>${date}</span>` : ''}${readTime ? `<span>${readTime} baca</span>` : ''}</div>
-<div class="prose">${body}</div>
-${tagChips ? `<div class="tags">${tagChips}</div>` : ''}
-<div class="cta-card"><h3>Butuh Bantuan Iklan?</h3><p>Konsultasi gratis 15 menit dengan tim performance marketing kami.</p><a class="cta-btn" href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20beriklan%20(setelah%20baca%20artikel%20${encodeURIComponent(slug)}).%20Mohon%20info%20lebih%20lanjut." target="_blank">Diskusi via WhatsApp</a></div>
-<div class="back-link"><a href="/blog/">&larr; Kembali ke Blog</a></div>
+<body class="font-sans text-primary bg-white antialiased pb-24 lg:pb-0">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="navbar">
+<div class="navbar-inner">
+<a href="/" class="navbar-logo"><img src="/logoweb.webp" alt="Beriklan.co.id" class="h-10 w-auto">Beriklan</a>
+<div class="navbar-links">
+<a href="/jasa-digital-marketing/">Digital Marketing</a>
+<a href="/jasa-iklan-facebook/">Facebook Ads</a>
+<a href="/jasa-iklan-google/">Google Ads</a>
+<a href="/jasa-iklan-tiktok/">TikTok Ads</a>
+<a href="/blog/">Blog</a>
+<a href="https://wa.me/62811919328" class="navbar-cta">Konsultasi Gratis</a>
 </div>
+<button class="navbar-hamburger" onclick="this.nextElementSibling.classList.toggle('hidden')" aria-label="Menu"><span></span><span></span><span></span></button>
+</div>
+</header>
+<main>
+<article>
+<div class="article-header">
+<nav class="breadcrumb"><a href="/">Beranda</a> › <a href="/blog/">Blog</a> › ${cat}</nav>
+<span class="pill-accent">${cat}</span>
+<h1>${title}</h1>
+<div class="article-meta">${date ? '<span>📅 ' + date + '</span>' : ''}${readTime ? '<span>⏱ ' + readTime + ' baca</span>' : ''}</div>
+</div>
+<div class="article-body prose">${body}</div>
+${tagChips ? '<div style="max-width:48rem;margin:0 auto;padding:0 1.5rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap">' + tagChips + '</div>' : ''}
+<div class="cta-inline"><h3>Butuh Bantuan Iklan?</h3><p>Konsultasi gratis 15 menit dengan tim performance marketing kami.</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20beriklan%20(setelah%20baca%20artikel%20${encodeURIComponent(slug)}).%20Mohon%20info%20lebih%20lanjut." target="_blank">Diskusi via WhatsApp</a></div>
+</article>
+${relatedHtml ? '<section class="py-16 md:py-20 bg-soft"><div class="container mx-auto px-6 max-w-5xl"><div class="flex items-center gap-3 mb-8"><span class="w-8 h-px bg-accent"></span><h2 class="text-xs font-bold uppercase tracking-[0.18em] text-accent">Artikel Serupa</h2></div><div class="grid md:grid-cols-3 gap-5">' + relatedHtml + '</div></div></section>' : ''}
+</main>
+<footer class="footer">
+<div class="footer-top-bar"></div>
+<div class="footer-glow" style="background:radial-gradient(circle at 90% 0%,rgba(245,158,11,0.08) 0%,transparent 40%),radial-gradient(circle at 10% 100%,rgba(14,165,233,0.06) 0%,transparent 40%)"></div>
+<div class="" style="max-width:80rem;margin:0 auto;padding:0 1.5rem">
+<div class="footer-grid">
+<div><h3 class="footer-headline">Siap merumuskan strategi<br/>yang selaras dengan bisnis Anda?</h3><p class="footer-desc">Sesi konsultasi awal selama 15 menit melalui WhatsApp — tanpa biaya. Tim kami akan merespons dalam waktu 1 jam pada jam kerja.</p></div>
+<div style="display:flex;flex-direction:column;gap:.75rem;align-items:flex-start;justify-content:center" class="md:items-end lg:justify-end"><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" style="display:inline-flex;align-items:center;gap:.5rem;background:#f59e0b;color:#0b1426;font-weight:700;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none;box-shadow:0 14px 30px rgba(245,158,11,0.45)"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg> Chat WhatsApp</a><a href="mailto:info@beriklan.co.id" style="display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;padding:.75rem 1.5rem;border-radius:999px;text-decoration:none">info@beriklan.co.id</a></div>
+</div>
+<div class="grid" style="grid-template-columns:1fr;gap:2rem;padding:2.5rem 0;border-bottom:1px solid rgba(255,255,255,0.1)">
+<div><h4 style="font-weight:700;font-size:1.25rem">Update Bulanan dari Tim Beriklan</h4><p style="color:rgba(255,255,255,0.6);margin-top:.5rem;font-size:.875rem;line-height:1.625;max-width:28rem">Tips iklan Meta, Google, TikTok, YouTube + data industri. Dikirim 1x sebulan. Tanpa spam, berhenti kapan saja.</p></div>
+<div style="max-width:28rem"><form id="nl-form" style="display:flex;flex-direction:column;gap:.625rem"><input type="text" name="name" placeholder="Nama (opsional)" style="width:100%;padding:.625rem .875rem;font-size:.875rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:999px;color:#fff;outline:none" /><div style="display:flex;gap:.5rem"><input type="email" name="email" placeholder="email@bisnis.com" required style="flex:1;min-width:0;padding:.625rem .875rem;font-size:.875rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:999px;color:#fff;outline:none"/><button type="submit" style="padding:.625rem 1.25rem;font-size:.875rem;font-weight:700;background:#f59e0b;color:#0b1426;border-radius:999px;border:none;cursor:pointer">Daftar</button></div><input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;left:-9999px" aria-hidden="true"/><p class="nl-status" style="font-size:11px;color:rgba(255,255,255,0.4)">Kami kirim 1 update/bulan. Berhenti kapan saja.</p></form></div>
+</div>
+<div class="grid" style="grid-template-columns:repeat(2,1fr);gap:2rem;padding:3rem 0" class="lg:grid-cols-6">
+<div><a href="/" style="display:flex;align-items:center;gap:.5rem;text-decoration:none"><img src="/logoweb.webp" alt="Beriklan.co.id" style="height:2.5rem;width:auto;filter:brightness(0) invert(1)"/></a><p class="footer-desc2">Agency performance marketing yang berbasis di Bandung. Mulai dari riset, eksekusi, hingga optimasi — kami kelola secara end-to-end agar Anda fokus pada bisnis.</p><div style="display:flex;gap:.75rem;margin-top:1.25rem"><a href="https://instagram.com/beriklan.co.id" target="_blank" class="social-icon" aria-label="Instagram"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a><a href="https://facebook.com/beriklan.co.id" target="_blank" class="social-icon" aria-label="Facebook"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg></a><a href="https://www.linkedin.com/company/beriklan" target="_blank" class="social-icon" aria-label="LinkedIn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg></a></div></div>
+<div class="footer-column"><h4>Layanan</h4><ul><li><a href="/jasa-iklan-facebook/">Facebook Ads</a></li><li><a href="/jasa-iklan-instagram/">Instagram Ads</a></li><li><a href="/jasa-iklan-google/">Google Search Ads</a></li><li><a href="/jasa-iklan-tiktok/">TikTok Ads</a></li><li><a href="/jasa-iklan-youtube/">YouTube Ads</a></li><li><a href="/jasa-pembuatan-landing-page/">Landing Page</a></li><li><a href="/jasa-pembuatan-website/">Website</a></li></ul></div>
+<div class="footer-column"><h4>Harga</h4><ul><li><a href="/harga-iklan-facebook/bandung">Facebook Ads</a></li><li><a href="/harga-iklan-instagram/bandung">Instagram Ads</a></li><li><a href="/harga-iklan-google/bandung">Google Ads</a></li><li><a href="/harga-iklan-tiktok/bandung">TikTok Ads</a></li><li><a href="/harga-iklan-youtube/bandung">YouTube Ads</a></li></ul></div>
+<div class="footer-column"><h4>Live</h4><ul><li><a href="/jasa-view-live/tiktok">TikTok Live</a></li><li><a href="/jasa-view-live/shopee">Shopee Live</a></li><li><a href="/jasa-view-live/youtube">YouTube Live</a></li><li><a href="/jasa-view-live/instagram">Instagram Live</a></li><li><a href="/jasa-view-live/twitch">Twitch Live</a></li></ul></div>
+<div class="footer-column"><h4>Tools</h4><ul><li><a href="/kalkulator-budget-iklan">Kalkulator Budget</a></li><li><a href="/kalkulator-roas">Kalkulator ROAS</a></li><li><a href="/kalkulator-roi">Kalkulator ROI</a></li></ul></div>
+<div class="footer-column"><h4>Perusahaan</h4><ul><li><a href="/tentang-kami">Tentang Kami</a></li><li><a href="/blog">Blog</a></li><li><a href="/kontak">Kontak</a></li><li><a href="/privacy-policy">Privacy Policy</a></li><li><a href="/terms-of-service">Terms of Service</a></li></ul></div>
+</div>
+<div class="footer-bottom"><p>© 2026 Beriklan.co.id. All rights reserved.</p><div class="footer-bottom-links"><a href="/privacy-policy">Privacy Policy</a><a href="/terms-of-service">Terms of Service</a><a href="/disclaimer">Disclaimer</a><a href="/sitemap-index.xml">Sitemap</a></div></div>
+</div>
+</footer>
+<script>(function(){var form=document.getElementById('nl-form');if(!form||form.__attached)return;form.__attached=true;var st=form.querySelector('.nl-status');var btn=form.querySelector('button[type="submit"]');form.addEventListener('submit',async function(e){e.preventDefault();if(btn.disabled)return;var hp=form.querySelector('input[name="website"]').value;if(hp){st.textContent='Terima kasih!';return}var em=form.querySelector('input[name="email"]').value.trim().toLowerCase();var nm=form.querySelector('input[name="name"]').value.trim();if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(em)){st.textContent='Format email tidak valid.';return}btn.disabled=true;btn.textContent='...';try{var r=await fetch('/api/newsletter/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,name:nm,page_url:location.pathname,source:document.referrer||''})});var d=await r.json();if(d.ok){st.textContent=d.already?'Anda sudah terdaftar.':'Terima kasih!';form.querySelector('input[name="email"]').value='';form.querySelector('input[name="name"]').value=''}else{st.textContent=d.error||'Gagal. Coba lagi.'}}catch(err){st.textContent='Gagal menghubungi server.'}btn.disabled=false;btn.textContent='Daftar'})})();</script>
 </body>
 </html>`;
     return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });

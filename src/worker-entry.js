@@ -10722,7 +10722,9 @@ async function renderBlogPost(slug, env) {
       "headline": meta.title || slug,
       "description": meta.excerpt || '',
       "datePublished": meta.iso_date || null,
-      "author": { "@type": "Organization", "name": "Beriklan Digital Agency" }
+      "dateModified": meta.iso_date || null,
+      "author": { "@type": "Organization", "name": "Beriklan", "url": "https://beriklan.co.id", "logo": { "@type": "ImageObject", "url": "https://beriklan.co.id/logoweb.webp" } },
+      "publisher": { "@type": "Organization", "name": "Beriklan.co.id", "url": "https://beriklan.co.id", "logo": { "@type": "ImageObject", "url": "https://beriklan.co.id/logoweb.webp" } }
     });
 
     const body = content?.content || '';
@@ -10969,6 +10971,7 @@ body{margin:0;font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;color:#0f
 .prose td{padding:.625rem .75rem;border:1px solid #e5e7eb}
 .prose code{background:#f3f4f6;padding:.125rem .375rem;border-radius:.25rem;font-size:.875em}
 .prose hr{border:0;border-top:1px solid #e5e7eb;margin:2rem 0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 /* Article header */
 .article-header{padding:2rem 0 1.5rem;max-width:48rem;margin:0 auto}
 .article-header h1{font-size:2rem;line-height:1.2;font-weight:800;margin:.5rem 0 1rem;color:#0f1e3d}
@@ -11035,13 +11038,36 @@ body{margin:0;font-family:Plus Jakarta Sans,Inter,system-ui,sans-serif;color:#0f
 </header>
 <main>
 <article>
-<div class="article-header">
-<nav class="breadcrumb"><a href="/">Beranda</a> › <a href="/blog/">Blog</a> › ${cat}</nav>
-<span class="pill-accent">${cat}</span>
-<h1>${title}</h1>
-<div class="article-meta">${date ? '<span>📅 ' + date + '</span>' : ''}${readTime ? '<span>⏱ ' + readTime + ' baca</span>' : ''}</div>
+<header class="relative pt-28 md:pt-40 pb-12 md:pb-16 bg-gradient-to-br from-white via-soft to-beige overflow-hidden">
+<div class="absolute inset-0 opacity-[0.4] pointer-events-none" style="background-image:radial-gradient(circle at 1px 1px,rgba(245,158,11,0.15) 1px,transparent 0);background-size:32px 32px"></div>
+<div class="container mx-auto px-6 max-w-3xl relative z-10">
+<nav class="text-xs text-muted mb-6 flex items-center gap-1.5">
+<a href="/" class="hover:text-accent transition">Beranda</a>
+<span class="text-muted/40">›</span>
+<a href="/blog" class="hover:text-accent transition">Blog</a>
+<span class="text-muted/40">›</span>
+<span class="text-ink font-semibold">${cat}</span>
+</nav>
+<div class="mb-5">
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-ink text-[11px] font-bold uppercase tracking-wider rounded-full">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><path d="M12 11v3"/><path d="M12 7v.01"/></svg>
+${cat}
+</span>
 </div>
-<div class="article-body prose">${body}</div>
+<h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6" style="animation:fadeUp 0.6s ease both">${title}</h1>
+<div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted" style="animation:fadeUp 0.6s ease both;animation-delay:120ms">
+<span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${date ? '<span>Dipublikasikan ' + new Date(date + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) + '</span>' : ''}</span>
+<span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${readTime || ''}</span>
+<span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Oleh Tim Beriklan</span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green/10 text-green font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-green inline-block"></span>Konten terbaru</span>
+</div>
+</div>
+<div class="abs-blob abs-blob-1"></div>
+<div class="abs-blob abs-blob-2"></div>
+</header>
+<div class="article-body prose prose-lg max-w-none text-ink leading-relaxed overflow-x-hidden">
+${body}
+</div>
 ${tagChips ? '<div style="max-width:48rem;margin:0 auto;padding:0 1.5rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap">' + tagChips + '</div>' : ''}
 <div class="cta-inline"><h3>Butuh Bantuan Iklan?</h3><p>Konsultasi gratis 15 menit dengan tim performance marketing kami.</p><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20beriklan%20(setelah%20baca%20artikel%20${encodeURIComponent(slug)}).%20Mohon%20info%20lebih%20lanjut." target="_blank">Diskusi via WhatsApp</a></div>
 </article>

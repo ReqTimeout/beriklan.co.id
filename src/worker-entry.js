@@ -297,21 +297,16 @@ export default {
       return await handleImportDatabase(request, env);
     }
 
+    // Dynamic blog posts: intercept before ASSETS so new slugs render immediately
+    const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
+    if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
+      const dynamic = await renderBlogPost(blogMatch[1], env);
+      if (dynamic) return dynamic;
+    }
+
     // Dynamic posts-index.json (daftar semua artikel untuk BlogFilter)
     if (path === "/data/posts-index.json") {
       return await handlePostsIndex(env);
-    }
-    // Diagnostic: check if slug exists in generated_drafts
-    if (path === "/api/debug/slug") {
-      const slug = url.searchParams.get("slug") || "";
-      if (!slug) return new Response("?slug=xxx", { status: 400 });
-      const gd = await env.DB.prepare("SELECT status, service, city, committed_at FROM generated_drafts WHERE slug=?").bind(slug).first();
-      const pm = await env.DB.prepare("SELECT slug FROM posts_meta WHERE slug=?").bind(slug).first();
-      return new Response(JSON.stringify({
-        slug,
-        generated_drafts: gd || null,
-        posts_meta: pm ? true : false,
-      }), { headers: { "Content-Type": "application/json" } });
     }
 
     // Static assets fallback

@@ -10288,22 +10288,32 @@ async function handleIndexNowSubmit(request, env) {
     const recentPosts = await env.DB.prepare(
       "SELECT slug, iso_date FROM posts_meta WHERE iso_date >= ? ORDER BY iso_date DESC LIMIT ?"
     ).bind(now, count).all();
-    const urls = [];
-    for (const d of (drafts.results || [])) urls.push(`https://beriklan.co.id/blog/${d.slug}/`);
+    const urlList = [];
+    for (const d of (drafts.results || [])) urlList.push(`https://beriklan.co.id/blog/${d.slug}/`);
     for (const p of (recentPosts.results || [])) {
-      const slug = `https://beriklan.co.id/blog/${p.slug}/`;
-      if (!urls.includes(slug)) urls.push(slug);
+      const pu = `https://beriklan.co.id/blog/${p.slug}/`;
+      if (!urlList.includes(pu)) urlList.push(pu);
     }
-    const results = [];
-    for (const pageUrl of urls.slice(0, count)) {
+    const sliced = urlList.slice(0, count);
+    let indexnowStatus = 0;
+    let indexnowError = null;
+    if (sliced.length > 0) {
       try {
-        const resp = await fetch(`https://api.indexnow.org/indexnow?url=${encodeURIComponent(pageUrl)}&key=2dac33f6303f4041b9ec7e2f2910ea80`);
-        results.push({ url: pageUrl, status: resp.status });
-      } catch(e) {
-        results.push({ url: pageUrl, error: String(e).slice(0, 100) });
-      }
+        const resp = await fetch("https://api.indexnow.org/indexnow", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host: "beriklan.co.id", key: "2dac33f6303f4041b9ec7e2f2910ea80", urlList: sliced }),
+        });
+        indexnowStatus = resp.status;
+      } catch(e) { indexnowError = String(e).slice(0, 200); }
     }
-    return new Response(JSON.stringify({ ok: true, submitted: results.length, results }), { headers: { "Content-Type": "application/json" } });
+    // Also insert into pending_indexing for regular cron
+    for (const pageUrl of sliced) {
+      try {
+        await env.DB.prepare("INSERT OR IGNORE INTO pending_indexing (url, status, source, created_at) VALUES (?, 'pending', 'indexnow-submit', datetime('now'))").bind(pageUrl).run();
+      } catch {}
+    }
+    return new Response(JSON.stringify({ ok: true, submitted: sliced.length, indexnow_status: indexnowStatus, error: indexnowError }), { headers: { "Content-Type": "application/json" } });
   } catch(e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }

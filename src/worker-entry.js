@@ -297,6 +297,11 @@ export default {
       return await handleImportDatabase(request, env);
     }
 
+    // Dynamic posts-index.json (daftar semua artikel untuk BlogFilter)
+    if (path === "/data/posts-index.json") {
+      return await handlePostsIndex(env);
+    }
+
     // Static assets fallback
     try {
       // 1. Check _redirects (compiled at build time, inlined)
@@ -314,6 +319,14 @@ export default {
       const legacyRedirect = await handleGenericCityRedirect(request, env);
       if (legacyRedirect) return legacyRedirect;
       const assetResp = await env.ASSETS.fetch(request);
+      // If 404 and path is /blog/*, render dynamically from D1
+      if (assetResp.status === 404) {
+        const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
+        if (blogMatch) {
+          const dynamic = await renderBlogPost(blogMatch[1], env);
+          if (dynamic) return dynamic;
+        }
+      }
       // Force correct content-type for HTML so browsers never download .txt/.html
       const ct = assetResp.headers.get("content-type") || "";
       if (path.endsWith("/") || path.endsWith(".html") || path === "" || ct.startsWith("text/html")) {
@@ -326,6 +339,12 @@ export default {
       }
       return assetResp;
     } catch (e) {
+      // Last resort: try dynamic blog post render
+      const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
+      if (blogMatch) {
+        const dynamic = await renderBlogPost(blogMatch[1], env);
+        if (dynamic) return dynamic;
+      }
       return new Response("Not Found", { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
   },
@@ -10145,6 +10164,113 @@ ${(users.results||[]).map(u => `<tr><td>${u.id}</td><td>${escHtml(u.name)}</td><
 </tbody></table>
 </body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+// ─── Dynamic posts-index.json (BlogFilter runtime) ─────────────────
+async function handlePostsIndex(env) {
+  if (!env.DB) return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+  try {
+    const posts = await env.DB.prepare(
+      "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, featured FROM posts_meta ORDER BY iso_date DESC"
+    ).all();
+    return new Response(JSON.stringify(posts.results || []), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" }
+    });
+  } catch {
+    return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Dynamic blog post render (fallback when static page doesn't exist) ───
+async function renderBlogPost(slug, env) {
+  if (!env.DB) return null;
+  try {
+    const meta = await env.DB.prepare(
+      "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city FROM posts_meta WHERE slug=?"
+    ).bind(slug).first();
+    if (!meta) return null;
+    const content = await env.DB.prepare(
+      "SELECT content FROM posts_content WHERE slug=?"
+    ).bind(slug).first();
+    const body = content?.content || "<p>Konten tidak tersedia.</p>";
+    let tags = [];
+    try { tags = JSON.parse(meta.tags || '[]'); } catch {}
+    const tagChips = tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join(' ');
+    const cat = escHtml(meta.category || 'Blog');
+    const readTime = escHtml(meta.readTime || '');
+    const date = escHtml(meta.date || '');
+    const title = escHtml(meta.title || slug);
+    const excerpt = escHtml(meta.excerpt || '');
+    const canonical = `https://beriklan.co.id/blog/${slug}/`;
+
+    const ldJson = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: meta.title || slug,
+      description: meta.excerpt || '',
+      datePublished: meta.iso_date || null,
+      author: { "@type": "Organization", name: "Beriklan Digital Agency" }
+    });
+
+    const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title} — Blog Beriklan.co.id</title>
+<meta name="description" content="${excerpt}">
+<link rel="canonical" href="${canonical}">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${excerpt}">
+<meta property="og:url" content="${canonical}">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">${ldJson}</script>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;line-height:1.8;margin:0;padding:0;color:#1a1a2e;background:#fff;}
+.container{max-width:740px;margin:0 auto;padding:24px 20px;}
+.breadcrumb{font-size:13px;color:#6b7280;margin-bottom:12px;}
+.breadcrumb a{color:#0f1e3d;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.cat-pill{display:inline-block;background:#f59e0b20;color:#f59e0b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:4px 10px;border-radius:999px;margin-bottom:12px;}
+h1{font-size:28px;line-height:1.3;margin:0 0 12px;color:#0f1e3d;}
+.meta{font-size:14px;color:#6b7280;margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;}
+.prose{font-size:17px;color:#374151;}
+.prose h2{font-size:22px;margin-top:32px;color:#0f1e3d;}
+.prose h3{font-size:18px;margin-top:24px;color:#0f1e3d;}
+.prose p{margin:16px 0;}
+.prose a{color:#0ea5e9;text-decoration:underline;}
+.prose img{max-width:100%;height:auto;border-radius:8px;margin:24px 0;}
+.prose ul,.prose ol{padding-left:24px;}
+.prose li{margin:8px 0;}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0;padding-top:16px;border-top:1px solid #e5e7eb;}
+.tag{background:#f7f8fb;color:#6b7280;font-size:12px;padding:4px 12px;border-radius:999px;}
+.cta-card{background:#f7f8fb;border-radius:12px;padding:24px;margin:32px 0;text-align:center;}
+.cta-card h3{margin:0 0 8px;font-size:18px;color:#0f1e3d;}
+.cta-card p{font-size:14px;color:#6b7280;margin:0 0 16px;}
+.cta-btn{display:inline-block;background:#f59e0b;color:#fff;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;font-size:15px;}
+.back-link{text-align:center;margin:32px 0;}
+.back-link a{color:#6b7280;text-decoration:none;font-size:14px;}
+.back-link a:hover{text-decoration:underline;}
+@media(max-width:640px){.container{padding:16px;}h1{font-size:24px;}.prose{font-size:16px;}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="breadcrumb"><a href="/">Beranda</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; ${cat}</nav>
+<div class="cat-pill">${cat}</div>
+<h1>${title}</h1>
+<div class="meta">${date ? `<span>${date}</span>` : ''}${readTime ? `<span>${readTime} baca</span>` : ''}</div>
+<div class="prose">${body}</div>
+${tagChips ? `<div class="tags">${tagChips}</div>` : ''}
+<div class="cta-card"><h3>Butuh Bantuan Iklan?</h3><p>Konsultasi gratis 15 menit dengan tim performance marketing kami.</p><a class="cta-btn" href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20beriklan%20(setelah%20baca%20artikel%20${encodeURIComponent(slug)}).%20Mohon%20info%20lebih%20lanjut." target="_blank">Diskusi via WhatsApp</a></div>
+<div class="back-link"><a href="/blog/">&larr; Kembali ke Blog</a></div>
+</div>
+</body>
+</html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  } catch {
+    return null;
+  }
 }
 
 // P0.7 build-signature 2026-07-17T06:08:00Z  (forces redeploy)

@@ -1595,20 +1595,22 @@ async function handleAdminSyncPosts(request, env) {
     else if (daysSinceStart > 14) dailyLimit = 100;
     else if (daysSinceStart > 7) dailyLimit = 50;
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
+    const batchSize = Math.min(2, remainingToday); // sebarlah 2 per jam, biar Google crawl santai
 
-    // 1. Get drafts to publish (status='draft', limit = remainingToday)
+    // 1. Get drafts to publish (status='draft', limit = batchSize)
     const draftsToPublish = await env.DB.prepare(
       "SELECT slug, title, content, service, city FROM generated_drafts WHERE status='draft' ORDER BY id ASC LIMIT ?"
-    ).bind(remainingToday).all();
+    ).bind(batchSize).all();
     const drafts = draftsToPublish.results || [];
 
     if (drafts.length === 0) {
       return new Response(JSON.stringify({
         ok: true,
-        message: "No drafts to publish",
+        message: "No drafts to publish (limit reached or all published)",
         total_drafts: totalDrafts,
         published_today: publishedToday,
         daily_limit: dailyLimit,
+        batch_size: batchSize,
       }), { headers: { "Content-Type": "application/json" } });
     }
 
@@ -1832,21 +1834,22 @@ async function handleAdminSyncPosts(request, env) {
        console.error("[sync-posts] alert email error:", String(alertErr).slice(0, 200));
      }
 
-     return new Response(JSON.stringify({
-       ok: true,
-       total_in_d1: posts.length,
-       existing_in_git: existing.length,
-       final_count: finalPosts.length,
-       commit: commitResult,
-       auto_index_enqueued: enqueued,
-       published_this_run: safeDrafts.length,
-       published_today: publishedToday + safeDrafts.length,
-       daily_limit: dailyLimit,
-       remaining_today: Math.max(0, dailyLimit - publishedToday - safeDrafts.length),
-       total_drafts_pending: totalDrafts,
-       total_rejected: rejected,
-       elapsed_ms: Date.now() - t0,
-     }, null, 2), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({
+        ok: true,
+        total_in_d1: posts.length,
+        existing_in_git: existing.length,
+        final_count: finalPosts.length,
+        commit: commitResult,
+        auto_index_enqueued: enqueued,
+        published_this_run: safeDrafts.length,
+        published_today: publishedToday + safeDrafts.length,
+        daily_limit: dailyLimit,
+        batch_size: batchSize,
+        remaining_today: Math.max(0, dailyLimit - publishedToday - safeDrafts.length),
+        total_drafts_pending: totalDrafts,
+        total_rejected: rejected,
+        elapsed_ms: Date.now() - t0,
+      }, null, 2), { headers: { "Content-Type": "application/json" } });
    } catch (e) {
      return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
    }

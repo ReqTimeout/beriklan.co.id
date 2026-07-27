@@ -1712,14 +1712,35 @@ async function handleAdminSyncPosts(request, env) {
         if (putResp.ok) {
           const d = await putResp.json();
           commitResult = { ok: true, sha: d.commit?.sha, url: d.content?.html_url };
-           // Mark drafts as committed
-           for (const draft of safeDrafts) {
-             try {
-               await env.DB.prepare(
-                 "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
-               ).bind(draft.slug).run();
-             } catch {}
-           }
+            // Mark drafts as committed
+            for (const draft of safeDrafts) {
+              try {
+                await env.DB.prepare(
+                  "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
+                ).bind(draft.slug).run();
+                // Also sync to posts_meta + posts_content for dynamic serving
+                const post = finalPosts.find(p => p.slug === draft.slug);
+                if (post) {
+                  await env.DB.prepare(
+                    "INSERT OR IGNORE INTO posts_meta (slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated, iso_updated) VALUES (?,?,?,?,?,?,?,?,?,?,0,1,datetime('now'))"
+                  ).bind(
+                    draft.slug,
+                    post.title || '',
+                    (post.excerpt || '').slice(0, 500),
+                    post.date || '',
+                    post.iso_date || nowIso,
+                    'trending',
+                    post.readTime || '3 min',
+                    JSON.stringify(post.tags || [draft.service, draft.city].filter(Boolean)).slice(0, 1000),
+                    draft.service || '',
+                    draft.city || '',
+                  ).run();
+                  await env.DB.prepare(
+                    "INSERT OR IGNORE INTO posts_content (slug, content) VALUES (?,?)"
+                  ).bind(draft.slug, draft.content).run();
+                }
+              } catch {}
+            }
         } else {
           const errBody = await putResp.text();
           commitResult = { ok: false, status: putResp.status, body: errBody.slice(0, 200) };

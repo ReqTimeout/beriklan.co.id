@@ -543,7 +543,8 @@ export default {
       // Daily 03:00 UTC: seed new keywords for all services (catches up with market trends)
       ctx.waitUntil(run("seed-keywords", handleAdminSeedKeywords, "/api/admin/keywords/seed?token=beriklan-admin-2026&target=all", "seed-keywords"));
     } else if (cron === "0 * * * *") {
-      // Hourly: publish sync (batch 50/jam, max 200/hari indexing). R2 sudah 386rb artikel.
+      // Hourly: AI generate (3 artikel/jam) + publish sync (batch 50/jam, max 200/hari indexing). R2 sudah 386rb artikel.
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft", "hourly"));
       ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
     } else {
       const c = cronMap[cron];

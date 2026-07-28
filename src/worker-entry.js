@@ -516,28 +516,31 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     const cronMap = {
-      "0 * * * *":     { cronName: "hourly", handler: handleHourlyGenerate, path: "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft" },
-      "15 * * * *":    { cronName: "indexnow", handler: handleIndexNowCron, path: "/api/cron/indexnow?token=beriklan-admin-2026&count=50" },
-      "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: "/api/cron/scrape/indonetwork?token=beriklan-admin-2026" },
-      "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: "/api/cron/scrape/google-places?token=beriklan-admin-2026" },
       "*/15 * * * *":  { cronName: "email-send", handler: handleCronSendEmail, path: "/api/cron/email/send?token=beriklan-admin-2026" },
     };
 
-    if (cron === "0 */6 * * *") {
-      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
-      ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
-      ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1", "gsc-indexing"));
-      ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
-      ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
-      // Consolidated from old 30 */6 * * * (trending-generate) + 0 0 * * 1 (snippet-optimize)
-      ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
-      ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
-    } else if (cron === "0 0 1 * *") {
-      ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
-    } else if (cron === "0 * * * *") {
-      // Hourly: AI generate (3 artikel/jam) + publish sync (batch 50/jam, max 200/hari indexing). R2 sudah 386rb artikel.
+    if (cron === "0 * * * *") {
+      // ── Hourly tasks (every hour) ──
       ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft", "hourly"));
       ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
+      ctx.waitUntil(run("indexnow", handleIndexNowCron, "/api/cron/indexnow?token=beriklan-admin-2026&count=50", "indexnow"));
+
+      const h = new Date().getUTCHours();
+      const d = new Date().getUTCDate();
+      // ── Every 6 hours (0,6,12,18 UTC) ──
+      if (h % 6 === 0) {
+        ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
+        ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
+        ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1", "gsc-indexing"));
+        ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
+        ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
+        ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
+        ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
+      }
+      // ── 1st of month at 00:00 UTC ──
+      if (d === 1 && h === 0) {
+        ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
+      }
     } else {
       const c = cronMap[cron];
       if (c) {

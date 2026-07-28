@@ -529,19 +529,11 @@ export default {
       ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1", "gsc-indexing"));
       ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
       ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
-    } else if (cron === "30 */6 * * *") {
+      // Consolidated from old 30 */6 * * * (trending-generate) + 0 0 * * 1 (snippet-optimize)
       ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
+      ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
     } else if (cron === "0 0 1 * *") {
       ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
-    } else if (cron === "0 0 * * 1") {
-      ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
-    } else if (cron === "0 1 * * *") {
-      // Daily 01:00 UTC: refill D1 buffer from R2 queue, then sync posts
-      ctx.waitUntil(run("queue-refill", handleQueueRefill, "/api/admin/queue/refill?token=beriklan-admin-2026", "sync-posts"));
-      ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
-    } else if (cron === "0 3 * * *") {
-      // Daily 03:00 UTC: seed new keywords for all services (catches up with market trends)
-      ctx.waitUntil(run("seed-keywords", handleAdminSeedKeywords, "/api/admin/keywords/seed?token=beriklan-admin-2026&target=all", "seed-keywords"));
     } else if (cron === "0 * * * *") {
       // Hourly: AI generate (3 artikel/jam) + publish sync (batch 50/jam, max 200/hari indexing). R2 sudah 386rb artikel.
       ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft", "hourly"));

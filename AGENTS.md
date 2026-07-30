@@ -329,7 +329,7 @@ Pattern: `[Primary Keyword] · [Secondary Keyword] · [Context]`
 Contoh:
 ```
 "Jasa iklan Facebook Ads dengan targeting presisi dan creative yang teruji.
-Tim bersertifikasi Meta Business Partner sejak 2016. Sesi konsultasi awal 15 menit — gratis."
+Tim bersertifikasi Meta Business Partner sejak 2016. Sesi konsultasi via WhatsApp."
 ```
 
 ### 5.5 Schema Markup (JSON-LD)

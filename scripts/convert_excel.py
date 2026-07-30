@@ -435,7 +435,7 @@ def main():
             category = "paid-ads"
             faqs = [
                 {"q": f"Berapa biaya {s['name']} di Beriklan?",
-                 "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi awal 15 menit gratis."},
+                 "a": "Biaya bervariasi tergantung paket dan objectif campaign. Paket mulai Rp 12K untuk paket pemanasan, hingga paket premium Rp 175K untuk campaign terukur dengan pendampingan penuh. Hubungi kami untuk konsultasi via WhatsApp."},
                 {"q": f"Berapa lama setup campaign {s['name']}?",
                  "a": "Setup awal 1-3 hari kerja termasuk riset audience, pembuatan creative, dan konfigurasi tracking pixel. Campaign live dalam minggu pertama setelah persetujuan strategi."},
                 {"q": f"Apakah saya dapat akses penuh ke akun iklan?",
@@ -493,7 +493,7 @@ def main():
                 {"q": "Apa yang termasuk Jasa Digital Marketing?",
                  "a": "Strategi marketing online end-to-end: ads (Meta, Google, TikTok, YouTube) + organic content (Instagram, TikTok) + landing page + analytics. Bisa pilih paket atau full."},
                 {"q": "Berapa biaya keseluruhan?",
-                 "a": "Tergantung scope dan channel. Konsultasi awal gratis untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."},
+                 "a": "Tergantung scope dan channel. Konsultasi awal untuk audit bisnis + rekomendasi strategi + estimasi budget + ROI projection."},
                 {"q": "Berapa lama komitmen kontrak?",
                  "a": "Minimum 3 bulan untuk setup awal + learning phase. Setelah 3 bulan evaluasi, bisa lanjut bulanan."},
                 {"q": "Bagaimana jika belum pernah pakai iklan?",
@@ -542,8 +542,8 @@ def main():
     # ---- 6) Local FAQs matrix (city × service common pattern) ----
     local_faqs = []
     generic_faq_pairs = [
-        ("Berapa biaya {SERVICE} di {CITY}?", "Biaya {SERVICE} di {CITY} bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi gratis."),
-        ("Apakah melayani UMKM di {CITY}?", "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal gratis."),
+        ("Berapa biaya {SERVICE} di {CITY}?", "Biaya {SERVICE} di {CITY} bervariasi sesuai paket. Paket mulai Rp 12K untuk entry, paket premium Rp 175K untuk pendampingan penuh. Hubungi kami untuk konsultasi."),
+        ("Apakah melayani UMKM di {CITY}?", "Ya, 80% klien kami UMKM. Minimum budget iklan Rp 50-100K/hari, fee manajemen terpisah. Konsultasi awal."),
         ("Berapa lama setup campaign {SERVICE} di {CITY}?", "Setup 1-3 hari termasuk riset lokal {CITY}, audience targeting, creative, dan pixel tracking. Campaign live di minggu pertama."),
         ("Bagaimana laporan hasil campaign?", "Dashboard real-time untuk monitoring sendiri + laporan mingguan via WhatsApp berisi spend, reach, CPA, ROAS, dan rekomendasi iterasi."),
         ("Apakah ada kantor fisik di {CITY}?", "Tim kami Bandung, melayani klien seluruh Indonesia via online (Zoom/Meet). Untuk {CITY} kami bisa onsite meeting dengan notice 2 minggu."),

@@ -76,7 +76,7 @@ Berbeda dari agensi yang sekadar "pasang iklan", kami bekerja seperti partner: a
 
 Tim kami bersertifikasi Meta Business Partner dan Google Partner, dengan pengalaman mengelola ratusan campaign dari e-commerce, properti, edutech, F&B, hingga jasa profesional. Bahasa manusia, transparansi penuh, dan hasil yang bisa dipertanggungjawabkan.
 
-Klien kami biasanya mulai dari audit campaign gratis (15 menit via WhatsApp), lalu paket implementasi mulai Rp 5.000.000 / bulan. Respon 1 jam (jam kerja), tim online setiap hari, dan konsultan berpengalaman yang bisa menjelaskan strategi dalam bahasa sederhana — bukan jargon.
+Klien kami biasanya mulai dari audit campaign via WhatsApp, lalu paket implementasi mulai Rp 5.000.000 / bulan. Respon 1 jam (jam kerja), tim online setiap hari, dan konsultan berpengalaman yang bisa menjelaskan strategi dalam bahasa sederhana — bukan jargon.
 ```
 
 ---

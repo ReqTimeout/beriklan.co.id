@@ -10,7 +10,7 @@
             Icon: Coffee,
             title: 'Konsultasi',
             duration: '1 hari',
-            body: 'Diskusi gratis 15-30 menit untuk pahami bisnis dan target Anda. Kami di sini untuk dengerin, bukan langsung jualan.',
+            body: 'Diskusi untuk pahami bisnis dan target Anda. Kami di sini untuk dengerin, bukan langsung jualan.',
             deliverables: ['Business profile review', 'Goal mapping', 'Budget recommendation'],
         },
         {
@@ -111,7 +111,7 @@
 
         <!-- CTA bottom -->
         <div class="text-center mt-14">
-            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-accent hover:text-ink transition shadow-md hover:shadow-lg">
+            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-accent hover:text-ink transition shadow-md hover:shadow-lg">
                 Mulai dari Step 1 Sekarang
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </a>

@@ -128,7 +128,7 @@
 
         <!-- Bottom CTA -->
         <div class="mt-14 text-center">
-            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-accent hover:text-ink transition-all shadow-md group anim-fade-up btn-shine" style="animation-delay: 600ms;">
+            <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-ink text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-accent hover:text-ink transition-all shadow-md group anim-fade-up btn-shine" style="animation-delay: 600ms;">
                 <span class="relative z-10 flex items-center gap-2">
                     Tanya Detail di WhatsApp
                     <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />

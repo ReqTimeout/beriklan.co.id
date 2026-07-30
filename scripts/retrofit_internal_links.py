@@ -72,7 +72,7 @@ def build_block(post):
 {MARKER}
 <hr/>
 <h2>{heading}</h2>
-<p>Tim Beriklan mengelola campaign sejak 2016 — transparan, terukur, dengan laporan mingguan dan akses penuh ke akun Anda. Sesi konsultasi awal 15 menit, gratis.</p>
+<p>Tim Beriklan mengelola campaign sejak 2016 — transparan, terukur, dengan laporan mingguan dan akses penuh ke akun Anda. Sesi konsultasi via WhatsApp.</p>
 <ul>
 {chr(10).join(items)}
 <li><a href="{wa}" rel="nofollow">Konsultasi via WhatsApp — respon dalam 1 jam (jam kerja)</a></li>

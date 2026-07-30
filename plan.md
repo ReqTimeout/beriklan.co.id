@@ -409,7 +409,7 @@ e.g., "Jakarta sebagai pusat bisnis Indonesia dengan 12jt+ UMKM aktif")
 ## FAQ [Service] [City]
 - 4-5 questions specific to local context
 
-## CTA: Konsultasi Gratis
+## CTA: Hubungi Kami
 - WhatsApp button
 ```
 
@@ -2765,7 +2765,7 @@ Total time dari trending discovery ke live + indexed:
   
   <div class="cta-box">
     <h3>Mau diskusi {trend} untuk bisnis Anda?</h3>
-    <p>Konsultasi gratis 15 menit. Tim Beriklan online · respon 1 jam (jam kerja).</p>
+    <p>Konsultasi. Tim Beriklan online · respon 1 jam (jam kerja).</p>
     <a href="{wa_link}">Chat WhatsApp</a>
   </div>
   

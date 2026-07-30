@@ -109,6 +109,9 @@ export default {
     if (path === "/api/_test_route" || path === "/api/_test_route/") {
       return new Response(JSON.stringify({ ok: true, marker: "PI_2026-07-21", timestamp: new Date().toISOString(), env_check_route: "registered", worker_fix: "escapeHtml deduped, refresh AI result handling" }), { headers: { "Content-Type": "application/json" } });
     }
+    if (path === "/llms.txt") {
+      return await handleLlmsTxt(request, env);
+    }
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);
     }
@@ -126,6 +129,9 @@ export default {
     }
     if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
       return await handleGscIndexing(request, env);
+    }
+    if (path === "/api/cron/index-verify" || path === "/api/cron/index-verify/") {
+      return await handleIndexVerify(request, env);
     }
     if (path === "/api/cron/indexnow" || path === "/api/cron/indexnow/") {
       return await handleIndexNowCron(request, env);
@@ -248,6 +254,9 @@ export default {
       }
       return await handleAdminKeys(request, env);
     }
+    if (path === "/api/admin/keywords/list" || path === "/api/admin/keywords/list/") {
+      return await handleKeywordList(request, env);
+    }
     if (path === "/api/admin/keywords" || path === "/api/admin/keywords/") {
       return await handleKeywordDashboard(request, env);
     }
@@ -264,6 +273,10 @@ export default {
         return new Response(JSON.stringify({ ok: false, error: "Rate limit exceeded" }), { status: 429, headers: { "Content-Type": "application/json" } });
       }
       return await handleAdminDashboard(request, env);
+    }
+
+    if (path === "/api/admin/posts" || path === "/api/admin/posts/") {
+      return await handlePostsDashboard(request, env);
     }
 
     // ─── Email Campaign System Routes ────────────────────────────
@@ -325,6 +338,18 @@ export default {
     // Dynamic sitemap-blog.xml — includes committed drafts from queue
     if (path === "/sitemap-blog.xml") {
       return await handleBlogSitemap(env);
+    }
+
+    // /sitemap.xml — conventional alias serving the sitemap index (some tools/GSC probe this path)
+    if (path === "/sitemap.xml") {
+      try {
+        const r = await env.ASSETS.fetch(new URL("https://assets/sitemap-index.xml"));
+        if (r.ok) {
+          const body = await r.text();
+          return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+        }
+      } catch (e) {}
+      return new Response(null, { status: 301, headers: { "Location": "/sitemap-index.xml" } });
     }
 
     // IndexNow trigger — submit new URLs
@@ -530,8 +555,9 @@ export default {
       // ── Every 6 hours (0,6,12,18 UTC) ──
       if (h % 6 === 0) {
         ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
+        ctx.waitUntil(run("index-verify", handleIndexVerify, "/api/cron/index-verify?token=beriklan-admin-2026&count=50", "index-verify"));
         ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
-        ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=1", "gsc-indexing"));
+        ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=5", "gsc-indexing"));
         ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
@@ -719,8 +745,8 @@ async function handleAdminHealth(request, env) {
   if (env.RESEND_API_KEY) {
     health.components.resend = {
       status: "configured",
-      daily_quota_limit: 500,
-      note: "Free tier Resend"
+      daily_quota_limit: 100,
+      note: "Free tier Resend (100/day)"
     };
   } else {
     health.components.resend = { status: "missing" };
@@ -821,15 +847,20 @@ async function handleAdminDrafts(request, env) {
   if (!env.DB) return new Response("DB not available", { status: 503 });
 
   try {
+    const [totalR, pendingR, committedR] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts").first(),
+      env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status IN ('draft', 'pending')").first(),
+      env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed'").first(),
+    ]);
+    const total = totalR?.n || 0;
+    const pending = pendingR?.n || 0;
+    const committed = committedR?.n || 0;
     const rows = await env.DB.prepare(
       `SELECT id, slug, title, service, city, source, status, created_at, committed_at
        FROM generated_drafts
        ORDER BY id DESC LIMIT 100`
     ).all();
     const drafts = rows.results || [];
-    const total = drafts.length;
-    const pending = drafts.filter(d => d.status === "draft" || d.status === "pending").length;
-    const committed = drafts.filter(d => d.status === "committed").length;
 
     if (url.searchParams.get("format") === "json") {
       return new Response(JSON.stringify({ ok: true, total, pending, committed, drafts }, null, 2), {
@@ -3288,6 +3319,52 @@ async function handleAdminDashboard(request, env) {
     stats.cron_settings = [];
   }
 
+  // 8. Indexing Funnel — dari keyword → published → submitted → indexed
+  try {
+    const kwPending = await env.DB.prepare("SELECT COUNT(*) c FROM keyword_queue WHERE status='pending'").first();
+    const kwGenerated = await env.DB.prepare("SELECT COUNT(*) c FROM keyword_queue WHERE status='generated'").first();
+    const drafts = await env.DB.prepare("SELECT COUNT(*) c FROM generated_drafts WHERE status='draft'").first();
+    const published = await env.DB.prepare("SELECT COUNT(*) c FROM posts_meta").first();
+    const piRows = await env.DB.prepare("SELECT status, COUNT(*) n FROM pending_indexing GROUP BY status").all();
+    const pi = {};
+    for (const row of (piRows.results || [])) pi[row.status] = row.n;
+    const submitted = pi["gsc_submitted"] || 0;
+    const indexed = pi["indexed"] || 0;
+    const pendingIdx = pi["pending"] || 0;
+    let resubmit = 0;
+    try {
+      const rs = await env.DB.prepare("SELECT COUNT(*) c FROM pending_indexing WHERE COALESCE(resubmit_count,0) > 0 AND status != 'indexed'").first();
+      resubmit = rs?.c || 0;
+    } catch {}
+    // Index verify quota (WIB)
+    let ivUsed = 0, ivDate = "";
+    try {
+      const d = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='iv_quota_date'").first();
+      const u = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='iv_quota_used'").first();
+      ivDate = d?.cron || ""; ivUsed = parseInt(u?.cron || "0", 10) || 0;
+    } catch {}
+    const submittedTotal = submitted + indexed;
+    const indexRate = submittedTotal > 0 ? Math.round((indexed / submittedTotal) * 100) : 0;
+    // Alert kalau index rate rendah tapi sudah banyak submitted, atau backlog resubmit menumpuk
+    const alerts = [];
+    if (submittedTotal >= 50 && indexRate < 30) alerts.push(`Index rate rendah: ${indexRate}% (${indexed}/${submittedTotal} terindex)`);
+    if (resubmit >= 100) alerts.push(`${resubmit} URL menunggu re-submit (belum terindex)`);
+    if (pendingIdx >= 500) alerts.push(`Backlog ${pendingIdx} URL belum di-submit ke GSC`);
+    stats.funnel = {
+      kw_pending: kwPending?.c || 0,
+      kw_generated: kwGenerated?.c || 0,
+      drafts: drafts?.c || 0,
+      published: published?.c || 0,
+      submitted, indexed, pending_index: pendingIdx,
+      queued_resubmit: resubmit,
+      index_rate: indexRate,
+      iv_quota_used: ivUsed, iv_quota_date: ivDate,
+      alerts,
+    };
+  } catch (e) {
+    stats.funnel = { error: e.message };
+  }
+
   // If ?format=json → return JSON
   if (url.searchParams.get("format") === "json") {
     return new Response(JSON.stringify(stats, null, 2), { headers: { "Content-Type": "application/json" } });
@@ -3333,6 +3410,28 @@ function renderDashboard(stats, token) {
   const cronSettingsRows = (stats.cron_settings || []).map(c => `
     <tr><td><strong>${c.name}</strong><br><small style="color:#666;">${c.label || ''}</small></td><td>${c.enabled ? '<span class="badge green">✓ AKTIF</span>' : '<span class="badge red">⏸ PAUSED</span>'}</td><td><a href="/api/admin/cron/toggle?token=${token}&name=${c.name}" onclick="event.preventDefault(); fetch(this.href,{method:'POST'}).then(()=>location.reload())" class="toggle-link">${c.enabled ? 'Pause' : 'Enable'}</a></td></tr>
   `).join('');
+
+  // Indexing Funnel card (keyword → draft → published → submitted → indexed)
+  const f = stats.funnel || {};
+  const funnelAlerts = (f.alerts || []).map(a => `<div class="health-banner warning" style="margin-bottom:10px;">⚠️ ${a}</div>`).join('');
+  const fmax = Math.max(f.published || 0, f.submitted || 0, f.indexed || 0, 1);
+  const fbar = (n, color) => `<div style="background:#f0f0f0;border-radius:6px;height:10px;flex:1;"><div style="background:${color};height:10px;border-radius:6px;width:${Math.min(100, Math.round(((n || 0) / fmax) * 100))}%;"></div></div>`;
+  const frow = (label, n, color, extra) => `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;"><div style="width:170px;font-size:12px;color:#444;">${label}</div>${fbar(n, color)}<div style="width:110px;text-align:right;font-size:13px;font-weight:700;">${(n || 0).toLocaleString('id-ID')}${extra || ''}</div></div>`;
+  const funnelCard = f.error ? `<div class="card warning"><div class="card-head"><h2>📈 Indexing Funnel</h2></div><p style="font-size:12px;color:#721c24;">Error: ${f.error}</p></div>` : `
+  <div class="card">
+    <div class="card-head">
+      <h2>📈 Indexing Funnel</h2>
+      <small class="muted">Index rate: <strong>${f.index_rate || 0}%</strong> · verify quota ${f.iv_quota_used || 0}/300 (${f.iv_quota_date || '-'})</small>
+    </div>
+    ${frow('Keyword pending', f.kw_pending, '#94a3b8')}
+    ${frow('Keyword → artikel (generated)', f.kw_generated, '#0ea5e9')}
+    ${frow('Draft menunggu publish', f.drafts, '#f59e0b')}
+    ${frow('Published (posts_meta)', f.published, '#0f1e3d')}
+    ${frow('Submitted ke GSC', f.submitted, '#8b5cf6')}
+    ${frow('Terindex Google', f.indexed, '#10b981')}
+    ${frow('Antri re-submit (belum terindex)', f.queued_resubmit, '#dc2626')}
+    <p style="font-size:11px;color:#999;margin-top:8px;">Loop otomatis: index-verify (tiap 6 jam) cek URL yang di-submit ≥ 2 hari → belum terindex di-reset agar di-submit ulang oleh gsc-indexing.</p>
+  </div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -3389,6 +3488,7 @@ function renderDashboard(stats, token) {
 
   <div class="quick-links">
     <a href="/api/admin/email?token=${token}">📧 Email Dashboard</a>
+    <a href="/api/admin/posts?token=${token}">📄 Posts & Keywords</a>
     <a href="/api/admin/keywords?token=${token}">🎯 Keyword Pipeline</a>
     <a href="/api/admin/env-check?token=${token}">🔑 Env Check</a>
     <a href="/api/admin/health?token=${token}">🏥 Health JSON</a>
@@ -3401,6 +3501,9 @@ function renderDashboard(stats, token) {
       healthStatus === 'warning' ? `⚠️ ${recentFailed} cron run gagal terdeteksi. Cek detail di bawah.` :
       `🚨 ${recentFailed} cron run gagal. Auto-pause mungkin sudah aktif — cek tab Cron.`}
   </div>
+
+  ${funnelAlerts}
+  ${funnelCard}
 
   <!-- Top KPI Grid -->
   <div class="grid">
@@ -3496,6 +3599,360 @@ function getGroqKeys(env) {
     if (k && !keys.includes(k)) keys.push(k);
   }
   return keys;
+}
+
+async function handlePostsDashboard(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+
+  // POST: resubmit slug(s) to IndexNow + reset pending_indexing
+  if (request.method === "POST") {
+    let slug = "", bulk = false;
+    try {
+      const body = await request.formData();
+      slug = body.get("slug") || "";
+      bulk = body.get("resubmit_all") === "1" || slug === "__all__";
+    } catch { return new Response(JSON.stringify({ ok: false, error: "invalid form" }), { headers: { "Content-Type": "application/json" } }); }
+
+    let urls = [];
+    if (bulk) {
+      const pending = await env.DB.prepare("SELECT url FROM pending_indexing WHERE status='pending'").all();
+      urls = (pending.results || []).map(r => r.url);
+      // Queue semua posts_meta yang belum ada di pending_indexing (www agar match GSC property)
+      const allPosts = await env.DB.prepare("SELECT slug FROM posts_meta").all();
+      const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
+      const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
+      for (const p of (allPosts.results || [])) {
+        const pu = `https://www.beriklan.co.id/blog/${p.slug}/`;
+        if (!existingSet.has(pu)) {
+          urls.push(pu);
+          await env.DB.prepare("INSERT OR IGNORE INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))").bind(pu).run();
+        }
+      }
+      // Reset gsc_submitted_at yang masih pending (1 statement, hemat limit D1)
+      await env.DB.prepare("UPDATE pending_indexing SET gsc_submitted_at=NULL WHERE status='pending'").run();
+    } else {
+      if (!slug) return new Response(JSON.stringify({ ok: false, error: "no slug" }), { headers: { "Content-Type": "application/json" } });
+      const u1 = `https://beriklan.co.id/blog/${slug}/`, u2 = `https://www.beriklan.co.id/blog/${slug}/`;
+      urls = [u2];
+      // Row bisa tersimpan www atau non-www — reset keduanya; kalau belum ada, insert baru
+      const res = await env.DB.prepare("UPDATE pending_indexing SET status='pending', gsc_submitted_at=NULL WHERE url IN (?, ?)").bind(u1, u2).run();
+      if (!(res?.meta?.changes)) {
+        await env.DB.prepare("INSERT OR IGNORE INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))").bind(u2).run();
+      }
+    }
+
+    // Submit langsung ke IndexNow — payload identik dengan cron (host www WAJIB match urlList, key asli)
+    const submitUrls = urls.slice(0, 100).map(u => u.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/"));
+    let inAccepted = false;
+    if (submitUrls.length) {
+      const inPayload = JSON.stringify({
+        host: "www.beriklan.co.id",
+        key: "2dac33f6303f4041b9ec7e2f2910ea80",
+        keyLocation: "https://www.beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt",
+        urlList: submitUrls,
+      });
+      for (const ep of ["https://www.bing.com/indexnow", "https://api.indexnow.org/indexnow", "https://yandex.com/indexnow"]) {
+        try {
+          const resp = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" }, body: inPayload });
+          if (resp.ok || resp.status === 202) { inAccepted = true; break; }
+        } catch {}
+      }
+    }
+
+    return new Response(JSON.stringify({ ok: true, submitted: submitUrls.length, indexnow_accepted: inAccepted, total: urls.length }), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // GET: load data (urut kronologis pakai iso_date — kolom `date` string Indonesia, salah sort)
+  const [postsRes, idxRes, kwRes, totalRes] = await Promise.all([
+    env.DB.prepare("SELECT * FROM posts_meta ORDER BY iso_date DESC LIMIT 500").all(),
+    env.DB.prepare("SELECT url, status, indexnow_at, gsc_submitted_at, index_state, resubmit_count FROM pending_indexing").all(),
+    env.DB.prepare("SELECT keyword, posts FROM keyword_map").all(),
+    env.DB.prepare("SELECT COUNT(*) n FROM posts_meta").first(),
+  ]);
+  const totalPosts = totalRes?.n || 0;
+
+  // Calculate stats
+  const idxStats = {};
+  let resubmitQueue = 0;
+  for (const r of (idxRes.results || [])) {
+    idxStats[r.status] = (idxStats[r.status] || 0) + 1;
+    if ((r.resubmit_count || 0) > 0 && r.status !== "indexed") resubmitQueue++;
+  }
+
+  // Build slug→indexing lookup — URL di DB bisa www ATAU non-www, keduanya harus match
+  const idxMap = {};
+  for (const r of (idxRes.results || [])) {
+    const slug = r.url.replace(/^https:\/\/(www\.)?beriklan\.co\.id\/blog\//, "").replace(/\/$/, "");
+    if (!idxMap[slug] || r.url.startsWith("https://www.")) idxMap[slug] = r; // row www menang (GSC pakai www)
+  }
+
+  // Build slug→keywords lookup (keyword_map: keyword → [slug1,slug2,...])
+  const slugKw = {};
+  for (const kw of (kwRes.results || [])) {
+    try {
+      const slugs = JSON.parse(kw.posts || "[]");
+      for (const s of slugs) {
+        if (!slugKw[s]) slugKw[s] = [];
+        if (slugKw[s].length < 3) slugKw[s].push(kw.keyword);
+      }
+    } catch {}
+  }
+
+  // Group posts by service
+  const byService = {};
+  const posts = postsRes.results || [];
+  for (const p of posts) {
+    const svc = p.service || p.category || "uncategorized";
+    if (!byService[svc]) byService[svc] = { posts: [], total: 0, indexed: 0, submitted: 0, pending: 0, unknown: 0 };
+    byService[svc].posts.push(p);
+    byService[svc].total++;
+    const s = idxMap[p.slug]?.status || "unknown";
+    if (s === "indexed") byService[svc].indexed++;
+    else if (s === "gsc_submitted") byService[svc].submitted++;
+    else if (s === "pending") byService[svc].pending++;
+    else byService[svc].unknown++;
+  }
+
+  // Posted hari ini (WIB) — dari 500 post terbaru
+  const todayWib = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+  const todayPosts = posts.filter(p => (p.iso_date || "").slice(0, 10) === todayWib);
+
+  // Badge status index (4 state + counter re-submit dari loop verify)
+  const stBadge = (st, rc) => {
+    const b = st === "indexed" ? '<span class="badge b-green">✓ indexed</span>'
+      : st === "gsc_submitted" ? '<span class="badge b-blue">⇧ GSC</span>'
+      : st === "pending" ? '<span class="badge b-amber">⏳ antri</span>'
+      : '<span class="badge b-gray">—</span>';
+    return b + ((rc || 0) > 0 ? ` <span class="badge b-amber" title="sudah di-resubmit ${rc}x oleh loop verify">↻${rc}</span>` : "");
+  };
+
+  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Posts — Beriklan Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f6fa;font-family:Inter,sans-serif;color:#0f1e3d;line-height:1.5}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.sidebar{background:#0f1e3d;color:#cbd5e1;padding:28px 20px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+@media(max-width:900px){.sidebar{flex-direction:row;flex-wrap:wrap;padding:14px;height:auto;position:static}}
+.sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:0 8px}
+.sidebar-brand span{font-weight:800;font-size:16px;color:#fff}
+.sidebar a.nav{padding:10px 14px;border-radius:8px;font-size:14px;display:flex;align-items:center;gap:10px;color:#cbd5e1;font-weight:500}
+.sidebar a.nav:hover{background:rgba(255,255,255,0.06);color:#fff}
+.sidebar a.nav.active{background:#1a2f5c;color:#fff;font-weight:600}
+.sidebar-foot{margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b}
+@media(max-width:900px){.sidebar-foot{display:none}}
+.main{padding:32px 40px;overflow-x:hidden}
+@media(max-width:900px){.main{padding:18px}}
+.page-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-head h1{font-size:24px;font-weight:800}
+.page-head p{color:#6b7280;font-size:13px;margin-top:2px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:#fff;border-radius:14px;padding:18px 20px;border:1px solid #f0f1f5;display:flex;flex-direction:column;gap:6px}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;font-weight:700}
+.kpi-val{font-size:26px;font-weight:800;line-height:1.1;color:#0f1e3d}
+.kpi-sub{font-size:11px;color:#6b7280}
+.kpi-bar{height:4px;background:#f0f1f5;border-radius:2px;margin-top:6px;overflow:hidden}
+.kpi-bar>div{height:100%;background:linear-gradient(90deg,#0f1e3d,#f59e0b)}
+.card{background:#fff;border-radius:14px;padding:20px;border:1px solid #f0f1f5;margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.card-head h2{font-size:16px;font-weight:700}
+.card-head .badge-wrap{font-size:12px;color:#6b7280}
+table{width:100%;border-collapse:collapse;font-size:13px;border-radius:12px;overflow:hidden;border:1px solid #f0f1f5}
+th{background:#fafbfc;color:#475569;padding:12px 16px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;border-bottom:1px solid #e5e7eb}
+td{padding:14px 16px;border-bottom:1px solid #f0f1f5;font-size:13px}
+tr:hover td{background:#fafbfc}
+tr:last-child td{border-bottom:none}
+a{text-decoration:none;color:inherit}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.b-green{background:#d1fae5;color:#065f46}
+.b-amber{background:#fef3c7;color:#92400e}
+.b-gray{background:#f1f5f9;color:#475569}
+.b-blue{background:#dbeafe;color:#1e40af}
+.btn-outline{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;font-weight:500;font-size:11px;cursor:pointer;background:#fff;color:#0f1e3d;border:1px solid #d1d5db}
+.btn-outline:hover{background:#f9fafb}
+.success-flash{background:#d1fae5;color:#065f46;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:600}
+</style></head><body>
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-brand"><span>Beriklan</span></div>
+<a href="/api/admin?token=${token}" class="nav">🏠 Dashboard Utama</a>
+<a href="/api/admin/email?token=${token}" class="nav">📧 Email</a>
+<a href="?token=${token}" class="nav active">📄 Posts & Keywords</a>
+<a href="/api/admin/keywords?token=${token}" class="nav">🎯 Keyword Pipeline</a>
+<a href="/api/admin/drafts?token=${token}" class="nav">📝 Drafts</a>
+<div class="sidebar-foot">${totalPosts} posts · ${idxStats.indexed || 0} indexed<br>IndexNow tiap jam · GSC + verify tiap 6 jam</div>
+</aside>
+<div class="main">
+<div class="page-head"><div><h1>Posts & Keywords</h1><p>Published posts, primary keywords, indexing status per layanan.</p></div>
+<form method="POST" action="/api/admin/posts?token=${token}" style="display:inline" id="bulk-form">
+<input type="hidden" name="resubmit_all" value="1">
+<button class="btn-outline" onclick="if(!confirm('Resubmit ALL pending posts to IndexNow?')){event.preventDefault();return false}">↻ Resubmit All Pending</button>
+</form></div>
+
+<div class="kpi-grid">
+<div class="kpi"><span class="kpi-label">📄 Total Posts</span><span class="kpi-val">${totalPosts.toLocaleString('id-ID')}</span><span class="kpi-sub">published (${posts.length} terbaru ditampilkan)</span></div>
+<div class="kpi"><span class="kpi-label">🗓 Hari Ini</span><span class="kpi-val">${todayPosts.length}</span><span class="kpi-sub">diposting ${todayWib} (WIB)</span></div>
+<div class="kpi"><span class="kpi-label">✅ Indexed</span><span class="kpi-val">${idxStats.indexed || 0}</span><span class="kpi-sub">terverifikasi Google</span></div>
+<div class="kpi"><span class="kpi-label">⇧ Submitted GSC</span><span class="kpi-val">${idxStats.gsc_submitted || 0}</span><span class="kpi-sub">menunggu crawl Google</span></div>
+<div class="kpi"><span class="kpi-label">⏳ Antri Submit</span><span class="kpi-val">${idxStats.pending || 0}</span><span class="kpi-sub">kuota GSC 200/hari</span></div>
+<div class="kpi"><span class="kpi-label">↻ Resubmit Loop</span><span class="kpi-val">${resubmitQueue}</span><span class="kpi-sub">auto re-submit oleh worker</span></div>
+</div>
+
+<div class="card">
+<div class="card-head">
+<h2>🗓 Diposting Hari Ini (${todayWib} WIB)</h2>
+<span class="badge-wrap">${todayPosts.length} artikel · IndexNow otomatis tiap jam · GSC submit tiap 6 jam</span>
+</div>
+${todayPosts.length === 0 ? '<p style="font-size:13px;color:#6b7280">Belum ada post hari ini — cron hourly-generate jalan tiap jam.</p>' : `<table><thead><tr><th>Title</th><th style="width:22%">Layanan</th><th style="width:18%">Status Index</th></tr></thead>
+<tbody>${todayPosts.slice(0, 50).map(p => {
+  const idx = idxMap[p.slug];
+  return `<tr>
+<td><a href="/blog/${p.slug}/" target="_blank" style="font-weight:600;color:#0f1e3d">${esc(p.title || p.slug)}</a></td>
+<td style="color:#475569;font-size:12px">${esc(p.service || p.category || "-")}</td>
+<td>${stBadge(idx?.status || "unknown", idx?.resubmit_count)}</td>
+</tr>`;
+}).join("")}</tbody></table>${todayPosts.length > 50 ? `<p style="font-size:11px;color:#9ca3af;margin-top:8px">Menampilkan 50 dari ${todayPosts.length} post hari ini.</p>` : ""}`}
+</div>
+
+${Object.entries(byService).sort().map(([svc, data]) => {
+  const pct = data.total > 0 ? Math.round(data.indexed / data.total * 100) : 0;
+  return `<div class="card">
+<div class="card-head">
+<h2>${esc(svc)}</h2>
+<span class="badge-wrap">${data.total} posts · ${data.indexed} indexed (${pct}%) · ${data.submitted} di GSC · ${data.pending} antri · ${data.unknown} belum masuk queue</span>
+</div>
+<div class="kpi-bar" style="margin-bottom:12px"><div style="width:${pct}%"></div></div>
+<table><thead><tr><th>Title</th><th style="width:22%">Primary Keyword</th><th style="width:13%">Index</th><th style="width:16%">Last Sub</th><th style="width:10%"></th></tr></thead>
+<tbody>${data.posts.map(p => {
+  const idx = idxMap[p.slug];
+  const kws = slugKw[p.slug] || [];
+  const pk = kws[0] || (p.tags ? p.tags.split(",")[0] : null) || p.title;
+  const st = idx?.status || "unknown";
+  const badge = stBadge(st, idx?.resubmit_count);
+  const lastSub = (idx?.gsc_submitted_at || idx?.indexnow_at || "").slice(0, 10);
+  return `<tr>
+<td><a href="/blog/${p.slug}/" target="_blank" style="font-weight:600;color:#0f1e3d">${esc(p.title || p.slug)}</a><br><span style="font-size:10px;color:#9ca3af">/${p.slug}/</span></td>
+<td style="color:#475569;font-size:12px">${esc(pk)}</td>
+<td>${badge}</td>
+<td style="font-size:11px;color:#6b7280">${lastSub || "-"}</td>
+<td>${st !== "indexed" ? `<form method="POST" style="display:inline"><input type="hidden" name="slug" value="${esc(p.slug)}"><button class="btn-outline">↻</button></form>` : ""}</td>
+</tr>`;
+}).join("")}</tbody></table>
+</div>`;
+}).join("")}
+
+</div></div>
+<script>
+document.querySelectorAll("form[method=POST]").forEach(f => {
+  f.addEventListener("submit", async function(e) {
+    if (!this.querySelector("button")) return;
+    const btn = this.querySelector("button");
+    btn.disabled = true; btn.textContent = "⏳";
+    if (this.id === "bulk-form") {
+      // Bulk resubmit all pending — page refresh after
+      return;
+    }
+    e.preventDefault();
+    const fd = new FormData(this);
+    const r = await fetch(this.action, { method: "POST", body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      btn.textContent = "✓"; btn.style.background = "#d1fae5";
+      setTimeout(() => location.reload(), 800);
+    } else { btn.textContent = "✗"; btn.style.background = "#fee2e2"; }
+  });
+});
+</script>
+</body></html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+// ─── /llms.txt — AI search discovery (ChatGPT Search, Perplexity, Gemini, dll) ───────
+//   Format llmstxt.org: markdown ringkas berisi peta konten agar AI crawler cepat
+//   memahami situs tanpa crawl penuh. Di-cache 6 jam di edge.
+async function handleLlmsTxt(request, env) {
+  let recentList = "";
+  try {
+    const r = await env.DB.prepare(
+      "SELECT slug, title, excerpt FROM posts_meta ORDER BY iso_date DESC LIMIT 100"
+    ).all();
+    recentList = (r.results || [])
+      .map(p => `- [${(p.title || p.slug).replace(/[\[\]]/g, "")}](https://www.beriklan.co.id/blog/${p.slug}/)${p.excerpt ? ": " + String(p.excerpt).slice(0, 120).replace(/[\[\]\n]/g, " ") : ""}`)
+      .join("\n");
+  } catch {}
+
+  const body = `# Beriklan.co.id
+
+> Agency performance marketing Indonesia berbasis Bandung sejak 2016. Mengelola campaign iklan Meta (Facebook/Instagram), Google Ads, TikTok Ads, YouTube Ads, dan pembuatan landing page untuk UMKM & bisnis menengah Indonesia. Konsultasi via WhatsApp, laporan mingguan, dashboard real-time.
+
+Kontak: WhatsApp +62 811-919-328 · https://www.beriklan.co.id/order/
+
+## Layanan Utama
+
+- [Jasa Digital Marketing](https://www.beriklan.co.id/jasa-digital-marketing/): Layanan multi-channel end-to-end (Meta, Google, TikTok)
+- [Jasa Iklan Facebook Ads](https://www.beriklan.co.id/jasa-iklan-facebook/): Kelola Meta Ads dengan targeting presisi
+- [Jasa Iklan Instagram](https://www.beriklan.co.id/jasa-iklan-instagram/): Iklan Instagram reach & engagement
+- [Jasa Iklan Google Ads](https://www.beriklan.co.id/jasa-iklan-google/): Search, Display & YouTube Ads
+- [Jasa Iklan TikTok Ads](https://www.beriklan.co.id/jasa-iklan-tiktok/): Spark Ads & FYP
+- [Jasa Iklan YouTube](https://www.beriklan.co.id/jasa-iklan-youtube/): Video ads & awareness
+- [Jasa Kelola Instagram](https://www.beriklan.co.id/jasa-kelola-instagram/): Konten & community management
+- [Jasa Kelola TikTok](https://www.beriklan.co.id/jasa-kelola-tiktok/): Konten video rutin
+- [Jasa Pembuatan Website](https://www.beriklan.co.id/jasa-pembuatan-website/): Website profesional custom & CMS
+- [Jasa Pembuatan Landing Page](https://www.beriklan.co.id/jasa-pembuatan-landing-page/): Landing page + Google Ads paket konversi
+
+## Blog & Panduan
+
+- [Blog Digital Marketing](https://www.beriklan.co.id/blog/): Tips, panduan & studi kasus digital marketing Indonesia
+- [Sitemap](https://beriklan.co.id/sitemap-index.xml): Daftar lengkap semua halaman
+
+## Artikel Terbaru
+
+${recentList}
+`;
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=21600",
+    },
+  });
+}
+
+// /api/admin/keywords/list?token=&q=&status=&service=&sort=&page= — searchable keyword browser (JSON)
+async function handleKeywordList(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  const q = (url.searchParams.get("q") || "").trim();
+  const status = (url.searchParams.get("status") || "").trim();
+  const service = (url.searchParams.get("service") || "").trim();
+  const sort = (url.searchParams.get("sort") || "priority").trim();
+  let page = parseInt(url.searchParams.get("page") || "1", 10);
+  if (!page || page < 1) page = 1;
+  const perPage = 50;
+  const offset = (page - 1) * perPage;
+  const where = [];
+  const params = [];
+  if (q) { where.push("(keyword LIKE ? OR keyword_normalized LIKE ?)"); params.push("%" + q + "%", "%" + q + "%"); }
+  if (status) { where.push("status = ?"); params.push(status); }
+  if (service) { where.push("service = ?"); params.push(service); }
+  const whereSql = where.length ? ("WHERE " + where.join(" AND ")) : "";
+  const orderSql = sort === "keyword" ? "ORDER BY keyword ASC"
+    : sort === "recent" ? "ORDER BY discovered_at DESC"
+    : "ORDER BY priority_score DESC, keyword ASC";
+  try {
+    const cnt = await env.DB.prepare(`SELECT COUNT(*) as n FROM keyword_queue ${whereSql}`).bind(...params).first();
+    const total = cnt?.n || 0;
+    const rowsRes = await env.DB.prepare(`SELECT keyword, status, service, city, priority_score, article_slug FROM keyword_queue ${whereSql} ${orderSql} LIMIT ? OFFSET ?`).bind(...params, perPage, offset).all();
+    return new Response(JSON.stringify({
+      ok: true, total, page, perPage, pages: Math.ceil(total / perPage), rows: rowsRes.results || []
+    }), { headers: { "Content-Type": "application/json", "X-Robots-Tag": "noindex, nofollow" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
 }
 
 async function handleKeywordDashboard(request, env) {
@@ -3809,6 +4266,31 @@ ${Object.entries(data.postsMeta.byService).sort((a,b) => b[1] - a[1]).map(([svc,
 <p style="margin-top:12px;font-size:12px;color:#6b7280">Coverage dihitung dari jumlah artikel dengan slug yang match nama layanan. Shopee & View Live perlu prioritas karena masih rendah.</p>
 </div>
 
+<!-- KEYWORD EXPLORER -->
+<div class="section" id="kwExplorer">
+<div class="section-head">
+<h2>🔎 Keyword Explorer</h2>
+<span class="meta">${num(data.keywordQueue.total)} keyword di D1 — cari, filter & telusuri</span>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+<input id="kwQ" type="search" placeholder="Cari keyword… (mis. iklan facebook jakarta)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px">
+<select id="kwStatus" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px">
+<option value="">Semua status</option>
+<option value="pending">pending</option>
+<option value="generated">generated</option>
+<option value="published">published</option>
+</select>
+<select id="kwSort" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px">
+<option value="priority">Prioritas ↓</option>
+<option value="keyword">A–Z</option>
+<option value="recent">Terbaru</option>
+</select>
+<button id="kwSearch" class="btn btn-primary">Cari</button>
+</div>
+<div id="kwResult"><div class="empty-state"><div class="ico">⌨️</div>Ketik kata kunci lalu tekan <strong>Cari</strong> untuk menelusuri ${num(data.keywordQueue.total)} keyword di database.</div></div>
+<div id="kwPager" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"></div>
+</div>
+
 <div class="grid-2">
 <!-- LEFT: KEYWORD SOURCES + QUEUE BY SERVICE -->
 <div>
@@ -3905,6 +4387,43 @@ ${c.name === 'email-send' ? '<span class="badge red" style="margin-left:6px">⚠
 
 <p class="muted" style="text-align:center;margin-top:32px">Snapshot: ${new Date().toISOString()} · auto-refresh setiap reload</p>
 </div>
+<script>
+(function(){
+  var token = new URLSearchParams(location.search).get('token');
+  var elQ=document.getElementById('kwQ'),elS=document.getElementById('kwStatus'),elSort=document.getElementById('kwSort');
+  var elRes=document.getElementById('kwResult'),elPager=document.getElementById('kwPager'),elBtn=document.getElementById('kwSearch');
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function load(p){
+    var page=p||1;
+    var u='/api/admin/keywords/list?token='+encodeURIComponent(token)+'&q='+encodeURIComponent(elQ.value)+'&status='+encodeURIComponent(elS.value)+'&sort='+encodeURIComponent(elSort.value)+'&page='+page;
+    elRes.innerHTML='<div class="empty-state">Memuat…</div>';
+    fetch(u).then(function(r){return r.json();}).then(function(d){
+      if(!d.ok){elRes.innerHTML='<div class="empty-state">Error: '+esc(d.error)+'</div>';elPager.innerHTML='';return;}
+      if(!d.rows.length){elRes.innerHTML='<div class="empty-state"><div class="ico">🔍</div>Tidak ada hasil untuk filter ini.</div>';elPager.innerHTML='';return;}
+      var h='<table><thead><tr><th>Keyword</th><th>Status</th><th>Layanan</th><th>Prioritas</th><th>Artikel</th></tr></thead><tbody>';
+      d.rows.forEach(function(r){
+        var badge=r.status==='generated'?'green':(r.status==='published'?'blue':'gray');
+        var art=r.article_slug?('<a href="/blog/'+esc(r.article_slug)+'/" target="_blank">lihat ↗</a>'):'<span class="muted">—</span>';
+        h+='<tr><td><strong>'+esc(r.keyword)+'</strong></td><td><span class="badge '+badge+'">'+esc(r.status)+'</span></td><td>'+esc(r.service||'—')+'</td><td>'+esc(r.priority_score)+'</td><td>'+art+'</td></tr>';
+      });
+      h+='</tbody></table>';
+      elRes.innerHTML=h;
+      var info='Halaman '+d.page+' / '+d.pages+' · '+Number(d.total).toLocaleString('id-ID')+' keyword';
+      var prev=d.page>1?('<button class="btn btn-outline" onclick="__kwGo('+(d.page-1)+')">← Sebelumnya</button>'):'<span></span>';
+      var next=d.page<d.pages?('<button class="btn btn-outline" onclick="__kwGo('+(d.page+1)+')">Berikutnya →</button>'):'<span></span>';
+      elPager.innerHTML=prev+'<span class="muted">'+info+'</span>'+next;
+    }).catch(function(){elRes.innerHTML='<div class="empty-state">Gagal memuat data.</div>';elPager.innerHTML='';});
+  }
+  window.__kwGo=function(p){load(p);var el=document.getElementById('kwExplorer');if(el)window.scrollTo({top:el.offsetTop-20,behavior:'smooth'});};
+  if(elBtn){
+    elBtn.addEventListener('click',function(){load(1);});
+    elQ.addEventListener('keydown',function(e){if(e.key==='Enter')load(1);});
+    elS.addEventListener('change',function(){load(1);});
+    elSort.addEventListener('change',function(){load(1);});
+    load(1);
+  }
+})();
+</script>
 </body>
 </html>`, { headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" } });
 }
@@ -5239,37 +5758,49 @@ async function handleIndexNowCron(request, env) {
     return new Response(JSON.stringify({ ok: true, message: "no pending URLs", submitted: [], log: { stage: "no_pending" } }), { headers: { "Content-Type": "application/json" } });
   }
 
-  // 2. Submit to IndexNow (api.indexnow.org — single endpoint reaches all engines: Bing, Yandex, DuckDuckGo, etc.)
+  // 2. Submit to IndexNow via Bing's direct endpoint (www.bing.com/indexnow).
+  // Bing is the primary IndexNow hub — it fans out to Yandex, DuckDuckGo, Seznam, Naver.
+  // api.indexnow.org aggressively rate-limits shared Cloudflare Worker egress IPs (429 TooManyRequests),
+  // so we hit Bing directly which tolerates production volume; on failure we fall back to the aggregator.
+  // FIX: host MUST match the host of every URL in urlList. Verified GSC property = www.beriklan.co.id,
+  // and urls above are normalized to www → host & keyLocation must also be www, else IndexNow returns 422 (0 submitted).
   const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
   const payload = {
-    host: "beriklan.co.id",
+    host: "www.beriklan.co.id",
     key: INDEXNOW_KEY,
-    keyLocation: `https://beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt`,
+    keyLocation: `https://www.beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt`,
     urlList: urls.map(u => u.url),
   };
 
   let totalEngines = 0;
   let totalFailed = 0;
   const log = [];
-  // Single POST to api.indexnow.org fans out to all engines (Bing, Yandex, DuckDuckGo, Seznam, Naver)
-  try {
-    const resp = await fetch("https://api.indexnow.org/indexnow", {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(payload),
-    });
-    if (resp.ok || resp.status === 202) {
-      totalEngines = 4; // approximate count of engines receiving
-      log.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", status: resp.status, urls: urls.length });
-    } else {
-      totalFailed++;
-      const body = await resp.text().catch(() => "");
-      errors.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", status: resp.status, body: body.slice(0, 200) });
+  // Try endpoints in order; the first 200/202 wins (a single accepted POST propagates across the IndexNow network).
+  const endpoints = [
+    { name: "www.bing.com", url: "https://www.bing.com/indexnow" },
+    { name: "api.indexnow.org", url: "https://api.indexnow.org/indexnow" },
+    { name: "yandex.com", url: "https://yandex.com/indexnow" },
+  ];
+  for (const ep of endpoints) {
+    try {
+      const resp = await fetch(ep.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+      if (resp.ok || resp.status === 202) {
+        totalEngines = 4; // network fan-out (Bing, Yandex, DuckDuckGo, Seznam, Naver)
+        log.push({ stage: "indexnow_submit", endpoint: ep.name, status: resp.status, urls: urls.length });
+        break; // accepted — no need to hit the other endpoints
+      } else {
+        const body = await resp.text().catch(() => "");
+        errors.push({ stage: "indexnow_submit", endpoint: ep.name, status: resp.status, body: body.slice(0, 200) });
+      }
+    } catch (e) {
+      errors.push({ stage: "indexnow_submit", endpoint: ep.name, error: String(e).slice(0, 200) });
     }
-  } catch (e) {
-    totalFailed++;
-    errors.push({ stage: "indexnow_submit", endpoint: "api.indexnow.org", error: String(e).slice(0, 200) });
   }
+  if (totalEngines === 0) totalFailed++;
 
   // 3. Mark all submitted URLs with indexnow_at timestamp — ONLY if API succeeded
   if (totalEngines > 0) {
@@ -6017,7 +6548,7 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
 
     // Internal-link CTA block → money page (critical for ranking + conversion)
     if (!article.includes("<!-- internal-cta -->")) {
-      article += `\n<!-- internal-cta -->\n<hr/>\n<h2>Butuh Jasa Digital Marketing?</h2>\n<p>Tim Beriklan mengelola campaign sejak 2016 — transparan, terukur, dengan laporan mingguan dan akses penuh ke akun Anda. Sesi konsultasi awal 15 menit, gratis.</p>\n<ul>\n<li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing — harga &amp; fitur lengkap</a></li>\n<li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20membaca%20artikel%20Anda%20dan%20tertarik%20konsultasi%20digital%20marketing." rel="nofollow">Konsultasi via WhatsApp — respon dalam 1 jam (jam kerja)</a></li>\n</ul>`;
+      article += `\n<!-- internal-cta -->\n<hr/>\n<h2>Butuh Jasa Digital Marketing?</h2>\n<p>Tim Beriklan mengelola campaign sejak 2016 — transparan, terukur, dengan laporan mingguan dan akses penuh ke akun Anda. Hubungi kami untuk konsultasi via WhatsApp.</p>\n<ul>\n<li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing — harga &amp; fitur lengkap</a></li>\n<li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20membaca%20artikel%20Anda%20dan%20tertarik%20konsultasi%20digital%20marketing." rel="nofollow">Konsultasi via WhatsApp — respon dalam 1 jam (jam kerja)</a></li>\n</ul>`;
     }
 
     // Step 4: Save to D1
@@ -6490,6 +7021,7 @@ async function handleHourlyGenerate(request, env) {
 
     // 3. For each pending keyword, generate article via Zen (fallback Groq)
     const newPosts = [];
+    const kwKeyBySlug = new Map(); // article slug -> keyword_queue.keyword (for D1 advancement; id column is NULL)
     const aiModels = [];
     const aiTimings = [];
     for (const item of pending) {
@@ -6501,6 +7033,7 @@ async function handleHourlyGenerate(request, env) {
         ]);
         if (post) {
           newPosts.push(post);
+          kwKeyBySlug.set(post.slug, item.keyword);
           aiModels.push({ slug: post.slug, model: post._model || "unknown" });
         }
         aiTimings.push({ slug: item.slug, ms: Date.now() - aiStart });
@@ -6815,6 +7348,28 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
     }
     log.push({ stage: "drafts_save", count: draftsSaved });
 
+    // 6b. CRITICAL: advance keyword_queue (D1) so the SAME keywords aren't regenerated forever.
+    //     The legacy queue.find() block above only worked for the ASSETS-fallback JSON path, never D1,
+    //     so keyword_queue rows kept status='pending' with empty article_slug and were re-picked every hour.
+    //     newPosts are always persisted to generated_drafts above, so advancing here is safe even if the
+    //     GitHub commit was skipped/deduped (sync-posts will publish the drafts).
+    //     NOTE: keyword_queue.id is NULL for all seeded rows, so we key the UPDATE off `keyword`
+    //     (UNIQUE, NOT NULL). kwAdvanced counts rows actually changed (meta.changes), not executions.
+    let kwAdvanced = 0;
+    for (const p of newPosts) {
+      const kw = kwKeyBySlug.get(p.slug);
+      if (!kw) continue;
+      try {
+        const res = await env.DB.prepare(
+          "UPDATE keyword_queue SET status='generated', article_slug=?, published_at=COALESCE(published_at, datetime('now')) WHERE keyword=? AND (article_slug IS NULL OR article_slug='')"
+        ).bind(p.slug, kw).run();
+        kwAdvanced += (res?.meta?.changes || 0);
+      } catch (e) {
+        errors.push({ stage: "kw_advance", error: String(e.message || e).slice(0, 150) });
+      }
+    }
+    log.push({ stage: "kw_advance", advanced: kwAdvanced });
+
     // 7. Enqueue new URLs in D1 pending_indexing (for IndexNow cron /api/cron/indexing)
     //    Use www.beriklan.co.id prefix to match the verified GSC property
     //    (sitemap uses www. too — GSC Indexing API ownership check requires match)
@@ -6876,6 +7431,7 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
       committed_to_github: committedToGitHub,
       commit_sha: commitSha,
       drafts_saved_to_d1: draftsSaved,
+      kw_advanced: kwAdvanced,
       enqueued_for_indexing: enqueued,
       elapsed_ms: elapsedMs,
       note: !hasGitHub ? "GITHUB_TOKEN not set — drafts saved to D1 only. Configure secret via CF Dashboard for full pipeline." : undefined,
@@ -6929,6 +7485,37 @@ async function handleGscIndexing(request, env) {
       return new Response(JSON.stringify({ ok: false, error: "auth_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 
+    // 1b. Daily quota gate (GSC Indexing API = 200 URL/day). Auto-reset saat ganti hari WIB.
+    const GSC_DAILY_LIMIT = 200;
+    const wibToday = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10); // WIB = UTC+7, no DST
+    let quotaUsed = 0;
+    try {
+      const qDate = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='gsc_quota_date'").first();
+      const qUsed = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='gsc_quota_used'").first();
+      if (qDate?.cron === wibToday) {
+        quotaUsed = parseInt(qUsed?.cron || "0", 10) || 0;
+      } else {
+        // Hari WIB baru → auto-reset counter
+        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_date', ?, 1, 'GSC quota date (WIB)') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(wibToday).run();
+        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_used', '0', 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").run();
+        quotaUsed = 0;
+      }
+    } catch (e) {
+      errors.push({ stage: "quota_read", error: String(e).slice(0, 150) });
+    }
+    const quotaRemaining = Math.max(0, GSC_DAILY_LIMIT - quotaUsed);
+    if (quotaRemaining === 0) {
+      return new Response(JSON.stringify({
+        ok: true,
+        message: "GSC daily quota (200) exhausted for today",
+        quota_used: quotaUsed,
+        quota_limit: GSC_DAILY_LIMIT,
+        quota_date_wib: wibToday,
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+    const effectiveCount = Math.min(count, quotaRemaining);
+    log.push({ stage: "quota", used: quotaUsed, remaining: quotaRemaining, will_submit: effectiveCount });
+
     // 2. Get pending URLs from D1 (skip already gsc_submitted today)
     let urls = [];
     try {
@@ -6936,10 +7523,10 @@ async function handleGscIndexing(request, env) {
       await env.DB.prepare(`ALTER TABLE pending_indexing ADD COLUMN gsc_submitted_at TEXT`).run().catch(() => {});
       const r = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
-         WHERE (url LIKE 'https://www.beriklan.co.id/blog/%/' OR url LIKE 'https://beriklan.co.id/blog/%/')
+         WHERE (url LIKE 'https://www.beriklan.co.id/%' OR url LIKE 'https://beriklan.co.id/%')
            AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-7 days'))
-         ORDER BY rowid ASC LIMIT ?`
-      ).bind(count).all();
+         ORDER BY CASE WHEN source = 'admin-manual' THEN 0 ELSE 1 END, rowid ASC LIMIT ?`
+      ).bind(effectiveCount).all();
       // Normalize URL to www.beriklan.co.id for GSC submission (matches verified property)
       urls = (r.results || []).map(row => {
         const normalized = row.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
@@ -6986,6 +7573,12 @@ async function handleGscIndexing(request, env) {
       }
     }
 
+    // 3b. Persist quota usage (increment by jumlah yang benar-benar sukses submit)
+    const newQuotaUsed = quotaUsed + submitted.length;
+    try {
+      await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_used', ?, 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(String(newQuotaUsed)).run();
+    } catch {}
+
     // 4. Log to cron_logs for dashboard
     try {
       await env.DB.prepare(
@@ -6999,7 +7592,166 @@ async function handleGscIndexing(request, env) {
       submitted_count: submitted.length,
       submitted_urls: submitted,
       failed_count: errors.length,
+      quota_used: newQuotaUsed,
+      quota_limit: GSC_DAILY_LIMIT,
+      quota_remaining: Math.max(0, GSC_DAILY_LIMIT - newQuotaUsed),
+      quota_date_wib: wibToday,
       elapsed_ms: elapsedMs,
+      log: debug ? log : undefined,
+      errors: errors.length ? errors : undefined,
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Index Verification Loop (GSC URL Inspection API, 2000 req/day) ─────
+//   GET /api/cron/index-verify?token=...&count=N
+//   Cek apakah URL yang sudah di-submit ke GSC benar-benar terindex.
+//   - Indexed  → status='indexed' (selesai, tidak di-submit ulang)
+//   - Belum    → reset gsc_submitted_at + status='pending' → auto re-submit
+//     oleh cron gsc-indexing berikutnya (resubmit_count++ untuk audit).
+//   Hanya cek URL yang di-submit ≥ 2 hari lalu (beri waktu Google crawl),
+//   re-cek maksimal tiap 3 hari. Self-quota 300 inspeksi/hari (API limit 2000).
+async function handleIndexVerify(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "20", 10), 100));
+  const debug = url.searchParams.get("debug") === "1";
+  const t0 = Date.now();
+  const log = [];
+  const errors = [];
+
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) {
+    return new Response(JSON.stringify({ ok: false, error: "GSC_SERVICE_ACCOUNT_JSON secret not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB not available" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  try {
+    // 1. Access token — URL Inspection butuh scope webmasters (bukan indexing)
+    let accessToken;
+    try {
+      const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+      accessToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
+      log.push({ stage: "auth", ok: true });
+    } catch (e) {
+      errors.push({ stage: "auth", error: String(e).slice(0, 200) });
+      return new Response(JSON.stringify({ ok: false, error: "auth_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+
+    // 1b. Daily quota gate (self-imposed 300/day, API limit 2000/day). Auto-reset hari WIB.
+    const IV_DAILY_LIMIT = 300;
+    const wibToday = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+    let quotaUsed = 0;
+    try {
+      const qDate = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='iv_quota_date'").first();
+      const qUsed = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='iv_quota_used'").first();
+      if (qDate?.cron === wibToday) {
+        quotaUsed = parseInt(qUsed?.cron || "0", 10) || 0;
+      } else {
+        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('iv_quota_date', ?, 1, 'Index verify quota date (WIB)') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(wibToday).run();
+        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('iv_quota_used', '0', 1, 'Index verify quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").run();
+        quotaUsed = 0;
+      }
+    } catch (e) {
+      errors.push({ stage: "quota_read", error: String(e).slice(0, 150) });
+    }
+    const quotaRemaining = Math.max(0, IV_DAILY_LIMIT - quotaUsed);
+    if (quotaRemaining === 0) {
+      return new Response(JSON.stringify({ ok: true, message: "index-verify daily quota exhausted", quota_used: quotaUsed, quota_limit: IV_DAILY_LIMIT, quota_date_wib: wibToday }), { headers: { "Content-Type": "application/json" } });
+    }
+    const effectiveCount = Math.min(count, quotaRemaining);
+
+    // 2. Kolom audit (idempotent) + ambil kandidat: submitted ≥2 hari, belum dicek / dicek >3 hari lalu
+    await env.DB.prepare("ALTER TABLE pending_indexing ADD COLUMN index_state TEXT").run().catch(() => {});
+    await env.DB.prepare("ALTER TABLE pending_indexing ADD COLUMN index_checked_at TEXT").run().catch(() => {});
+    await env.DB.prepare("ALTER TABLE pending_indexing ADD COLUMN resubmit_count INTEGER DEFAULT 0").run().catch(() => {});
+    let rows = [];
+    try {
+      const r = await env.DB.prepare(
+        `SELECT id, url FROM pending_indexing
+         WHERE status = 'gsc_submitted'
+           AND gsc_submitted_at IS NOT NULL AND gsc_submitted_at < datetime('now', '-2 days')
+           AND (index_checked_at IS NULL OR index_checked_at < datetime('now', '-3 days'))
+         ORDER BY (index_checked_at IS NOT NULL), rowid ASC LIMIT ?`
+      ).bind(effectiveCount).all();
+      rows = r.results || [];
+      log.push({ stage: "queue_fetch", picked: rows.length, quota_used: quotaUsed, quota_remaining: quotaRemaining });
+    } catch (e) {
+      errors.push({ stage: "queue_fetch", error: String(e).slice(0, 200) });
+      return new Response(JSON.stringify({ ok: false, error: "queue_fetch_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    if (rows.length === 0) {
+      return new Response(JSON.stringify({ ok: true, message: "no URLs due for verification", checked: 0, log, errors: errors.length ? errors : undefined }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // 3. Inspect tiap URL via GSC URL Inspection API
+    const siteUrl = env.GSC_SITE_URL || "https://www.beriklan.co.id/";
+    let indexed = 0, resubmitted = 0, checked = 0;
+    const results = [];
+    for (const row of rows) {
+      const inspectUrl = row.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
+      try {
+        const r = await fetch("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ inspectionUrl: inspectUrl, siteUrl, languageCode: "en-US" }),
+        });
+        if (!r.ok) {
+          const body = (await r.text().catch(() => "")).slice(0, 200);
+          errors.push({ stage: "inspect", url: inspectUrl, status: r.status, body });
+          // 403 = service account belum punya akses property → stop, jangan buang quota
+          if (r.status === 403) break;
+          // 429 = inspection quota habis → stop
+          if (r.status === 429) break;
+          continue;
+        }
+        checked++;
+        const data = await r.json();
+        const isr = data?.inspectionResult?.indexStatusResult || {};
+        const cov = isr.coverageState || "unknown";
+        // verdict adalah enum non-lokalisasi (PASS = URL is on Google) — coverageState bisa terlokalisasi
+        const isIndexed = isr.verdict === "PASS" || (/indexed/i.test(cov) && !/not indexed/i.test(cov));
+        if (isIndexed) {
+          await env.DB.prepare(
+            "UPDATE pending_indexing SET status='indexed', index_state=?, index_checked_at=datetime('now') WHERE id=?"
+          ).bind(cov, row.id).run();
+          indexed++;
+        } else {
+          // Belum terindex → reset agar di-re-submit oleh cron gsc-indexing berikutnya
+          await env.DB.prepare(
+            "UPDATE pending_indexing SET status='pending', gsc_submitted_at=NULL, index_state=?, index_checked_at=datetime('now'), resubmit_count=COALESCE(resubmit_count,0)+1 WHERE id=?"
+          ).bind(cov, row.id).run();
+          resubmitted++;
+        }
+        results.push({ url: inspectUrl, coverage: cov, indexed: isIndexed });
+      } catch (e) {
+        errors.push({ stage: "inspect_exception", url: inspectUrl, error: String(e).slice(0, 150) });
+      }
+    }
+
+    // 4. Persist quota + log ringkas
+    const newQuotaUsed = quotaUsed + checked;
+    try {
+      await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('iv_quota_used', ?, 1, 'Index verify quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(String(newQuotaUsed)).run();
+    } catch {}
+    log.push({ stage: "verify", checked, indexed, resubmitted });
+
+    return new Response(JSON.stringify({
+      ok: true,
+      checked,
+      indexed,
+      queued_for_resubmit: resubmitted,
+      quota_used: newQuotaUsed,
+      quota_limit: IV_DAILY_LIMIT,
+      quota_date_wib: wibToday,
+      results: debug ? results : undefined,
+      elapsed_ms: Date.now() - t0,
       log: debug ? log : undefined,
       errors: errors.length ? errors : undefined,
     }, null, 2), { headers: { "Content-Type": "application/json" } });
@@ -7221,7 +7973,7 @@ function tagAsTrending(post) {
   post.source = 'google_trends_rss';
   if (post.content && !post.content.includes('<!-- internal-cta -->')) {
     post.content = post.content.trimEnd() +
-      `\n<!-- internal-cta -->\n<hr/>\n<h2>Panduan Lengkap Jasa Digital Marketing</h2>\n<p>Tim Beriklan mengelola campaign iklan sejak 2016 — transparan, terukur, laporan mingguan. Sesi konsultasi awal 15 menit, gratis.</p>\n<ul><li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing</a></li><li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20artikel%20${encodeURIComponent(post.title)}">Konsultasi via WhatsApp →</a></li></ul>`;
+      `\n<!-- internal-cta -->\n<hr/>\n<h2>Panduan Lengkap Jasa Digital Marketing</h2>\n<p>Tim Beriklan mengelola campaign iklan sejak 2016 — transparan, terukur, laporan mingguan. Hubungi kami untuk konsultasi via WhatsApp.</p>\n<ul><li><a href="/jasa-digital-marketing/">Lihat paket Jasa Digital Marketing</a></li><li><a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20artikel%20${encodeURIComponent(post.title)}">Konsultasi via WhatsApp →</a></li></ul>`;
   }
   return post;
 }
@@ -8318,7 +9070,7 @@ const SERVICE_CONFIGS = [
       { short: "🤝", title: "1 account manager", desc: "Satu kontak untuk semua kebutuhan digital marketing Anda. Tidak ada miskomunikasi." }
     ],
     steps: [
-      { num: "01", tag: "MINGGU 1", title: "Audit Gratis", desc: "Kami audit semua channel digital Anda — website, ads, SEO, social. Temukan kebocoran budget." },
+      { num: "01", tag: "MINGGU 1", title: "Audit", desc: "Kami audit semua channel digital Anda — website, ads, SEO, social. Temukan kebocoran budget." },
       { num: "02", tag: "MINGGU 2-3", title: "Strategi & Setup", desc: "Susun rencana 90 hari. Setup pixel, tracking, campaign awal di semua channel prioritas." },
       { num: "03", tag: "BULAN 2+", title: "Eksekusi & Optimasi", desc: "Jalankan campaign, produksi artikel SEO, optimasi mingguan berdasarkan data." },
       { num: "04", tag: "ONGOING", title: "Report & Scale Up", desc: "Laporan bulanan bahasa manusia. Scale up channel yang perform, cut yang tidak." }
@@ -8436,7 +9188,7 @@ ${stepsHTML}
 <!-- Final CTA -->
 <tr><td style="padding:28px 28px;background:#f7f8fb;border-top:1px solid #e2e8f0;">
 <p style="color:#0f1e3d;font-size:16px;margin:0 0 8px;font-weight:700;text-align:center;">Mau diskusi strategi untuk {{company}}?</p>
-<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Lihat paket, harga, dan cara kerja di halaman layanan kami. Atau konsultasi gratis 15 menit — kami analisis kondisi campaign Anda.</p>
+<p style="color:#6b7280;font-size:13px;margin:0 0 18px;line-height:1.6;text-align:center;">Lihat paket, harga, dan cara kerja di halaman layanan kami. Atau hubungi kami untuk konsultasi — kami analisis kondisi campaign Anda.</p>
 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
 <tr><td style="background:#f59e0b;border-radius:100px;padding:13px 28px;font-weight:700;font-size:14px;">
 <a href="${c.cta_url}" style="color:#0f1e3d;text-decoration:none;display:block;">${c.cta_text} &rarr;</a>
@@ -8485,7 +9237,7 @@ const GENERIC_TEMPLATES = [
 
 <tr><td style="padding:8px 28px 24px;background:#ffffff;">
 <table width="100%" cellpadding="0" cellspacing="0">
-<tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#f59e0b;color:#0f1e3d;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">1</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Konsultasi Gratis 15 Menit</strong><span style="color:#6b7280;font-size:12px;">Ceritakan tujuan Anda, kami sarankan strateginya</span></td></tr></table></td></tr>
+<tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#f59e0b;color:#0f1e3d;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">1</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Hubungi Kami</strong><span style="color:#6b7280;font-size:12px;">Ceritakan tujuan Anda, kami sarankan strateginya</span></td></tr></table></td></tr>
 <tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#10b981;color:#fff;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">2</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Dashboard Real-time</strong><span style="color:#6b7280;font-size:12px;">Pantau ROI 24/7 dari mana saja</span></td></tr></table></td></tr>
 <tr><td style="padding:6px 0;"><table width="100%" style="background:#f7f8fb;border-radius:10px;padding:14px 18px;"><tr><td width="36" valign="middle" style="background:#0ea5e9;color:#fff;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-weight:800;font-size:14px;">3</td><td style="padding-left:14px;vertical-align:middle;"><strong style="color:#0f1e3d;font-size:14px;display:block;margin-bottom:2px;">Laporan Bahasa Manusia</strong><span style="color:#6b7280;font-size:12px;">Mingguan tanpa jargon teknis</span></td></tr></table></td></tr>
 </table>
@@ -8543,6 +9295,8 @@ async function sendEmailViaResend(env, to, subject, html, trackingId) {
     subject,
     html,
     reply_to: "info@beriklan.co.id",
+    track_opens: true,
+    track_clicks: true,
     headers: { "X-Tracking-Id": trackingId || "" }
   };
   try {
@@ -8839,7 +9593,7 @@ ${recentCampaigns.length ? `<table>
 <span class="badge b-red">🚨 Auto-pause (3 fails)</span>
 </div>
 <p style="margin-top:12px;font-size:12px;color:#6b7280;line-height:1.5;">
-Quota Resend free tier: 500 email/hari. Cron jalan otomatis — tidak perlu intervensi. Cek tab <strong>Cron & Automasi</strong> untuk toggle pause.
+Quota Resend free tier: 100 email/hari. Cron jalan otomatis — tidak perlu intervensi. Cek tab <strong>Cron & Automasi</strong> untuk toggle pause.
 </p>
 </div>
 `;
@@ -8913,7 +9667,7 @@ ${listRows.map(l => `<option value="${l.id}">${escHtml(l.name)} — ${l.total} k
 <li>Pilih template dan audience di atas, klik <strong>Buat & Mulai Kirim</strong>.</li>
 <li>Campaign langsung dibuat + antrian email dimasukkan ke database.</li>
 <li>Cron email-send jalan tiap 15 menit — kirim 25 email per batch (100/hari di Resend free tier).</li>
-<li>Free tier Resend: 500 email/hari. Untuk volume lebih besar, upgrade plan.</li>
+<li>Free tier Resend: 100 email/hari. Untuk volume lebih besar, upgrade plan.</li>
 <li>Pantau open/click di halaman detail campaign.</li>
 </ol>
 </div>
@@ -8995,7 +9749,7 @@ ${emailCron?.enabled ? '<span class="badge b-green">✓ AKTIF</span>' : '<span c
 
 <div class="card">
 <div class="card-head"><h2>⏰ Cron Lainnya</h2></div>
-${(cronRows.results || []).filter(c => c.name !== 'email-send').map(cr => `
+${(cronRows.results || []).filter(c => c.name !== 'email-send' && !['queue_cursor','gsc_quota_date','gsc_quota_used','gsc_backoff_until','indexnow_backoff_until'].includes(c.name)).map(cr => `
 <div class="cron-card">
 <div class="left">
 <strong>${escHtml(cr.label || cr.name)}</strong>
@@ -9500,7 +10254,7 @@ async function handleCronSendEmail(request, env) {
         bodyHtml = bodyHtml.replace(/\{\{cta_url\}\}/g, "https://wa.me/62811919328?text=" + encodeURIComponent(`Halo Beriklan, saya tertarik info lebih lanjut setelah menerima email "${subject}".`));
         bodyHtml = bodyHtml.replace(/\{\{cta_text\}\}/g, "Diskusi via WhatsApp");
         bodyHtml = bodyHtml.replace(/\{\{title\}\}/g, subject);
-        bodyHtml = bodyHtml.replace(/\{\{subtitle\}\}/g, "Konsultasi gratis 15 menit untuk campaign Anda.");
+        bodyHtml = bodyHtml.replace(/\{\{subtitle\}\}/g, "Hubungi kami untuk konsultasi via WhatsApp.");
         bodyHtml = bodyHtml.replace(/\{\{tracking_pixel\}\}/g, `<img src="https://beriklan.co.id/api/track/open?id=${trackingId}" width="1" height="1" alt="" style="display:none;">`);
         if (!bodyHtml.includes("Berhenti berlangganan") && !bodyHtml.includes("unsubscribe_url")) bodyHtml += unsubFooter;
 
@@ -9517,6 +10271,21 @@ async function handleCronSendEmail(request, env) {
       } catch (e) {
         await env.DB.prepare("UPDATE email_queue SET status='failed', error=? WHERE id=?").bind(String(e).slice(0, 200), item.id).run();
         failed++;
+      }
+    }
+
+    // Auto-retry failed emails (older than 1 hour) if quota still has room
+    const sentAfterPending = dailySent + sent;
+    if (sentAfterPending < DAILY_LIMIT - 10) {
+      const retryLimit = Math.min(10, DAILY_LIMIT - 10 - sentAfterPending);
+      const failedToRetry = await env.DB.prepare(
+        "SELECT id FROM email_queue WHERE status='failed' AND (error IS NULL OR error NOT LIKE '%rate%exceed%') AND (sent_at IS NULL OR sent_at < datetime('now', '-1 hour')) ORDER BY id ASC LIMIT ?"
+      ).bind(retryLimit).all();
+      if (failedToRetry.results?.length) {
+        for (const fr of failedToRetry.results) {
+          await env.DB.prepare("UPDATE email_queue SET status='pending', error=NULL WHERE id=?").bind(fr.id).run();
+        }
+        console.log(`[cron:email-send] Auto-retry reset ${failedToRetry.results.length} failed emails to pending`);
       }
     }
 
@@ -9584,7 +10353,7 @@ async function handleEmailTemplatePreview(request, env) {
   html = html.replace(/\{\{excerpt\}\}/g, "Contoh preview dari template email Beriklan.");
   html = html.replace(/\{\{articles\}\}/g, "");
   html = html.replace(/\{\{cta_url\}\}/g, "https://wa.me/62811919328");
-  html = html.replace(/\{\{cta_text\}\}/g, "Konsultasi Gratis");
+  html = html.replace(/\{\{cta_text\}\}/g, "Hubungi Kami");
   html = html.replace(/\{\{title\}\}/g, "Judul Promo");
   html = html.replace(/\{\{subtitle\}\}/g, "Subtitle promo");
   const frame = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Preview: ${escHtml(tpl.name)}</title>
@@ -10471,7 +11240,7 @@ ${(searches.results||[]).map(s => `<li><span><strong>${escHtml(s.query || s.cate
 </div>` : ''}
 ${remaining === 0 ? `<div class="upgrade">
 <h3>🚀 Limit tercapai — Mau akses full?</h3>
-<p>Dapatkan akses tanpa limit + fitur export CRM-ready. Konsultasi gratis 15 menit.</p>
+<p>Dapatkan akses tanpa limit + fitur export CRM-ready. Hubungi kami untuk konsultasi.</p>
 <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20sudah%20trial%20scrape.beriklan.co.id%20dan%20tertarik%20akses%20full">Hubungi WhatsApp →</a>
 </div>` : ''}
 </div>
@@ -10649,7 +11418,7 @@ let _blogTpl = null;
 async function _getBlogTpl(env) {
   if (_blogTpl) return _blogTpl;
   try {
-    const refReq = new Request('https://beriklan.co.id/blog/apa-itu-facebook-ads/');
+    const refReq = new Request('https://beriklan.co.id/');
     const refResp = await env.ASSETS.fetch(refReq);
     if (!refResp.ok) return null;
     const html = await refResp.text();
@@ -10690,7 +11459,9 @@ function _buildArticleBody(slug, meta, content, relatedRows) {
     publisher:{"@type":"Organization","name":"Beriklan.co.id",
       "logo":{"@type":"ImageObject","url":"https://beriklan.co.id/logoweb.webp"}},
     mainEntityOfPage:{"@type":"WebPage","@id":canonical},articleSection:cat,
-    keywords:tags.slice(0,5).join(', ')
+    keywords:tags.slice(0,5).join(', '),
+    inLanguage:"id-ID",isAccessibleForFree:true,
+    speakable:{"@type":"SpeakableSpecification",cssSelector:["h1",".prose > p:first-of-type"]}
   })}</script>`;
 
   const breadcrumb = `<nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
@@ -10763,7 +11534,7 @@ function _buildArticleBody(slug, meta, content, relatedRows) {
   <div class="relative flex flex-col md:flex-row items-start md:items-center gap-5">
     <div class="flex-1">
       <h3 class="font-display font-extrabold text-xl md:text-2xl leading-tight mb-2">Butuh strategi iklan untuk bisnis Anda?</h3>
-      <p class="text-white/70 text-sm leading-relaxed">Diskusi gratis 15-30 menit via WhatsApp. Tim kami akan tinjau kondisi campaign Anda saat ini.</p>
+      <p class="text-white/70 text-sm leading-relaxed">Diskusi via WhatsApp. Tim kami akan tinjau kondisi campaign Anda saat ini.</p>
     </div>
     <a href="https://wa.me/62811919328?text=${encodeURIComponent('Halo Beriklan, saya tertarik dengan topik "' + (meta.title || slug) + '" — mohon info lebih lanjut.')}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink px-5 py-3 rounded-full font-bold text-sm shadow-lg hover:shadow-pop transition-all btn-shine-accent shrink-0">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-message-circle w-4 h-4"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
@@ -10832,7 +11603,7 @@ function _buildArticleBody(slug, meta, content, relatedRows) {
   <div class="bg-gradient-to-br from-ink via-primary-2 to-ink rounded-2xl p-6 text-white relative overflow-hidden">
     <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(circle at 80% 20%,rgba(245,158,11,0.18) 0%,transparent 60%);"></div>
     <div class="relative">
-      <h3 class="font-display font-extrabold text-lg leading-tight mb-2">Diskusi Gratis 15 Menit</h3>
+      <h3 class="font-display font-extrabold text-lg leading-tight mb-2">Hubungi Kami</h3>
       <p class="text-white/70 text-xs leading-relaxed mb-4">Tim kami tinjau campaign Anda, kasih rekomendasi konkret.</p>
       <a href="https://wa.me/62811919328?text=${encodeURIComponent('Halo Beriklan, saya baca artikel "' + (meta.title || slug) + '" dan ingin diskusi.')}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 bg-accent text-ink px-4 py-2 rounded-full font-bold text-xs shadow-md hover:shadow-pop transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-message-circle w-3.5 h-3.5"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
@@ -10904,7 +11675,7 @@ async function renderBlogPost(slug, env) {
     ).bind(slug).first();
     if (!meta || !content?.content) {
       const draft = await env.DB.prepare(
-        "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE slug=? AND status='committed'"
+        "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE slug=? AND status IN ('draft', 'committed')"
       ).bind(slug).first();
       if (draft) {
         const draftContent = draft.content || '';

@@ -76,7 +76,7 @@ Pendekatan kami berbasis data: audit dulu, baru eksekusi. Setiap campaign punya 
 
 Layanan utama: Jasa Iklan Facebook Ads, Jasa Iklan Instagram, Jasa Iklan TikTok, Jasa Iklan Google Ads, SEO, Pembuatan Website & Landing Page. Klien dari e-commerce, properti, F&B, edutech, hingga jasa profesional.
 
-Mulai dari konsultasi gratis 15 menit via WhatsApp. Respon 1 jam (jam kerja), tim online setiap hari.
+Mulai dari konsultasi via WhatsApp. Respon 1 jam (jam kerja), tim online setiap hari.
 ```
 
 ---

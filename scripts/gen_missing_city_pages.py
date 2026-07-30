@@ -177,7 +177,7 @@ def build_city_page(template_text: str, city: dict, service_slug: str) -> str:
         "slug": service_slug,
         "name": svc["name"],
         "category": svc["category"],
-        "description": svc["name"] + " dari Beriklan (Bandung, sejak 2016). Tim online respon 1 jam, laporan rutin, konsultasi awal 15 menit gratis.",
+        "description": svc["name"] + " dari Beriklan (Bandung, sejak 2016). Tim online respon 1 jam, laporan rutin, konsultasi via WhatsApp.",
         "faqs": svc["faqs"],
         "active": True,
         "order": {"jasa-kelola-instagram": 6, "jasa-kelola-tiktok": 7, "jasa-pembuatan-website": 8}[service_slug],
@@ -202,7 +202,7 @@ def build_city_page(template_text: str, city: dict, service_slug: str) -> str:
     )
     text = re.sub(
         r'description="Jasa Iklan Google di [A-Za-z]+ —[^"]+"',
-        f'description="{svc["name"]} di {name} dari agensi Beriklan (Bandung, sejak 2016). Konsultasi awal 15 menit gratis."',
+        f'description="{svc["name"]} di {name} dari agensi Beriklan (Bandung, sejak 2016). Hubungi kami untuk konsultasi."',
         text,
     )
     text = re.sub(

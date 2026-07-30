@@ -116,7 +116,7 @@
                             </div>
                             <div class="flex-1 min-w-0 text-left">
                                 <p class="font-display font-extrabold text-[15px] leading-tight">Chat WhatsApp</p>
-                                <p class="text-[11px] opacity-70 leading-tight">Konsultasi 15 menit · tanpa biaya</p>
+                                <p class="text-[11px] opacity-70 leading-tight">Konsultasi via WhatsApp</p>
                             </div>
                             <ArrowRight class="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition" />
                         </a>
@@ -194,7 +194,7 @@
                         </div>
                         <div class="flex-1 min-w-0 text-left">
                             <p class="font-bold text-sm leading-tight">Chat WhatsApp</p>
-                            <p class="text-[10px] opacity-70 leading-tight">Konsultasi 15 menit</p>
+                            <p class="text-[10px] opacity-70 leading-tight">Konsultasi</p>
                         </div>
                         <ArrowRight class="w-3.5 h-3.5 opacity-70 group-hover:translate-x-0.5 transition" />
                     </a>

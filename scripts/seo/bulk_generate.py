@@ -318,7 +318,7 @@ def build_page_html(city: dict, service: dict, content_html: str, testimonial: d
 
     # Compute placeholders BEFORE building sections
     canonical = f"https://beriklan.co.id/{service['slug']}/{city['slug']}/"
-    desc = f"{service['name']} di {city['name']} — agensi Meta Business Partner sejak 2016. Konsultasi 15 menit gratis."
+    desc = f"{service['name']} di {city['name']} — agensi Meta Business Partner sejak 2016. Hubungi kami untuk konsultasi."
     wa_link = (
         f"https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20"
         f"{service['name']}%20di%20{city['name']}.%20Mau%20konsultasi%20awal."
@@ -496,7 +496,7 @@ const serviceTestimonials = ${testimonials_json};
                     <span class="text-accent">dampaknya terasa di kuartal depan.</span>
                 </h2>
                 <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
-                    Konsultasi 15 menit · tanpa biaya · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di ${city_name}.
+                    Konsultasi via WhatsApp · tanpa komitmen. Kami bantu pilih paket yang tepat untuk bisnis Anda di ${city_name}.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
                     <a href="${wa_link}" target="_blank" rel="noopener" class="group inline-flex items-center justify-center gap-2 bg-accent text-ink px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-pop transition-all btn-shine-accent">
@@ -610,7 +610,7 @@ const serviceTestimonials = ${testimonials_json};
                         </div>
                         <div>
                             <p class="font-display font-bold text-base text-ink mb-1">Tidak yakin paket mana yang sesuai?</p>
-                            <p class="text-sm text-muted leading-relaxed">Sesi konsultasi 15 menit gratis. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
+                            <p class="text-sm text-muted leading-relaxed">Hubungi kami untuk konsultasi via WhatsApp. Kami bantu pilih paket yang paling cocok dengan budget iklan dan objective Anda.</p>
                             <a href="WA_LINK" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
                                 Konsultasi via WhatsApp
                                 <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />

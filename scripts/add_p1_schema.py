@@ -25,7 +25,7 @@ SERVICE_FAQ = {
         ("Bagaimana tracking leads dari Facebook Ads?", "Meta Pixel di website + WhatsApp click tracking. Dashboard Meta Ads Manager + laporan mingguan."),
     ],
     "jasa-iklan-google": [
-        ("Berapa biaya Google Ads?", "Mulai dari Rp 1 juta ad spend. Biaya jasa terpisah. Audit akun gratis 15 menit untuk estimate."),
+        ("Berapa biaya Google Ads?", "Mulai dari Rp 1 juta ad spend. Biaya jasa terpisah. Audit akun 15 menit untuk estimate."),
         ("Iklan muncul di mana saja?", "Google Search, Search Partners, Display Network, YouTube, dan Gmail. Targeting keyword presisi."),
         ("Berapa lama Google Ads bisa live?", "Setup 1-3 hari kerja. Iklan muncul setelah proses review Google (1-24 jam setelah submit)."),
         ("Apakah Beriklan Google Partner?", "Ya, tim kami Google Partner dengan akses langsung ke support Google dan beta features."),

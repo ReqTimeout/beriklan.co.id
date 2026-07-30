@@ -57,11 +57,11 @@
                     Siap merumuskan strategi<br/>yang selaras dengan bisnis Anda?
                 </h3>
                 <p class="text-white/60 mt-3 text-sm md:text-base max-w-md anim-fade-up" style="animation-delay: 180ms;">
-                    Sesi konsultasi awal selama 15 menit melalui WhatsApp — tanpa biaya. Tim kami akan merespons dalam waktu 1 jam pada jam kerja.
+                    Hubungi kami untuk konsultasi via WhatsApp. Tim kami akan merespons dalam waktu 1 jam pada jam kerja.
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row lg:justify-end gap-3 items-start lg:items-center">
-                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink font-bold px-6 py-3 rounded-full hover:bg-accent-2 transition shadow-lg">
+                <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-accent text-ink font-bold px-6 py-3 rounded-full hover:bg-accent-2 transition shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24z"/></svg>
                     Chat WhatsApp
                 </a>

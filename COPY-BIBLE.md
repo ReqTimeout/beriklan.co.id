@@ -65,7 +65,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 | **Pain section** | Empathetic + diagnostic (formal, profesional) | "Kami memahami tantangan yang Anda hadapi: investasi signifikan dengan return yang belum optimal." |
 | **Method** | Educational + framework-driven | "Pendekatan kami berbasis 3 pilar: riset audiens, eksekusi kreatif, dan optimasi berkelanjutan." |
 | **Proof** | Factual + evidence-based | "50+ klien aktif, 8 tahun pengalaman, avg ROAS 4.5x berdasarkan data internal." |
-| **CTA** | Encouraging + low-friction | "Mulai dengan konsultasi gratis 15 menit — tanpa komitmen." |
+| **CTA** | Encouraging + low-friction | "Mulai dengan konsultasi — tanpa komitmen." |
 | **Error** | Professional + reassuring | "Mohon maaf atas gangguan ini. Tim teknis kami sedang menindaklanjuti." |
 | **Empty state** | Informative + guiding | "Belum ada publikasi di kategori ini. Silakan subscribe newsletter untuk update." |
 | **Loading** | Subtle | "Memuat..." |
@@ -192,7 +192,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 ## 3. CTA LIBRARY (50+) — CORPORATE
 
 ### 3.1 Primary CTA (high intent)
-- "Konsultasi Gratis 15 Menit"
+- "Hubungi Kami"
 - "Mulai Konsultasi Strategis"
 - "Hubungi Tim Kami"
 - "Diskusi Kebutuhan Anda"
@@ -220,7 +220,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 - "Lihat portofolio →"
 
 ### 3.4 Trust & Friction-Reduction Markers
-- "Konsultasi gratis, tanpa komitmen"
+- "Konsultasi, tanpa komitmen"
 - "Tim standby weekdays 09.00-18.00 WIB"
 - "Response time < 2 jam jam kerja"
 - "Quotation tertulis dalam 24 jam"
@@ -245,7 +245,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 **Sub:**
 > Setiap campaign yang kami jalankan dimulai dari **riset audiens yang serius**, creative yang match, dan optimasi mingguan berdasarkan data. Hasilnya? ROAS rata-rata klien kami 4.2x — di atas rata-rata industri.
 
-**Primary CTA:** Konsultasi Gratis 15 Menit
+**Primary CTA:** Hubungi Kami
 
 **Secondary CTA:** Lihat 9 Layanan →
 
@@ -357,7 +357,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 **4 Steps:**
 
 **Step 1 — Konsultasi (1 hari)**
-> Diskusi gratis 15-30 menit untuk pahami bisnis dan target kamu. Kami di sini untuk dengerin, bukan langsung jualan.
+> Diskusi untuk pahami bisnis dan target kamu. Kami di sini untuk dengerin, bukan langsung jualan.
 
 **Step 2 — Riset & Strategi (3-5 hari)**
 > Riset audiens dan siapkan dokumen strategi yang bisa kamu review. Bonus: kami share competitor analysis juga.
@@ -484,7 +484,7 @@ Bayangkan: McKinsey yang hangat + Deloitte Digital yang grounded + agency Indone
 > **Siap bikin iklan yang beneran convert?**
 
 **Sub:**
-> Konsultasi gratis 15 menit. Tim kami standby di WhatsApp — biasanya balas dalam 1 jam (jam kerja).
+> Konsultasi. Tim kami standby di WhatsApp — biasanya balas dalam 1 jam (jam kerja).
 
 **Primary CTA:** Chat WhatsApp Sekarang
 
@@ -513,7 +513,7 @@ Setiap service page mengikuti template identik tapi beda copy + visual. Sample l
 **Sub:**
 > 120+ juta orang Indonesia aktif di Facebook tiap bulan. Dengan targeting yang presisi dan creative yang match, kamu bisa dapet leads qualified setiap hari — bukan cuma impression kosong.
 
-**Primary CTA:** Konsultasi Gratis
+**Primary CTA:** Hubungi Kami
 
 **Secondary CTA:** Lihat Paket Harga
 
@@ -710,7 +710,7 @@ Setiap service page mengikuti template identik tapi beda copy + visual. Sample l
 
 **H2:**
 > **Mau mulai FB Ads yang convert?**
-> Konsultasi gratis 15 menit — kami review akun kamu (kalau ada) atau diskusi plan dari nol.
+> Konsultasi — kami review akun kamu (kalau ada) atau diskusi plan dari nol.
 
 **Primary CTA:** Chat WhatsApp Sekarang
 
@@ -1421,7 +1421,7 @@ Setiap service page mengikuti template identik tapi beda copy + visual. Sample l
 **H2:**
 > **Mau tau lebih banyak tentang kami?**
 
-**Primary CTA:** Chat WhatsApp (konsultasi gratis)
+**Primary CTA:** Chat WhatsApp (konsultasi)
 
 **Secondary CTA:** Lihat Portofolio →
 
@@ -1830,7 +1830,7 @@ Load more button atau infinite scroll.
 ## H2: Mau Mulai Facebook Ads untuk UMKM Kamu?
 
 **Sub:**
-> Konsultasi gratis 15 menit — kami review akun kamu (kalau ada), atau diskusi plan dari nol.
+> Konsultasi — kami review akun kamu (kalau ada), atau diskusi plan dari nol.
 
 **Primary CTA:** Chat WhatsApp
 
@@ -2127,7 +2127,7 @@ Grid 3-column dengan cards:
 ### 11.1 Hero
 
 **H1:**
-> Audit Iklan Gratis — **7 Pertanyaan, 1 PDF Personal.**
+> Audit Iklan — **7 Pertanyaan, 1 PDF Personal.**
 
 **Sub:**
 > Jawab 7 pertanyaan tentang campaign kamu. Dapat PDF report dengan score, top 3 masalah, dan rekomendasi actionable. Gratis, tanpa obligations.
@@ -2243,7 +2243,7 @@ Grid 3-column dengan cards:
 **Day 2:** "3 kesalahan umum di [platform mereka]"
 **Day 5:** "Case study klien serupa industri"
 **Day 9:** "Kenapa [platform] kamu underperform (artikel link)"
-**Day 14:** "Konsultasi gratis 30 menit" + Calendly link
+**Day 14:** "Konsultasi 30 menit" + Calendly link
 
 ---
 
@@ -2262,7 +2262,7 @@ Grid 3-column dengan cards:
 - Eyebrow: "Jasa [Service] [Kota]"
 - H1: Benefit-driven + kota name
 - Sub: 2-3 kalimat local insight
-- CTA: Konsultasi Gratis
+- CTA: Hubungi Kami
 
 # Local Stats (4)
 - Jumlah bisnis kami handle di kota ini
@@ -2495,7 +2495,7 @@ Grid 3-column dengan cards:
 **Pattern:** `{Pain/Hook} + {Promise} + {CTA} + {Brand}`
 
 **Contoh:**
-- "Budget iklan habis tapi leads gak dateng? Pelajari 7 strategi Facebook Ads yang terbukti naikkan ROAS 4x lipat. Konsultasi gratis 15 menit - Beriklan."
+- "Budget iklan habis tapi leads gak dateng? Pelajari 7 strategi Facebook Ads yang terbukti naikkan ROAS 4x lipat. Konsultasi - Beriklan."
 
 ### 15.3 Schema Templates
 
@@ -2621,7 +2621,7 @@ Grid 3-column dengan cards:
 | Terpercaya | [Sebutkan data, misal "200+ bisnis"] |
 | Murah | [Sebutkan harga atau value, misal "mulai Rp 500rb"] |
 | Berkualitas | [Sebutkan metrik kualitas, misal "98% retention"] |
-| Terlengkap | [Sebutkan kelengkapan spesifik, misal "9 layanan + audit gratis"] |
+| Terlengkap | [Sebutkan kelengkapan spesifik, misal "9 layanan + audit"] |
 | Terbaik | [Bukti konkret, misal "avg ROAS 4.5x (vs industri 2x)"] |
 | Berpengalaman | [Sebutkan tahun + portofolio, misal "8 tahun + 50 brand"] |
 | Nomor 1 | [Sebutkan metric, misal "top 3% agency di Indonesia"] |

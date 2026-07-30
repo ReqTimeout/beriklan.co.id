@@ -46,7 +46,7 @@ Redesign total **beriklan.co.id** dari WordPress marketing site lama menjadi **m
 | **Persona** | Senior Performance Marketing Partner (8+ tahun, 50+ brand) |
 | **Offer inti** | Jasa digital marketing terukur: Meta Ads, Google Ads, TikTok, YouTube, social management, website/LP |
 | **Promise** | Sistem pertumbuhan terukur (ROAS/CPA), akses dashboard penuh, tanpa hidden fee |
-| **Primary CTA** | Konsultasi gratis 15 menit (WhatsApp + form) |
+| **Primary CTA** | Konsultasi (WhatsApp + form) |
 | **Secondary CTA** | Lihat layanan / Lihat paket |
 | **Geo** | Indonesia (HQ Bandung), local SEO multi-kota |
 | **Differentiator vs Haloka** | Agency services multi-platform + proof + blog authority — **bukan** SaaS trial |
@@ -255,7 +255,7 @@ src/
 /blog/kategori/[category]
 /blog/page/[page]
 /kamus                            Glossary (COPY-BIBLE §10) — P2
-/audit                            Free audit tool (COPY-BIBLE §11) — P1
+/audit                            Audit tool (COPY-BIBLE §11) — P1
 /kota/[kota]                      Local hub — P1
 /jasa-[service]-[kota]            Programmatic local — P1 (dari KEEP_LOCAL)
 /privacy, /terms                  Legal
@@ -286,7 +286,7 @@ Awareness (blog/local SEO)
     → Service page
         → /paket OR /order OR WhatsApp
             → Lead di CRM/email/WA
-                → Konsultasi 15 menit
+                → Konsultasi
 ```
 
 Secondary:
@@ -303,7 +303,7 @@ Mirip **urutan psikologis** Haloka, beda **konten & demo**.
 | # | Section | Pattern Haloka | Implementasi Beriklan | Island? |
 |---|---|---|---|---|
 | 0 | Navbar | sticky + CTA | Logo + Layanan mega + Paket + Blog + CTA | Svelte `client:load` (mobile menu) |
-| 1 | Sticky CTA | mobile bar | "Konsultasi Gratis" → WA | Svelte `client:idle` |
+| 1 | Sticky CTA | mobile bar | "Hubungi Kami" → WA | Svelte `client:idle` |
 | 2 | Hero | copy + ChatSimulator | copy COPY-BIBLE §4.1 + **HeroScene Ads Dashboard** | Dashboard Svelte `client:visible` |
 | 3 | Trust strip | badges | Logo client + partner Meta/Google + stats micro | Astro + CSS marquee |
 | 4 | Pain | PainPoints drama | 3 pain cards §4.2 + optional **Ad Waste Calculator** | Calculator Svelte |
@@ -512,7 +512,7 @@ Sumber: `COPY-BIBLE.md`
 | Kami | agency voice (bukan "kita") |
 | Metrics | ROAS, CPA, CTR — explain first use |
 | Banned | "elevate", "synergy", "game-changer", emoji spam, guarantee ROAS palsu |
-| CTA primary | Konsultasi Gratis 15 Menit |
+| CTA primary | Hubungi Kami |
 | Proof | 50+ klien, 8 tahun, avg ROAS ~4.2–4.5x (internal data — jujur, no fake) |
 
 **Action:** Saat implementasi, copy di components **harus** di-pull dari COPY-BIBLE, bukan improvisasi casual ala Haloka.

@@ -142,7 +142,7 @@ Free Domain + Hosting 1 Thn
 Selesai 7-14 Hari
 SEO Optimized Built-in
 Tim Senior 9 Tahun
-Konsultasi Gratis 15 Menit
+Hubungi Kami
 Garansi 30 Hari
 CMS WordPress Include
 Mobile Responsive
@@ -156,7 +156,7 @@ SEO Ready & Cepat
 **Descriptions (paste 4):**
 ```
 Website profesional: company profile, e-commerce, landing page. SEO ready + free domain hosting 1 tahun.
-Mulai Rp 999rb. Selesai 7-14 hari. Garansi 30 hari. Konsultasi gratis via WhatsApp.
+Mulai Rp 999rb. Selesai 7-14 hari. Garansi 30 hari. Hubungi kami via WhatsApp.
 Tim berpengalaman 9 tahun. Akses penuh, revisi included. Berhenti? Tidak ada kontrak.
 Website SEO friendly, mobile responsive, loading cepat. Free SSL + email profesional.
 ```
@@ -255,7 +255,7 @@ Muncul Halaman 1 Google
 Mulai Rp 1,75 Juta
 Hanya Bayar per Klik
 Google Partner Certified
-Audit Akun Gratis
+Audit Akun
 Konsultasi 15 Menit
 Optimasi Harian
 Laporan Mingguan
@@ -270,7 +270,7 @@ Setup Tracking Lengkap
 **Descriptions (paste 4):**
 ```
 Google Ads bersertifikat. Halaman 1 Google. Bayar per klik. Akses penuh akun.
-Mulai Rp 1,75 jt/bln + ad spend. Optimasi harian + laporan mingguan. Audit gratis.
+Mulai Rp 1,75 jt/bln + ad spend. Optimasi harian + laporan mingguan. Audit.
 Tim certified Google. Target kata kunci akurat. ROI terukur. Berhenti kapan saja.
 Setup conversion tracking + Google Analytics. Optimasi bidding otomatis cerdas.
 ```
@@ -343,7 +343,7 @@ Aman untuk Akun
 Proses 5-15 Menit
 Garansi 100%
 Support 24/7
-Konsultasi Gratis
+Hubungi Kami
 Video Views Pro
 Live Boost
 Viewer Real Account
@@ -493,7 +493,7 @@ web penambah view gratis
 
 ### 2. Callouts (6 per campaign)
 ```
-Konsultasi 15 Menit Gratis
+Hubungi Kami
 9 Tahun Pengalaman
 Tim Bersertifikasi Meta & Google
 Laporan Mingguan

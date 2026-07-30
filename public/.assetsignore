@@ -1,0 +1,4 @@
+# Internal build artifacts that must NOT be served as Cloudflare assets.
+# keyword-queue.json (~168MB, 387k rows) exceeds the 25MiB asset limit.
+# It is only a fallback source; the worker reads the keyword queue from D1 (primary).
+data/keyword-queue.json

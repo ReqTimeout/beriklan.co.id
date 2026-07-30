@@ -142,7 +142,7 @@ def build_html(city: dict, service: str) -> str:
     faq = (
         f"<h3>Berapa biaya layanan {label} di {name}?</h3>\n"
         f"<p>Biaya disesuaikan dengan paket dan ruang lingkup kebutuhan bisnis Anda di {name}. "
-        f"Konsultasi awal 15 menit kami sediakan gratis untuk menentukan rekomendasi yang tepat.</p>\n"
+        f"Konsultasi awal kami sediakan untuk menentukan rekomendasi yang tepat.</p>\n"
         f"<h3>Apakah cocok untuk UMKM di {name}?</h3>\n"
         f"<p>Ya. Dengan ekosistem UMKM yang aktif di {name}, layanan ini dirancang agar bisnis "
         f"dengan budget menengah dapat menjalankan campaign yang terukur dan transparan.</p>\n"

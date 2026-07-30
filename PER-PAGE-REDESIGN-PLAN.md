@@ -239,7 +239,7 @@ Isi copy + animasi diganti per layanan di §D.
 | Field | Copy |
 |---|---|
 | Title | `Jasa Digital Marketing Indonesia \| Beriklan Digital Agency` |
-| Meta | `Jasa digital marketing untuk Facebook Ads, Instagram, TikTok, Google Ads, YouTube, kelola sosial media, dan website. Konsultasi gratis — Bandung, Indonesia.` |
+| Meta | `Jasa digital marketing untuk Facebook Ads, Instagram, TikTok, Google Ads, YouTube, kelola sosial media, dan website. Konsultasi — Bandung, Indonesia.` |
 | H1 | `Jasa Digital Marketing yang Menumbuhkan Prospek, Bukan Hanya Impresi` |
 | Primary KW | jasa digital marketing, digital agency Indonesia |
 
@@ -249,7 +249,7 @@ Isi copy + animasi diganti per layanan di §D.
    - Eyebrow: `Beriklan Digital Agency · Bandung`  
    - H1: di atas  
    - Sub: `Kami merancang dan menjalankan campaign multi-platform — Meta, Google, TikTok, dan YouTube — agar bisnis Anda menjangkau audiens yang tepat dan mengonversi ke WhatsApp, telepon, atau penjualan.`  
-   - CTA primary: `Konsultasi Gratis via WhatsApp`  
+   - CTA primary: `Hubungi Kami via WhatsApp`  
    - CTA secondary: `Lihat Layanan`  
    - **HeroDemo (Svelte):** Ads Command Center — multi-channel spend bars + “lead masuk” toast (analog ChatSimulator Haloka)
 
@@ -591,7 +591,7 @@ Local SEO pages (ratusan) → fase terpisah; money pages di atas dulu.
 
 **Sections (custom — bukan template service)**
 
-1. **Hero ringkas** — H1 + sub (1 paragraf) + trust badges + CTA `Konsultasi Gratis`
+1. **Hero ringkas** — H1 + sub (1 paragraf) + trust badges + CTA `Hubungi Kami`
 2. **Tab / sticky filter** — `Paid Ads · Social Management · Website & LP · Bundling` (Svelte filter, default `Paid Ads`)
 3. **Pricing matrix lengkap** — setiap service collapsed card (accordion) dengan ringkasan tier + `Lihat detail →` ke halaman service. Hemat scroll, hindari 10× pricing cards.
 4. **Bundling rekomendasi** (Svelte Bento):
@@ -600,7 +600,7 @@ Local SEO pages (ratusan) → fase terpisah; money pages di atas dulu.
    - **Omnichannel Scale** — Meta + Google + TikTok Ads (custom quote)
 5. **Comparison table** — `DIY · Freelancer · Beriklan` (5 baris: support, reporting, ad spend min, fee struktur, dedicated AM)
 6. **FAQ pricing** (8 Q) — keyword-rich: beda ad spend vs management fee, bisa upgrade paket, refund policy, ad spend siapa yang bayar
-7. **Mid CTA** — `Belum yakin? Audit 15 menit gratis via WhatsApp`
+7. **Mid CTA** — `Belum yakin? Audit via WhatsApp`
 8. **Related blog posts** — 3 post pricing-related
 
 **HeroDemo Svelte:** `PricingMatrixInteractive.svelte` — bukan HeroDemo demo produk; ini filter matrix island (tab + accordion).
@@ -634,7 +634,7 @@ Local SEO pages (ratusan) → fase terpisah; money pages di atas dulu.
 1. **Hero** — H1 + sub + filter industri chips (`F&B`, `Fashion`, `Edukasi`, `Properti`, `Jasa`, `Kecantikan`)
 2. **Highlight case (1 featured)** — full bleed card: klien nama+industri, challenge, hasil headline, `Baca studi kasus →`
 3. **Grid 6-9 case** — card: industri, judul singkat (campaign), headline metric (contoh `ROAS 6.2× dalam 60 hari`), CTA
-4. **Mid CTA** — `Mau hasil seperti klien kami? Konsultasi gratis`
+4. **Mid CTA** — `Mau hasil seperti klien kami? Konsultasi`
 5. **FAQ singkat** (3 Q) — “Apakah nama klien asli?”, “Berapa minimal budget untuk dapat hasil serupa?”
 
 **SEO single page** (`/studi-kasus/{slug}`)
@@ -712,7 +712,7 @@ noindex: false
 5. **Nilai kerja** — 5 prinsip (Data-driven, Transparent reporting, No hidden fee, Senior handle all, Long-term partnership) — bukan bullet kosong; setiap nilai 1 paragraf + contoh konkret.
 6. **Partner & sertifikasi** — Logo Meta Business Partner, Google Partner, TikTok Academy, dll. Marquee strip.
 7. **Klien highlight** — 12-20 logo klien (anonim OK) marquee.
-8. **Final CTA** — `Bekerja sama dengan tim yang sama yang mengelola campaign Anda. Konsultasi gratis.`
+8. **Final CTA** — `Bekerja sama dengan tim yang sama yang mengelola campaign Anda. Konsultasi.`
 
 **Svelte:** `Timeline.svelte` — horizontal scroll (desktop) + vertical accordion (mobile). Reduced-motion fallback.
 
@@ -772,9 +772,9 @@ noindex: false
 
 | Field | Copy |
 |---|---|
-| Title | `Audit Iklan Digital Marketing Gratis 15 Menit \| Beriklan` |
+| Title | `Audit Iklan Digital Marketing \| Beriklan` |
 | Meta | `Dapatkan audit campaign digital marketing gratis: cek kualitas Meta Ads, Google Ads, TikTok, SEO, dan tracking. Skor + rekomendasi actionable dalam 15 menit.` |
-| H1 | `Audit Kampanye Digital Marketing Anda — Gratis, 15 Menit` |
+| H1 | `Audit Kampanye Digital Marketing Anda` |
 | Primary KW | audit digital marketing gratis, cek iklan |
 
 **Sections — single page wizard**
@@ -789,7 +789,7 @@ noindex: false
    6. ROAS/CPA terakhir yang Anda tahu? (free input numeric)
    7. Apa tantangan terbesar? (textarea, max 300 char)
 3. **Submit → Result page (same route)** — skor 0-100 per kategori (4 kategori: Targeting, Creative, Tracking, Optimasi) + recommendation list (Svelte `AuditResult.svelte`)
-4. **CTA lead capture setelah hasil** — `Mau kami audit manual gratis? Kirim WhatsApp dengan hasil ini`
+4. **CTA lead capture setelah hasil** — `Mau kami audit manual? Kirim WhatsApp dengan hasil ini`
 5. **FAQ audit** (4 Q) — “Apakah data saya aman?”, “Berapa lama?”, “Apa bedanya dengan konsultasi?”
 
 **Svelte:**
@@ -1369,7 +1369,7 @@ Semua CTA WA link dibangun via `lib/whatsapp.ts → buildWaLink(message)`. Templ
 ### Q.1 Generic consultation
 
 ```
-Halo Beriklan, saya ingin konsultasi gratis untuk digital marketing.
+Halo Beriklan, saya ingin konsultasi untuk digital marketing.
 
 Bisnis: {nama bisnis}
 Kota: {kota}
@@ -1400,9 +1400,9 @@ Bisa diskusi kebutuhan dan estimasi budget?
 ### Q.4 Audit result follow-up
 
 ```
-Halo Beriklan, saya baru saja isi audit gratis di website.
+Halo Beriklan, saya baru saja isi audit di website.
 Hasil saya: skor {skor}/100, tantangan utama: {tantangan}.
-Bisa konsultasi 15 menit?
+Bisa konsultasi?
 ```
 
 ### Q.5 Bundling

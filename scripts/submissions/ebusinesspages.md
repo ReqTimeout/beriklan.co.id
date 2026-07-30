@@ -70,7 +70,7 @@ Rp 250.000 - Rp 500.000 / jam
 ## 📝 Description (variation #3)
 
 ```
-Agensi performance marketing Indonesia sejak 2016. Spesialis Meta Ads, TikTok Ads, Google Ads, YouTube Ads, SEO, dan web development. Berbasis Bandung, melayani UMKM dan bisnis menengah Indonesia. Pendekatan audit-first, transparan, dashboard real-time. Tim bersertifikasi Meta & Google Partner. Konsultasi awal gratis 15 menit via WhatsApp.
+Agensi performance marketing Indonesia sejak 2016. Spesialis Meta Ads, TikTok Ads, Google Ads, YouTube Ads, SEO, dan web development. Berbasis Bandung, melayani UMKM dan bisnis menengah Indonesia. Pendekatan audit-first, transparan, dashboard real-time. Tim bersertifikasi Meta & Google Partner. Konsultasi via WhatsApp.
 ```
 
 ---

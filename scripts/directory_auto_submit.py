@@ -72,7 +72,7 @@ Berbeda dari agensi yang sekadar "pasang iklan", kami bekerja seperti partner: a
 
 Tim kami bersertifikasi Meta Business Partner dan Google Partner, dengan pengalaman mengelola ratusan campaign dari e-commerce, properti, edutech, F&B, hingga jasa profesional. Bahasa manusia, transparansi penuh, dan hasil yang bisa dipertanggungjawabkan.
 
-Klien kami biasanya mulai dari audit campaign gratis (15 menit via WhatsApp), lalu paket implementasi mulai Rp 5.000.000 / bulan. Respon 1 jam (jam kerja), tim online setiap hari, dan konsultan berpengalaman yang bisa menjelaskan strategi dalam bahasa sederhana — bukan jargon.""",
+Klien kami biasanya mulai dari audit campaign via WhatsApp, lalu paket implementasi mulai Rp 5.000.000 / bulan. Respon 1 jam (jam kerja), tim online setiap hari, dan konsultan berpengalaman yang bisa menjelaskan strategi dalam bahasa sederhana — bukan jargon.""",
 
     # Medium form (200 words)
     """Beriklan.co.id adalah agensi digital marketing Indonesia yang fokus pada iklan berbayar (Facebook, Instagram, TikTok, Google, YouTube Ads) plus SEO dan web development. Berdiri sejak 2016 di Bandung, kami mengelola campaign untuk UMKM dan bisnis menengah dengan budget Rp 5jt–50jt/bulan.
@@ -81,10 +81,10 @@ Pendekatan kami berbasis data: audit dulu, baru eksekusi. Setiap campaign punya 
 
 Layanan utama: Jasa Iklan Facebook Ads, Jasa Iklan Instagram, Jasa Iklan TikTok, Jasa Iklan Google Ads, SEO, Pembuatan Website & Landing Page. Klien dari e-commerce, properti, F&B, edutech, hingga jasa profesional.
 
-Mulai dari konsultasi gratis 15 menit via WhatsApp. Respon 1 jam (jam kerja), tim online setiap hari.""",
+Mulai dari konsultasi via WhatsApp. Respon 1 jam (jam kerja), tim online setiap hari.""",
 
     # Short form (100 words)
-    """Agensi performance marketing Indonesia sejak 2016. Spesialis Meta Ads, TikTok Ads, Google Ads, YouTube Ads, SEO, dan web development. Berbasis Bandung, melayani UMKM dan bisnis menengah Indonesia. Pendekatan audit-first, transparan, dashboard real-time. Tim bersertifikasi Meta & Google Partner. Konsultasi awal gratis 15 menit via WhatsApp.""",
+    """Agensi performance marketing Indonesia sejak 2016. Spesialis Meta Ads, TikTok Ads, Google Ads, YouTube Ads, SEO, dan web development. Berbasis Bandung, melayani UMKM dan bisnis menengah Indonesia. Pendekatan audit-first, transparan, dashboard real-time. Tim bersertifikasi Meta & Google Partner. Konsultasi via WhatsApp.""",
 ]
 
 def main():

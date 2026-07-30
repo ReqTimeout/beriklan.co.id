@@ -272,7 +272,7 @@ Effort: 1-2 jam untuk replace semua. Bisa di-defer ke phase berikutnya.
 ### Improvements
 - **Bahasa campur English** di beberapa tempat tanpa italic: "testing", "PMF", "scale-up", "lead gen", "sales", "awareness", "traffic", "ROAS" — OK untuk niche digital marketing tapi bisa di-bold/italic untuk clarity
 - **Plus Jakarta Sans** untuk display mungkin kurang dramatic — Instrument Serif italic untuk display akan jauh lebih premium feel
-- **Action button copy** konsisten (✓ "Konsultasi Gratis 15 Menit", "Chat WhatsApp Sekarang", "Mulai Starter", "Pilih Growth")
+- **Action button copy** konsisten (✓ "Hubungi Kami", "Chat WhatsApp Sekarang", "Mulai Starter", "Pilih Growth")
 - **FAQ copy** sudah komprehensif dan honest (acknowledging "Tergantung platform dan industri")
 
 ### Red flags

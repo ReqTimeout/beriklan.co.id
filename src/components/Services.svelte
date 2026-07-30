@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { Megaphone, Camera, Music2, Search, Play, FileText, Globe, Film, Smartphone, ArrowUpRight, Check } from 'lucide-svelte';
 
-    const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi%20gratis";
+    const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi";
 
     let visible = false;
     let activeTab = 'all';
@@ -242,7 +242,7 @@
             <p class="text-sm text-muted">
                 Butuh rekomendasi atau ingin mendiskusikan anggaran?
                 <a href={waLink} class="text-accent font-bold hover:underline ml-1 group inline-flex items-center gap-1">
-                    Konsultasi gratis via WhatsApp
+                    Hubungi kami via WhatsApp
                     <span class="group-hover:translate-x-1 transition-transform">→</span>
                 </a>
             </p>

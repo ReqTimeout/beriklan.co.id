@@ -16,7 +16,7 @@ const ADSENSE_SLOTS = {
   sidebar: '1237556436',     // sidebar, auto responsive
 };
 
-const SERVICE_NAMES = {
+const SERVICE_NAMES: Record<string, string> = {
   'jasa-digital-marketing': 'Digital Marketing',
   'jasa-iklan-facebook': 'Facebook Ads',
   'jasa-iklan-instagram': 'Instagram Ads',
@@ -31,7 +31,7 @@ const SERVICE_NAMES = {
 
 // Pick featured image: post.featuredImage OR service-specific OR hash-based category pool (50+ images)
 import { getFeaturedImage as getFeaturedImageRich } from '../../utils/featured_image.js';
-function getFeaturedImage(post) {
+function getFeaturedImage(post: any) {
     return getFeaturedImageRich(post);
 }
 
@@ -65,12 +65,12 @@ const recentPosts = posts
 
 const allTags = Array.from(new Set(posts.flatMap((p) => p.tags || []))).slice(0, 12);
 
-const categoryCounts = posts.reduce((acc, p) => {
+const categoryCounts = posts.reduce((acc: Record<string, number>, p) => {
     acc[p.category] = (acc[p.category] || 0) + 1;
     return acc;
-}, {});
+}, {} as Record<string, number>);
 
-const categoryLabels = {
+const categoryLabels: Record<string, string> = {
     'meta': 'Facebook & Instagram',
     'tiktok': 'TikTok',
     'google': 'Google Ads',
@@ -103,9 +103,9 @@ const AUTHOR = {
 const REFRESHED_SLUGS = {
     // "slug-yang-direfresh": "2026-07-15T10:00:00",
 };
-const lastReviewed = post.last_reviewed || post.iso_date;
+const lastReviewed = (post as any).last_reviewed || post.iso_date;
 const isRefreshed = post.slug in REFRESHED_SLUGS;
-const freshness = post.freshness || 'recent';
+const freshness = (post as any).freshness || 'recent';
 
 const articleSchema = {
     '@context': 'https://schema.org',
@@ -352,7 +352,7 @@ const articleSchema = {
                                 <li>
                                     <a href={cat.id === 'all' ? '/blog' : `/blog`} class="flex items-center justify-between text-sm font-semibold text-ink hover:text-accent transition-colors py-1.5">
                                         <span>{cat.id === post.category ? <strong>{cat.label}</strong> : cat.label}</span>
-                                        {cat.count > 0 && <span class="text-xs text-muted">{cat.count}</span>}
+                                        {(cat.count ?? 0) > 0 && <span class="text-xs text-muted">{cat.count}</span>}
                                     </a>
                                 </li>
                             ))}

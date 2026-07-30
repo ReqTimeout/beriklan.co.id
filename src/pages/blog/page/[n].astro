@@ -32,9 +32,9 @@ const pagePosts = posts.slice(start, start + PAGE_SIZE);
 const base = 'https://beriklan.co.id';
 const selfUrl = `${base}/blog/page/${pageNum}/`;
 const prevUrl = pageNum === 2 ? `${base}/blog/` : `${base}/blog/page/${pageNum - 1}/`;
-const nextUrl = pageNum < totalPages ? `${base}/blog/page/${pageNum + 1}/` : null;
+const nextUrl = pageNum < totalPages ? `${base}/blog/page/${pageNum + 1}/` : undefined;
 
-function getImage(post) {
+function getImage(post: any) {
     return getFeaturedImage(post);
 }
 ---

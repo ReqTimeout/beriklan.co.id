@@ -30,6 +30,23 @@ export default {
     if (path === "/api/health" || path === "/api/health/") {
       return await handleHealth(env);
     }
+    // Debug: inspect D1 rows for a blog slug (read-only, admin token)
+    if (path === "/api/admin/blog-debug" || path === "/api/admin/blog-debug/") {
+      const token = new URL(request.url).searchParams.get("token");
+      if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+      const slug = new URL(request.url).searchParams.get("slug") || "";
+      const out = { slug };
+      try {
+        out.posts_meta = await env.DB.prepare("SELECT slug, title, service, city, category, length(excerpt) as exc_len FROM posts_meta WHERE slug=?").bind(slug).first();
+        out.posts_content = await env.DB.prepare("SELECT slug, length(content) as content_len FROM posts_content WHERE slug=?").bind(slug).first();
+        out.draft = await env.DB.prepare("SELECT slug, title, service, city, status, length(content) as content_len FROM generated_drafts WHERE slug=?").bind(slug).first();
+        out.exists = await env.DB.prepare("SELECT 1 FROM generated_drafts WHERE slug=? UNION ALL SELECT 1 FROM posts_meta WHERE slug=? LIMIT 1").bind(slug, slug).first();
+        out.sitemap_hit = (await env.DB.prepare("SELECT COUNT(*) as c FROM posts_meta").first()).c;
+      } catch (e) {
+        out.error = String(e).slice(0, 300);
+      }
+      return new Response(JSON.stringify(out), { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+    }
     if (path === "/api/admin/env-check" || path === "/api/admin/env-check/") {
       return await handleEnvCheck(request, env);
     }

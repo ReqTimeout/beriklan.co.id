@@ -833,7 +833,7 @@ Isi file tersebut:
 - Account ID, Zone ID, API token (zone-scoped)
 - Workers project state (`beriklanweb` script + zone-level Workers Routes)
 - Endpoint API yang WORKS vs yang TIDAK works dengan token ini
-- Gotchas: jangan taruh `410` di `_redirects`, field name `script` bukan `script_name`
+- Gotchas: jangan taruh `410` di `_redirects`, field name `script` bukan `script_name`, **`run_worker_first` untuk `/blog/*` WAJIB** (tanpa ini, asset-first mem-bypass worker → enrichment FAQ tidak pernah tampil di slug yang ada di static build)
 - Workflow lengkap: push GitHub → CF auto-build → verify via curl
 - Recovery steps kalau deploy rusak
 

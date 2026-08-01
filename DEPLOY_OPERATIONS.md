@@ -209,12 +209,12 @@ export GITHUB_TOKEN="<<<LIHAT account.md>>>"
    - **Fix**: `wrangler.jsonc` → `"assets": { ..., "run_worker_first": ["/blog/*", "/data/*", "/sitemap-blog.xml"] }`.
    - Verify: `curl -sI https://beriklan.co.id/blog/<slug>/` harus punya header `x-beriklan-dynamic: renderBlogPost` dan `cache-control: max-age=3600`. Kalau dapat `max-age=0, must-revalidate` = masih asset-first, config belum apply.
 
-1. **Jangan taruh `410` di `public/_redirects`**
+2. **Jangan taruh `410` di `public/_redirects`**
    - Wrangler parser reject dengan error "URLs should either be relative or HTTPS"
    - Format: `/old 410` (no destination) NOT supported by wrangler
    - Fix: Hapus baris 410. URLs akan 404 di server. Atau ganti jadi 301 ke `/` (homepage).
 
-2. **wrangler.jsonc field name: `script` BUKAN `script_name`**
+3. **wrangler.jsonc field name: `script` BUKAN `script_name`**
    - Kalau pakai `script_name`, request sukses tapi `script: null` di response
    - Route jadi gak ke-bind ke worker mana pun
 

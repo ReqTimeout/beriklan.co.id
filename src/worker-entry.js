@@ -315,15 +315,18 @@ export default {
       return await handleImportDatabase(request, env);
     }
 
-    // Dynamic blog posts: NEW posts (no static Astro file) render via renderBlogPost.
-    // Old Astro-built posts fall through to env.ASSETS.fetch() so they keep the polished layout.
-    // This ensures consistent formatting across all single-post pages.
+    // Dynamic blog posts: render via renderBlogPost when the slug lives in D1
+    // (generated_drafts OR posts_meta — content lives in posts_content, not the
+    // static build). Slug in generated_drafts = AI draft; slug in posts_meta =
+    // committed/published post. Fall through to env.ASSETS.fetch() otherwise.
+    // renderBlogPost returns null when content is absent, so this never downgrades
+    // a page that the static Astro build serves with full content.
     const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
     if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
       const slug = blogMatch[1];
       const exists = await env.DB.prepare(
-        "SELECT 1 FROM generated_drafts WHERE slug=?"
-      ).bind(slug).first();
+        "SELECT 1 FROM generated_drafts WHERE slug=? UNION ALL SELECT 1 FROM posts_meta WHERE slug=? LIMIT 1"
+      ).bind(slug, slug).first();
       if (exists) {
         const dynamic = await renderBlogPost(slug, env);
         if (dynamic) return dynamic;
@@ -1800,6 +1803,23 @@ async function handleAdminSyncPosts(request, env) {
       category: p.category || 'trending',
       featured: p.featured === 1 || p.featured === true,
     }));
+
+    // 2b. Join content from posts_content (posts_meta has NO content column — it lives
+    //     only in posts_content). Without this, the GitHub posts.json mirror ends up with
+    //     empty content for every D1-only post, producing blank static pages after rebuild.
+    try {
+      const contentRes = await env.DB.prepare(
+        "SELECT slug, content FROM posts_content WHERE content IS NOT NULL AND length(content) > 0"
+      ).all();
+      const contentMap = new Map((contentRes.results || []).map(r => [r.slug, r.content]));
+      for (const p of posts) {
+        const c = contentMap.get(p.slug);
+        if (c) p.content = c;
+      }
+      for (const p of posts) {
+        if (!p.content) p.content = "";
+      }
+    } catch (e) {}
 
     // 3. Cap future dates
     const nowIso = new Date().toISOString();

@@ -1760,8 +1760,9 @@ async function handleAdminSyncPosts(request, env) {
     const publishedTodayR = await env.DB.prepare("SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?").bind(todayStr).first();
     const publishedToday = publishedTodayR?.n || 0;
 
-    // Daily limit = 200/hari (match GSC Indexing API quota). batch = 50 per cron trigger.
-    let dailyLimit = 200;
+    // D1/dynamic publish limit (posts go live via Worker even without static rebuild).
+    // GSC Indexing API remains capped at 200/day separately in submitToGscCore.
+    let dailyLimit = 500;
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
     const batchSize = Math.min(50, remainingToday);
 
@@ -1838,7 +1839,6 @@ async function handleAdminSyncPosts(request, env) {
 
      // ─── Self-check (§3.4) — reject invalid drafts ────
      let rejected = 0;
-     let committed = 0;
      let failed = 0;
      const safeDrafts = [];
      for (const draft of drafts) {
@@ -1882,9 +1882,76 @@ async function handleAdminSyncPosts(request, env) {
      }
      const finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
 
-    // 5. Commit to GitHub
+    // 5. ALWAYS publish safe drafts to D1 first (dynamic blog render serves from posts_meta/content).
+    //    GitHub commit is best-effort for static rebuild — must NOT block city articles going live.
+    let d1Published = 0;
+    const publishedSlugs = new Set();
+    for (const draft of safeDrafts) {
+      try {
+        // Remap seed-/exp- slugs (keyword_queue.id artifacts) to the SEO slug derived
+        // from the keyword. Otherwise drafts publish as /blog/seed-xxxx/ and the real
+        // keyword URL (e.g. /blog/jasa-view-live-di-bandung/) stays 404.
+        let finalSlug = draft.slug;
+        if (/^(seed|exp)-/.test(finalSlug)) {
+          const fromTitle = (draft.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "artikel";
+          const kwRow = await env.DB.prepare(
+            "SELECT keyword FROM keyword_queue WHERE article_slug=? OR keyword_normalized=? LIMIT 1"
+          ).bind(draft.slug, fromTitle.replace(/-/g, " ")).first();
+          let derived = fromTitle;
+          if (kwRow?.keyword) {
+            derived = (kwRow.keyword || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || fromTitle;
+          }
+          let candidate = derived;
+          let n = 2;
+          while (publishedSlugs.has(candidate)) { candidate = `${derived}-${n++}`; }
+          finalSlug = candidate;
+          publishedSlugs.add(finalSlug);
+        } else {
+          publishedSlugs.add(finalSlug);
+        }
+        const post = finalPosts.find(p => p.slug === draft.slug) || {};
+        const postTitle = post.title || draft.title || "";
+        const postExcerpt = (post.excerpt || "").slice(0, 500);
+        await env.DB.prepare(
+          `INSERT INTO posts_meta (slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated, iso_updated)
+           VALUES (?,?,?,?,?,?,?,?,?,?,0,1,datetime('now'))
+           ON CONFLICT(slug) DO UPDATE SET
+             title=excluded.title, excerpt=excluded.excerpt, date=excluded.date, iso_date=excluded.iso_date,
+             category=excluded.category, readTime=excluded.readTime, tags=excluded.tags,
+             service=excluded.service, city=excluded.city, generated=1, iso_updated=datetime('now')`
+        ).bind(
+          finalSlug,
+          postTitle,
+          postExcerpt,
+          post.date || "",
+          post.iso_date || nowIso,
+          draft.service || post.category || "strategy",
+          post.readTime || "3 min",
+          JSON.stringify(post.tags || [draft.service, draft.city].filter(Boolean)).slice(0, 1000),
+          draft.service || "",
+          draft.city || "",
+        ).run();
+        await env.DB.prepare(
+          `INSERT INTO posts_content (slug, content) VALUES (?,?)
+           ON CONFLICT(slug) DO UPDATE SET content=excluded.content`
+        ).bind(finalSlug, draft.content || "").run();
+        await env.DB.prepare(
+          "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
+        ).bind(draft.slug).run();
+        // Advance keyword_queue → published (by article_slug or keyword≈title/slug)
+        await env.DB.prepare(
+          "UPDATE keyword_queue SET status='published', article_slug=?, published_at=COALESCE(published_at, datetime('now')) WHERE article_slug=? OR keyword_normalized=?"
+        ).bind(finalSlug, draft.slug, (draft.title || finalSlug).toLowerCase().replace(/-/g, " ")).run();
+        d1Published++;
+      } catch (e) {
+        failed++;
+        console.error("[sync-posts] d1 publish error", draft.slug, String(e).slice(0, 150));
+      }
+    }
+
+    // 5b. Commit to GitHub (best-effort static mirror)
     let commitResult = null;
-    if (env.GITHUB_TOKEN) {
+    if (env.GITHUB_TOKEN && safeDrafts.length > 0) {
       try {
         const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(finalPosts, null, 2))));
         const putResp = await fetch(
@@ -1897,7 +1964,7 @@ async function handleAdminSyncPosts(request, env) {
               "User-Agent": "BeriklanWorker/1.0",
             },
             body: JSON.stringify({
-              message: `sync: ${finalPosts.length} posts (${posts.length} dari D1 + ${existing.length} dari git)`,
+              message: `sync: +${safeDrafts.length} posts live (D1 ${d1Published}) · total ${finalPosts.length}`,
               content: updatedContent,
               sha: fileSha,
               branch: "main",
@@ -1906,64 +1973,26 @@ async function handleAdminSyncPosts(request, env) {
         );
         if (putResp.ok) {
           const d = await putResp.json();
-          commitResult = { ok: true, sha: d.commit?.sha, url: d.content?.html_url };
-            // Mark drafts as committed
-            for (const draft of safeDrafts) {
-              try {
-                await env.DB.prepare(
-                  "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
-                ).bind(draft.slug).run();
-                // Also sync to posts_meta + posts_content for dynamic serving
-                const post = finalPosts.find(p => p.slug === draft.slug);
-                if (post) {
-                  await env.DB.prepare(
-                    "INSERT OR IGNORE INTO posts_meta (slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated, iso_updated) VALUES (?,?,?,?,?,?,?,?,?,?,0,1,datetime('now'))"
-                  ).bind(
-                    draft.slug,
-                    post.title || '',
-                    (post.excerpt || '').slice(0, 500),
-                    post.date || '',
-                    post.iso_date || nowIso,
-                    'trending',
-                    post.readTime || '3 min',
-                    JSON.stringify(post.tags || [draft.service, draft.city].filter(Boolean)).slice(0, 1000),
-                    draft.service || '',
-                    draft.city || '',
-                  ).run();
-                  await env.DB.prepare(
-                    "INSERT OR IGNORE INTO posts_content (slug, content) VALUES (?,?)"
-                  ).bind(draft.slug, draft.content).run();
-                }
-              } catch {}
-            }
+          commitResult = { ok: true, sha: d.commit?.sha, url: d.content?.html_url, d1_published: d1Published };
         } else {
           const errBody = await putResp.text();
-          commitResult = { ok: false, status: putResp.status, body: errBody.slice(0, 200) };
+          commitResult = { ok: false, status: putResp.status, body: errBody.slice(0, 200), d1_published: d1Published };
         }
       } catch (e) {
-        commitResult = { ok: false, error: e.message };
+        commitResult = { ok: false, error: e.message, d1_published: d1Published };
       }
     } else {
-      commitResult = { ok: false, error: "GITHUB_TOKEN not set" };
+      commitResult = { ok: d1Published > 0, d1_published: d1Published, error: env.GITHUB_TOKEN ? null : "GITHUB_TOKEN not set" };
     }
 
-    // 6. Auto-enqueue NEW URLs to pending_indexing (so they get submitted next cron run)
+    // 6. Auto-enqueue NEW URLs to pending_indexing (www for GSC property match)
     let enqueued = 0;
-    if (commitResult?.ok && env.DB) {
+    if (d1Published > 0 && env.DB) {
       try {
-        // Get existing URLs in pending_indexing
         const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
-        const existingSet = new Set((existing.results || []).map(r => r.url));
-
-        // Get all slugs from final posts.json that look like blog posts
-        const candidates = finalPosts
-          .filter(p => p.generated && p.slug)
-          .slice(0, 200); // cap per run to avoid huge insert
-
-        for (const p of candidates) {
-          const slug = p.slug;
-          // Skip if looks like city page (e.g. 'jasa-iklan-facebook-bandung' has 'jasa-iklan' prefix)
-          const url = `https://beriklan.co.id/blog/${slug}/`;
+        const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
+        for (const draft of safeDrafts) {
+          const url = `https://www.beriklan.co.id/blog/${draft.slug}/`;
           if (existingSet.has(url)) continue;
           try {
             await env.DB.prepare(
@@ -1972,28 +2001,26 @@ async function handleAdminSyncPosts(request, env) {
             enqueued++;
           } catch {}
         }
-      } catch (e) {
-        // log silently
-      }
+      } catch (e) {}
     }
 
     // C. Submit new URLs to GSC Indexing API (max 200/hari, auto-retry 429)
     let gsc = { submitted: 0 };
-    if (safeDrafts.length > 0 && env.GSC_SERVICE_ACCOUNT_JSON) {
+    if (d1Published > 0 && env.GSC_SERVICE_ACCOUNT_JSON) {
       const gscUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${d.slug}/`);
       gsc = await submitToGscCore(env, gscUrls);
     }
 
     // D. Submit to IndexNow (hindari rate limit, backoff otomatis)
     let indexnow = { submitted: 0 };
-    if (safeDrafts.length > 0) {
-      const inUrls = safeDrafts.map(d => `https://beriklan.co.id/blog/${d.slug}/`);
+    if (d1Published > 0) {
+      const inUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${d.slug}/`);
       indexnow = await submitToIndexNowCore(env, inUrls);
     }
 
      // ─── Alert email if publish failed or empty (§3.5) ────
      try {
-       const needsAlert = (safeDrafts.length === 0 && totalDrafts > 0) || failed > 0;
+       const needsAlert = (d1Published === 0 && totalDrafts > 0) || failed > 0;
        if (needsAlert && env.RESEND_API_KEY) {
          const alertHtml = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto;background:#f9fafb;">
  <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;border-radius:8px;margin-bottom:16px;">
@@ -2004,7 +2031,7 @@ async function handleAdminSyncPosts(request, env) {
  <table style="width:100%;border-collapse:collapse;font-size:13px;">
  <tr><td style="padding:6px 0;color:#6b7280;width:180px;">Drafts pending</td><td>${totalDrafts}</td></tr>
  <tr><td style="padding:6px 0;color:#6b7280;">Published today</td><td>${publishedToday}</td></tr>
- <tr><td style="padding:6px 0;color:#6b7280;">Safe drafts this run</td><td>${safeDrafts.length}</td></tr>
+  <tr><td style="padding:6px 0;color:#6b7280;">Safe drafts this run</td><td>${d1Published} live (D1)</td></tr>
  <tr><td style="padding:6px 0;color:#6b7280;">Rejected (self-check)</td><td>${rejected}</td></tr>
  <tr><td style="padding:6px 0;color:#6b7280;">Commit failed</td><td>${failed > 0 ? 'YES' : 'no'}</td></tr>
  <tr><td style="padding:6px 0;color:#6b7280;">Daily limit</td><td>${dailyLimit}</td></tr>
@@ -2012,7 +2039,7 @@ async function handleAdminSyncPosts(request, env) {
  </table>
  <p style="margin-top:24px;font-size:12px;color:#6b7280;">Dikirim otomatis oleh cron sync-posts di beriklan.co.id.</p>
  </body></html>`;
-         await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan sync-posts ${safeDrafts.length === 0 && totalDrafts > 0 ? "0 published" : "failed"}, pending: ${totalDrafts}`, alertHtml, "alert-syncposts-" + Date.now());
+          await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan sync-posts ${d1Published === 0 && totalDrafts > 0 ? "0 published" : "failed"}, pending: ${totalDrafts}`, alertHtml, "alert-syncposts-" + Date.now());
        }
      } catch (alertErr) {
        console.error("[sync-posts] alert email error:", String(alertErr).slice(0, 200));
@@ -2024,18 +2051,19 @@ async function handleAdminSyncPosts(request, env) {
         existing_in_git: existing.length,
         final_count: finalPosts.length,
         commit: commitResult,
+        d1_published: d1Published,
         auto_index_enqueued: enqueued,
         gsc_submitted: gsc.submitted,
         gsc_quota_remaining: gsc.quota_remaining,
         indexnow_submitted: indexnow.submitted,
         buffer_refilled: refill.refilled,
         buffer_count: refill.buffer_count,
-        published_this_run: safeDrafts.length,
-        published_today: publishedToday + safeDrafts.length,
+        published_this_run: d1Published,
+        published_today: publishedToday + d1Published,
         daily_limit: dailyLimit,
         batch_size: batchSize,
-        remaining_today: Math.max(0, dailyLimit - publishedToday - safeDrafts.length),
-        total_drafts_pending: totalDrafts,
+        remaining_today: Math.max(0, dailyLimit - publishedToday - d1Published),
+        total_drafts_pending: Math.max(0, totalDrafts - d1Published),
         total_rejected: rejected,
         elapsed_ms: Date.now() - t0,
       }, null, 2), { headers: { "Content-Type": "application/json" } });
@@ -3297,12 +3325,13 @@ async function handleAdminDashboard(request, env) {
 
   // 6. SEO metrics
   try {
-    const articles = await env.DB.prepare("SELECT COUNT(*) as c FROM articles").first();
+    // `articles` is a legacy table and may be empty while posts_meta is live.
+    const articles = await env.DB.prepare("SELECT COUNT(*) as c FROM articles").first().catch(() => null);
     const posts = await env.DB.prepare("SELECT COUNT(*) as c FROM posts_meta").first();
     const indexed = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'indexed'").first();
     const pending = await env.DB.prepare("SELECT COUNT(*) as c FROM pending_indexing WHERE status = 'pending'").first();
     stats.seo = {
-      articles: articles?.c || 0,
+      articles: articles?.c || posts?.c || 0,
       posts: posts?.c || 0,
       indexed: indexed?.c || 0,
       pending_index: pending?.c || 0,
@@ -3314,7 +3343,7 @@ async function handleAdminDashboard(request, env) {
   // 7. Cron settings status
   try {
     const r = await env.DB.prepare("SELECT name, enabled, label FROM cron_settings ORDER BY id").all();
-    stats.cron_settings = r.results || [];
+    stats.cron_settings = (r.results || []).filter(isSeoCron);
   } catch (e) {
     stats.cron_settings = [];
   }
@@ -3377,8 +3406,9 @@ async function handleAdminDashboard(request, env) {
 
 function renderDashboard(stats, token) {
   // Health summary
-  const totalCrons = (stats.cron_settings || []).length;
-  const enabledCrons = (stats.cron_settings || []).filter(c => c.enabled).length;
+  const displayCrons = (stats.cron_settings || []).filter(isSeoCron);
+  const totalCrons = displayCrons.length;
+  const enabledCrons = displayCrons.filter(c => c.enabled).length;
   const recentFailed = (stats.recent_cron_runs || []).filter(c => c.status === "failed").length;
   const healthStatus = recentFailed > 3 ? "critical" : recentFailed > 0 ? "warning" : "healthy";
 
@@ -3407,7 +3437,7 @@ function renderDashboard(stats, token) {
     return `<tr><td>${(c.started_at || '').slice(0, 19)}</td><td><strong>${c.cron_name}</strong></td><td>${statusBadge}</td><td>${dur}</td><td>${err}</td></tr>`;
   }).join('') || '<tr><td colspan="5" style="color:#666;text-align:center;padding:20px;">Belum ada cron run</td></tr>';
 
-  const cronSettingsRows = (stats.cron_settings || []).map(c => `
+  const cronSettingsRows = displayCrons.map(c => `
     <tr><td><strong>${c.name}</strong><br><small style="color:#666;">${c.label || ''}</small></td><td>${c.enabled ? '<span class="badge green">✓ AKTIF</span>' : '<span class="badge red">⏸ PAUSED</span>'}</td><td><a href="/api/admin/cron/toggle?token=${token}&name=${c.name}" onclick="event.preventDefault(); fetch(this.href,{method:'POST'}).then(()=>location.reload())" class="toggle-link">${c.enabled ? 'Pause' : 'Enable'}</a></td></tr>
   `).join('');
 
@@ -3590,6 +3620,12 @@ function renderDashboard(stats, token) {
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const bar = (pct, color) => `<div style="background:#eee;border-radius:6px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:${color};height:8px;border-radius:6px;width:${Math.min(100, pct)}%;"></div></div>`;
 const escapeHtml = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+const SEO_CRON_NAMES = new Set([
+  "hourly", "indexnow", "gsc-indexing", "trending-generate", "content-refresh",
+  "snippet-optimize", "scrape-indonetwork", "scrape-google-places", "email-send",
+  "index-verify", "sync-posts", "rank-sync", "pending-cleanup", "sitemap-ping",
+]);
+const isSeoCron = (row) => SEO_CRON_NAMES.has(row?.name);
 // Multi-key support: GROQ_API_KEY, GROQ_API_KEY_2, GROQ_API_KEY_3, ...
 // Returns deduplicated list of non-empty Groq API keys from env.
 function getGroqKeys(env) {
@@ -3965,13 +4001,14 @@ async function handleKeywordDashboard(request, env) {
   // ===== DATA FETCH =====
   const data = {
     buildStats: null,
-    keywordQueue: { total: 0, byStatus: {}, byService: {}, bySource: {} },
+    keywordQueue: { total: 0, byStatus: {}, byService: {}, byServiceStatus: {}, bySource: {} },
     postsMeta: { total: 0, generated: 0, byService: {} },
-    indexing: { pending: 0, submitted: 0, failed: 0, today: 0, recent: [] },
+    indexing: { pending: 0, submitted: 0, indexed: 0, failed: 0, today: 0, recent: [] },
     indexnow: { total: 0, last24h: 0 },
     cron: [],
     trending: { total: 0, recent: [] },
-    drafts: { total: 0, pending: 0, committed: 0 }
+    drafts: { total: 0, pending: 0, committed: 0 },
+    generation: { requested24h: 0, generated24h: 0, runs24h: 0, errors24h: 0 }
   };
 
   // 1. Build-time stats (snapshot dari repo)
@@ -3998,10 +4035,28 @@ async function handleKeywordDashboard(request, env) {
     const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM keyword_queue GROUP BY status").all();
     for (const r of (c.results || [])) data.keywordQueue.byStatus[r.status] = r.n;
     data.keywordQueue.total = Object.values(data.keywordQueue.byStatus).reduce((a, b) => a + b, 0);
-    const svcQ = await env.DB.prepare("SELECT service, COUNT(*) as n FROM keyword_queue WHERE service IS NOT NULL AND service != '' GROUP BY service").all();
+    const svcQ = await env.DB.prepare("SELECT COALESCE(NULLIF(service,''),'unassigned') as service, COUNT(*) as n FROM keyword_queue WHERE status='pending' GROUP BY COALESCE(NULLIF(service,''),'unassigned')").all();
     for (const r of (svcQ.results || [])) data.keywordQueue.byService[r.service] = r.n;
-    const srcQ = await env.DB.prepare("SELECT source, COUNT(*) as n FROM keyword_queue WHERE source IS NOT NULL GROUP BY source ORDER BY n DESC LIMIT 15").all();
+    const svcStatusQ = await env.DB.prepare("SELECT COALESCE(NULLIF(service,''),'unassigned') as service, status, COUNT(*) as n FROM keyword_queue GROUP BY COALESCE(NULLIF(service,''),'unassigned'), status").all();
+    for (const r of (svcStatusQ.results || [])) {
+      if (!data.keywordQueue.byServiceStatus[r.service]) data.keywordQueue.byServiceStatus[r.service] = {};
+      data.keywordQueue.byServiceStatus[r.service][r.status] = r.n;
+    }
+    const srcQ = await env.DB.prepare("SELECT COALESCE(NULLIF(source,''),'unattributed') as source, COUNT(*) as n FROM keyword_queue GROUP BY COALESCE(NULLIF(source,''),'unattributed') ORDER BY n DESC").all();
     for (const r of (srcQ.results || [])) data.keywordQueue.bySource[r.source] = r.n;
+  } catch (e) {}
+
+  // Generation velocity makes the 380k queue actionable instead of cosmetic.
+  try {
+    const r = await env.DB.prepare(`
+      SELECT COUNT(*) as runs,
+        COALESCE(SUM(count_requested), 0) as requested,
+        COALESCE(SUM(count_generated), 0) as generated,
+        COALESCE(SUM(CASE WHEN error IS NOT NULL AND error != '' THEN 1 ELSE 0 END), 0) as errors
+      FROM hourly_generate_runs
+      WHERE timestamp > datetime('now', '-24 hours')
+    `).first();
+    data.generation = { runs24h: r?.runs || 0, requested24h: r?.requested || 0, generated24h: r?.generated || 0, errors24h: r?.errors || 0 };
   } catch (e) {}
 
   // 3. Posts coverage per service (LIVE D1)
@@ -4038,6 +4093,7 @@ async function handleKeywordDashboard(request, env) {
   try {
     const c = await env.DB.prepare("SELECT status, COUNT(*) as n FROM pending_indexing GROUP BY status").all();
     for (const r of (c.results || [])) data.indexing[r.status] = r.n;
+    data.indexing.indexed = data.indexing.indexed || 0;
     data.indexing.submitted = (data.indexing.submitted || 0) + (data.indexing.gsc_submitted || 0);
     const t = await env.DB.prepare("SELECT COUNT(*) as n FROM pending_indexing WHERE status IN ('submitted','gsc_submitted') AND date(COALESCE(gsc_submitted_at, submitted_at, created_at))=date('now')").first();
     data.indexing.today = t?.n || 0;
@@ -4086,7 +4142,7 @@ async function handleKeywordDashboard(request, env) {
       committed_today: committedToday?.n || 0,
       draft_pending: draftCount?.n || 0,
       committed_total: committedTotal?.n || 0,
-      daily_limit: 200,
+      daily_limit: 500,
       gsc_used_today: gscQuotaDate?.value === todayStr ? parseInt(gscQuotaUsed?.value || '0') : 0,
       gsc_backoff: gscBackoff?.value || null,
       indexnow_backoff: indexnowBackoff?.value || null,
@@ -4100,9 +4156,17 @@ async function handleKeywordDashboard(request, env) {
   const esc = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   // Health banner status
-  const failedCrons = data.cron.filter(c => c.enabled).length;
-  const totalCrons = data.cron.length;
+  const displayCrons = data.cron.filter(isSeoCron);
+  const activeCrons = displayCrons.filter(c => c.enabled).length;
+  const totalCrons = displayCrons.length;
   const healthStatus = data.drafts.pending > 5 ? "warning" : (data.indexing.pending > 50 ? "watch" : "healthy");
+  const queueDone = (data.keywordQueue.byStatus.generated || 0) + (data.keywordQueue.byStatus.published || 0);
+  const queuePending = data.keywordQueue.byStatus.pending || 0;
+  const generationPerDay = data.generation.generated24h || 0;
+  const generationEtaDays = generationPerDay > 0 ? Math.ceil(queuePending / generationPerDay) : null;
+  const generationSuccess = data.generation.requested24h > 0
+    ? Math.round((data.generation.generated24h / data.generation.requested24h) * 100)
+    : 0;
 
   return new Response(`<!DOCTYPE html>
 <html lang="id">
@@ -4226,13 +4290,14 @@ ${healthStatus === 'healthy'
 <div class="flow-step">
 <div class="icon">📤</div>
 <div class="label">Step 5 — Indexed</div>
-<div class="value">${num(data.indexnow.total)}</div>
+<div class="value">${num(data.indexing.indexed || 0)}</div>
 </div>
 </div>
 
 <!-- TOP KPI -->
 <div class="kpi-grid">
 <div class="kpi good"><div class="label">📋 Total Keyword</div><div class="value">${num(data.keywordQueue.total)}</div><div class="sub">${num(data.keywordQueue.byStatus.pending || 0)} pending · ${num(data.keywordQueue.byStatus.generated || 0)} generated</div></div>
+<div class="kpi ${generationEtaDays === null || generationSuccess < 70 ? 'warn' : ''}"><div class="label">⚙️ Execution 24h</div><div class="value">${num(generationPerDay)}</div><div class="sub">${num(data.generation.requested24h)} requested · ${generationSuccess}% sukses${generationEtaDays ? ` · ETA ${num(generationEtaDays)} hari` : ''}</div></div>
 <div class="kpi ${data.drafts.pending > 0 ? 'highlight' : 'good'}"><div class="label">📝 Drafts</div><div class="value">${num(data.drafts.total)}</div><div class="sub">${num(data.drafts.pending)} pending · ${num(data.drafts.committed)} committed</div></div>
 <div class="kpi"><div class="label">📰 Artikel Live</div><div class="value">${num(data.postsMeta.total)}</div><div class="sub">${num(data.postsMeta.generated)} AI-generated</div></div>
 <div class="kpi ${data.indexing.pending > 20 ? 'warn' : 'good'}"><div class="label">⏳ Indexing Pending</div><div class="value">${num(data.indexing.pending)}</div><div class="sub">${num(data.indexing.today)} hari ini</div></div>
@@ -4305,10 +4370,13 @@ ${Object.keys(data.keywordQueue.bySource).length ? `<table>
 </div>
 
 <div class="section">
-<div class="section-head"><h2>📋 Antrian per Layanan</h2><span class="meta">siap di-generate</span></div>
+<div class="section-head"><h2>📋 Keyword per Layanan</h2><span class="meta">pending dan sudah diproses</span></div>
 ${Object.keys(data.keywordQueue.byService).length ? `<table>
-<thead><tr><th>Layanan</th><th>Antrian</th></tr></thead>
-<tbody>${Object.entries(data.keywordQueue.byService).sort((a,b)=>b[1]-a[1]).map(([svc, count]) => `<tr><td>${esc(svc)}</td><td><strong>${num(count)}</strong></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📋</div>Belum ada antrian</div>'}
+<thead><tr><th>Layanan</th><th>Pending</th><th>Generated</th><th>Published</th></tr></thead>
+<tbody>${Object.entries(data.keywordQueue.byService).sort((a,b)=>b[1]-a[1]).map(([svc, count]) => {
+  const s = data.keywordQueue.byServiceStatus[svc] || {};
+  return `<tr><td>${esc(svc)}</td><td><strong>${num(count)}</strong></td><td>${num(s.generated || 0)}</td><td>${num(s.published || 0)}</td></tr>`;
+}).join('')}</tbody></table>` : '<div class="empty-state"><div class="ico">📋</div>Belum ada antrian</div>'}
 </div>
 </div>
 
@@ -4335,7 +4403,7 @@ ${data.trending.recent.length ? `<table>
 <div class="section">
 <div class="section-head">
 <h2>🚀 Publish Pipeline</h2>
-<span class="meta">sync-posts: batch 50/jam · ${data.publish.daily_limit || 200}/hari</span>
+<span class="meta">sync-posts: batch 50/jam · ${data.publish.daily_limit || 500}/hari (D1 live) · GSC 200/hari</span>
 </div>
 <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
 <div class="kpi ${data.publish.committed_today >= (data.publish.daily_limit || 200) ? 'warn' : 'good'}"><div class="label">📤 Published Hari Ini</div><div class="value">${num(data.publish.committed_today)}</div><div class="sub">dari ${num(data.publish.daily_limit || 200)} limit</div></div>
@@ -4354,10 +4422,10 @@ ${data.publish.last_run ? `<span class="muted">Run terakhir: ${String(data.publi
 <!-- CRON JOBS -->
 <div class="section">
 <div class="section-head">
-<h2>⏰ Cron Jobs (${data.cron.length} total, ${failedCrons} aktif)</h2>
+<h2>⏰ Cron Jobs (${totalCrons} total, ${activeCrons} aktif)</h2>
 <span class="meta">Klik toggle untuk pause / enable</span>
 </div>
-${data.cron.length ? data.cron.map(c => {
+${displayCrons.length ? displayCrons.map(c => {
   const isLast = c.name === 'email-send' ? true : false; // mark special
   return `<form method="POST" action="/api/admin/cron/toggle?token=${token}&name=${c.name}" style="margin:0">
 <div class="cron-row">
@@ -4450,7 +4518,7 @@ async function handlePublishDashboard(request, env) {
     ]);
     const draftCount = draftCountR?.n || 0;
     const committedToday = committedTodayR?.n || 0;
-    const dailyLimit = 200;
+    const dailyLimit = 500;
     const gscUsed = parseInt(gscQuotaR?.value || '0');
     const gscDate = dailyLimitR?.value || '';
     const cursor = cursorR?.cron || 'unknown';
@@ -6956,17 +7024,45 @@ async function handleHourlyGenerate(request, env) {
   const errors = [];
 
   try {
-    // 1. Fetch pending keywords from D1 (29K+ keywords) — fallback ke ASSETS jika D1 unavailable
+    // 1. Fetch pending keywords from D1 — CORE services + city first (round-robin).
+    //    Previously ORDER BY priority alone made jasa-view-live (prio 95) monopolize generation
+    //    while facebook/google/dm city keywords (prio 50-70) starved.
+    const CORE_SERVICES = [
+      "jasa-iklan-facebook", "jasa-iklan-instagram", "jasa-iklan-google", "jasa-iklan-tiktok",
+      "jasa-iklan-youtube", "jasa-digital-marketing", "jasa-pembuatan-website",
+      "jasa-pembuatan-landing-page", "jasa-kelola-instagram", "jasa-kelola-tiktok",
+    ];
     let pending = [];
     let queueTotal = 0;
+    // Slug = keyword-derived (SEO), NOT keyword_queue.id (which is seed-xxx/exp-xxx).
+    // Previously item.slug came from r.id → drafts got /blog/seed-.../ URLs and the real
+    // keyword slugs (e.g. /blog/jasa-view-live-di-bandung/) never existed → 404s.
+    const seenSlug = new Set();
+    const makeSlug = (keyword) => {
+      const base = (keyword || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "artikel";
+      let s = base;
+      let i = 2;
+      while (seenSlug.has(s)) { s = `${base}-${i++}`; }
+      seenSlug.add(s);
+      return s;
+    };
     try {
-      const qr = await env.DB.prepare(
-        "SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug FROM keyword_queue WHERE status = 'pending' AND (article_slug IS NULL OR article_slug = '') ORDER BY priority_score DESC LIMIT ?"
-      ).bind(count).all();
-      pending = (qr.results || []).map(r => {
-        const slug = (r.keyword || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+      // One-time-ish rebalance: demote view-live, boost core×city (idempotent enough each hour)
+      try {
+        await env.DB.prepare(
+          "UPDATE keyword_queue SET priority_score = 25 WHERE status='pending' AND (service LIKE '%view-live%' OR service LIKE '%viewers%' OR service LIKE '%shopee%' OR service LIKE '%tokopedia%') AND COALESCE(priority_score,0) > 30"
+        ).run();
+        await env.DB.prepare(
+          "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND city IS NOT NULL AND city != '' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
+        ).run();
+        log.push({ stage: "priority_rebalance", ok: true });
+      } catch (e) {
+        log.push({ stage: "priority_rebalance", error: String(e.message || e).slice(0, 120) });
+      }
+
+      const mapRow = (r) => {
         return {
-          slug: r.id || slug,
+          slug: makeSlug(r.keyword),
           keyword: r.keyword,
           keyword_normalized: r.keyword_normalized,
           service: r.service,
@@ -6975,8 +7071,64 @@ async function handleHourlyGenerate(request, env) {
           intent: r.intent,
           article_slug: r.article_slug,
         };
-      });
-      // Get total pending count
+      };
+
+      // Round-robin: 1 city keyword per core service first, then fill remaining by priority (core only)
+      const picked = [];
+      const seenKw = new Set();
+      const perCore = Math.max(1, Math.ceil(count / CORE_SERVICES.length));
+      for (const svc of CORE_SERVICES) {
+        if (picked.length >= count) break;
+        const qr = await env.DB.prepare(
+          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+           FROM keyword_queue
+           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
+             AND service=? AND city IS NOT NULL AND city != ''
+           ORDER BY priority_score DESC, length(keyword) ASC LIMIT ?`
+        ).bind(svc, perCore).all();
+        for (const r of (qr.results || [])) {
+          if (picked.length >= count) break;
+          if (seenKw.has(r.keyword)) continue;
+          seenKw.add(r.keyword);
+          picked.push(mapRow(r));
+        }
+      }
+      // Fill remainder from any core service (city preferred via priority)
+      if (picked.length < count) {
+        const need = count - picked.length;
+        const placeholders = CORE_SERVICES.map(() => "?").join(",");
+        const qr = await env.DB.prepare(
+          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+           FROM keyword_queue
+           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
+             AND service IN (${placeholders})
+           ORDER BY CASE WHEN city IS NOT NULL AND city != '' THEN 0 ELSE 1 END, priority_score DESC, length(keyword) ASC
+           LIMIT ?`
+        ).bind(...CORE_SERVICES, need * 3).all();
+        for (const r of (qr.results || [])) {
+          if (picked.length >= count) break;
+          if (seenKw.has(r.keyword)) continue;
+          seenKw.add(r.keyword);
+          picked.push(mapRow(r));
+        }
+      }
+      // Last resort: any pending (including non-core) if core empty
+      if (picked.length < count) {
+        const need = count - picked.length;
+        const qr = await env.DB.prepare(
+          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+           FROM keyword_queue
+           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
+           ORDER BY priority_score DESC LIMIT ?`
+        ).bind(need * 2).all();
+        for (const r of (qr.results || [])) {
+          if (picked.length >= count) break;
+          if (seenKw.has(r.keyword)) continue;
+          seenKw.add(r.keyword);
+          picked.push(mapRow(r));
+        }
+      }
+      pending = picked;
       const tc = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status = 'pending'").first();
       queueTotal = tc?.n || 0;
     } catch (e) {
@@ -11704,10 +11856,26 @@ async function renderBlogPost(slug, env) {
 
     let relatedRows = [];
     try {
-      const related = await env.DB.prepare(
-        "SELECT slug, title, date, readTime, excerpt FROM posts_content WHERE slug != ? AND (service = ? OR ? = '' OR category LIKE ?) ORDER BY RANDOM() LIMIT 3"
-      ).bind(slug, meta.service||'', meta.service||'', '%' + (meta.category||'Blog') + '%').all();
-      if (related.results?.length) relatedRows = related.results;
+      // Must query posts_meta (title/date/service live here). posts_content only has slug+html.
+      const svc = meta.service || "";
+      const city = meta.city || "";
+      let related = null;
+      if (svc) {
+        related = await env.DB.prepare(
+          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? AND service = ? ORDER BY iso_date DESC LIMIT 3"
+        ).bind(slug, svc).all();
+      }
+      if (!related?.results?.length && city) {
+        related = await env.DB.prepare(
+          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? AND city = ? ORDER BY iso_date DESC LIMIT 3"
+        ).bind(slug, city).all();
+      }
+      if (!related?.results?.length) {
+        related = await env.DB.prepare(
+          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? ORDER BY iso_date DESC LIMIT 3"
+        ).bind(slug).all();
+      }
+      if (related?.results?.length) relatedRows = related.results;
     } catch (e) {}
 
     const tpl = await _getBlogTpl(env);

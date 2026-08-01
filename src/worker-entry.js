@@ -586,12 +586,22 @@ async function handleHealth(env) {
   try {
     const pending = await getPendingCount(env);
     const trending = await getTrendingCount(env);
+    let counts = null;
+    if (env.DB) {
+      try {
+        const meta = await env.DB.prepare("SELECT COUNT(*) as c FROM posts_meta").first();
+        const content = await env.DB.prepare("SELECT COUNT(*) as c FROM posts_content WHERE content IS NOT NULL AND length(content) > 0").first();
+        const drafts = await env.DB.prepare("SELECT COUNT(*) as c FROM generated_drafts WHERE status IN ('draft','committed')").first();
+        counts = { posts_meta: meta?.c || 0, posts_content_nonempty: content?.c || 0, generated_drafts: drafts?.c || 0 };
+      } catch (e) { counts = { error: String(e).slice(0, 150) }; }
+    }
     return new Response(JSON.stringify({
       status: "ok",
       worker: "beriklanweb",
       build: "v-2026-08-01-enrich-faq-mesh",
       pending_count: pending,
       trending_articles: trending,
+      counts,
       timestamp: new Date().toISOString(),
     }), { headers: { "Content-Type": "application/json" } });
   } catch (e) {

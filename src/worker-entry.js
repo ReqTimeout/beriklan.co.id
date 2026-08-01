@@ -589,6 +589,7 @@ async function handleHealth(env) {
     return new Response(JSON.stringify({
       status: "ok",
       worker: "beriklanweb",
+      build: "v-2026-08-01-enrich-faq-mesh",
       pending_count: pending,
       trending_articles: trending,
       timestamp: new Date().toISOString(),

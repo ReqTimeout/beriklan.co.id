@@ -47,6 +47,12 @@ export default {
           out.render_ok = !!r;
           out.render_status = r ? r.status : null;
           if (r) out.render_cache = r.headers.get("Cache-Control");
+          if (r) {
+            const rb = await r.text();
+            out.render_faqpage = rb.includes('"FAQPage"');
+            out.render_faq_h2 = rb.includes("Pertanyaan yang Sering Diajukan");
+            out.render_len = rb.length;
+          }
         } catch (e) {
           out.render_error = String(e).slice(0, 500);
         }

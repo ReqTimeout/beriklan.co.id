@@ -29,7 +29,8 @@
   },
   "assets": {
     "binding": "ASSETS",
-    "directory": "dist"
+    "directory": "dist",
+    "run_worker_first": ["/blog/*", "/data/*", "/sitemap-blog.xml"]
   },
   "triggers": {
     "crons": [

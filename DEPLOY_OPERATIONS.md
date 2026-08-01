@@ -202,6 +202,13 @@ export GITHUB_TOKEN="<<<LIHAT account.md>>>"
 
 ## 🚨 KNOWN GOTCHAS — JANGAN ULANG KESALAHAN INI
 
+1. **`run_worker_first` WAJIB untuk `/blog/*`, `/data/*`, `/sitemap-blog.xml`**
+   - Workers static assets default **asset-first**: kalau file ada di `dist/` (semua 3381 slug blog di-build), request di-serve langsung dari asset service TANPA menjalankan worker.
+   - Akibatnya `renderBlogPost` (yang menambahkan enrichment FAQ + internal links + FAQPage schema) TIDAK pernah dipanggil untuk slug yang ada di static build — konten lama yang ter-serve.
+   - Slug draft (tidak ada di dist) baru di-handle worker → terlihat enriched, tapi post posts_meta murni tidak. Gejala ini sempat menyesatkan diagnosis.
+   - **Fix**: `wrangler.jsonc` → `"assets": { ..., "run_worker_first": ["/blog/*", "/data/*", "/sitemap-blog.xml"] }`.
+   - Verify: `curl -sI https://beriklan.co.id/blog/<slug>/` harus punya header `x-beriklan-dynamic: renderBlogPost` dan `cache-control: max-age=3600`. Kalau dapat `max-age=0, must-revalidate` = masih asset-first, config belum apply.
+
 1. **Jangan taruh `410` di `public/_redirects`**
    - Wrangler parser reject dengan error "URLs should either be relative or HTTPS"
    - Format: `/old 410` (no destination) NOT supported by wrangler

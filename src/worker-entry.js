@@ -7985,17 +7985,19 @@ Layanan: ${svcName}${city ? ` · Kota: ${city}` : ""}
 
 Struktur artikel (HTML, mulai dari <h2>, jangan <h1>):
 1. Pendahuluan (kenapa topik ini penting, 1 paragraf)
-2. Section utama dengan sub-heading (<h3>) + bullet/list + tabel bila relevan
-3. FAQ (3-4 pertanyaan + jawaban 1-2 kalimat)
-4. CTA WhatsApp dengan placeholder link: <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(svcName)}${city ? `%20di%20${encodeURIComponent(city)}` : ""}">Konsultasi via WhatsApp →</a>
+2. Section utama dengan sub-heading (<h3>) + bullet/list + MINIMAL SATU tabel perbandingan harga/paket/layanan bila relevan (gunakan <table> dengan <thead> dan <tbody>)
+3. Internal link 5-8: sertakan <a href="https://beriklan.co.id/${svc}/">halaman layanan</a> + link ke 2-3 artikel blog ber-kota lain dari layanan yang sama (contoh: /blog/${svc}-bandung/, /blog/${svc}-surabaya/ bila kota bukan kota itu, atau gunakan kota lain yang relevan) dengan anchor text natural seperti "jasa ${svcName.toLowerCase()} di Surabaya"
+4. FAQ WAJIB 5 pertanyaan (<h3> pertanyaan + <p> jawaban 1-2 kalimat), pertanyaan lokal spesifik untuk ${city || "Indonesia"} dan bisnis setempat
+5. CTA WhatsApp dengan placeholder link: <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(svcName)}${city ? `%20di%20${encodeURIComponent(city)}` : ""}">Konsultasi via WhatsApp →</a>
 
 Aturan copy:
 - Tone profesional, terukur, percaya diri. Pakai "Anda" (kecuali hero moment).
 - Jangan pakai: bikin, gak, nggak, pasti untung, garansi 100%, dalam dunia.
-- Panjang: 700-1000 kata.
+- Panjang: 1000-1400 kata.
 - Pakai data konkret (%, Rp, contoh spesifik) bila relevan.
 - Brand voice: senior performance marketing partner, bukan sales.
-- Internal link 2-3 ke https://beriklan.co.id/{svc}/ dan /{svc}/{city}/ (bila city ada).
+- Sebutkan kota "${city || "lokasi Anda"}" secara natural minimal 5 kali di dalam artikel.
+- Selalu sisipkan angka/estimasi biaya yang masuk akal (contoh: mulai dari Rp 1,5 juta/bulan) di bagian harga — jangan klaim garansi.
 
 TOPIK KETAT (WAJIB DIIKUTI):
 - Artikel HANYA tentang jasa iklan, digital marketing, Meta/Facebook/Instagram/TikTok/Google/YouTube Ads,
@@ -11609,17 +11611,90 @@ async function _getBlogTpl(env) {
 }
 
 // ─── Build middle section: Article schema + header + article + sidebar + related ───
-function _buildArticleBody(slug, meta, content, relatedRows) {
+// ─── Enrichment helpers (deterministic, run at render time so ALL posts benefit) ───
+function _cityTitle(city) {
+  if (!city) return "";
+  return String(city).replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// 5 FAQ deterministik per service+city — valid untuk FAQPage schema & on-page content.
+// Dipakai saat artikel belum memiliki section FAQ (sebagian besar post lama).
+function _buildFaqItems(svc, city) {
+  const svcName = (SERVICE_NAMES[svc] || "layanan digital marketing").toLowerCase();
+  const cityName = _cityTitle(city);
+  const loc = cityName ? ` di ${cityName}` : "";
+  return [
+    { q: `Berapa biaya ${svcName}${loc}?`, a: `Biaya ${svcName}${loc} bervariasi tergantung target campaign, jenis audience, dan creative. Kami menyusun rekomendasi anggaran yang terukur setelah sesi konsultasi singkat — konsultasi awal tidak dipungut biaya.` },
+    { q: `Berapa lama hasil ${svcName}${loc} terlihat?`, a: `Umumnya hasil mulai terlihat dalam 1–2 minggu pertama campaign live, bergantung pada objective dan budget. Progres dipantau lewat dashboard real-time dan laporan mingguan.` },
+    { q: `Apakah ${svcName}${loc} cocok untuk usaha skala kecil?`, a: `Ya. Strategi disesuaikan dengan anggaran dan tujuan bisnis — dari skala kecil hingga menengah, dengan prioritas pada efisiensi biaya per akuisisi.` },
+    { q: `Bagaimana cara mulai menggunakan ${svcName}${loc}?`, a: `Hubungi kami via WhatsApp, ceritakan kondisi bisnis Anda, lalu tim kami melakukan audit singkat sebelum merumuskan strategi prioritas yang terukur.` },
+    { q: `Apa keunggulan ${svcName}${loc} dibanding agency lain?`, a: `Campaign dikelola end-to-end dengan akses penuh ke akun iklan Anda, pelaporan transparan mingguan, dan tim bersertifikasi Meta & Google sejak 2016.` },
+  ];
+}
+
+function _buildFaqHtml(faqItems) {
+  if (!faqItems || !faqItems.length) return "";
+  return `
+<h2>Pertanyaan yang Sering Diajukan</h2>
+${faqItems.map(f => `<h3>${escHtml(f.q)}</h3>\n<p>${escHtml(f.a)}</p>`).join("\n")}`;
+}
+
+function _buildFaqSchema(faqItems) {
+  if (!faqItems || !faqItems.length) return "";
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org", "@type": "FAQPage",
+    mainEntity: faqItems.map(f => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  })}</script>`;
+}
+
+// Internal-link mesh block: anchor text ke halaman layanan + article kota tetangga.
+function _buildInternalLinksHtml(svc, city, relatedRows) {
+  const parts = [];
+  const svcPath = svc ? `https://beriklan.co.id/${svc}/` : "";
+  const svcName = SERVICE_NAMES[svc] || "Jasa Digital Marketing";
+  if (svcPath) {
+    parts.push(`<li><a href="${svcPath}">${escHtml(svcName)} — paket, harga & cara kerja</a></li>`);
+  }
+  const cityName = _cityTitle(city);
+  const rows = (relatedRows || []).filter(r => r && r.slug).slice(0, 4);
+  for (const r of rows) {
+    parts.push(`<li><a href="/blog/${escHtml(r.slug)}/">${escHtml(r.title || r.slug)}</a></li>`);
+  }
+  if (!parts.length) return "";
+  const head = cityName
+    ? `Layanan ${escHtml(svcName)} di kota lain`
+    : "Baca juga panduan terkait";
+  return `
+<div class="mt-10 p-5 md:p-6 bg-soft/40 border border-gray-100 rounded-2xl">
+  <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent mb-3">${head}</p>
+  <ul class="space-y-2 text-sm">${parts.join("")}</ul>
+</div>`;
+}
+
+function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
   const title = escHtml(meta.title || slug);
   const cat = escHtml(meta.category || 'Blog');
   const date = escHtml(meta.date || '');
   const isoDate = meta.iso_date || '';
   const readTime = escHtml(meta.readTime || '3 min');
   const excerpt = escHtml(meta.excerpt || '');
-  const body = content?.content || '';
+  let body = content?.content || '';
   let tags = [];
   try { tags = JSON.parse(meta.tags || '[]'); } catch {}
   const canonical = `https://beriklan.co.id/blog/${slug}/`;
+
+  // Enrichment: inject internal-link mesh + FAQ (deterministik) ke akhir artikel.
+  // Berlaku untuk SEMUA post di render-time — tanpa perlu regenerate konten AI.
+  const faqItemsForPage = (faqItems && faqItems.length) ? faqItems : _buildFaqItems(meta.service, meta.city);
+  const enrichedBlocks = _buildInternalLinksHtml(meta.service, meta.city, relatedRows)
+    + _buildFaqHtml(faqItemsForPage);
+  if (enrichedBlocks && !/Pertanyaan yang Sering Diajukan|FAQ/i.test(body)) {
+    body = body.trimEnd() + "\n" + enrichedBlocks;
+  }
 
   const articleSchema = `<script type="application/ld+json">${JSON.stringify({
     "@context":"https://schema.org","@type":"Article",headline:meta.title||slug,
@@ -11634,7 +11709,8 @@ function _buildArticleBody(slug, meta, content, relatedRows) {
     keywords:tags.slice(0,5).join(', '),
     inLanguage:"id-ID",isAccessibleForFree:true,
     speakable:{"@type":"SpeakableSpecification",cssSelector:["h1",".prose > p:first-of-type"]}
-  })}</script>`;
+  })}</script>`
+    + _buildFaqSchema(faqItemsForPage);
 
   const breadcrumb = `<nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
   <a href="/" class="hover:text-accent transition">Beranda</a>
@@ -11898,6 +11974,28 @@ async function renderBlogPost(slug, env) {
       if (related?.results?.length) relatedRows = related.results;
     } catch (e) {}
 
+    // Cross-link mesh: tambah artikel service LAIN di kota sama (bila ada) supaya
+    // tiap halaman punya internal links ke pillar + neighbor kota + lintas layanan.
+    let citySiblingRows = [];
+    if (meta.city) {
+      try {
+        const sib = await env.DB.prepare(
+          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? AND city = ? AND (service IS NULL OR service != ?) ORDER BY iso_date DESC LIMIT 3"
+        ).bind(slug, meta.city, meta.service || "").all();
+        if (sib?.results?.length) citySiblingRows = sib.results;
+      } catch (e) {}
+    }
+    const enrichRows = [...relatedRows, ...citySiblingRows];
+    // dedupe by slug, cap di 6
+    const seenEnrich = new Set();
+    const dedupedEnrich = [];
+    for (const r of enrichRows) {
+      if (!r?.slug || seenEnrich.has(r.slug)) continue;
+      seenEnrich.add(r.slug);
+      dedupedEnrich.push(r);
+      if (dedupedEnrich.length >= 6) break;
+    }
+
     const tpl = await _getBlogTpl(env);
     let prefix = tpl ? tpl.prefix : _fallbackPrefix(canonical, ogTitle, excerpt, title);
     const suffix = tpl ? tpl.suffix : _fallbackSuffix();
@@ -11916,7 +12014,7 @@ async function renderBlogPost(slug, env) {
         .replace(/<meta name="twitter:url" content="[^"]*"/, `<meta name="twitter:url" content="${canonical}"`);
     }
 
-    const middle = _buildArticleBody(slug, meta, content, relatedRows);
+    const middle = _buildArticleBody(slug, meta, content, dedupedEnrich, null);
     const html = prefix + middle + suffix;
 
     return new Response(html, {

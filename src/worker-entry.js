@@ -12060,7 +12060,7 @@ async function renderBlogPost(slug, env) {
     const html = prefix + middle + suffix;
 
     return new Response(html, {
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" }
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600", "X-Beriklan-Dynamic": "renderBlogPost" }
     });
   } catch (e) {
     console.error('renderBlogPost error:', e);

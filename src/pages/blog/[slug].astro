@@ -183,6 +183,7 @@ const articleSchema = {
     heroImage={featuredImage || undefined}
     heroImageWidth={1200}
     heroImageHeight={675}
+    ogImage={featuredImage ? `https://beriklan.co.id${featuredImage}` : undefined}
 >
 
     <Navbar client:only="svelte" />
@@ -274,7 +275,7 @@ const articleSchema = {
                         fetchpriority="high"
                         class="w-full h-auto max-h-[480px] object-cover"
                         loading="eager"
-                        onerror={`this.onerror=null;this.src='https://picsum.photos/seed/beriklan-${post.slug}/1200/675';`}
+                        onerror={`this.onerror=null;this.src='/images/blog/jasadigitalmarketing1.webp';`}
                     />
                 </div>
             )}
@@ -403,7 +404,7 @@ const articleSchema = {
                                 <li>
                                     <a href={`/blog/${rp.slug}`} class="flex items-start gap-3 group">
                                         {rp.featuredImage ? (
-                                            <img src={rp.featuredImage} alt="" class="w-14 h-14 object-cover rounded-lg shrink-0" loading="lazy" onerror={`this.onerror=null;this.src='https://picsum.photos/seed/beriklan-${rp.slug}/120/120';`} />
+                                            <img src={rp.featuredImage} alt="" class="w-14 h-14 object-cover rounded-lg shrink-0" loading="lazy" onerror={`this.onerror=null;this.src='/images/blog/jasadigitalmarketing1.webp';`} />
                                         ) : (
                                             <div class="w-14 h-14 rounded-lg bg-soft shrink-0"></div>
                                         )}

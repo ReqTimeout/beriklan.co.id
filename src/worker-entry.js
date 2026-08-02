@@ -10056,8 +10056,7 @@ const EMAIL_TEMPLATE_DEFAULTS = [
    for (const [kw, svc] of rules) if (t.includes(kw)) return svc;
    return "";
  }
- function buildMetaDescription(meta) {
-   const svc = (meta?.service || "").toLowerCase() || inferServiceFromTitle(meta?.title);
+ function buildMetaDescription(meta) {   const svc = (meta?.service || "").toLowerCase() || inferServiceFromTitle(meta?.title);
    const city = (meta?.city || "").trim();
    const hook = WA_SVC_HOOKS[svc] || "strategi terukur dan transparan";
    const kw = (meta?.title || "").trim();
@@ -10070,6 +10069,57 @@ const EMAIL_TEMPLATE_DEFAULTS = [
    d += `Tim bersertifikasi Meta & Google sejak 2016. Konsultasi gratis via WhatsApp, respon 1 jam (jam kerja).`;
    if (d.length > 165) d = d.slice(0, 162).trimEnd() + "...";
    return d;
+ }
+
+ // ─── Featured image per layanan (lokal /images/blog/) ───────────
+ // Miror dari src/utils/featured_image.js — worker & static konsisten.
+ const SVC_IMG = {
+   "jasa-iklan-facebook": "jasafacebokads",
+   "jasa-iklan-instagram": "jasainstagramads",
+   "jasa-iklan-tiktok": "jasatiktokads",
+   "jasa-iklan-google": "jasagoogleads",
+   "jasa-iklan-youtube": "jasayoutubeads",
+   "jasa-digital-marketing": "jasadigitalmarketing1",
+   "jasa-pembuatan-website": "jasapembuatanwebsite",
+   "jasa-pembuatan-landing-page": "jasapembuatanwebsite",
+   "jasa-kelola-instagram": "jasainstagramads",
+   "jasa-kelola-tiktok": "jasatiktokads",
+   "jasa-view-live": "jasaviewlivetiktok",
+   "jasa-viewers-youtube": "jasaviewliveyoutube",
+   "jasa-viewers-instagram": "jasaviewliveinstagram",
+   "jasa-viewers-shopee": "jasaviewliveshopee",
+   "jasa-viewers-tiktok": "jasaviewlivetiktok",
+   "jasa-viewers-twitch": "jasaviewlivetwitch",
+ };
+ function _inferSvcFromTitle(title) {
+   const t = (title || "").toLowerCase();
+   const rules = [["facebook","jasa-iklan-facebook"],["instagram","jasa-iklan-instagram"],
+     ["tiktok","jasa-iklan-tiktok"],["google","jasa-iklan-google"],["youtube","jasa-iklan-youtube"],
+     ["website","jasa-pembuatan-website"],["landing page","jasa-pembuatan-landing-page"],
+     ["kelola instagram","jasa-kelola-instagram"],["kelola tiktok","jasa-kelola-tiktok"],
+     ["digital marketing","jasa-digital-marketing"],["view live","jasa-view-live"],
+     ["viewers","jasa-view-live"],["shopee","jasa-view-live"],["ads","jasa-iklan-google"]];
+   for (const [kw, svc] of rules) if (t.includes(kw)) return svc;
+   return "";
+ }
+ function _featuredImageFor(meta) {
+   const svcRaw = (meta?.service || "").toLowerCase();
+   const inferred = _inferSvcFromTitle(meta?.title);
+   // Service default 'jasa-digital-marketing' sering jadi fallback saat generate —
+   // coba infer dari title dulu biar shopee/tiktok/google dll dapat gambar yang sesuai.
+   const svc = (!svcRaw || svcRaw === "jasa-digital-marketing") ? (inferred || svcRaw) : svcRaw;
+   let name = "jasadigitalmarketing1";
+   if (svc === "jasa-view-live") {
+     const t = `${meta?.title || ""} ${meta?.slug || ""}`.toLowerCase();
+     if (t.includes("youtube")) name = "jasaviewliveyoutube";
+     else if (t.includes("instagram")) name = "jasaviewliveinstagram";
+     else if (t.includes("shopee")) name = "jasaviewliveshopee";
+     else if (t.includes("twitch")) name = "jasaviewlivetwitch";
+     else name = "jasaviewlivetiktok";
+   } else if (SVC_IMG[svc]) {
+     name = SVC_IMG[svc];
+   }
+   return `/images/blog/${name}.webp`;
  }
 
  function genTrackingId() {
@@ -12808,6 +12858,8 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
   </span>
 </div>`;
 
+  const featImg = _featuredImageFor(meta);
+  const featAlt = escHtml(meta.title || slug);
   const headerSection = `<header class="relative pt-28 md:pt-40 pb-12 md:pb-16 bg-gradient-to-br from-white via-soft to-beige overflow-hidden">
   <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
   <div class="abs-blob abs-blob-1"></div>
@@ -12817,6 +12869,9 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
     ${catPill}
     <h1 class="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink leading-[1.1] tracking-tight mb-6 anim-fade-up" style="animation-delay: 120ms;">${title}</h1>
     ${metaBar}
+    <figure class="mt-8 rounded-2xl overflow-hidden shadow-pop anim-fade-up" style="animation-delay: 240ms;">
+      <img src="${featImg}" alt="${featAlt}" width="1600" height="894" loading="eager" fetchpriority="high" decoding="async" class="w-full h-auto object-cover" onerror="this.onerror=null;this.src='/images/blog/jasadigitalmarketing1.webp';">
+    </figure>
   </div>
 </header>`;
 
@@ -13089,7 +13144,9 @@ async function renderBlogPost(slug, env) {
     }
 
     const tpl = await _getBlogTpl(env);
-    let prefix = tpl ? tpl.prefix : _fallbackPrefix(canonical, ogTitle, excerpt, title);
+    const featImg = _featuredImageFor(meta);
+    const featImgAbs = `https://beriklan.co.id${featImg}`;
+    let prefix = tpl ? tpl.prefix : _fallbackPrefix(canonical, ogTitle, excerpt, title, featImgAbs);
     const suffix = tpl ? tpl.suffix : _fallbackSuffix();
 
     if (tpl) {
@@ -13101,9 +13158,11 @@ async function renderBlogPost(slug, env) {
         .replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${ogTitle}"`)
         .replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${excerpt}"`)
         .replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${canonical}"`)
+        .replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${featImgAbs}"`)
         .replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${ogTitle}"`)
         .replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${excerpt}"`)
-        .replace(/<meta name="twitter:url" content="[^"]*"/, `<meta name="twitter:url" content="${canonical}"`);
+        .replace(/<meta name="twitter:url" content="[^"]*"/, `<meta name="twitter:url" content="${canonical}"`)
+        .replace(/<meta name="twitter:image" content="[^"]*"/, `<meta name="twitter:image" content="${featImgAbs}"`);
     }
 
     const middle = _buildArticleBody(slug, meta, content, dedupedEnrich, null);
@@ -13119,11 +13178,12 @@ async function renderBlogPost(slug, env) {
 }
 
 // ─── Fallback prefix/suffix when ASSETS fetch fails ───
-function _fallbackPrefix(canonical, ogTitle, excerpt, title) {
+function _fallbackPrefix(canonical, ogTitle, excerpt, title, featImgAbs) {
+  const ogImg = featImgAbs || "https://beriklan.co.id/og-image.png";
   const orgJson = JSON.stringify({"@context":"https://schema.org","@type":"ProfessionalService","name":"Beriklan.co.id","description":"Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","image":"https://beriklan.co.id/logoweb.webp","priceRange":"Rp 2.500.000 - Rp 10.000.000","telephone":"+62-22-XXXXXXX","address":{"@type":"PostalAddress","addressCountry":"ID","addressLocality":"Bandung","addressRegion":"Jawa Barat"},"areaServed":{"@type":"Country","name":"Indonesia"},"openingHours":"Mo-Sa 09:00-18:00","knowsAbout":["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]});
   const org2Json = JSON.stringify({"@context":"https://schema.org","@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","description":"Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.","foundingDate":"2016","sameAs":["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id"]});
   const gtm = '(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=\'https://www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);})(window,document,\'script\',\'dataLayer\',\'GTM-MJXSNCSD\');';
-  return `<!DOCTYPE html><html lang="id" class="scroll-smooth"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} — Blog Beriklan.co.id</title><meta name="description" content="${excerpt}"><meta name="robots" content="index,follow"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:url" content="${canonical}"><meta property="og:title" content="${ogTitle}"><meta property="og:description" content="${excerpt}"><meta property="og:image" content="https://beriklan.co.id/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="${canonical}"><meta name="twitter:title" content="${ogTitle}"><meta name="twitter:description" content="${excerpt}"><meta name="twitter:image" content="https://beriklan.co.id/og-image.png"><link rel="stylesheet" href="/fonts/fonts.css"><script type="application/ld+json">${orgJson}</script><script type="application/ld+json">${org2Json}</script><script>${gtm}</script></head><body class="font-sans text-primary bg-white antialiased"><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
+  return `<!DOCTYPE html><html lang="id" class="scroll-smooth"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} — Blog Beriklan.co.id</title><meta name="description" content="${excerpt}"><meta name="robots" content="index,follow"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:url" content="${canonical}"><meta property="og:title" content="${ogTitle}"><meta property="og:description" content="${excerpt}"><meta property="og:image" content="${ogImg}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="${canonical}"><meta name="twitter:title" content="${ogTitle}"><meta name="twitter:description" content="${excerpt}"><meta name="twitter:image" content="${ogImg}"><link rel="stylesheet" href="/fonts/fonts.css"><script type="application/ld+json">${orgJson}</script><script type="application/ld+json">${org2Json}</script><script>${gtm}</script></head><body class="font-sans text-primary bg-white antialiased"><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
 }
 function _fallbackSuffix() {
   return `</body></html>`;

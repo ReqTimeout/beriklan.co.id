@@ -871,6 +871,32 @@ Isi file tersebut:
 - `GET /api/admin/email?token=...&tab=overview` — dashboard
 - `GET /api/admin/drafts?token=...` — manage drafts
 
+## 🎯 LEAD PIPELINE (auto akuisisi klien per layanan)
+
+Automasi match lead (hasil scrape/database) ke layanan Beriklan, personalisasi
+email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
+
+### Flow (dijalankan tiap 6 jam via cron `lead-pipeline`, 0 */6 * * *)
+1. **Match & score** — `matchLeadService()` cocokkan `category/company/name/website` ke 10 `LEAD_SERVICE_RULES` (keyword-per-layanan). Fallback ke `Jasa Digital Marketing`. `scoreLead()` = email 40 + phone 20 + website 15 + city 10 + company 15.
+2. **AI personalisasi** — `personalizeLead()` panggil `generateWithZenOrGroq` → SUBJECT (≤90 char) + OPENER (≤220 char). Batch ≤40 per run (default 15), delay 250ms antar lead. Simpan di `ai_subject`/`ai_opener`.
+3. **Auto-campaign** — group lead `matched` per service → buat/get campaign `Auto Pipeline: {service}` (template di-lookup by service name), queue ke `email_queue` (max 50/service/run) dengan `subject_override` + `opener`. Status lead → `queued`.
+4. **WA fallback** — `buildWaLink()` untuk lead ber-phone (tanpa email) → `https://wa.me/...?text=` pesan template, simpan di `wa_link`.
+
+### Key Endpoints
+- `POST /api/cron/leads/process?token=...&limit=100&ai=15&campaign=1` — jalankan pipeline
+- `GET /api/admin/leads?token=...` — view status (by_status, by_service, wa_ready, sample)
+- `GET /api/admin/email?token=...&tab=leads` — dashboard tab Lead Pipeline
+
+### Tabel Baru
+- `lead_pipeline` (contact_id, email/phone/name/company/city/category/website, service, score, status, ai_subject, ai_opener, campaign_id, wa_link, matched_at)
+- `email_queue` + kolom `subject_override` & `opener` (per-recipient personalisasi)
+- `lead_contacts` + kolom `source_id` (fix dedupe Google Places scraper)
+- `cron_settings` seed `lead-pipeline` (enabled=1, label "Akuisisi klien...")
+
+### Catatan
+- `run_worker_first` wajib (jangan hapus). Email-send cron aktif → kuota Resend 100/hari, reset 00:00 UTC. Email yang tidak ter-personalize pakai subject template service default.
+- Data `database-siap-pake` (9.9k kontak) mayoritas **email-only tanpa name/phone/category** → semua match ke default service. Indonetwork/Google Places menyimpan fields lebih kaya.
+
 ### Crons aktif (9 total)
 - `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
 - `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)
@@ -880,17 +906,18 @@ Isi file tersebut:
 - `snippet-optimize` (0 0 * * 1) — Optimasi snippet (mingguan)
 - `scrape-indonetwork` (30 6 * * *) — Scrape Indonetwork
 - `scrape-google-places` (0 7 * * *) — Scrape Google Places (perlu API key)
-- `email-send` (*/15 * * * *) — **PAUSED by default** — toggle manual di dashboard
+- `lead-pipeline` (0 */6 * * *) — Akuisisi klien: match + personalisasi + auto-campaign
+- `email-send` (*/15 * * * *) — **AKTIF (default)** — kirim antrian email (batch 25)
 
 ### Tabel Email Flow
 - `email_templates` (12 templates, 11 service + 1 follow-up)
-- `email_queue` (status: pending/sent/failed; tracking_id untuk open/click)
+- `email_queue` (status: pending/sent/failed; tracking_id untuk open/click; subject_override/opener untuk personalisasi)
 - `campaigns` (status: draft/sending/done; auto-pause setelah 3 gagal berturut)
 - `cron_runs` (log setiap cron run + retry logic)
 - `cron_retry_queue` (auto-retry dengan backoff)
 
 ---
 
-**Versi dokumen:** 1.3
+**Versi dokumen:** 1.4
 **Update terakhir:** 23 Juli 2026 (added email system section + Resend quota fix)
 **Maintainer:** Beriklan Digital Agency + Codex AI

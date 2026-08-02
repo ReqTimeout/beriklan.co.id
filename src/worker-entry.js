@@ -4065,8 +4065,41 @@ async function handleKeywordList(request, env) {
     const cnt = await env.DB.prepare(`SELECT COUNT(*) as n FROM keyword_queue ${whereSql}`).bind(...params).first();
     const total = cnt?.n || 0;
     const rowsRes = await env.DB.prepare(`SELECT keyword, status, service, city, priority_score, article_slug FROM keyword_queue ${whereSql} ${orderSql} LIMIT ? OFFSET ?`).bind(...params, perPage, offset).all();
+    const rows = rowsRes.results || [];
+    // Enrich: indexing status + GSC rank per article_slug (kolom Indexed & Rank)
+    const slugs = rows.map(r => r.article_slug).filter(Boolean);
+    let idxMap = {}, rankMap = {};
+    if (slugs.length) {
+      try {
+        const idxRes = await env.DB.prepare(
+          `SELECT url, status, index_state FROM pending_indexing WHERE url IN (${slugs.map(() => "?").join(",")})`
+        ).bind(...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`)).all();
+        for (const r of (idxRes.results || [])) {
+          const slug = r.url.replace(/^https:\/\/(www\.)?beriklan\.co\.id\/blog\//, "").replace(/\/$/, "");
+          idxMap[slug] = { status: r.status, index_state: r.index_state };
+        }
+      } catch (e) {}
+      try {
+        const rankRes = await env.DB.prepare(
+          `SELECT kr.page_url, kr.position, kr.clicks
+           FROM keyword_ranks kr
+           INNER JOIN (SELECT page_url, MAX(date) as md FROM keyword_ranks WHERE page_url IN (${slugs.map(() => "?").join(",")}) GROUP BY page_url) latest
+             ON kr.page_url = latest.page_url AND kr.date = latest.md
+           WHERE kr.page_url IN (${slugs.map(() => "?").join(",")})`
+        ).bind(...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`)).all();
+        for (const r of (rankRes.results || [])) {
+          const slug = r.page_url.replace(/^https:\/\/(www\.)?beriklan\.co\.id\/blog\//, "").replace(/\/$/, "");
+          rankMap[slug] = { position: r.position, clicks: r.clicks };
+        }
+      } catch (e) {}
+    }
+    const enriched = rows.map(r => ({
+      ...r,
+      indexing: r.article_slug ? (idxMap[r.article_slug] || null) : null,
+      rank: r.article_slug ? (rankMap[r.article_slug] || null) : null,
+    }));
     return new Response(JSON.stringify({
-      ok: true, total, page, perPage, pages: Math.ceil(total / perPage), rows: rowsRes.results || []
+      ok: true, total, page, perPage, pages: Math.ceil(total / perPage), rows: enriched
     }), { headers: { "Content-Type": "application/json", "X-Robots-Tag": "noindex, nofollow" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e) }), { status: 500, headers: { "Content-Type": "application/json" } });
@@ -4090,7 +4123,8 @@ async function handleKeywordDashboard(request, env) {
     cron: [],
     trending: { total: 0, recent: [] },
     drafts: { total: 0, pending: 0, committed: 0 },
-    generation: { requested24h: 0, generated24h: 0, runs24h: 0, errors24h: 0 }
+    generation: { requested24h: 0, generated24h: 0, runs24h: 0, errors24h: 0 },
+    gsc: { total_clicks: 0, total_impressions: 0, avg_position: 0, unique_keywords: 0, top10: 0, byService: {}, last_date: null }
   };
 
   // 1. Build-time stats (snapshot dari repo)
@@ -4224,13 +4258,80 @@ async function handleKeywordDashboard(request, env) {
       committed_today: committedToday?.n || 0,
       draft_pending: draftCount?.n || 0,
       committed_total: committedTotal?.n || 0,
-      daily_limit: 500,
+      daily_limit: 100,
       gsc_used_today: gscQuotaDate?.value === todayStr ? parseInt(gscQuotaUsed?.value || '0') : 0,
       gsc_backoff: gscBackoff?.value || null,
       indexnow_backoff: indexnowBackoff?.value || null,
       last_run: lastRun || null,
     };
   } catch (e) {}
+
+  // 9. GSC outcome (keyword_ranks) — clicks, impressions, avg position per service
+  //    plus indexed/top-10 counts. Turns the dashboard from throughput → outcome.
+  data.gsc = { total_clicks: 0, total_impressions: 0, avg_position: 0, unique_keywords: 0, top10: 0, byService: {}, last_date: null };
+  try {
+    const s = await env.DB.prepare(`
+      SELECT COUNT(DISTINCT keyword) as kw,
+             SUM(clicks) as clicks,
+             SUM(impressions) as impr,
+             AVG(position) as pos,
+             SUM(CASE WHEN position <= 10 THEN 1 ELSE 0 END) as top10,
+             MAX(date) as last_date
+      FROM keyword_ranks
+      WHERE date >= date('now', '-30 days')
+    `).first();
+    data.gsc.unique_keywords = s?.kw || 0;
+    data.gsc.total_clicks = s?.clicks || 0;
+    data.gsc.total_impressions = s?.impr || 0;
+    data.gsc.avg_position = s?.pos ? Math.round(s.pos * 10) / 10 : 0;
+    data.gsc.top10 = s?.top10 || 0;
+    data.gsc.last_date = s?.last_date || null;
+    // Group by service using the same slug→service patterns used for posts coverage
+    const rankRows = await env.DB.prepare(`
+      SELECT page_url,
+             SUM(clicks) as clicks,
+             SUM(impressions) as impr,
+             AVG(position) as pos,
+             SUM(CASE WHEN position <= 10 THEN 1 ELSE 0 END) as top10
+      FROM keyword_ranks
+      WHERE date >= date('now', '-30 days')
+      GROUP BY page_url
+    `).all();
+    const rankPatterns = {
+      "Jasa Digital Marketing": ["digital-marketing", "jasa-digital"],
+      "Jasa Iklan Facebook Ads": ["iklan-facebook", "fb-ads", "facebook"],
+      "Jasa Iklan Instagram": ["iklan-instagram", "ig-ads", "instagram"],
+      "Jasa Iklan Google Ads": ["iklan-google", "google-ads", "adwords"],
+      "Jasa Iklan TikTok": ["iklan-tiktok", "tiktok"],
+      "Jasa Iklan YouTube": ["iklan-youtube", "youtube"],
+      "Jasa Kelola Instagram": ["kelola-instagram", "admin-instagram"],
+      "Jasa Kelola TikTok": ["kelola-tiktok", "admin-tiktok"],
+      "Jasa Pembuatan Website": ["pembuatan-website", "buat-website", "website"],
+      "Jasa Pembuatan Landing Page": ["landing-page", "pembuatan-landing"],
+      "Jasa View Live TikTok": ["view-live"],
+      "Jasa Shopee Affiliate": ["shopee"],
+    };
+    const acc = {};
+    for (const r of (rankRows.results || [])) {
+      const url = r.page_url || "";
+      let matched = "Lainnya";
+      for (const [svc, patterns] of Object.entries(rankPatterns)) {
+        if (patterns.some(p => url.includes(p))) { matched = svc; break; }
+      }
+      if (!acc[matched]) acc[matched] = { clicks: 0, impressions: 0, posSum: 0, posN: 0, top10: 0 };
+      const a = acc[matched];
+      a.clicks += r.clicks || 0;
+      a.impressions += r.impr || 0;
+      if (r.pos) { a.posSum += r.pos; a.posN++; }
+      a.top10 += r.top10 || 0;
+    }
+    data.gsc.byService = Object.fromEntries(Object.entries(acc).map(([svc, a]) => [svc, {
+      clicks: a.clicks,
+      impressions: a.impressions,
+      avg_position: a.posN > 0 ? Math.round((a.posSum / a.posN) * 10) / 10 : null,
+      top10: a.top10,
+    }]));
+  } catch (e) { data.gsc.error = String(e).slice(0, 150); }
 
   // ===== RENDER HELPERS =====
   const num = n => (n || 0).toLocaleString('id-ID');
@@ -4246,9 +4347,22 @@ async function handleKeywordDashboard(request, env) {
   const queuePending = data.keywordQueue.byStatus.pending || 0;
   const generationPerDay = data.generation.generated24h || 0;
   const generationEtaDays = generationPerDay > 0 ? Math.ceil(queuePending / generationPerDay) : null;
+  // ETA realistis: hanya keyword prioritas tinggi (>=70) yang benar-benar akan di-generate.
+  // Mayoritas 391k queue adalah ekspansi low-value yang tidak akan pernah diproses.
+  let highPriorityPending = null;
+  try {
+    const hp = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending' AND priority_score >= 70").first();
+    highPriorityPending = hp?.n || 0;
+  } catch (e) {}
+  const highPriorityEtaDays = generationPerDay > 0 && highPriorityPending !== null ? Math.ceil(highPriorityPending / generationPerDay) : null;
   const generationSuccess = data.generation.requested24h > 0
     ? Math.round((data.generation.generated24h / data.generation.requested24h) * 100)
     : 0;
+
+  // JSON view (programmatic access — API /?format=json)
+  if (url.searchParams.get("format") === "json") {
+    return new Response(JSON.stringify(data, null, 2), { headers: { "Content-Type": "application/json" } });
+  }
 
   return new Response(`<!DOCTYPE html>
 <html lang="id">
@@ -4379,12 +4493,43 @@ ${healthStatus === 'healthy'
 <!-- TOP KPI -->
 <div class="kpi-grid">
 <div class="kpi good"><div class="label">📋 Total Keyword</div><div class="value">${num(data.keywordQueue.total)}</div><div class="sub">${num(data.keywordQueue.byStatus.pending || 0)} pending · ${num(data.keywordQueue.byStatus.generated || 0)} generated</div></div>
-<div class="kpi ${generationEtaDays === null || generationSuccess < 70 ? 'warn' : ''}"><div class="label">⚙️ Execution 24h</div><div class="value">${num(generationPerDay)}</div><div class="sub">${num(data.generation.requested24h)} requested · ${generationSuccess}% sukses${generationEtaDays ? ` · ETA ${num(generationEtaDays)} hari` : ''}</div></div>
+<div class="kpi ${generationEtaDays === null || generationSuccess < 70 ? 'warn' : ''}"><div class="label">⚙️ Execution 24h</div><div class="value">${num(generationPerDay)}</div><div class="sub">${num(data.generation.requested24h)} requested · ${generationSuccess}% sukses${highPriorityEtaDays !== null ? ` · ETA prioritas ${num(highPriorityEtaDays)} hari` : (generationEtaDays ? ` · ETA semua ${num(generationEtaDays)} hari` : '')}</div></div>
 <div class="kpi ${data.drafts.pending > 0 ? 'highlight' : 'good'}"><div class="label">📝 Drafts</div><div class="value">${num(data.drafts.total)}</div><div class="sub">${num(data.drafts.pending)} pending · ${num(data.drafts.committed)} committed</div></div>
 <div class="kpi"><div class="label">📰 Artikel Live</div><div class="value">${num(data.postsMeta.total)}</div><div class="sub">${num(data.postsMeta.generated)} AI-generated</div></div>
 <div class="kpi ${data.indexing.pending > 20 ? 'warn' : 'good'}"><div class="label">⏳ Indexing Pending</div><div class="value">${num(data.indexing.pending)}</div><div class="sub">${num(data.indexing.today)} hari ini</div></div>
 <div class="kpi"><div class="label">📡 IndexNow 24h</div><div class="value">${num(data.indexnow.last24h)}</div><div class="sub">${num(data.indexnow.total)} total</div></div>
 <div class="kpi"><div class="label">🔥 Trending</div><div class="value">${num(data.trending.total)}</div><div class="sub">artikel fetched</div></div>
+</div>
+
+<!-- GSC OUTCOME -->
+<div class="section">
+<div class="section-head">
+<h2>📈 GSC Outcome (30 hari)</h2>
+<span class="meta">${data.gsc.last_date ? 'data GSC terakhir: ' + esc(data.gsc.last_date) : 'belum ada data GSC — jalankan /api/cron/rank-sync'}</span>
+</div>
+${data.gsc.unique_keywords === 0 ? `<div class="empty-state"><div class="ico">📉</div>Belum ada data rank. Cek <a href="/api/admin/rank-tracker?token=${token}">Rank Tracker</a> atau jalankan rank-sync dari dashboard <a href="/api/admin/publish?token=${token}">Publish</a>.</div>` : `
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:14px">
+<div class="kpi good"><div class="label">🔎 Keyword di GSC</div><div class="value">${num(data.gsc.unique_keywords)}</div><div class="sub">query unik 30 hari</div></div>
+<div class="kpi good"><div class="label">🖱 Clicks</div><div class="value">${num(data.gsc.total_clicks)}</div><div class="sub">30 hari</div></div>
+<div class="kpi"><div class="label">👁 Impressions</div><div class="value">${num(data.gsc.total_impressions)}</div><div class="sub">30 hari</div></div>
+<div class="kpi ${data.gsc.avg_position > 0 && data.gsc.avg_position <= 10 ? 'good' : 'warn'}"><div class="label">📍 Avg Position</div><div class="value">#${data.gsc.avg_position || '—'}</div><div class="sub">semua query</div></div>
+<div class="kpi good"><div class="label">🏆 Top 10 (page 1)</div><div class="value">${num(data.gsc.top10)}</div><div class="sub">hasil masuk halaman 1</div></div>
+</div>
+<table>
+<thead><tr><th>Layanan</th><th>Clicks</th><th>Impressions</th><th>Avg Pos</th><th>Top 10</th></tr></thead>
+<tbody>
+${Object.entries(data.gsc.byService).sort((a,b) => b[1].clicks - a[1].clicks).map(([svc, g]) => `
+<tr>
+<td><strong>${esc(svc)}</strong></td>
+<td>${num(g.clicks)}</td>
+<td>${num(g.impressions)}</td>
+<td>${g.avg_position ? '# ' + g.avg_position : '—'}</td>
+<td>${num(g.top10)}</td>
+</tr>`).join('')}
+</tbody>
+</table>
+<p style="margin-top:8px;font-size:11px;color:#9ca3af">Klik/impressions dari Google Search Console (keyword_ranks). Ini outcome nyata — bukan sekadar jumlah artikel.</p>
+`}
 </div>
 
 <!-- SERVICE COVERAGE -->
@@ -4393,24 +4538,55 @@ ${healthStatus === 'healthy'
 <h2>🎯 Coverage per Layanan (Article Coverage)</h2>
 <span class="meta">Target: minimal 30 artikel per layanan untuk SEO kuat</span>
 </div>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
-${Object.entries(data.postsMeta.byService).sort((a,b) => b[1] - a[1]).map(([svc, count]) => {
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
+${(() => {
+  const ALL_SERVICES = [
+    ["jasa-digital-marketing", "Jasa Digital Marketing"],
+    ["jasa-iklan-facebook", "Jasa Iklan Facebook Ads"],
+    ["jasa-iklan-instagram", "Jasa Iklan Instagram"],
+    ["jasa-iklan-tiktok", "Jasa Iklan TikTok"],
+    ["jasa-iklan-google", "Jasa Iklan Google Ads"],
+    ["jasa-iklan-youtube", "Jasa Iklan YouTube"],
+    ["jasa-kelola-instagram", "Jasa Kelola Instagram"],
+    ["jasa-kelola-tiktok", "Jasa Kelola TikTok"],
+    ["jasa-pembuatan-website", "Jasa Pembuatan Website"],
+    ["jasa-pembuatan-landing-page", "Jasa Pembuatan Landing Page"],
+    ["jasa-view-live", "Jasa View Live TikTok"],
+    ["jasa-shopee-affiliate", "Jasa Shopee Affiliate"],
+    ["jasa-tokopedia", "Jasa Tokopedia"],
+    ["unassigned", "Unassigned"],
+  ];
   const target = 30;
-  const cov = pct(count, target);
-  const cls = cov >= 80 ? 'coverage-good' : cov >= 30 ? 'coverage-warn' : 'coverage-low';
-  const icon = cov >= 80 ? '✓' : cov >= 30 ? '⚠️' : '❌';
-  return `<div class="${cls}" style="background:#fafbfc;padding:14px;border-radius:8px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-<strong style="font-size:13px">${esc(svc)}</strong>
-<span style="font-size:18px">${icon}</span>
+  return ALL_SERVICES.map(([slug, display]) => {
+    const st = data.keywordQueue.byServiceStatus[slug] || {};
+    const pend = st.pending || 0, gen = st.generated || 0, pub = st.published || 0;
+    const live = data.postsMeta.byService[display] || 0;
+    const gsc = data.gsc.byService[display];
+    const cov = pct(live, target);
+    const cls = cov >= 80 ? 'coverage-good' : cov >= 30 ? 'coverage-warn' : 'coverage-low';
+    const icon = cov >= 80 ? '✓' : cov >= 30 ? '⚠️' : '❌';
+    const color = cov >= 80 ? '#10b981' : cov >= 30 ? '#f59e0b' : '#dc2626';
+    const drill = encodeURIComponent(slug === 'unassigned' ? '' : slug);
+    return `<div class="${cls}" style="background:#fafbfc;padding:14px;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<strong style="font-size:13px">${esc(display)}</strong>
+<span style="font-size:16px">${icon}</span>
 </div>
-<div style="font-size:24px;font-weight:800;color:${cov >= 80 ? '#10b981' : cov >= 30 ? '#f59e0b' : '#dc2626'}">${num(count)}</div>
-<div class="bar"><div style="width:${Math.min(cov, 100)}%;background:${cov >= 80 ? '#10b981' : cov >= 30 ? '#f59e0b' : '#dc2626'}"></div></div>
-<div class="muted" style="margin-top:4px">${cov}% dari target 30</div>
+<div style="font-size:22px;font-weight:800;color:${color}">${num(live)}</div>
+<div style="font-size:11px;color:#6b7280;margin:2px 0 4px">artikel live · ${cov}% target</div>
+<div class="bar"><div style="width:${Math.min(cov, 100)}%;background:${color}"></div></div>
+<div style="margin-top:6px;font-size:11px;color:#9ca3af;display:flex;gap:8px;flex-wrap:wrap">
+<span>📋 ${num(pend)} pending</span>
+<span>🤖 ${num(gen)} gen</span>
+<span>📤 ${num(pub)} pub</span>
+${gsc ? `<span>🖱 ${num(gsc.clicks)} klik</span>` : ''}
+</div>
+<a href="/api/admin/keywords/list?token=${token}&service=${drill}&page=1" target="_blank" style="font-size:11px;color:#0f1e3d;font-weight:600;display:inline-block;margin-top:4px">drill-down →</a>
 </div>`;
-}).join('')}
+  }).join('');
+})()}
 </div>
-<p style="margin-top:12px;font-size:12px;color:#6b7280">Coverage dihitung dari jumlah artikel dengan slug yang match nama layanan. Shopee & View Live perlu prioritas karena masih rendah.</p>
+<p style="margin-top:12px;font-size:12px;color:#6b7280">Progress pipeline per layanan: pending (di queue) → generated (artikel AI dibuat) → published (live via D1). Grid kini mencakup semua layanan termasuk View Live, Shopee, Tokopedia & Unassigned.</p>
 </div>
 
 <!-- KEYWORD EXPLORER -->
@@ -4485,7 +4661,7 @@ ${data.trending.recent.length ? `<table>
 <div class="section">
 <div class="section-head">
 <h2>🚀 Publish Pipeline</h2>
-<span class="meta">sync-posts: batch 50/jam · ${data.publish.daily_limit || 500}/hari (D1 live) · GSC 200/hari</span>
+<span class="meta">sync-posts: batch 10/jam · ${data.publish.daily_limit || 100}/hari (D1 live) · GSC 200/hari</span>
 </div>
 <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
 <div class="kpi ${data.publish.committed_today >= (data.publish.daily_limit || 200) ? 'warn' : 'good'}"><div class="label">📤 Published Hari Ini</div><div class="value">${num(data.publish.committed_today)}</div><div class="sub">dari ${num(data.publish.daily_limit || 200)} limit</div></div>
@@ -4550,11 +4726,21 @@ ${c.name === 'email-send' ? '<span class="badge red" style="margin-left:6px">⚠
     fetch(u).then(function(r){return r.json();}).then(function(d){
       if(!d.ok){elRes.innerHTML='<div class="empty-state">Error: '+esc(d.error)+'</div>';elPager.innerHTML='';return;}
       if(!d.rows.length){elRes.innerHTML='<div class="empty-state"><div class="ico">🔍</div>Tidak ada hasil untuk filter ini.</div>';elPager.innerHTML='';return;}
-      var h='<table><thead><tr><th>Keyword</th><th>Status</th><th>Layanan</th><th>Prioritas</th><th>Artikel</th></tr></thead><tbody>';
+      var h='<table><thead><tr><th>Keyword</th><th>Status</th><th>Layanan</th><th>Prioritas</th><th>Artikel</th><th>Indexed</th><th>Rank</th></tr></thead><tbody>';
       d.rows.forEach(function(r){
         var badge=r.status==='generated'?'green':(r.status==='published'?'blue':'gray');
         var art=r.article_slug?('<a href="/blog/'+esc(r.article_slug)+'/" target="_blank">lihat ↗</a>'):'<span class="muted">—</span>';
-        h+='<tr><td><strong>'+esc(r.keyword)+'</strong></td><td><span class="badge '+badge+'">'+esc(r.status)+'</span></td><td>'+esc(r.service||'—')+'</td><td>'+esc(r.priority_score)+'</td><td>'+art+'</td></tr>';
+        var idx='<span class="muted">—</span>';
+        if(r.indexing){
+          var st=r.indexing.status,ic=(st==='indexed'||st==='gsc_submitted')?'green':'amber';
+          idx='<span class="badge '+ic+'">'+esc(st)+'</span>';
+        }
+        var rk='<span class="muted">—</span>';
+        if(r.rank){
+          var p=r.rank.position;
+          rk=p<=3?'<span class="badge green">#'+p+' 🔥</span>':(p<=10?'<span class="badge blue">#'+p+'</span>':'<span class="muted">#'+p+'</span>');
+        }
+        h+='<tr><td><strong>'+esc(r.keyword)+'</strong></td><td><span class="badge '+badge+'">'+esc(r.status)+'</span></td><td>'+esc(r.service||'—')+'</td><td>'+esc(r.priority_score)+'</td><td>'+art+'</td><td>'+idx+'</td><td>'+rk+'</td></tr>';
       });
       h+='</tbody></table>';
       elRes.innerHTML=h;
@@ -4600,7 +4786,7 @@ async function handlePublishDashboard(request, env) {
     ]);
     const draftCount = draftCountR?.n || 0;
     const committedToday = committedTodayR?.n || 0;
-    const dailyLimit = 500;
+    const dailyLimit = 100;
     const gscUsed = parseInt(gscQuotaR?.value || '0');
     const gscDate = dailyLimitR?.value || '';
     const cursor = cursorR?.cron || 'unknown';

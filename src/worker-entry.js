@@ -36,6 +36,9 @@ export default {
     if (path === "/api/admin/health" || path === "/api/admin/health/") {
       return await handleAdminHealth(request, env);
     }
+    if (path === "/api/admin/audit/content" || path === "/api/admin/audit/content/") {
+      return await handleAuditContent(request, env);
+    }
     if (path === "/api/admin/drafts" || path === "/api/admin/drafts/") {
       return await handleAdminDrafts(request, env);
     }
@@ -606,6 +609,48 @@ async function handleHealth(env) {
     }), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+  }
+}
+
+// Admin content-quality audit — thin-content detection across published posts
+// Use ?token=ADMIN_TOKEN&threshold=3000&limit=20 to view worst offenders
+async function handleAuditContent(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const threshold = parseInt(url.searchParams.get("threshold") || "3000", 10);
+  const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
+  try {
+    const thin = await env.DB.prepare(
+      `SELECT p.slug, p.title, p.service, p.city, p.committed_at,
+              length(p.content) as content_len,
+              (length(p.content) - length(replace(p.content, '<h2', ''))) / 4 as h2_count
+       FROM generated_drafts p
+       WHERE p.status='committed' AND length(p.content) < ?
+       ORDER BY content_len ASC LIMIT ?`
+    ).bind(threshold, limit).all();
+    const stats = await env.DB.prepare(
+      `SELECT COUNT(*) as n,
+              AVG(length(content)) as avg_len,
+              MIN(length(content)) as min_len,
+              MAX(length(content)) as max_len
+       FROM generated_drafts WHERE status='committed'`
+    ).first();
+    return new Response(JSON.stringify({
+      ok: true,
+      threshold,
+      total_committed: stats?.n || 0,
+      avg_len: Math.round(stats?.avg_len || 0),
+      min_len: stats?.min_len || 0,
+      max_len: stats?.max_len || 0,
+      thin_count: thin.results.length,
+      offenders: thin.results.map(r => ({ ...r, h2_count: Math.max(0, Math.round(r.h2_count)) })),
+      next_steps: "Pertimbangkan regenerate atau enrich post dengan content_len di bawah threshold."
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -1776,9 +1821,11 @@ async function handleAdminSyncPosts(request, env) {
 
     // D1/dynamic publish limit (posts go live via Worker even without static rebuild).
     // GSC Indexing API remains capped at 200/day separately in submitToGscCore.
-    let dailyLimit = 500;
+    // Tempo sengaja direndahkan (100/hari, 10/jam) agar kualitas terjaga & Google tidak
+    // melihat burst publikasi massal — item 1 Tier 3 (stop bleeding / pacing).
+    let dailyLimit = 100;
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
-    const batchSize = Math.min(50, remainingToday);
+    const batchSize = Math.min(10, remainingToday);
 
     // 1. Get drafts to publish (status='draft', limit = batchSize)
     const draftsToPublish = await env.DB.prepare(
@@ -11561,10 +11608,10 @@ async function handleIndexNowSubmit(request, env) {
     if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB unavailable" }), { headers: { "Content-Type": "application/json" } });
     const now = new Date().toISOString().slice(0, 10);
     const drafts = await env.DB.prepare(
-      "SELECT slug, committed_at FROM generated_drafts WHERE status='committed' AND committed_at >= ? ORDER BY committed_at DESC LIMIT ?"
+      "SELECT slug, committed_at FROM generated_drafts WHERE status='committed' AND committed_at >= ? ORDER BY committed_at ASC LIMIT ?"
     ).bind(now, count).all();
     const recentPosts = await env.DB.prepare(
-      "SELECT slug, iso_date FROM posts_meta WHERE iso_date >= ? ORDER BY iso_date DESC LIMIT ?"
+      "SELECT slug, iso_date FROM posts_meta WHERE iso_date >= ? ORDER BY iso_date ASC LIMIT ?"
     ).bind(now, count).all();
     const urlList = [];
     for (const d of (drafts.results || [])) urlList.push(`https://beriklan.co.id/blog/${d.slug}/`);

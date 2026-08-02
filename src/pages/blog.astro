@@ -3,13 +3,26 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.svelte';
 import StickyCTA from '../components/StickyCTA.svelte';
 import BlogFilter from '../components/BlogFilter.svelte';
+import FaqAccordion from '../components/FaqAccordion.svelte';
 import Footer from '../components/Footer.svelte';
 import { MessageCircle, ArrowRight, BookOpen } from 'lucide-svelte';
 
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%20konsultasi";
 ---
 
-<Layout title="Blog Digital Marketing — Tips Iklan, Google Ads, Meta & TikTok | Beriklan" description="Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Pelajari Facebook Ads, Google Ads, TikTok Ads, Instagram, YouTube, dan strategi performance marketing lainnya." canonical="https://beriklan.co.id/blog/" nextUrl="https://beriklan.co.id/blog/page/2/">
+<Layout title="Blog Digital Marketing — Tips Iklan, Google Ads, Meta & TikTok | Beriklan" description="Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Pelajari Facebook Ads, Google Ads, TikTok Ads, Instagram, YouTube, dan strategi performance marketing lainnya." canonical="https://beriklan.co.id/blog/" nextUrl="https://beriklan.co.id/blog/page/2/"
+    faq={[
+        { question: "Apa saja topik yang dibahas di blog Beriklan?", answer: "Blog Beriklan membahas digital marketing end-to-end: Facebook & Instagram Ads, Google Ads, TikTok Ads, YouTube Ads, kelola Instagram/TikTok organik, pembuatan website & landing page, hingga strategi dan studi kasus yang bisa langsung diterapkan untuk UMKM dan bisnis menengah Indonesia." },
+        { question: "Apakah artikel blog Beriklan gratis dibaca?", answer: "Ya. Semua artikel di blog Beriklan gratis dan terbuka untuk umum. Kami menulis dari pengalaman nyata mengelola campaign lintas industri sejak 2016 — tanpa teori kosong." },
+        { question: "Seberapa sering blog Beriklan update artikel baru?", answer: "Kami rutin menerbitkan artikel baru setiap hari, mencakup tips, panduan, perbandingan layanan, dan studi kasus. Artikel terbaru tampil di halaman ini, sementara arsip bisa ditelusuri per kategori." },
+        { question: "Bolehkah saya bertanya lebih lanjut setelah membaca artikel?", answer: "Tentu. Hubungi kami via WhatsApp atau email di kontak website ini. Tim akan menjawab pertanyaan Anda dalam 1 jam pada jam kerja." },
+        { question: "Bagaimana cara menemukan artikel tentang layanan tertentu?", answer: "Gunakan filter kategori atau kotak pencarian di halaman blog. Anda juga bisa langsung membuka halaman layanan seperti Jasa Iklan Facebook Ads, Google Ads, atau TikTok Ads untuk membaca penjelasan lengkap." },
+    ]}
+    breadcrumb={[
+        { name: "Beranda", url: "https://www.beriklan.co.id/" },
+        { name: "Blog", url: "https://www.beriklan.co.id/blog/" }
+    ]}
+>
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -46,6 +59,23 @@ const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20mau%2
             <a href="/blog/page/2/" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold bg-ink text-white hover:bg-primary-2 transition-all">
                 Lihat artikel lainnya <ArrowRight class="w-4 h-4" />
             </a>
+        </div>
+    </section>
+
+    <!-- ====================== FAQ ====================== -->
+    <section id="faq" class="py-16 md:py-20 bg-soft">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="text-center mb-10">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">FAQ Blog Beriklan</p>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold text-ink mb-3">Pertanyaan Umum Seputar Blog</h2>
+            </div>
+            <FaqAccordion items={[
+                { q: "Apa saja topik yang dibahas di blog Beriklan?", a: "Blog Beriklan membahas digital marketing end-to-end: Facebook & Instagram Ads, Google Ads, TikTok Ads, YouTube Ads, kelola Instagram/TikTok organik, pembuatan website & landing page, hingga strategi dan studi kasus yang bisa langsung diterapkan untuk UMKM dan bisnis menengah Indonesia." },
+                { q: "Apakah artikel blog Beriklan gratis dibaca?", a: "Ya. Semua artikel di blog Beriklan gratis dan terbuka untuk umum. Kami menulis dari pengalaman nyata mengelola campaign lintas industri sejak 2016 — tanpa teori kosong." },
+                { q: "Seberapa sering blog Beriklan update artikel baru?", a: "Kami rutin menerbitkan artikel baru setiap hari, mencakup tips, panduan, perbandingan layanan, dan studi kasus. Artikel terbaru tampil di halaman ini, sementara arsip bisa ditelusuri per kategori." },
+                { q: "Bolehkah saya bertanya lebih lanjut setelah membaca artikel?", a: "Tentu. Hubungi kami via WhatsApp atau email di kontak website ini. Tim akan menjawab pertanyaan Anda dalam 1 jam pada jam kerja." },
+                { q: "Bagaimana cara menemukan artikel tentang layanan tertentu?", a: "Gunakan filter kategori atau kotak pencarian di halaman blog. Anda juga bisa langsung membuka halaman layanan seperti Jasa Iklan Facebook Ads, Google Ads, atau TikTok Ads untuk membaca penjelasan lengkap." },
+            ]} client:only="svelte" />
         </div>
     </section>
 

@@ -12840,6 +12840,33 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
   </div>
 </article>`;
 
+  const proseCss = `<style>
+  .prose { color:#1f2937; font-size:1.0625rem; line-height:1.85; overflow-wrap:anywhere; word-break:break-word; min-width:0; max-width:100%; }
+  .prose > *:first-child { margin-top:0; }
+  .prose a, .prose code { overflow-wrap:anywhere; word-break:break-word; }
+  .prose pre { overflow-x:auto; max-width:100%; }
+  .prose img, .prose iframe, .prose video, .prose table { max-width:100%; }
+  .prose h1 { font-size:2rem; font-weight:800; margin:2.5rem 0 1.25rem; color:#0f1e3d; line-height:1.2; letter-spacing:-0.01em; }
+  .prose h2 { font-size:1.6rem; font-weight:800; margin:3rem 0 1.25rem; color:#0f1e3d; line-height:1.3; letter-spacing:-0.01em; }
+  .prose h3 { font-size:1.3rem; font-weight:700; margin:2.5rem 0 1rem; color:#0f1e3d; line-height:1.35; }
+  .prose h4 { font-size:1.125rem; font-weight:700; margin:2rem 0 0.75rem; color:#0f1e3d; line-height:1.4; }
+  .prose p { margin:0 0 1.5rem; line-height:1.85; }
+  .prose a { color:#f59e0b; text-decoration:underline; text-underline-offset:3px; }
+  .prose a:hover { color:#ea580c; }
+  .prose strong { font-weight:700; color:#0f1e3d; }
+  .prose ul { list-style:disc; padding-left:1.5rem; margin:1.25rem 0 1.75rem; }
+  .prose ol { list-style:decimal; padding-left:1.5rem; margin:1.25rem 0 1.75rem; }
+  .prose li { margin-bottom:0.65rem; line-height:1.8; padding-left:0.25rem; }
+  .prose li > ul, .prose li > ol { margin:0.65rem 0 0.5rem; }
+  .prose blockquote { border-left:4px solid #f59e0b; padding:1rem 1.25rem; background:#fffbeb; margin:2rem 0; font-style:italic; color:#1f2937; border-radius:0 0.5rem 0.5rem 0; }
+  .prose img { max-width:100%; height:auto; border-radius:0.75rem; margin:2rem 0; }
+  .prose table { width:100%; border-collapse:collapse; margin:2rem 0; font-size:0.9375rem; }
+  .prose th { background:#f3f4f6; padding:0.75rem 0.875rem; text-align:left; font-weight:700; color:#0f1e3d; border:1px solid #e5e7eb; }
+  .prose td { padding:0.75rem 0.875rem; border:1px solid #e5e7eb; line-height:1.7; }
+  .prose code { background:#f3f4f6; padding:0.125rem 0.375rem; border-radius:0.25rem; font-size:0.875em; }
+  .prose hr { border:0; border-top:1px solid #e5e7eb; margin:2.5rem 0; }
+  </style>`;
+
   let relatedSection = '';
   if (relatedRows && relatedRows.length > 0) {
     const relatedCards = relatedRows.map(r => {
@@ -12869,7 +12896,7 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
 </section>`;
   }
 
-  return articleSchema + headerSection + articleSection + relatedSection;
+  return proseCss + articleSchema + headerSection + articleSection + relatedSection;
 }
 
 // ─── Dynamic blog post render (fallback when static page doesn't exist) ───

@@ -2,7 +2,7 @@
 
 > **Tanggal audit:** 02 Agustus 2026
 > **Sumber data live:** `https://beriklan.co.id/api/admin/keywords?token=...` + `.../publish?token=...` + `.../health?token=...`
-> **Status:** 🔴 Pipeline patah di 3 titik — publish, generate, index
+> **Status:** 🟡 Fast-Win selesai (publish 600/hari, hourly aktif, backfill intent, reorder ORDER BY, GSC debug, IndexNow fix) — lanjut Phase 2–4 (sitemap lastmod, cluster, quality filter)
 > **Owner:** Beriklan Digital Agency + Codex AI
 
 ---
@@ -338,29 +338,43 @@ curl "https://www.bing.com/ping?sitemap=https://beriklan.co.id/sitemap-blog.xml"
 
 ## 5. Fast-Win Checklist (Eksekusi Hari Ini)
 
-1. ⬜ **Un-pause `hourly`** (API atau SQL D1):
-   ```bash
-   curl -X PUT "https://beriklan.co.id/api/admin/cron-settings?token=beriklan-admin-2026&name=hourly&enabled=1"
-   ```
-   Atau: `wrangler d1 execute beriklan-seo --remote --command "UPDATE cron_settings SET enabled=1 WHERE name='hourly'"`
+1. ✅ **Un-pause `hourly`** — DONE (deploy commit `bba43ef`, terverifikasi live:
+   `hourly` enabled=1, label "Artikel otomatis (generate buffer draft count=1 mode=draft)", scheduler `count=1&mode=draft`).
+   Run manual `/api/cron/hourly-generate?count=1&mode=draft` → ok, generated 1, kw_advanced 1.
 
-2. ⬜ **Naikkan `publish_daily_limit` ke 600**:
-   ```bash
-   wrangler d1 execute beriklan-seo --remote --command "UPDATE cron_settings SET cron='600' WHERE name='publish_daily_limit'"
-   wrangler d1 execute beriklan-seo --remote --command "UPDATE cron_settings SET cron='25' WHERE name='publish_batch_size'"
-   ```
+2. ✅ **Naikkan `publish_daily_limit` ke 600** — DONE (migration array di `handleAdminMigrate`, terverifikasi live:
+   `publish_daily_limit=600`, `publish_batch_size=25` di dashboard publish). Sync-posts manual +25 → 175 terverifikasi.
 
-3. ⬜ **Backfill intent + priority_score ke generated_drafts** (lihat §1.2 prerequisite).
+3. ✅ **Backfill intent + priority_score ke generated_drafts** — DONE via `handleAdminMigrate` (84 statement, terverifikasi):
+   - `CREATE INDEX idx_q_article_slug` + `idx_q_keyword` (backfill butuh index, kalau tidak → D1 CPU limit time-out)
+   - `ALTER TABLE generated_drafts ADD COLUMN intent TEXT` + `priority_score INTEGER DEFAULT 50` (idempotent, ERR duplikat aman)
+   - Backfill jalur 1: `keyword_queue.article_slug = generated_drafts.slug`
+   - Backfill jalur 2: `keyword_normalized = replace(slug,'-',' ')` via idx_q_keyword (cover draft R2-queue yang article_slug kosong)
 
-4. ⬜ **Reorder publish query** — edit `handleAdminSyncPosts` di `src/worker-entry.js` L1860, tambah intent + city cascade ORDER BY (Phase 1.2).
+4. ✅ **Reorder publish query** — DONE (commit `9763c41`): cascade
+   commercial+city → **commercial+industry (`title LIKE '% untuk %'`)** → commercial → city → long-tail ≥4 kata → `priority_score DESC` → id.
+   Plus: rebalance hourly kini boost **industry keyword** (intent commercial + `keyword LIKE '% untuk %'`) → prio 90, setara city+core.
 
-5. ⬜ **Debug GSC** — coba call `/api/admin/gsc/debug?token=...&url=/blog/jasa-iklan-facebook-di-bandung/`. Bila 403 → token salah; refresh.
+5. ✅ **Debug GSC** — DONE: auth OK, quota 200/hari, 3 submit `count=3&debug=1` semua HTTP 200.
+   **`indexed=0` bukan bug code** — Google terima submit tapi crawl-nya lambat (sitemap masih ditarik). Google/Bing ping deprecated (404/410).
+   IndexNow backoff bug diperbaiki (format timestamp SQLite `YYYY-MM-DD HH:MM:SS` vs `toISOString()` `T`/`Z` → compare selalu false) — commit `5625a48`/`b4c1b6b`.
 
-6. ⬜ **Ping sitemap**:
-   ```bash
-   curl "https://www.google.com/ping?sitemap=https://beriklan.co.id/sitemap-blog.xml"
-   curl "https://www.bing.com/webmaster/ping.aspx?siteMap=https://beriklan.co.id/sitemap-blog.xml"
-   ```
+6. ✅ **Ping sitemap** — DONE (kesimpulan: **deprecated**). `google.com/ping` → 404, `bing.com/ping` → 410.
+   Path sekarang: sitemap ditarik langsung Googlebot (robots.txt allow), + IndexNow submit tiap publish batch (20/run, 4 engine, 429 genuine host rate-limit di-backoff benar).
+
+> **Deploy commit terkait:** `bba43ef` (migrate+pacing), `15fe2e4` (index backfill), `81178b8` (backfill keyword_normalized),
+> `5625a48`/`b4c1b6b` (IndexNow backoff fix), `9763c41` (industry priority + tier ORDER BY).
+
+## 5b. Status Cron saat Ini (live, verified)
+
+| Cron | Status | Catatan |
+|---|---|---|
+| `hourly` (generate) | **ACTIVE** count=1 mode=draft | Rebalance priority (city+core+industry) jalan tiap jam |
+| `sync-posts` (publish) | **ACTIVE** limit 600/hari batch 25 | ETA R2 2.566 → ~2.200 hari (masih tinggi; ramp-up bertahap) |
+| `indexnow` | ACTIVE | Backoff benar setelah fix; 429 = rate-limit host, bukan bug |
+| `gsc-indexing` | ACTIVE | Submit OK; indexed=0 = crawl delay Google |
+| `trending-generate` | PAUSED | Fokus R2 queue (sengaja) |
+| `email-send`, `lead-pipeline` | ACTIVE | Unrelated SEO — jangan sentuh |
 
 ---
 

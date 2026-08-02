@@ -570,14 +570,18 @@ export default {
 
       const h = new Date().getUTCHours();
       const d = new Date().getUTCDate();
+      // ── Every hour: GSC Indexing submit (pakai quota 200/hari secara maksimal,
+      //    bukan 4×/hari seperti sebelumnya). count=50 karena Workers Free = 50
+      //    subrequests per invocation; 50/jam × 24 = 200 quota/hari tercapai. ──
+      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
+      // Sitemap GSC submission tiap jam → Google selalu tahu sitemap-blog fresh
+      ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
       // ── Every 6 hours (0,6,12,18 UTC) ──
       if (h % 6 === 0) {
-        ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
         ctx.waitUntil(run("index-verify", handleIndexVerify, "/api/cron/index-verify?token=beriklan-admin-2026&count=50", "index-verify"));
         ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=5", "gsc-indexing"));
         ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
-        ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
         ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
         ctx.waitUntil(run("lead-pipeline", handleLeadPipeline, "/api/cron/leads/process?token=beriklan-admin-2026&limit=100&ai=10&campaign=1", "lead-pipeline"));
@@ -3249,7 +3253,7 @@ async function handleAdminMigrate(request, env) {
     )`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 1, 'Artikel otomatis (generate buffer draft count=1 mode=draft)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('indexnow', '15 * * * *', 1, 'IndexNow submit (tiap jam)')`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('gsc-indexing', '0 */6 * * *', 1, 'GSC + sitemap + rank (tiap 6 jam)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('gsc-indexing', '0 * * * *', 1, 'GSC Indexing submit (tiap jam, max 200/hari)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 0, 'Trending otomatis (PAUSED — fokus publish R2 queue)')`,
     // Ramp-up: un-pause generate. Rebalance priority (city+core, commercial intent) jalan tiap jam.
     `UPDATE cron_settings SET enabled = 1, label = 'Artikel otomatis (generate buffer draft count=1 mode=draft)' WHERE name = 'hourly' AND enabled = 0`,
@@ -8244,7 +8248,7 @@ async function handleGscIndexing(request, env) {
       const r = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
          WHERE (url LIKE 'https://www.beriklan.co.id/%' OR url LIKE 'https://beriklan.co.id/%')
-           AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-7 days'))
+           AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-1 day'))
          ORDER BY CASE WHEN source = 'admin-manual' THEN 0 ELSE 1 END, rowid ASC LIMIT ?`
       ).bind(effectiveCount).all();
       // Normalize URL to www.beriklan.co.id for GSC submission (matches verified property)

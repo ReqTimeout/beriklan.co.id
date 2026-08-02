@@ -12827,7 +12827,7 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
     <div class="grid lg:grid-cols-12 gap-10">
       <div class="lg:col-span-8 min-w-0 overflow-x-clip">
         ${adSlot1}
-        <div class="prose prose-lg max-w-none text-ink leading-relaxed overflow-x-hidden">${body}</div>
+        <div class="prose prose-lg max-w-none text-ink leading-relaxed overflow-x-hidden google-anno-skip">${body}</div>
         ${adSlot2}
         ${adSlot3}
         ${tagChips}

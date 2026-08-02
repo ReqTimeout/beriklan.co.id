@@ -1794,7 +1794,10 @@ async function submitToIndexNowCore(env, urls) {
   if (!urls.length) return { submitted: 0 };
   // Check backoff
   const backoffR = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='indexnow_backoff_until'").first();
-  if (backoffR?.value && backoffR.value > new Date().toISOString()) return { submitted: 0, error: "backoff_active" };
+  // value disimpan sebagai SQLite datetime('now') (UTC, format 'YYYY-MM-DD HH:MM:SS').
+  // Bandingkan dengan now format yang sama — jangan ISO (T/Z) karena string compare beda urutan.
+  const nowSql = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  if (backoffR?.value && backoffR.value > nowSql) return { submitted: 0, error: "backoff_active" };
   try {
     const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
     const resp = await fetch("https://api.indexnow.org/indexnow", {

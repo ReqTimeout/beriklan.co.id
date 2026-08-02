@@ -458,10 +458,15 @@ Setiap post punya:
 1. Logo (footer logo, invert white)
 2. Close button (top-right, white pill)
 3. Hero block: status badge + headline "Mau scale up penjualan via iklan?" + 3 trust pills
-4. Nav groups (accordion): Paid Ads (with "PALING DICARI" badge), Social Media, Website & Landing Page
-5. Top-level singles: Digital Marketing, Blog
+4. Nav groups (accordion): Paid Ads (with "PALING DICARI" badge), Social Media, Website & Landing Page, **Tools**
+5. Top-level singles: Digital Marketing, AI Customer Service
 6. Quick contact: Telepon
 7. WhatsApp CTA (orange, big)
+
+**Nav groups saat ini (desktop dropdown + mobile accordion):**
+- `paid` Paid Ads, `buzzer` Buzzer Live, `organic` Social Media, `build` Website & Landing Page, `tools` Tools
+- **Dropdown Tools** berisi semua tool yang sudah live: Kalkulator Budget, ROAS, ROI, Estimator Harga Iklan (per platform & kota), Riset Industri 2026, Audit Campaign Iklan (`/#audit`)
+- **Blog TIDAK ada di navbar** — hanya di Footer (kolom Company). Link dropdown Tools pakai `countLabel: 'tools'` agar label mobile bertuliskan "6 tools" bukan "6 layanan".
 
 ### 8.2 StickyCTA (`StickyCTA.svelte`)
 

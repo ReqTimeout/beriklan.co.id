@@ -1,6 +1,6 @@
 <script>
     import { onMount, tick } from "svelte";
-    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles, Bot, Radio } from 'lucide-svelte';
+    import { Menu, X, ArrowRight, MessageCircle, Phone, Mail, ChevronDown, Sparkles, Bot, Radio, Calculator } from 'lucide-svelte';
 
     let isScrolled = false;
     let isMenuOpen = false;
@@ -36,17 +36,26 @@
         { label: 'Twitch Live', href: '/jasa-view-live/twitch', desc: 'Boost direktori' },
     ];
 
+    const tools = [
+        { label: 'Kalkulator Budget Iklan', href: '/kalkulator-budget-iklan', desc: 'Estimasi ad spend bulanan' },
+        { label: 'Kalkulator ROAS', href: '/kalkulator-roas', desc: 'Ukur efektivitas belanja iklan' },
+        { label: 'Kalkulator ROI', href: '/kalkulator-roi', desc: 'Hitung pengembalian investasi' },
+        { label: 'Estimator Harga Iklan', href: '/harga-iklan-facebook/bandung', desc: 'Perkiraan biaya per platform & kota' },
+        { label: 'Riset Industri 2026', href: '/riset/laporan-industri-iklan-digital-indonesia-2026', desc: 'Data tren iklan digital Indonesia' },
+        { label: 'Audit Campaign Iklan', href: '/#audit', desc: 'Diagnosa 4 langkah cepat' },
+    ];
+
     const navGroups = [
         { key: 'paid', label: 'Paid Ads', Icon: Sparkles, items: paidAds, accent: 'from-amber-500 to-orange-500', popular: true },
         { key: 'buzzer', label: 'Buzzer Live', Icon: Radio, items: buzzerLive, accent: 'from-pink-500 to-cyan-400', popular: true },
         { key: 'organic', label: 'Social Media', Icon: MessageCircle, items: organic, accent: 'from-cyan-500 to-teal-500' },
         { key: 'build', label: 'Website & Landing Page', Icon: ArrowRight, items: build, accent: 'from-violet-500 to-purple-500' },
+        { key: 'tools', label: 'Tools', Icon: Calculator, items: tools, accent: 'from-sky-500 to-blue-500', countLabel: 'tools' },
     ];
 
     const navSingles = [
         { label: 'Digital Marketing', href: '/jasa-digital-marketing' },
         { label: 'AI Customer Service', href: 'https://haloka.id', external: true, icon: Bot, desc: 'Balas chat 24/7 otomatis' },
-        { label: 'Blog', href: '/blog' },
     ];
 
     const waNumber = '62811919328';
@@ -239,10 +248,6 @@
                 </div>
             {/each}
 
-            <a href="/blog" class="px-4 py-2 text-sm font-semibold text-primary hover:text-ink transition rounded-full hover:bg-white/50" on:click={closeAll}>
-                Blog
-            </a>
-
             <a href="https://haloka.id" target="_blank" rel="noopener nofollow" class="ml-1 group relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:shadow-pop hover:scale-[1.03] transition-all" on:click={closeAll}>
                 <Bot class="w-3.5 h-3.5" />
                 AI CS
@@ -350,7 +355,7 @@
                                         <span class="popular-pill">Paling dicari</span>
                                     {/if}
                                 </span>
-                                <span class="group-count">{group.items.length} layanan</span>
+                                <span class="group-count">{group.items.length} {group.countLabel || 'layanan'}</span>
                             </span>
                             <span class="group-chevron">
                                 <ChevronDown class="w-4 h-4" />

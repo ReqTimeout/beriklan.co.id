@@ -81,6 +81,43 @@ const categoryLabels: Record<string, string> = {
 const categoryLabel = categoryLabels[post.category] || 'Strategi';
 const fullUrl = `https://beriklan.co.id/blog/${post.slug}`;
 
+// Meta description generator — clickbait hook per layanan + kota + keyword
+// (mirror dari worker-entry.js buildMetaDescription agar statis & worker konsisten).
+const META_HOOKS: Record<string, string> = {
+    'jasa-iklan-facebook': 'targeting presisi & creative teruji',
+    'jasa-iklan-instagram': 'reach & engagement organik yang konversi',
+    'jasa-iklan-tiktok': 'FYP & Spark Ads yang viral tapi terarah',
+    'jasa-iklan-google': 'search intent tinggi yang muncul di momen beli',
+    'jasa-iklan-youtube': 'video ads & awareness yang dibayar hanya saat dilihat',
+    'jasa-digital-marketing': 'multi-channel dengan laporan mingguan terukur',
+    'jasa-kelola-instagram': 'konten konsisten yang membangun trust & closing',
+    'jasa-kelola-tiktok': 'konten video rutin yang naikkan jangkauan',
+    'jasa-pembuatan-website': 'website cepat, mobile-first, siap konversi',
+    'jasa-pembuatan-landing-page': 'landing page yang dioptimasi untuk konversi iklan',
+};
+const metaDescription = (() => {
+    const inferSvc = (t: string): string => {
+        const s = (t || '').toLowerCase();
+        const rules: [string, string][] = [
+            ['facebook', 'jasa-iklan-facebook'], ['instagram', 'jasa-kelola-instagram'],
+            ['tiktok', 'jasa-iklan-tiktok'], ['google', 'jasa-iklan-google'],
+            ['youtube', 'jasa-iklan-youtube'], ['website', 'jasa-pembuatan-website'],
+            ['landing page', 'jasa-pembuatan-landing-page'],
+            ['kelola instagram', 'jasa-kelola-instagram'], ['kelola tiktok', 'jasa-kelola-tiktok'],
+            ['digital marketing', 'jasa-digital-marketing'], ['ads', 'jasa-iklan-google'],
+        ];
+        for (const [kw, svc] of rules) if (s.includes(kw)) return svc;
+        return '';
+    };
+    const svc = String((post as any).service || '').toLowerCase() || inferSvc(post.title);
+    const city = String((post as any).city || '').trim();
+    const hook = META_HOOKS[svc] || 'strategi terukur dan transparan';
+    const kw = String(post.title || '').trim();
+    let d = kw ? `${kw} — ${hook}. ` : `Jasa ${(svc || '').replace(/-/g, ' ')}${city ? ' di ' + city : ''} dengan ${hook}. `;
+    d += 'Tim bersertifikasi Meta & Google sejak 2016. Konsultasi gratis via WhatsApp, respon 1 jam (jam kerja).';
+    return d.length > 165 ? d.slice(0, 162).trimEnd() + '...' : d;
+})();
+
 const sidebarCategories = [
     { id: 'all', label: 'Semua Topik' },
     { id: 'meta', label: 'Facebook & Instagram', count: categoryCounts.meta || 0 },
@@ -111,7 +148,7 @@ const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
-    description: post.excerpt,
+    description: metaDescription,
     datePublished: post.iso_date,
     dateModified: lastReviewed,
     author: {
@@ -141,7 +178,7 @@ const articleSchema = {
 ---
 <Layout
     title={`${post.title} — Blog Beriklan.co.id`}
-    description={post.excerpt}
+    description={metaDescription}
     canonical={fullUrl}
     heroImage={featuredImage || undefined}
     heroImageWidth={1200}

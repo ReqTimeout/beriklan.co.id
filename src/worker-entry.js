@@ -2057,6 +2057,8 @@ async function handleAdminSyncPosts(request, env) {
         slugMap.set(draft.slug, finalSlug);
         const post = finalPosts.find(p => p.slug === draft.slug) || {};
         const postTitle = post.title || draft.title || "";
+        // Sanitasi nomor WA di content DRAFT (artefak placeholder AI) sebelum live.
+        const postContent = sanitizeWaNumber(draft.content || "");
         const postExcerpt = (post.excerpt || "").slice(0, 500);
         await env.DB.prepare(
           `INSERT INTO posts_meta (slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated, iso_updated)
@@ -2080,7 +2082,7 @@ async function handleAdminSyncPosts(request, env) {
         await env.DB.prepare(
           `INSERT INTO posts_content (slug, content) VALUES (?,?)
            ON CONFLICT(slug) DO UPDATE SET content=excluded.content`
-        ).bind(finalSlug, draft.content || "").run();
+        ).bind(finalSlug, postContent).run();
         await env.DB.prepare(
           "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
         ).bind(draft.slug).run();
@@ -3291,6 +3293,16 @@ async function handleAdminMigrate(request, env) {
      `DELETE FROM generated_drafts WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
      `DELETE FROM posts_meta WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
      `DELETE FROM posts_content WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
+     // Perbaiki nomor WhatsApp di konten yang sudah tersimpan (artefak placeholder AI).
+     // Nomor benar: 62811919328 / +62 811-919-328. REPLACE string-idempotent, aman ulang.
+     `UPDATE posts_content SET content = replace(content, 'wa.me/6281234567890', 'wa.me/62811919328') WHERE content LIKE '%6281234567890%'`,
+     `UPDATE posts_content SET content = replace(content, 'send?phone=6281234567890', 'send?phone=62811919328') WHERE content LIKE '%6281234567890%'`,
+     `UPDATE posts_content SET content = replace(content, '0812-3456-7890', '+62 811-919-328') WHERE content LIKE '%0812-3456-7890%'`,
+     `UPDATE posts_content SET content = replace(content, '628119193288', '62811919328') WHERE content LIKE '%628119193288%'`,
+     `UPDATE posts_content SET content = replace(content, '081234567890', '62811919328') WHERE content LIKE '%081234567890%'`,
+     `UPDATE generated_drafts SET content = replace(content, 'wa.me/6281234567890', 'wa.me/62811919328') WHERE content LIKE '%6281234567890%'`,
+     `UPDATE generated_drafts SET content = replace(content, '0812-3456-7890', '+62 811-919-328') WHERE content LIKE '%0812-3456-7890%'`,
+     `UPDATE generated_drafts SET content = replace(content, '628119193288', '62811919328') WHERE content LIKE '%628119193288%'`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -9984,12 +9996,83 @@ const EMAIL_TEMPLATE_DEFAULTS = [
   ...GENERIC_TEMPLATES
 ];
 
-function escHtml(s) {
-  if (!s) return "";
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
+ function escHtml(s) {
+   if (!s) return "";
+   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+ }
 
-function genTrackingId() {
+ // ─── WhatsApp number sanitization ────────────────────────────────
+ // Nomor resmi: wa.me/62811919328 (+62 811-919-328). Konten AI sering menulis
+ // placeholder (0812-3456-7890, 6281234567890, api.whatsapp.com/send?phone=..., typo
+ // 628119193288, dsb). Sanitasi dipanggil di render + publish agar SEMUA halaman
+ // konsisten ke nomor benar.
+ const WA_CORRECT_LINK = "62811919328";
+ const WA_CORRECT_TEXT = "+62 811-919-328";
+ const WA_WRONG = [
+   "6281234567890", "628119193288", "6281385555555", "6281388574212",
+   "6281333333333", "6281388888888", "6281212345678", "628123456789",
+   "6281234567", "081234567890",
+ ];
+ function sanitizeWaNumber(html) {
+   if (!html || typeof html !== "string") return html;
+   let out = html;
+   // link variants (wa.me / api.whatsapp.com/send?phone=)
+   for (const w of WA_WRONG) {
+     out = out.split(`wa.me/${w}`).join(`wa.me/${WA_CORRECT_LINK}`);
+     out = out.split(`send?phone=${w}`).join(`send?phone=${WA_CORRECT_LINK}`);
+   }
+   // display text variants
+   out = out.replace(/0812[- ]?3456[- ]?7890/g, WA_CORRECT_TEXT);
+   out = out.replace(/>081234567890</g, `>0811-919-328<`);
+   out = out.replace(/>6281234567890</g, `>${WA_CORRECT_TEXT}<`);
+   return out;
+ }
+
+ // ─── Meta description generator (clickbait hook per layanan) ────
+ // Digunakan di renderBlogPost menggantikan excerpt mentah ("Pendahuluan ...").
+ // Hook = keuntungan konversi per service + kota + keyword. ~150-160 char.
+ const WA_SVC_HOOKS = {
+   "jasa-iklan-facebook": "targeting presisi & creative teruji",
+   "jasa-iklan-instagram": "reach & engagement organik yang konversi",
+   "jasa-iklan-tiktok": "FYP & Spark Ads yang viral tapi terarah",
+   "jasa-iklan-google": "search intent tinggi yang muncul di momen beli",
+   "jasa-iklan-youtube": "video ads & awareness yang dibayar hanya saat dilihat",
+   "jasa-digital-marketing": "multi-channel dengan laporan mingguan terukur",
+   "jasa-kelola-instagram": "konten konsisten yang membangun trust & closing",
+   "jasa-kelola-tiktok": "konten video rutin yang naikkan jangkauan",
+   "jasa-pembuatan-website": "website cepat, mobile-first, siap konversi",
+   "jasa-pembuatan-landing-page": "landing page yang dioptimasi untuk konversi iklan",
+ };
+ function inferServiceFromTitle(title) {
+   const t = (title || "").toLowerCase();
+   const rules = [
+     ["facebook", "jasa-iklan-facebook"], ["instagram", "jasa-kelola-instagram"],
+     ["tiktok", "jasa-iklan-tiktok"], ["google", "jasa-iklan-google"],
+     ["youtube", "jasa-iklan-youtube"], ["website", "jasa-pembuatan-website"],
+     ["landing page", "jasa-pembuatan-landing-page"],
+     ["kelola instagram", "jasa-kelola-instagram"], ["kelola tiktok", "jasa-kelola-tiktok"],
+     ["digital marketing", "jasa-digital-marketing"], ["ads", "jasa-iklan-google"],
+   ];
+   for (const [kw, svc] of rules) if (t.includes(kw)) return svc;
+   return "";
+ }
+ function buildMetaDescription(meta) {
+   const svc = (meta?.service || "").toLowerCase() || inferServiceFromTitle(meta?.title);
+   const city = (meta?.city || "").trim();
+   const hook = WA_SVC_HOOKS[svc] || "strategi terukur dan transparan";
+   const kw = (meta?.title || "").trim();
+   let d = "";
+   if (kw) {
+     d = `${kw} — ${hook}. `;
+   } else {
+     d = `Jasa ${(svc||"").replace(/-/g," ")}${city ? " di " + city : ""} dengan ${hook}. `;
+   }
+   d += `Tim bersertifikasi Meta & Google sejak 2016. Konsultasi gratis via WhatsApp, respon 1 jam (jam kerja).`;
+   if (d.length > 165) d = d.slice(0, 162).trimEnd() + "...";
+   return d;
+ }
+
+ function genTrackingId() {
   return "trk_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
 }
 
@@ -12664,7 +12747,7 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
   const isoDate = meta.iso_date || '';
   const readTime = escHtml(meta.readTime || '3 min');
   const excerpt = escHtml(meta.excerpt || '');
-  let body = content?.content || '';
+  let body = sanitizeWaNumber(content?.content || '');
   let tags = [];
   try { tags = JSON.parse(meta.tags || '[]'); } catch {}
   const canonical = `https://beriklan.co.id/blog/${slug}/`;
@@ -12955,7 +13038,7 @@ async function renderBlogPost(slug, env) {
     }
 
     const title = escHtml(meta.title || slug);
-    const excerpt = escHtml(meta.excerpt || '');
+    const excerpt = escHtml(buildMetaDescription(meta));
     const canonical = `https://beriklan.co.id/blog/${slug}/`;
     const ogTitle = escHtml(meta.title || slug);
 

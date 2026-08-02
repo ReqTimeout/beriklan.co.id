@@ -2202,10 +2202,10 @@ async function handleTestAlert(request, env) {
 </ul>
 <h3 style="color:#0f1e3d;margin:20px 0 8px;font-size:15px;">Cron yang dimonitor</h3>
 <ul style="color:#475569;line-height:1.8;font-size:13px;padding-left:20px;">
-<li>hourly — generate artikel AI</li>
+<li>hourly — artikel otomatis (PAUSED)</li>
 <li>indexnow — submit IndexNow (Bing/Yandex)</li>
 <li>gsc-indexing — Google Indexing API</li>
-<li>trending-generate — trending articles</li>
+<li>trending-generate — trending otomatis (PAUSED)</li>
 <li>scrape-indonetwork — Indonetwork scrape</li>
 <li>scrape-google-places — Google Places scrape</li>
 </ul>
@@ -3057,13 +3057,16 @@ async function handleAdminMigrate(request, env) {
       enabled INTEGER DEFAULT 1,
       label TEXT
     )`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 0, 'Generate artikel (PAUSED — 386k sudah di R2 queue)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 0, 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('indexnow', '15 * * * *', 1, 'IndexNow submit (tiap jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('gsc-indexing', '0 */6 * * *', 1, 'GSC + sitemap + rank (tiap 6 jam)')`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 0, 'Generate trending (PAUSED — fokus publish R2 queue)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 0, 'Trending otomatis (PAUSED — fokus publish R2 queue)')`,
     // Pause generate untuk DB yang sudah ada (tidak override jika user enable manual di dashboard)
-    `UPDATE cron_settings SET enabled = 0, label = 'Generate artikel (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly' AND enabled = 1`,
-    `UPDATE cron_settings SET enabled = 0, label = 'Generate trending (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate' AND enabled = 1`,
+    `UPDATE cron_settings SET enabled = 0, label = 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly' AND enabled = 1`,
+    `UPDATE cron_settings SET enabled = 0, label = 'Trending otomatis (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate' AND enabled = 1`,
+    // Label cleanup untuk row yang sudah ter-pause di DB existing (selalu refresh label, jangan ubah enabled)
+    `UPDATE cron_settings SET label = 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly'`,
+    `UPDATE cron_settings SET label = 'Trending otomatis (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate'`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('content-refresh', '0 0 1 * *', 1, 'Refresh artikel lama (bulanan)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('snippet-optimize', '0 0 * * 1', 1, 'Optimasi snippet (mingguan)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-indonetwork', '30 6 * * *', 1, 'Scrape Indonetwork (harian)')`,
@@ -3564,7 +3567,7 @@ function renderDashboard(stats, token) {
       <small class="muted">Index rate: <strong>${f.index_rate || 0}%</strong> · verify quota ${f.iv_quota_used || 0}/300 (${f.iv_quota_date || '-'})</small>
     </div>
     ${frow('Keyword pending', f.kw_pending, '#94a3b8')}
-    ${frow('Keyword → artikel (generated)', f.kw_generated, '#0ea5e9')}
+    ${frow('Keyword → artikel', f.kw_generated, '#0ea5e9')}
     ${frow('Draft menunggu publish', f.drafts, '#f59e0b')}
     ${frow('Published (posts_meta)', f.published, '#0f1e3d')}
     ${frow('Submitted ke GSC', f.submitted, '#8b5cf6')}

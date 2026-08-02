@@ -314,6 +314,12 @@ export default {
     if (path === "/api/cron/scrape/google-places" || path === "/api/cron/scrape/google-places/") {
       return await handleScrapeGooglePlaces(request, env);
     }
+    if (path === "/api/cron/leads/process" || path === "/api/cron/leads/process/") {
+      return await handleLeadPipeline(request, env);
+    }
+    if (path === "/api/admin/leads" || path === "/api/admin/leads/") {
+      return await handleLeadPipelineView(request, env);
+    }
     if (path === "/api/email/import" || path === "/api/email/import/") {
       return await handleImportDatabase(request, env);
     }
@@ -568,6 +574,7 @@ export default {
         ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
         ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
+        ctx.waitUntil(run("lead-pipeline", handleLeadPipeline, "/api/cron/leads/process?token=beriklan-admin-2026&limit=100&ai=10&campaign=1", "lead-pipeline"));
       }
       // ── 1st of month at 00:00 UTC ──
       if (d === 1 && h === 0) {
@@ -895,6 +902,7 @@ async function handleEnvCheck(request, env) {
       GROQ_API_KEY_4: !!env.GROQ_API_KEY_4,
       GROQ_API_KEY_5: !!env.GROQ_API_KEY_5,
       GSC_SERVICE_ACCOUNT_JSON: !!env.GSC_SERVICE_ACCOUNT_JSON,
+      RESEND_API_KEY: !!env.RESEND_API_KEY,
     },
     groq_total_keys: groqKeys.length,
     groq_status: groqKeys.length >= 3 ? "OK (3+ keys for rotation)" : (groqKeys.length === 2 ? "PARTIAL (2 keys — add 1 more)" : (groqKeys.length === 1 ? "MINIMAL (1 key — add 2 more for TPD headroom)" : "MISSING")),
@@ -3026,6 +3034,8 @@ async function handleAdminMigrate(request, env) {
       clicked_at TEXT,
       tracking_id TEXT UNIQUE
     )`,
+    `ALTER TABLE email_queue ADD COLUMN subject_override TEXT`,
+    `ALTER TABLE email_queue ADD COLUMN opener TEXT`,
     `CREATE TABLE IF NOT EXISTS lead_lists (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -3049,6 +3059,31 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue (status)`,
     `CREATE INDEX IF NOT EXISTS idx_email_queue_campaign ON email_queue (campaign_id)`,
     `CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns (status)`,
+    `CREATE INDEX IF NOT EXISTS idx_lead_contacts_email ON lead_contacts (email)`,
+    // Lead Pipeline — auto client acquisition per service
+    `CREATE TABLE IF NOT EXISTS lead_pipeline (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      contact_id INTEGER,
+      email TEXT,
+      phone TEXT,
+      name TEXT,
+      company TEXT,
+      city TEXT,
+      category TEXT,
+      website TEXT,
+      service TEXT,
+      score INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'new',
+      ai_subject TEXT,
+      ai_opener TEXT,
+      campaign_id INTEGER,
+      wa_link TEXT,
+      matched_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_status ON lead_pipeline (status)`,
+    `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_service ON lead_pipeline (service)`,
+    `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_email ON lead_pipeline (email)`,
     // Cron enable/pause settings
     `CREATE TABLE IF NOT EXISTS cron_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3072,6 +3107,9 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-indonetwork', '30 6 * * *', 1, 'Scrape Indonetwork (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-google-places', '0 7 * * *', 1, 'Scrape Google Places (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('email-send', '*/15 * * * *', 1, 'Kirim antrian email (tiap 15 menit)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('lead-pipeline', '0 */6 * * *', 1, 'Akuisisi klien: match lead ke layanan + kirim (tiap 6 jam)')`,
+    // Fix Google Places scraper: source_id column (dipakai untuk dedupe)
+    `ALTER TABLE lead_contacts ADD COLUMN source_id TEXT`,
     // Publish pacing (anti-spam) — tune tanpa deploy. Nilai di kolom `cron` = angka.
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '150', 1, 'Publish harian maksimum (anti-spam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '15', 1, 'Publish per jam (sync-posts)')`,
@@ -9629,6 +9667,7 @@ ${b ? `<td style="padding:6px;vertical-align:top;width:50%;">
 <p style="margin:0 0 6px;color:${c.accent_color};font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">${c.badge}</p>
 <h1 style="margin:0 0 10px;color:#0f1e3d;font-size:24px;font-weight:800;line-height:1.3;">${c.headline}</h1>
 <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.6;">${c.subheadline}</p>
+<!-- OPENER -->
 </td></tr>
 
 <!-- Hero Image -->
@@ -9954,8 +9993,9 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#3741
 <a href="?token=${token}&tab=composer" class="nav ${tab==='composer'?'active':''}"><span class="ico">✍️</span> Composer</a>
 <a href="?token=${token}&tab=templates" class="nav ${tab==='templates'?'active':''}"><span class="ico">📝</span> Templates</a>
 <a href="?token=${token}&tab=lists" class="nav ${tab==='lists'?'active':''}"><span class="ico">👥</span> Kontak & Lists</a>
-<a href="?token=${token}&tab=cron" class="nav ${tab==='cron'?'active':''}"><span class="ico">⏰</span> Cron & Automasi</a>
-<a href="?token=${token}&tab=scraper" class="nav ${tab==='scraper'?'active':''}"><span class="ico">🔍</span> Scraper</a>
+ <a href="?token=${token}&tab=cron" class="nav ${tab==='cron'?'active':''}"><span class="ico">⏰</span> Cron & Automasi</a>
+ <a href="?token=${token}&tab=scraper" class="nav ${tab==='scraper'?'active':''}"><span class="ico">🔍</span> Scraper</a>
+ <a href="?token=${token}&tab=leads" class="nav ${tab==='leads'?'active':''}"><span class="ico">🎯</span> Lead Pipeline</a>
 <div class="sidebar-foot">
 Email · Resend API<br>
 Quota hari ini: ${dailySent}/100 (Resend free)
@@ -9971,6 +10011,7 @@ ${tab === 'overview' ? renderOverview(campaigns, totalSent, totalOpened, totalCl
   tab === 'lists' ? renderLists(lists, T, token) :
   tab === 'cron' ? renderCron(cronRows, T, token) :
   tab === 'scraper' ? renderScraper(campaigns, T, token, env) :
+  tab === 'leads' ? renderLeads(T, token, env) :
   '<div class="card"><p>Halaman tidak ditemukan. <a href="?token='+token+'&tab=overview">← Overview</a></p></div>'}
 </div>
 </div>
@@ -9992,17 +10033,23 @@ async function testSend(id) {
   } catch(e) { alert("❌ Error: " + e.message); }
   btn.disabled = false; btn.innerHTML = "✉️ Test";
 }
-async function runScraper(url, label) {
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = '⏳ Scraping...';
-  try {
-    const r = await fetch(url, { method: 'POST' });
-    const d = await r.json();
-    alert((d.ok ? '✅ ' : '❌ ') + label + ': ' + (d.error || (d.contacts_saved || 0) + ' saved'));
-    location.reload();
-  } catch(e) { alert('❌ Error: ' + e.message); }
-  btn.disabled = false; btn.textContent = '▶ Jalankan';
-}
+ async function runScraper(url, label) {
+   const btn = event.target;
+   btn.disabled = true; btn.textContent = '⏳ Scraping...';
+   try {
+     const r = await fetch(url, { method: 'POST' });
+     const d = await r.json();
+     let msg;
+     if (d.matched !== undefined) {
+       msg = 'matched=' + d.matched + ' · personalisasi=' + d.personalized + ' · queued=' + d.queued + ' · WA=' + d.wa_ready;
+     } else {
+       msg = d.contacts_saved !== undefined ? (d.contacts_saved || 0) + ' saved' : 'done';
+     }
+     alert((d.ok ? '✅ ' : '❌ ') + label + ': ' + (d.error || msg));
+     location.reload();
+   } catch(e) { alert('❌ Error: ' + e.message); }
+   btn.disabled = false; btn.textContent = '▶ Jalankan';
+ }
 </script>
 </body></html>`;
 
@@ -10283,13 +10330,67 @@ function renderScraper(campaigns, T, token, env) {
 <div class="left"><strong>🏭 Indonetwork Distributor</strong><div class="next">Kategori: distributor</div></div>
 <button onclick="runScraper('/api/cron/scrape/indonetwork?token=${token}&cat=1', 'Distributor')" class="btn-amber">▶ Jalankan</button>
 </div>
-<div class="cron-card">
-<div class="left"><strong>🌐 Google Places</strong><div class="next">${env.GOOGLE_PLACES_API_KEY?'Siap pakai':'Butuh API key'}</div></div>
-<button onclick="runScraper('/api/cron/scrape/google-places?token=${token}&q=0', 'GP')" class="btn-amber" ${env.GOOGLE_PLACES_API_KEY?'':'disabled'}>▶ Jalankan</button>
-</div>
-</div>
-</div>
-`;
+ <div class="cron-card">
+ <div class="left"><strong>🌐 Google Places</strong><div class="next">${env.GOOGLE_PLACES_API_KEY?'Siap pakai':'Butuh API key'}</div></div>
+ <button onclick="runScraper('/api/cron/scrape/google-places?token=${token}&q=0', 'GP')" class="btn-amber" ${env.GOOGLE_PLACES_API_KEY?'':'disabled'}>▶ Jalankan</button>
+ </div>
+ </div>
+ </div>
+ `;
+}
+
+async function renderLeads(T, token, env) {
+  try {
+    const total = await env.DB.prepare("SELECT COUNT(*) as n FROM lead_pipeline").first();
+    const byStatus = await env.DB.prepare("SELECT status, COUNT(*) as n FROM lead_pipeline GROUP BY status ORDER BY n DESC").all();
+    const byService = await env.DB.prepare("SELECT service, COUNT(*) as n FROM lead_pipeline WHERE status != 'matched' GROUP BY service ORDER BY n DESC").all();
+    const waReady = await env.DB.prepare("SELECT id, name, company, city, category, service, phone FROM lead_pipeline WHERE wa_link != '' ORDER BY score DESC LIMIT 15").all();
+    const recent = await env.DB.prepare("SELECT id, name, company, city, service, score, status, created_at FROM lead_pipeline ORDER BY id DESC LIMIT 15").all();
+    const queuePending = await env.DB.prepare("SELECT COUNT(*) as n FROM email_queue WHERE status='pending'").first();
+    const campaigns = await env.DB.prepare("SELECT id, name, total_recipients, sent_count, status FROM campaigns WHERE name LIKE 'Auto Pipeline%' ORDER BY id DESC LIMIT 15").all();
+
+    const badge = (s) => s === 'matched' ? '<span class="badge b-amber">Matched</span>' : s === 'queued' ? '<span class="badge b-green">Queued</span>' : s === 'sent' ? '<span class="badge b-green">Sent</span>' : `<span class="badge b-gray">${s}</span>`;
+    const statusRows = (byStatus.results || []).map(r => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #e2e8f0;"><span>${badge(r.status)}</span><strong>${r.n}</strong></div>`).join('') || '<p style="color:#94a3b8">Belum ada data.</p>';
+    const serviceRows = (byService.results || []).map(r => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #e2e8f0;"><span style="font-size:13px">${r.service}</span><strong>${r.n}</strong></div>`).join('');
+    const waRows = (waReady.results || []).map(r => `<tr><td>${r.name||'-'}</td><td>${r.company||'-'}</td><td>${r.city||'-'}</td><td>${r.service}</td><td>${r.phone||'-'}</td></tr>`).join('') || '<tr><td colspan="5" style="color:#94a3b8">Belum ada lead WhatsApp.</td></tr>';
+    const recentRows = (recent.results || []).map(r => `<tr><td>${r.name||'-'}</td><td>${r.company||'-'}</td><td>${r.service}</td><td>${r.score}</td><td>${badge(r.status)}</td></tr>`).join('') || '<tr><td colspan="5" style="color:#94a3b8">Pipeline kosong.</td></tr>';
+    const campRows = (campaigns.results || []).map(c => `<tr><td>${c.name}</td><td>${c.total_recipients||0}</td><td>${c.sent_count||0}</td><td>${c.status}</td></tr>`).join('') || '<tr><td colspan="4" style="color:#94a3b8">Belum ada auto-campaign.</td></tr>';
+
+    return `
+ <div class="page-head"><div><h1>Lead Pipeline</h1><p>Match lead ke layanan, personalisasi, dan kirim otomatis tiap 6 jam.</p></div></div>
+
+ <div class="card">
+ <div class="card-head"><h2>🚀 Jalankan Sekarang</h2></div>
+ <div class="cron-card">
+ <div class="left"><strong>🎯 Proses pipeline</strong><div class="next">match → personalisasi AI (≤15) → auto-campaign → WA fallback</div></div>
+ <button onclick="runScraper('/api/cron/leads/process?token=${token}&limit=100&ai=15&campaign=1', 'Pipeline')" class="btn-amber">▶ Jalankan</button>
+ </div>
+ </div>
+
+ <div class="grid">
+ <div class="card"><div class="card-head"><h2>Total Lead</h2></div><p style="font-size:28px;font-weight:800;">${total?.n || 0}</p><p style="font-size:12px;color:#6b7280;">email_queue pending: ${queuePending?.n || 0}</p></div>
+ <div class="card"><div class="card-head"><h2>By Status</h2></div>${statusRows}</div>
+ <div class="card"><div class="card-head"><h2>By Layanan (yang sudah match)</h2></div>${serviceRows}</div>
+ </div>
+
+ <div class="card">
+ <div class="card-head"><h2>💬 Siap WhatsApp (phone saja, fallback)</h2></div>
+ <div style="overflow-x:auto"><table><tr><th>Nama</th><th>Perusahaan</th><th>Kota</th><th>Layanan</th><th>Phone</th></tr>${waRows}</table></div>
+ </div>
+
+ <div class="card">
+ <div class="card-head"><h2>📨 Auto-Campaign</h2></div>
+ <div style="overflow-x:auto"><table><tr><th>Campaign</th><th>Recipients</th><th>Sent</th><th>Status</th></tr>${campRows}</table></div>
+ </div>
+
+ <div class="card">
+ <div class="card-head"><h2>🕘 Recent</h2></div>
+ <div style="overflow-x:auto"><table><tr><th>Nama</th><th>Perusahaan</th><th>Layanan</th><th>Score</th><th>Status</th></tr>${recentRows}</table></div>
+ </div>
+ `;
+  } catch (e) {
+    return `<div class="page-head"><div><h1>Lead Pipeline</h1></div></div><div class="card"><p style="color:#dc2626">Error: ${String(e).slice(0, 300)}</p></div>`;
+  }
 }
 
 async function renderCampaignDetail(id, token, env) {
@@ -10729,6 +10830,9 @@ async function handleCronSendEmail(request, env) {
           continue;
         }
 
+        // Per-recipient personalization: subject_override + AI opener (dari lead pipeline)
+        const effectiveSubject = item.subject_override || tmpl.subject || subject;
+
         let bodyHtml = tmpl.html;
         const name = item.name || "";
         const trackingId = item.tracking_id || "";
@@ -10737,17 +10841,28 @@ async function handleCronSendEmail(request, env) {
         bodyHtml = bodyHtml.replace(/\{\{name\}\}/g, name).replace(/\{\{company\}\}/g, name);
         bodyHtml = bodyHtml.replace(/\{\{unsubscribe_url\}\}/g, unsubUrl);
         bodyHtml = bodyHtml.replace(/\{\{date\}\}/g, new Date().toLocaleDateString("id-ID"));
-        bodyHtml = bodyHtml.replace(/\{\{headline\}\}/g, subject);
+        bodyHtml = bodyHtml.replace(/\{\{headline\}\}/g, effectiveSubject);
         bodyHtml = bodyHtml.replace(/\{\{excerpt\}\}/g, "Tips dan strategi digital marketing terbaru dari tim Beriklan.");
         bodyHtml = bodyHtml.replace(/\{\{articles\}\}/g, "");
-        bodyHtml = bodyHtml.replace(/\{\{cta_url\}\}/g, "https://wa.me/62811919328?text=" + encodeURIComponent(`Halo Beriklan, saya tertarik info lebih lanjut setelah menerima email "${subject}".`));
+        bodyHtml = bodyHtml.replace(/\{\{cta_url\}\}/g, "https://wa.me/62811919328?text=" + encodeURIComponent(`Halo Beriklan, saya tertarik info lebih lanjut setelah menerima email "${effectiveSubject}".`));
         bodyHtml = bodyHtml.replace(/\{\{cta_text\}\}/g, "Diskusi via WhatsApp");
-        bodyHtml = bodyHtml.replace(/\{\{title\}\}/g, subject);
+        bodyHtml = bodyHtml.replace(/\{\{title\}\}/g, effectiveSubject);
         bodyHtml = bodyHtml.replace(/\{\{subtitle\}\}/g, "Hubungi kami untuk konsultasi via WhatsApp.");
         bodyHtml = bodyHtml.replace(/\{\{tracking_pixel\}\}/g, `<img src="https://beriklan.co.id/api/track/open?id=${trackingId}" width="1" height="1" alt="" style="display:none;">`);
+        // Inject AI opener sebagai paragraf pembuka (setelah subheadline) bila ada
+        if (item.opener) {
+          const openerHtml = `<p style="margin:0 0 12px;color:#0f1e3d;font-size:15px;font-weight:600;line-height:1.6;">${item.opener.replace(/</g, "&lt;")}</p>`;
+          if (bodyHtml.includes('{{opener}}')) {
+            bodyHtml = bodyHtml.replace(/\{\{opener\}\}/g, openerHtml);
+          } else {
+            bodyHtml = bodyHtml.replace(/<!-- OPENER -->/g, openerHtml);
+          }
+        } else {
+          bodyHtml = bodyHtml.replace(/\{\{opener\}\}/g, "");
+        }
         if (!bodyHtml.includes("Berhenti berlangganan") && !bodyHtml.includes("unsubscribe_url")) bodyHtml += unsubFooter;
 
-        const res = await sendEmailViaResend(env, { email: item.email, name: item.name }, tmpl.subject, bodyHtml, item.tracking_id);
+        const res = await sendEmailViaResend(env, { email: item.email, name: item.name }, effectiveSubject, bodyHtml, item.tracking_id);
 
         if (res.ok) {
           await env.DB.prepare("UPDATE email_queue SET status='sent', sent_at=CURRENT_TIMESTAMP WHERE id=?").bind(item.id).run();
@@ -11194,6 +11309,230 @@ async function handleScrapeGooglePlaces(request, env) {
     }
   }
   return new Response(JSON.stringify({ ok: true, query: category.q, label: category.label, contacts_saved: totalSaved, cities: cities.length, debug: dbg }), { headers: { "Content-Type": "application/json" } });
+}
+
+// ───────────────────────────────────────────────────────────────
+// Lead Pipeline — auto akuisisi klien per layanan
+// Mencocokkan lead (hasil scrape/database) ke layanan paling relevan,
+// personalisasi subjek + pembuka via AI gratis (Zen/Groq), auto-buat
+// campaign email per layanan, dan fallback WhatsApp untuk lead
+// ber-phone tanpa email.
+// ───────────────────────────────────────────────────────────────
+
+const LEAD_SERVICE_RULES = [
+  { service: "Jasa Iklan Google Ads", kws: ["manufaktur", "distributor", "elektronik", "material", "otomotif", "percetakan", "logistik", "properti", "developer", "industri", "furniture", "bangunan", "suku cadang", "mesin", "grosir", "ekspedisi"] },
+  { service: "Jasa Iklan Facebook Ads", kws: ["retail", "fashion", "klinik", "salon", "toko", "butik", "bengkel", "mebel", "rumah makan", "kafe", "fotokopi", "laundry", "travel", "jasa"] },
+  { service: "Jasa Iklan Instagram", kws: ["beauty", "kecantikan", "kuliner", "cafe", "café", "restoran", "makanan", "minuman", "skincare", "kosmetik", "kue", "bakery"] },
+  { service: "Jasa Iklan TikTok", kws: ["kosmetik", "skincare", "gadget", "aksesoris", "souvenir", "snack", "tiktok", "fashion", "makanan", "minuman", "beauty", "kuliner"] },
+  { service: "Jasa Iklan YouTube", kws: ["pendidikan", "sekolah", "kursus", "seminar", "training", "bimbel", "yayasan", "konser", "teater", "event"] },
+  { service: "Jasa Kelola Instagram", kws: ["umkm", "usaha", "toko online", "online shop", "bisnis", "kuliner", "fashion", "kafe", "brand"] },
+  { service: "Jasa Kelola TikTok", kws: ["online shop", "bisnis", "content", "fashion", "kuliner", "kafe", "umkm", "brand"] },
+  { service: "Jasa Pembuatan Website", kws: ["properti", "developer", "manufaktur", "perusahaan", "kontraktor", "arsitek", "notaris", "rumah sakit", "hotel", "yayasan", "sekolah"] },
+  { service: "Jasa Pembuatan Landing Page", kws: ["properti", "developer", "pameran", "promo", "konser", "franchise", "mitra", "event"] },
+  { service: "Jasa View Live TikTok", kws: ["live", "streaming", "tiktok live", "live selling", "affiliate"] },
+];
+
+function normalizePhoneForWa(raw) {
+  if (!raw) return "";
+  let d = String(raw).replace(/\D/g, "");
+  if (d.startsWith("62")) return d;
+  if (d.startsWith("0")) return "62" + d.slice(1);
+  if (d.length >= 8) return d;
+  return "";
+}
+
+function buildWaLink(phone, name, company, service) {
+  const wa = normalizePhoneForWa(phone);
+  if (!wa) return "";
+  const msg = encodeURIComponent(
+    `Halo ${(name && name !== "Unknown" ? name : company || "Kak")}, kami dari Beriklan — performance marketing partner di Bandung sejak 2016. Kami melihat ${company || "bisnis Anda"} cocok dengan layanan ${service}. Boleh diskusi singkat via WhatsApp?`
+  );
+  return `https://wa.me/${wa}?text=${msg}`;
+}
+
+function matchLeadService(lead) {
+  const hay = `${lead.category || ""} ${lead.company || ""} ${lead.name || ""} ${lead.website || ""}`.toLowerCase();
+  let best = { service: "Jasa Digital Marketing", hits: 0 };
+  for (const rule of LEAD_SERVICE_RULES) {
+    let hits = 0;
+    for (const kw of rule.kws) if (hay.includes(kw)) hits++;
+    if (hits > best.hits) best = { service: rule.service, hits };
+  }
+  return best;
+}
+
+function scoreLead(lead) {
+  let s = 0;
+  if (lead.email) s += 40;
+  if (lead.phone) s += 20;
+  if (lead.website) s += 15;
+  if (lead.city) s += 10;
+  if (lead.company) s += 15;
+  return s;
+}
+
+async function personalizeLead(lead, service, env) {
+  const company = (lead.company && lead.company !== "Unknown") ? lead.company : (lead.name || "Bisnis Anda");
+  const prompt = `Buat materi email pemasaran B2B Bahasa Indonesia untuk perusahaan "${company}" (${lead.category || "umum"}) di ${lead.city || "Indonesia"}. Kami adalah Beriklan, agency performance marketing Bandung sejak 2016, menawarkan "${service}".
+
+Tulis dalam format dua baris, persis seperti ini (tanpa label tambahan):
+SUBJECT: [subjek maksimal 7 kata, sebut nama perusahaan, menarik tanpa clickbait]
+OPENER: [satu kalimat pembuka maksimal 20 kata, sebut nama perusahaan, spesifik ke kategori bisnisnya, dan akhiri dengan satu pertanyaan]`;
+  const res = await generateWithZenOrGroq(prompt, env);
+  if (!res) return { subject: "", opener: "" };
+  const text = res.text || "";
+  const subj = (text.match(/SUBJECT:\s*(.+)/i) || [])[1] || "";
+  const open = (text.match(/OPENER:\s*(.+)/i) || [])[1] || "";
+  return {
+    subject: subj.trim().slice(0, 90),
+    opener: open.trim().slice(0, 220),
+  };
+}
+
+// Main pipeline: 1) match & score, 2) AI personalisasi (opsional), 3) auto-campaign per layanan, 4) WA fallback
+async function handleLeadPipeline(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const limit = Math.min(parseInt(url.searchParams.get("limit") || "100", 10), 300);
+  const aiLimit = Math.min(parseInt(url.searchParams.get("ai") || "15", 10), 40);
+  const doPersonalize = url.searchParams.get("personalize") !== "0";
+  const doCampaign = url.searchParams.get("campaign") !== "0";
+  const out = { ok: true, matched: 0, personalized: 0, queued: 0, wa_ready: 0, errors: [] };
+
+  // 1) Ambil lead yang belum masuk pipeline
+  let rows = [];
+  try {
+    const r = await env.DB.prepare(
+      `SELECT c.id, c.email, c.phone, c.name, c.company, c.city, c.category, c.website
+       FROM lead_contacts c
+       WHERE NOT EXISTS (SELECT 1 FROM lead_pipeline p WHERE p.contact_id = c.id)
+         AND (c.email != '' OR c.phone != '')
+       ORDER BY c.id ASC LIMIT ?`
+    ).bind(limit).all();
+    rows = r.results || [];
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "fetch leads: " + String(e).slice(0, 200) }), { headers: { "Content-Type": "application/json" } });
+  }
+
+  for (const lead of rows) {
+    const matched = matchLeadService(lead);
+    const score = scoreLead(lead);
+    const wa = buildWaLink(lead.phone, lead.name, lead.company, matched.service);
+    try {
+      await env.DB.prepare(
+        `INSERT OR IGNORE INTO lead_pipeline (contact_id, email, phone, name, company, city, category, website, service, score, status, wa_link, matched_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?, 'matched', ?, datetime('now'))`
+      ).bind(lead.id, lead.email || "", lead.phone || "", lead.name || "", lead.company || "", lead.city || "", lead.category || "", lead.website || "", matched.service, score, wa).run();
+      out.matched++;
+      if (wa) out.wa_ready++;
+    } catch (e) {
+      out.errors.push({ email: lead.email, error: String(e).slice(0, 120) });
+    }
+  }
+
+  // 2) AI personalisasi subjek + opener untuk lead ber-email (batas biaya)
+  if (doPersonalize && aiLimit > 0) {
+    try {
+      const candidates = await env.DB.prepare(
+        `SELECT id, contact_id, email, name, company, city, category, website, service
+         FROM lead_pipeline
+         WHERE status = 'matched' AND email != '' AND (ai_subject IS NULL OR ai_subject = '')
+         ORDER BY score DESC, id ASC LIMIT ?`
+      ).bind(aiLimit).all();
+      for (const p of (candidates.results || [])) {
+        const pr = await personalizeLead(p, p.service, env);
+        if (pr.subject || pr.opener) {
+          await env.DB.prepare("UPDATE lead_pipeline SET ai_subject = ?, ai_opener = ? WHERE id = ?").bind(pr.subject, pr.opener, p.id).run();
+          out.personalized++;
+        }
+        await new Promise(r => setTimeout(r, 250));
+      }
+    } catch (e) {
+      out.errors.push({ stage: "ai", error: String(e).slice(0, 150) });
+    }
+  }
+
+  // 3) Auto-campaign per layanan: grup lead matched → 1 campaign per service, queue ke email_queue
+  if (doCampaign) {
+    try {
+      const grouped = await env.DB.prepare(
+        `SELECT service, COUNT(*) as n FROM lead_pipeline
+         WHERE status = 'matched' AND email != ''
+         GROUP BY service ORDER BY n DESC`
+      ).all();
+      for (const g of (grouped.results || [])) {
+        const serviceName = g.service;
+        const campName = `Auto Pipeline: ${serviceName}`;
+        let camp = await env.DB.prepare("SELECT id FROM campaigns WHERE name = ?").bind(campName).first();
+        if (!camp) {
+          const tpl = await env.DB.prepare("SELECT id FROM email_templates WHERE name = ?").bind(serviceName).first();
+          const templateId = tpl?.id || null;
+          const r = await env.DB.prepare(
+            "INSERT INTO campaigns (name, template_id, list_id, subject, status, total_recipients) VALUES (?,?,0,'', 'sending', 0)"
+          ).bind(campName, templateId).run();
+          camp = { id: r.meta?.last_row_id || 0 };
+        }
+        const leads = await env.DB.prepare(
+          `SELECT id, email, name, company, ai_subject, ai_opener FROM lead_pipeline
+           WHERE status = 'matched' AND email != '' AND service = ? ORDER BY score DESC LIMIT 50`
+        ).bind(serviceName).all();
+        const batch = [];
+        for (const lp of (leads.results || [])) {
+          const tid = genTrackingId();
+          batch.push([camp.id, lp.email.toLowerCase().trim(), lp.name || "", "pending", tid, lp.ai_subject || "", lp.ai_opener || ""]);
+        }
+        if (batch.length) {
+          await env.DB.batch(batch.map(rr => env.DB.prepare(
+            "INSERT INTO email_queue (campaign_id, email, name, status, tracking_id, subject_override, opener) VALUES (?,?,?,?,?,?,?)"
+          ).bind(...rr)));
+          await env.DB.prepare("UPDATE lead_pipeline SET status = 'queued', campaign_id = ? WHERE service = ? AND status = 'matched' AND email != ''").bind(camp.id, serviceName).run();
+          await env.DB.prepare("UPDATE campaigns SET total_recipients = (SELECT COUNT(*) FROM email_queue WHERE campaign_id = ?) WHERE id = ?").bind(camp.id, camp.id).run();
+          out.queued += batch.length;
+        }
+      }
+    } catch (e) {
+      out.errors.push({ stage: "campaign", error: String(e).slice(0, 200) });
+    }
+  }
+
+  return new Response(JSON.stringify(out), { headers: { "Content-Type": "application/json" } });
+}
+
+// Admin: lihat status lead pipeline
+async function handleLeadPipelineView(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+
+  const total = await env.DB.prepare("SELECT COUNT(*) as n FROM lead_pipeline").first();
+  const byService = await env.DB.prepare(
+    `SELECT service, status, COUNT(*) as n FROM lead_pipeline GROUP BY service, status ORDER BY service, n DESC`
+  ).all();
+  const byStatus = await env.DB.prepare(
+    `SELECT status, COUNT(*) as n FROM lead_pipeline GROUP BY status ORDER BY n DESC`
+  ).all();
+  const waReady = await env.DB.prepare(
+    `SELECT id, name, company, city, category, service, phone, wa_link FROM lead_pipeline WHERE wa_link != '' ORDER BY score DESC LIMIT 30`
+  ).all();
+  const queued = await env.DB.prepare(
+    `SELECT COUNT(*) as n FROM email_queue WHERE status = 'pending'`
+  ).first();
+  const dailySent = await getDailyEmailCount(env);
+
+  return new Response(JSON.stringify({
+    ok: true,
+    total: total?.n || 0,
+    by_service: byService.results || [],
+    by_status: byStatus.results || [],
+    wa_ready: waReady.results || [],
+    queue_pending: queued?.n || 0,
+    daily_sent: dailySent,
+    daily_limit: 100,
+  }), { headers: { "Content-Type": "application/json" } });
 }
 
 // ───────────────────────────────────────────────────────────────

@@ -564,7 +564,7 @@ export default {
 
     if (cron === "0 * * * *") {
       // ── Hourly tasks (every hour) ──
-      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=5&mode=draft", "hourly"));
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=1&mode=draft", "hourly"));
       ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
       ctx.waitUntil(run("indexnow", handleIndexNowCron, "/api/cron/indexnow?token=beriklan-admin-2026&count=50", "indexnow"));
 
@@ -1857,19 +1857,38 @@ async function handleAdminSyncPosts(request, env) {
     //    Prioritaskan low-competition dulu: long-tail keyword (judul > 4 kata) adalah
     //    query paling mudah dimenangkan; kota-spesifik (city != '') juga low-competition.
     //    Fallback urut id ASC agar buffer tidak macet.
-    const draftsToPublish = await env.DB.prepare(
-      `SELECT slug, title, content, service, city FROM generated_drafts
-       WHERE status='draft'
-       ORDER BY
-         (CASE WHEN city IS NOT NULL AND city != '' THEN 1 ELSE 0 END) DESC,
-         (CASE
-            WHEN (length(title) - length(replace(title, ' ', ''))) >= 6 THEN 3
-            WHEN (length(title) - length(replace(title, ' ', ''))) >= 4 THEN 2
-            ELSE 1
-          END) DESC,
-         id ASC
-       LIMIT ?`
-    ).bind(batchSize).all();
+    let draftsToPublish;
+    try {
+      // Intent + city cascade: commercial+city → commercial → city → long-tail → priority_score.
+      // `intent`/`priority_score` di-backfill dari keyword_queue (join article_slug) via migrate.
+      draftsToPublish = await env.DB.prepare(
+        `SELECT slug, title, content, service, city, intent, priority_score FROM generated_drafts
+         WHERE status='draft'
+         ORDER BY
+           (CASE WHEN intent IN ('commercial','transactional') AND city IS NOT NULL AND city != '' THEN 0 ELSE 1 END),
+           (CASE WHEN intent IN ('commercial','transactional') THEN 0 ELSE 1 END),
+           (CASE WHEN city IS NOT NULL AND city != '' THEN 0 ELSE 1 END),
+           (CASE WHEN (length(title) - length(replace(title, ' ', ''))) >= 4 THEN 0 ELSE 1 END),
+           COALESCE(priority_score, 50) DESC,
+           id ASC
+         LIMIT ?`
+      ).bind(batchSize).all();
+    } catch (e) {
+      // Fallback: kolom intent/priority_score belum ada (pre-migrate) — pakai urutan lama.
+      draftsToPublish = await env.DB.prepare(
+        `SELECT slug, title, content, service, city FROM generated_drafts
+         WHERE status='draft'
+         ORDER BY
+           (CASE WHEN city IS NOT NULL AND city != '' THEN 1 ELSE 0 END) DESC,
+           (CASE
+              WHEN (length(title) - length(replace(title, ' ', ''))) >= 6 THEN 3
+              WHEN (length(title) - length(replace(title, ' ', ''))) >= 4 THEN 2
+              ELSE 1
+            END) DESC,
+           id ASC
+         LIMIT ?`
+      ).bind(batchSize).all();
+    }
     const drafts = draftsToPublish.results || [];
 
     if (drafts.length === 0) {
@@ -3215,15 +3234,15 @@ async function handleAdminMigrate(request, env) {
       enabled INTEGER DEFAULT 1,
       label TEXT
     )`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 0, 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 1, 'Artikel otomatis (generate buffer draft count=1 mode=draft)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('indexnow', '15 * * * *', 1, 'IndexNow submit (tiap jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('gsc-indexing', '0 */6 * * *', 1, 'GSC + sitemap + rank (tiap 6 jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 0, 'Trending otomatis (PAUSED — fokus publish R2 queue)')`,
-    // Pause generate untuk DB yang sudah ada (tidak override jika user enable manual di dashboard)
-    `UPDATE cron_settings SET enabled = 0, label = 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly' AND enabled = 1`,
+    // Ramp-up: un-pause generate. Rebalance priority (city+core, commercial intent) jalan tiap jam.
+    `UPDATE cron_settings SET enabled = 1, label = 'Artikel otomatis (generate buffer draft count=1 mode=draft)' WHERE name = 'hourly' AND enabled = 0`,
     `UPDATE cron_settings SET enabled = 0, label = 'Trending otomatis (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate' AND enabled = 1`,
     // Label cleanup untuk row yang sudah ter-pause di DB existing (selalu refresh label, jangan ubah enabled)
-    `UPDATE cron_settings SET label = 'Artikel otomatis (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly'`,
+    `UPDATE cron_settings SET label = 'Artikel otomatis (generate buffer draft count=1 mode=draft)' WHERE name = 'hourly'`,
     `UPDATE cron_settings SET label = 'Trending otomatis (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate'`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('content-refresh', '0 0 1 * *', 1, 'Refresh artikel lama (bulanan)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('snippet-optimize', '0 0 * * 1', 1, 'Optimasi snippet (mingguan)')`,
@@ -3233,9 +3252,19 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('lead-pipeline', '0 */6 * * *', 1, 'Akuisisi klien: match lead ke layanan + kirim (tiap 6 jam)')`,
     // Fix Google Places scraper: source_id column (dipakai untuk dedupe)
     `ALTER TABLE lead_contacts ADD COLUMN source_id TEXT`,
-    // Publish pacing (anti-spam) — tune tanpa deploy. Nilai di kolom `cron` = angka.
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '150', 1, 'Publish harian maksimum (anti-spam)')`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '15', 1, 'Publish per jam (sync-posts)')`,
+    // Publish pacing (ramp-up 600/hari, batch 25) — tune tanpa deploy. Nilai di kolom `cron` = angka.
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '600', 1, 'Publish harian maksimum (ramp-up 600/hari)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '25', 1, 'Publish per sync-posts run (25)')`,
+    `UPDATE cron_settings SET cron = '600', label = 'Publish harian maksimum (ramp-up 600/hari)' WHERE name = 'publish_daily_limit'`,
+    `UPDATE cron_settings SET cron = '25', label = 'Publish per sync-posts run (25)' WHERE name = 'publish_batch_size'`,
+    // intent + priority_score di generated_drafts (untuk ORDER BY publish intent+city cascade).
+    // Backfill dari keyword_queue via article_slug (draft yg di-generate dari keyword).
+    `ALTER TABLE generated_drafts ADD COLUMN intent TEXT`,
+    `ALTER TABLE generated_drafts ADD COLUMN priority_score INTEGER DEFAULT 50`,
+    `UPDATE generated_drafts SET
+       intent = (SELECT k.intent FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug AND k.intent IS NOT NULL LIMIT 1),
+       priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug LIMIT 1)
+     WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug)`,
     `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (

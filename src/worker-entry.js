@@ -3284,7 +3284,13 @@ async function handleAdminMigrate(request, env) {
        intent = (SELECT k.intent FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') AND k.intent IS NOT NULL LIMIT 1),
        priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') LIMIT 1)
      WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' '))`,
-    `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
+     `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
+     // Bersihkan URL junk seed-/exp- dari antrian indexing (artefak slug keyword_queue.id
+     // yang dipublish sebelum remap finalSlug. URL /blog/seed-xxx/ 404 → boros quota GSC).
+     `DELETE FROM pending_indexing WHERE url LIKE '%/blog/seed-%' OR url LIKE '%/blog/exp-%'`,
+     `DELETE FROM generated_drafts WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
+     `DELETE FROM posts_meta WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
+     `DELETE FROM posts_content WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3976,12 +3982,13 @@ async function handlePostsDashboard(request, env) {
     let urls = [];
     if (bulk) {
       const pending = await env.DB.prepare("SELECT url FROM pending_indexing WHERE status='pending'").all();
-      urls = (pending.results || []).map(r => r.url);
+      urls = (pending.results || []).map(r => r.url).filter(u => !/blog\/(seed|exp)-/.test(u));
       // Queue semua posts_meta yang belum ada di pending_indexing (www agar match GSC property)
       const allPosts = await env.DB.prepare("SELECT slug FROM posts_meta").all();
       const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
       const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
       for (const p of (allPosts.results || [])) {
+        if (/^(seed|exp)-/.test(p.slug)) continue;
         const pu = `https://www.beriklan.co.id/blog/${p.slug}/`;
         if (!existingSet.has(pu)) {
           urls.push(pu);
@@ -9107,7 +9114,7 @@ async function runIndexingPipeline(env, debug = false) {
     // Google Indexing API = 1 subrequest/URL, so cap at 18 to leave headroom
     // for IndexNow (2) + D1 writes + cron_log insert.
     const { results } = await env.DB.prepare(
-      `SELECT url FROM pending_indexing WHERE status='pending' ORDER BY created_at ASC LIMIT 18`
+      `SELECT url FROM pending_indexing WHERE status='pending' AND url NOT LIKE '%/blog/seed-%' AND url NOT LIKE '%/blog/exp-%' ORDER BY created_at ASC LIMIT 18`
     ).all();
     pending = results.map(r => r.url);
   } catch (e) { errors.push({stage: "d1_query", error: e.message}); }
@@ -12485,10 +12492,13 @@ async function handleBlogSitemap(env) {
     const posts = await env.DB.prepare("SELECT slug, iso_date FROM posts_meta ORDER BY iso_date DESC").all();
     const drafts = await env.DB.prepare("SELECT slug, committed_at FROM generated_drafts WHERE status='committed'").all();
     const urls = [];
+    const isJunkSlug = (s) => /^(seed|exp)-/.test(s || '');
     for (const p of (posts.results || [])) {
+      if (isJunkSlug(p.slug)) continue; // artifact keyword_queue.id — URL /blog/seed-xxx/ 404/duplikat
       urls.push({ loc: p.slug, lastmod: p.iso_date });
     }
     for (const d of (drafts.results || [])) {
+      if (isJunkSlug(d.slug)) continue;
       if (!urls.find(u => u.loc === d.slug)) {
         urls.push({ loc: d.slug, lastmod: d.committed_at });
       }
@@ -12523,8 +12533,13 @@ async function handleIndexNowSubmit(request, env) {
       "SELECT slug, iso_date FROM posts_meta WHERE iso_date >= ? ORDER BY iso_date ASC LIMIT ?"
     ).bind(now, count).all();
     const urlList = [];
-    for (const d of (drafts.results || [])) urlList.push(`https://beriklan.co.id/blog/${d.slug}/`);
+    const isJunkSlug = (s) => /^(seed|exp)-/.test(s || '');
+    for (const d of (drafts.results || [])) {
+      if (isJunkSlug(d.slug)) continue;
+      urlList.push(`https://beriklan.co.id/blog/${d.slug}/`);
+    }
     for (const p of (recentPosts.results || [])) {
+      if (isJunkSlug(p.slug)) continue;
       const pu = `https://beriklan.co.id/blog/${p.slug}/`;
       if (!urlList.includes(pu)) urlList.push(pu);
     }

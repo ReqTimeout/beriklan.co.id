@@ -3267,6 +3267,12 @@ async function handleAdminMigrate(request, env) {
        intent = (SELECT k.intent FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug AND k.intent IS NOT NULL LIMIT 1),
        priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug LIMIT 1)
      WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug)`,
+    // Backfill R2-queue drafts (article_slug masih kosong): slug draft = keyword slugified,
+    // jadi keyword_normalized = replace(slug, '-', ' '). Pakai idx_q_keyword (index lookup, bukan scan).
+    `UPDATE generated_drafts SET
+       intent = (SELECT k.intent FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') AND k.intent IS NOT NULL LIMIT 1),
+       priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') LIMIT 1)
+     WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' '))`,
     `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (

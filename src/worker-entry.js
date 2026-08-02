@@ -638,6 +638,9 @@ async function handleAuditContent(request, env) {
               MAX(length(content)) as max_len
        FROM generated_drafts WHERE status='committed'`
     ).first();
+    const thinTotal = await env.DB.prepare(
+      `SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND length(content) < ?`
+    ).bind(threshold).first();
     return new Response(JSON.stringify({
       ok: true,
       threshold,
@@ -645,7 +648,8 @@ async function handleAuditContent(request, env) {
       avg_len: Math.round(stats?.avg_len || 0),
       min_len: stats?.min_len || 0,
       max_len: stats?.max_len || 0,
-      thin_count: thin.results.length,
+      thin_count: thinTotal?.n || 0,
+      sampled: thin.results.length,
       offenders: thin.results.map(r => ({ ...r, h2_count: Math.max(0, Math.round(r.h2_count)) })),
       next_steps: "Pertimbangkan regenerate atau enrich post dengan content_len di bawah threshold."
     }), { headers: { "Content-Type": "application/json" } });

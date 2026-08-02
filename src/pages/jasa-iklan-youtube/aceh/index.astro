@@ -279,9 +279,8 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
         </div>
     </section>
 
-    <Footer client:only="svelte" />
-
-        <!-- Cluster auto-link to pillar (N.8) -->
+    
+<!-- Cluster auto-link to pillar (N.8) -->
     <section class="py-16 md:py-20 bg-soft">
         <div class="container mx-auto px-6 max-w-4xl">
             <h2 class="font-display font-extrabold text-2xl md:text-3xl text-ink mb-6">Pelajari Lebih Lanjut</h2>
@@ -305,6 +304,9 @@ import CityContentBlock from '../../../components/CityContentBlock.astro';
         </div>
     </section>
 
+<Footer client:only="svelte" />
+
+        
     <LocalSchema
         type="city-service"
         city={city}

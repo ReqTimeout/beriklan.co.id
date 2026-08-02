@@ -1,474 +1,275 @@
-# PLAN — Automated Prospecting & Email Marketing System
+# PLAN — Push Rank Page 1 + Killer Feature Beriklan.co.id
 
-> **Tujuan:** Generate leads setiap hari otomatis via scraper → email campaign → Google Ads.
-> **Mulai:** 22 Juli 2026
+> **Tujuan:** Maksimalkan peluang ranking page 1 Google untuk keyword long-tail digital marketing Indonesia, via automasi SEO yang sudah jalan + 1 fitur killer yang gathered traffic organik berlipat.
+> **Mulai:** 02 Agustus 2026
 > **Status:** 🔴 Belum dimulai
+> **Owner:** Beriklan Digital Agency + Codex AI
 
 ---
 
-## Arsitektur
+## 0. Realita (baca sekali, lalu eksekusi)
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  Scraper Scripts │───▶│  Email Campaign  │───▶│  Google Ads API  │
-│  (Python)        │    │  (Worker + Brevo)│    │  (Customer Match)│
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-       │                       │                       │
-       ▼                       ▼                       ▼
-   CSV / D1              D1 tables              Google Ads UI
-                          + Cron send            + PMax Campaign
-```
+- **#1 di Google tidak bisa dijanjikan.** Yang bisa dijamin: setiap halaman punya *peluang terbaik* di keyword long-tail (volume rendah, kompetitor lemah).
+- **358.863 keyword di queue = 358.863 medan perang.** Kalau di-publish semua → buru-buru Google flag *scaled-content abuse* (update 2024–2025) → situs turun massal, bukan naik. Strategi: **publikasi terkurasi**, bukan burst massal.
+- **Kalkulator sudah standar.** Ia hanya Tools menu yang user pakai sekali lalu pergi. Killer feature harus: (a) dicari UMKM高频, (b) dipakai berulang, (c) membedakan dari kompetitor, (d) men-chanel ke konsultasi WA.
 
-### Komponen
-
-| Komponen | Bahasa | Infra | Biaya |
-|----------|--------|-------|-------|
-| Scraper Indonetwork | Python | Local/Mac | Gratis |
-| Scraper Google Business | Python | Local/Mac | Gratis (Places API free tier) |
-| Scraper Shopee | Python | Local/Mac | Gratis |
-| Email Campaign System | JS | Cloudflare Worker + D1 | Gratis |
-| Email Sending | REST API | **Brevo (Sendinblue)** | **Free: 300 email/hari** |
-| Google Ads API | Python | Local/Mac | Gratis (existing API key) |
+Setiap keputusan di bawah diuji ke 4 kriteria itu.
 
 ---
 
-## Phase 1: Email Campaign System (Worker)
+## 1. KILLER FEATURE: "Spionase Iklan" — Ad Spy Tool Bahasa Indonesia Gratis
 
-### Tables Baru di D1
+### Kenapa ini (bukan kalkulator lain)
 
+| Aspek | Realita Pasar |
+|---|---|
+| **Pain UMKM** | "Tetangga saya jualan lebih laku, kok iklannya menang? Mau tiru tapi nggak ngerti." — ini pertanyaan yang Google utk UMKM Indonesia tiap hari. |
+| **Gap** | Tidak ada ad spy tool **gratis berbahasa Indonesia**. AdSpy $149/bln, BigSpy $79/bln, PowerAdSpy $49/bln — semua English UI, kartu kredit wajib. UMKM Indonesia gak akan bayar. |
+| **Volume pencarian** | "cara lihat iklan kompetitor", "spionase iklan facebook", "cek iklan kompetitor tiktok", "contoh iklan facebook yang laku" — long-tail, volume sedang, kompetitor tipis (blog rejeki adsense, bukan tool). |
+| **Stickiness** | User cek kompetitor tiap minggu (saat plan iklan baru) → return visit tinggi → sinyal authority ke Google. |
+| **Reusalf infra** | Worker AI (Zen/Groq) + scraper pipeline + email-send cron → semua sudah jalan. Tambahan kode = stitch, bukan rebuild. |
+| **Lead channel** | Tiap laporan AI akhirnya ujungnya: "Mau kami bantu implementasi pattern ini? → WA". Persis formula follow-up WA yang sekarang sudah jalan. |
+
+### Spec MVP (6 minggu)
+
+```
+/alat/spionase-iklan       ← hub page (SEO landing)
+/spionase-iklan-facebook  ← SEO cluster landing (long-tail)
+/spionase-iklan-tiktok
+/spionase-iklan-google-ads
+/cek-iklan-kompetitor     ← pain keyword
+```
+
+**Flow user:**
+1. Input: nama bisnis / domain / username IG (gratis, tanpa daftar)
+2. Sistem: tarik iklan aktif dari 3 sumber (free):
+   - Meta Ad Library (public search) → aktif 90 hari terakhir
+   - TikTok Top Ads / Creative Center → ads terpopuler per kategori
+   - Google Ads Transparency Center → ads aktif dari domain
+3. AI breakdown dalam Bahasa:
+   - Hook pattern (curiosity / fear / social proof / price-anchor)
+   - Angle kampanye (problem-solution / lifestyle / testimonial / promo)
+   - Estimasi segmen (umur/gender dari visual text lead)
+   - Active lifetime (berapa hari aktif → budget proxy)
+   - 3 swipeable insight (apa yang gue bisa pakek buat iklan gua)
+4. Optional: simpan pantauan → email mingguan saat kompetitor ubah iklan.
+
+**Use case video demo (Instagram):** "Pakek Spionase Iklan buat ngelihat kenapa iklan brand A laku 8 bulan."
+
+### Arsitektur (di Worker, biaya ≈ Rp 0)
+
+```
+Astro page (/alat/spionase-iklan) ── Svelte island interaktif
+              │
+              ▼ POST /api/spionase/lookup
+   ┌──────────────────────────────────────┐
+   │ Worker route handler                 │
+   ├──────────────────────────────────────┤
+   │ /api/spionase/meta    → Meta Ad Lib  │  (Graph API /public教育与_ads_archive)
+   │ /api/spionase/tiktok  → TT Top Ads   │  (scrape Creative Center, headless)
+   │ /api/spionase/google  → Ads Transp.  │  (scrape adstransparency.google.com)
+   │ /api/spionase/analyze → AI (Zen/Groq)│  (sudah ada helper generateWithZenOrGroq)
+   └──────────────────────────────────────┘
+              │
+              ▼ insert ke D1
+   spionase_searches  (user_email, target_domain, created_at, ip_hash)
+   spionase_reports   (cache per target_platform, JSON payload, expires_at)
+   spionase_monitors  (saved pantauan, last_sha, alert_status)
+              │
+              ▼ cron mingguan (baru) `spionase-pantau`
+   Bandingkan ad_sha baru vs lama → kirim email alert via email_queue
+```
+
+### Data source — SEMUA gratis
+
+| Sumber | Cara access | Status ToS | Volume/menit |
+|---|---|---|---|
+| Meta Ad Library API (`/ads_archive`) | App review + page perms (7–30 hari) | Resmi (Meta-offered) | 200 req/jam |
+| Meta Ad Library web public | scrape via headless Playwright | grey — pakai residential proxy free tier | 1 req/5 detik |
+| TikTok Creative Center Top Ads | public scrape `/business/creativecenter/inspiration/popular` | grey | 1 req/detik |
+| Google Ads Transparency Center | public scrape `adstransparency.google.com/?region=ID&q=` | grey (sama seperti `trawl` repo) | 1 req/detik |
+| Google Places (kompetitor bisnis lokal) | **sudah ada** di pipeline | resmi API | 20 req/detik |
+
+### GitHub repos yang bisa di-leverage / study
+
+| Repo | Untuk |
+|---|---|
+| `facebook/python-business-sdk` | Wrapper resmi Graph API (Ads Archive endpoint) |
+| `mcspr/fb-ad-library` | reference scrape pattern (Python) |
+| `braedonsaunders/trawl` | pattern: Google Maps + Playwright + LLM enrich + cold outreach. Sangat mirip. |
+| `nando0x/ProspectOS` | pattern: scraping Google Maps + pesan AI. |
+| `DotJK/selenium-toolkit` | stealth scraper untuk TikTok/G Ads (residential proxy rotation) |
+
+**Tidak perlu fork** — kita hanya pinjam patternnya. Worker Astro + Svelte sudah cukup infra.
+
+### Roadmap Spionase Iklan
+
+| Minggu | Milestone |
+|---|---|
+| 1 | Hub page + SEO copy + 3 cluster landing pages (`/spionase-iklan-{fb,tt,ga}`) |
+| 2 | Worker endpoint `/api/spionase/meta` + D1 tables + cache 7 hari |
+| 3 | Integrasi Meta Graph API (apply app review paralel) + UI form |
+| 4 | TikTok scrape (Creative Center) + Google Ads Transparency scrape |
+| 5 | AI breakdown endpoint (pake helper `generateWithZenOrGroq` yang udah ada) |
+| 6 | Monitor + email alert + WA-CRO card (push ke konsultasi) |
+| 7+ | Cluster spionase "per industri" (kuliner, fashion, properti) untuk long-tail programmatik |
+
+---
+
+## 2. SEO Push Strategy (Minggu 1 → 12)
+
+### 2.1 Inventory & prune (Minggu 1–2)
+
+**Realita:** keyword-queue 358k = masalah, bukan opportunity.
+
+Aksi:
+1. Worker cron baru `gsc-rank-audit` (tiap hari) → panggil GSC API `searchanalytics.query` 7 hari last + simpan `rank_audits` D1.
+2. Klasifikasi tiap URL jadi 3 keranjang:
+   - **Pemenang** (impresi > 10, posisi < 20) → boozt: tambah internal link, FAQ schema, konten refresh
+   - **Sedang** (impresi 1–10) → awasi 4 minggu
+   - **Matte** (impresi 0, indeks 30 hari+) → kandidat canonical/410/robots disallow
+3. Threshold: **publish maks 30 artikel baru/minggu** (cron `hourly` sekarang 3/jam = 504/minggu → turunkan ke 4/hari = 28/minggu, kualiti naik). Matiin auto-burst yang pakek 358k keyword queue.
+
+D1 tabel baru:
 ```sql
--- Template email dengan HTML
-CREATE TABLE email_templates (
+CREATE TABLE rank_audits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  subject TEXT NOT NULL,
-  html_body TEXT NOT NULL,
-  category TEXT, -- promo, newsletter, followup
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  date TEXT, url TEXT, query TEXT,
+  impressions INTEGER, clicks INTEGER, position REAL,
+  cluster TEXT,  -- 'pemenang'|'sedang'|'mati'
+  logged_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
-
--- Campaign: 1 campaign = 1 template + 1 target list
-CREATE TABLE campaigns (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  template_id INTEGER REFERENCES email_templates(id),
-  target TEXT, -- 'all', 'corporate', 'ukm', or custom list name
-  status TEXT DEFAULT 'draft', -- draft, sending, done, paused
-  total_recipients INTEGER DEFAULT 0,
-  sent_count INTEGER DEFAULT 0,
-  open_count INTEGER DEFAULT 0,
-  click_count INTEGER DEFAULT 0,
-  scheduled_at TEXT,
-  sent_at TEXT,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
--- Queue pengiriman per email
-CREATE TABLE email_queue (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  campaign_id INTEGER REFERENCES campaigns(id),
-  email TEXT NOT NULL,
-  name TEXT,
-  status TEXT DEFAULT 'pending', -- pending, sent, failed, bounced
-  error TEXT,
-  sent_at TEXT,
-  opened_at TEXT,
-  clicked_at TEXT,
-  tracking_id TEXT UNIQUE -- unique ID untuk tracking pixel
-);
-
--- List dari hasil scraper (bisa di-import ke campaign)
-CREATE TABLE lead_lists (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL, -- misal 'indonetwork-manufaktur-bandung'
-  source TEXT, -- 'indonetwork', 'google_business', 'shopee', 'database'
-  total INTEGER DEFAULT 0,
-  imported_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE lead_contacts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  list_id INTEGER REFERENCES lead_lists(id),
-  email TEXT,
-  phone TEXT,
-  name TEXT,
-  company TEXT,
-  website TEXT,
-  city TEXT,
-  category TEXT,
-  extra JSON -- data tambahan (rating, produk, dll)
-);
+CREATE INDEX idx_rank_audits_url ON rank_audits (url, date);
+CREATE INDEX idx_rank_audits_cluster ON rank_audits (cluster);
 ```
 
-### Endpoint Baru di Worker
+### 2.2 Internal linking otomatis (Minggu 2–3)
 
-```
-GET  /api/email/templates           — List template
-POST /api/email/templates           — Create template
-GET  /api/email/templates/:id       — Preview template
-POST /api/email/campaigns           — Create campaign
-POST /api/email/campaigns/:id/send  — Start sending
-GET  /api/email/campaigns           — List campaign + stats
-GET  /api/email/campaigns/:id       — Detail campaign
-GET  /api/email/track/open.gif?id=X — Tracking pixel (1x1)
-GET  /api/email/track/click?id=X&url= — Click redirect
-GET  /api/email/lists               — Lead list manager
-POST /api/email/lists/import        — Import CSV ke lead_lists
-POST /api/email/unsubscribe         — Existing (re-use)
-```
+- Build D1 graph dari `posts.json`: tag → multimap post.
+- Endpoint worker `/api/related-links?slug=X` → return 5 slug relevan (TF-IDF simple di tags).
+- Inject di `[slug].astro` dan `index.astro` section "Related".
+- **Efek:** PageRank internal naik ke *pemenang* cluster.
 
-### Template System
+### 2.3 Schema boost per pillar (Minggu 3)
 
-Email templates dalam HTML dengan design brand beriklan.co.id:
+- Pilar (10 layanan + 1 homepage + 1 spionase hub + 4 cluster) → generate `FAQPage` + `HowTo` JSON-LD dari konten via AI.
+- Cron baru `schema-boost` mingguan: tiap pilar → AI generate 5 Q&A dari body → tulis ke `schema_injections` D1 → Layout.astro baca & inject.
 
-```html
-<!-- Template structure -->
-<table width="100%" style="max-width:600px;margin:auto;font-family:Inter,sans-serif;">
-  <!-- Header: Logo Beriklan -->
-  <tr><td style="padding:24px 0;text-align:center;">
-    <img src="https://beriklan.co.id/logoweb.webp" height="40" alt="Beriklan">
-  </td></tr>
+### 2.4 Topic cluster programmatik (Minggu 4–6)
 
-  <!-- Hero: Judul + CTA -->
-  <tr><td style="background:#0f1e3d;border-radius:16px;padding:32px;text-align:center;">
-    <h1 style="color:#fff;font-size:24px;margin:0 0 12px;">{{ title }}</h1>
-    <p style="color:#94a3b8;margin:0 0 20px;">{{ subtitle }}</p>
-    <a href="{{ cta_url }}" style="display:inline-block;background:#f59e0b;color:#0f1e3d;padding:12px 32px;border-radius:100px;font-weight:700;text-decoration:none;">
-      {{ cta_text }}
-    </a>
-  </td></tr>
+Untuk long-tail tanpa burst:
+- Pilih 20 niche keyword cluster (misal "iklanfacebook-umkm-kuliner-bandung")
+- Untuk tiap cluster: 1 hub page + 5 spoke (variasi lokasi/segmen)
+- Cron `cluster-generator` mingguan: ambil keyword dari queue, di-assign ke cluster, generate spoke via AI helper yang udah ada
 
-  <!-- Body sections -->
-  <tr><td style="padding:24px 0;">
-    {{ body_html }}
-  </td></tr>
+### 2.5 IndexNow + Bing Webmaster (Minggu 2)
 
-  <!-- Footer -->
-  <tr><td style="padding:24px 0;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;text-align:center;">
-    <p>Beriklan Digital Agency · Jl. Arcamanik Endah No.76, Bandung 40195</p>
-    <p><a href="{{ unsubscribe_url }}" style="color:#94a3b8;">Berhenti berlangganan</a></p>
-  </td></tr>
-</table>
-```
-
-### Sending Logic
-
-```javascript
-// Worker cron: every 15 minutes (3,18,33,48 * * * *)
-async function handleEmailQueue(env) {
-  // 1. Ambil 50 email dari queue WHERE status='pending' LIMIT 50
-  // 2. Kirim via Brevo API: POST https://api.brevo.com/v3/smtp/email
-  // 3. Update status: sent / failed
-  // 4. Log ke email_logs
-  // Rate limit: 300/day Brevo = ~12-15/jam = ~4 per 15 menit
-  // Safety: jangan kirim > 300 dalam 24 jam
-}
-```
-
-### Cron Schedule untuk Email
-
-| Cron | Action | Rate |
-|------|--------|------|
-| `3,18,33,48 * * * *` | Send email queue | ~4 per run = ~16/jam |
-| `0 8 * * 1-5` | Kirim promo ke list baru | Weekdays only |
+- Cron `indexnow` (sudah ada) → sekalian submit ke Bing Webmaster via `https://ssl.bing.com/webmaster/api.svc/json/SubmitUrls`
+- Tambah satu baris di cron `gsc-indexing` (sudah ada) → sekaligus submit Bing.
 
 ---
 
-## Phase 2: Indonetwork Scraper (Python)
+## 3. Authority & Backlink Gratis (Minggu 4–10)
 
-### Target
+Tidak ada backlink premium gratis. Tapi authority bisa dipanen:
 
-Indonetwork punya ~500rb perusahaan Indonesia terdaftar. Kita scrape:
-- Yang punya email publik
-- Yang TIDAK punya website (target jasa pembuatan website)
-- Yang bergerak di bidang: manufaktur, distributor, jasa, retail, properti, dll
-
-### Approach
-
-```python
-# Tidak pakai Selenium/Playwright — cukup requests + BeautifulSoup
-# Indonetwork anti-scraping minimal (B2B directory)
-
-BASE_URL = "https://www.indonetwork.co.id"
-
-def get_categories():
-    # Ambil daftar kategori dari halaman utama
-    # Return: [{'name': 'Manufaktur', 'url': '/category/manufaktur'}, ...]
-
-def get_company_list(category_url, page=1):
-    # Ambil halaman kategori → dapat company cards
-    # Return: [{'name': 'PT ABC', 'url': '/company/pt-abc', 'city': 'Bandung'}, ...]
-
-def get_company_detail(company_url):
-    # Ambil halaman company → dapat email, phone, website
-    # Return: {'email': '...', 'phone': '...', 'website': '...', 'products': [...]}
-
-def scrape_category(category, max_pages=50):
-    # Loop pages → kumpulin companies
-    # Filter: yang punya email
-    # Output: CSV
-```
-
-### Output
-
-```csv
-source,name,email,phone,website,city,category,products
-indonetwork,PT ABC,info@abc.com,0812-3456-7890,,Bandung,Manufaktur,"produk1, produk2"
-indonetwork,CV XYZ,admin@xyz.com,022-123456,https://xyz.com,Jakarta,Distributor,""
-```
-
-### Auto-Import Pipeline
-
-```
-Scraper selesai → CSV generated → POST ke /api/email/lists/import
-                    → Masuk ke lead_lists + lead_contacts
-                    → Siap dijadikan campaign
-```
-
-### Kategori yang Akan Di-scrape (Prioritas)
-
-| Prioritas | Kategori | Jumlah Estimasi | Relevansi |
-|-----------|----------|----------------|-----------|
-| 🥇 | Manufaktur | ~50.000 | Tinggi (butuh website + iklan) |
-| 🥇 | Distributor | ~30.000 | Tinggi |
-| 🥇 | Jasa (service) | ~40.000 | Tinggi |
-| 🥇 | Properti / Developer | ~15.000 | Tinggi (kompetitif) |
-| 🥈 | Retail / Toko | ~25.000 | Sedang |
-| 🥈 | Makanan & Minuman | ~20.000 | Sedang |
-| 🥈 | Fashion | ~15.000 | Sedang (banyak UMKM tanpa website) |
-| 🥉 | Otomotif | ~10.000 | Rendah |
-| 🥉 | Elektronik | ~10.000 | Rendah |
-
-Target: **minimal 200 lead valid/hari** (yang punya email publik).
+1. **Direktori tools listicle inbound** — Spionase Iklan di-pitch ke "best marketing tools Indonesia 2026" listicle lokal (DailySocial, Bisnis Indonesia, IDN Media subsidiary blogs).
+2. **Guest expert posts** — 8 guest posts di blog marketing Indonesian (Marketeers, SWA, Bisnis.com lifestyle) — angle "formance marketing buat UMKM".
+3. **Google Business Profile** — fully optimize: post mingguan, foto tim, review request → trust signal lokal yang banyak orang lewatin.
+4. **Direktori tools github** — submit Spionase Iklan ke `serpapi/awesome-seo-tools` + `openalternative.co` → free traffic dari komunitas developer.
+5. **Quora/Reddit** — jawab pertanyaan "cara lihat iklan kompetitor" → link ke Spionase Iklan (jangan spam, 1 link per 5 jawaban bermanfaat).
+6. **Sekolah konten** — 1 video YouTube pendek/teng bulan, embed di hub page → dwell time naik.
 
 ---
 
-## Phase 3: Google Business Scraper (Python + Places API)
+## 4. Analytics & Monitoring (Minggu 2 onward)
 
-### Approach
-
-```python
-import requests
-
-API_KEY = "YOUR_GOOGLE_PLACES_API_KEY"
-
-def search_businesses(query, location):
-    # GET https://maps.googleapis.com/maps/api/place/textsearch/json
-    #   ?query={query}+{location}
-    #   &key={API_KEY}
-    # Parse results → filter yang TIDAK punya website
-    # Return: [{'name': '...', 'address': '...', 'phone': '...', 'rating': '...'}]
-
-def get_business_details(place_id):
-    # GET https://maps.googleapis.com/maps/api/place/details/json
-    #   ?place_id={place_id}
-    #   &fields=name,formatted_phone_number,website,formatted_address,rating
-    #   &key={API_KEY}
-    # Return detailed info
-```
-
-### Query yang Akan Digunakan
-
-```
-"jasa manufaktur bandung"
-"toko bangunan jakarta"
-"distributor makanan surabaya"
-"fashion retail bandung"
-"properti developer jakarta"
-"rumah makan medan"
-"toko elektronik solo"
-...
-```
-
-Target: **50 query × 20 hasil = 1.000 bisnis/hari**, filter yang tanpa website = ~300-400 lead.
-
-### Output
-
-```csv
-source,name,address,phone,rating,has_website
-google_business,Toko Bangunan ABC,Jl. Merdeka No.1 Bandung,0812-3456-7890,4.2,FALSE
-google_business,CV Manufaktur XYZ,Jl. Sudirman Jakarta,021-123456,3.8,TRUE
-```
+Worker admin tambah tab `📈 SEO Rank` (`/api/admin/email?tab=seo`):
+- Tabel: top 100 queries GSC 30 hari last, posisi, bytes uploaded/indexed.
+- Graf: jumlah query di posisi 1–3, 4–10, 11–50 (chart.js inline).
+- Tabel `rank_changes`: tonjolkan keyword yang naik/turun > 5 posisi vs minggu kemarin.
+- Cron аудяр mingguan `seo-weekly-summary` → email summary ke admin@beriklan.co.id.
 
 ---
 
-## Phase 4: Shopee Scraper (Python)
+## 5. Cron Baru untuk Di-add
 
-### Approach
+| Cron | Trigger | Fungsi |
+|---|---|---|
+| `gsc-rank-audit` | `0 3 * * *` (harian) | Tarik GSC search analytics last 7d → klasifikasi cluster → tulis `rank_audits` |
+| `internal-link-sync` | `0 4 * * 1` (mingguan) | Re-build D1 graph dari `posts.json` (kalau ada penambahan) |
+| `schema-boost` | `0 5 * * 1` | AI generate FAQ+HowTo untuk pilar yang belum → inject |
+| `cluster-generator` | `30 5 * * 1` | Ambil 20 keyword baru dari queue, assign cluster, generate spoke via AI |
+| `bing-submit` | pasangan `gsc-indexing` | Submit URL ke Bing Webmaster API |
+| `spionase-pantau` | `0 6 * * 1` | Bandingkan ad_sha kompetitor yang di-monitor → kirim email alert kalau berubah |
+| `seo-weekly-summary` | `0 7 * * 1` | Email summary rank delta + cluster report ke admin |
 
-```python
-# Shopee punya public API endpoint:
-# GET https://shopee.co.id/api/v2/search_items/
-#   ?by=relevance&keyword={category}&limit=50&newest={offset}
-#
-# Dari hasil search → ambil shopid → detail seller:
-# GET https://shopee.co.id/api/v2/shop/get?shopid={shopid}
+## Cron yang perlu TURUNKAN
 
-# Yang dicari: seller dengan product_count < 10 atau rating rendah
-# → Indikasi butuh bantuan digital marketing
-```
-
-### Target Seller
-
-```
-- Seller dengan < 10 produk (jarang update)
-- Seller dengan rating < 4.0 (perlu optimasi)
-- Seller baru (< 30 hari) (perlu promosi)
-- Kategori: fashion, elektronik, rumah tangga, makanan
-```
-
-### Output
-
-```csv
-source,shop_name,email,product_count,rating,created,location
-shopee,Toko Murah Jaya,,5,3.2,2026-06-01,Bandung
-```
-
-**Catatan:** Shopee TIDAK menampilkan email seller publik. Scraper Shopee lebih untuk **riset segmen** — dapat nama toko + kategori + lokasi → cari email-nya via Indonetwork atau Google.
+| Cron | Sekarang | Usulan | Alasan |
+|---|---|---|---|
+| `hourly` (generate artikel) | 3/jam = 504/minggu | 4/hari = 28/minggu (`0 9,12,15,18 * * *`) | Hindari scaled-content flag; naikkan kualitas |
 
 ---
 
-## Phase 5: Google Ads API — Customer Match + PMax
+## 6. Eksekusi 12 Minggu
 
-### Approach
-
-```python
-from google.ads.googleads.client import GoogleAdsClient
-
-client = GoogleAdsClient.load_from_storage("google-ads.yaml")
-
-def create_customer_match_audience(email_list, audience_name):
-    # 1. Hash semua email dengan SHA-256
-    # 2. Buat Customer Match user list via Google Ads API
-    # 3. Upload hashed emails
-    # 4. Link ke campaign Display/PMax
-
-def create_pmax_campaign(audience_id, budget_daily=50000):
-    # Buat Performance Max campaign
-    # Target: Customer Match audience
-    # Budget: Rp 50.000/hari (test)
-```
-
-### Flow
-
-```
-Scraper → CSV → Email hash → Upload ke Google Ads → PMax campaign live
-```
-
-### Policy Check
-
-Google Ads Customer Match mensyaratkan:
-- Data first-party (email dari orang yang sudah berinteraksi dengan bisnis Anda) **ATAU**
-- Data dari mitra yang memiliki izin eksplisit
-
-**Untuk database yang dibeli/scrape:** Risiko suspend. Tapi kalau email dari:
-- Database korporat (B2B email perusahaan publik) → lebih aman
-- Hasil scrape Indonetwork (email perusahaan yang sengaja dipublikasikan) → grey area
-- Hasil scrape Google Business → melanggar ToS Google
-
-**Rekomendasi:** Pakai Google Ads API untuk **sitewide PMax** dulu (retarget visitor website, bukan cold list). Customer Match dari data scraped mulai hati-hati dengan list kecil dulu.
+| Minggu | Fokus | Deliverable |
+|---|---|---|
+| 1 | Inventory + prune + Spionase hub pages | `gsc-rank-audit` cron + 4 SEO landing Spionase |
+| 2 | Internal linking + Meta Ad Lib app review | `/api/related-links` endpoint + applikasi Meta Graph |
+| 3 | Schema boost + TikTok scrape pattern | `schema-boost` cron, 10 pilar FAQ-enriched |
+| 4 | Meta `/api/spionase/meta` + Bing submit | Endpoint meta live, Bing automation |
+| 5 | Google Ads Transparency scrape + UI form | `/api/spionase/google`, form input |
+| 6 | AI breakdown + Monitor + email alert | `/api/spionase/analyze`, monitor + alert |
+| 7 | Cluster programmatik + Bing SEO | 20 spoke cluster published |
+| 8 | Guest post outreach + listicle pitch | 5 outreach email per minggu |
+| 9 | SEO dashboard tab `📈 SEO Rank` | Live di admin |
+| 10 | YouTube pendek + indexnow quota scale | 4 video pendek embed |
+| 11 | Quarterly audit — mati URL yang matte | 410/canonical 30% URL matte |
+| 12 | Retrospective: cluster pemenang di-scale | Keranjang pemenang jadi prioritas Q2 |
 
 ---
 
-## Phase 6: Integrasi & Otomatisasi
+## 7. Success Metrics (realistik)
 
-### Pipeline Lengkap
+| Metric | Baseline (Aug 2026) | Target 12 minggu | Target 24 minggu |
+|---|---|---|---|
+| Total clicks/bulan (GSC) | ? (audit minggu 1) | +50% | +200% |
+| Query di posisi 1–10 | ? | +30% | +100% |
+| URL indexed vs sitemap | ? | >85% | >95% |
+| Backlink domain (referring) | ? | +20 | +80 |
+| Monthly organic visits | ? | +40% | +150% |
+| Tool user (Spionase baru) | 0 | 200/minggu | 1.000/minggu |
+| Lead WA dari Spionase | 0 | 10/bulan | 50/bulan |
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    Daily Pipeline                    │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│  06:00  Scrape Indonetwork (5 kategori)              │
-│  07:00  Scrape Google Business (10 query)            │
-│  08:00  Clean & deduplicate leads                    │
-│  08:30  Import ke D1 (POST /api/email/lists/import)  │
-│  09:00  Create campaign + start sending              │
-│  09:00  Upload email list ke Google Ads API           │
-│  (every 15min)  Send email queue                     │
-│                                                      │
-└─────────────────────────────────────────────────────┘
-```
-
-### File Structure
-
-```
-scripts/
-├── email_system/               # (di Worker, bukan folder)
-│   └── (endpoints di worker-entry.js)
-├── scrapers/
-│   ├── indonetwork.py          # Phase 2
-│   ├── google_business.py      # Phase 3
-│   └── shopee_analyzer.py      # Phase 4
-├── google_ads/
-│   └── customer_match.py       # Phase 5
-├── run_daily.sh                # Orchestrator (cron local)
-└── config.py                   # API keys, limits, etc.
-```
+> Baseline diambil minggu 1 setelah `gsc-rank-audit` jalan.
 
 ---
 
-## Setup Yang Dibutuhkan
+## 8. Anti-patterns (JANGAN)
 
-### Dari User
-
-| Item | Untuk | Cara Dapat |
-|------|-------|------------|
-| **Brevo API Key** | Email sending (300/hari free) | Daftar di brevo.com → API → API Key |
-| **Google Places API Key** | Google Business scraper | Google Cloud Console → Places API → Enable → Create Key |
-| **Google Ads API Config** | Customer Match + PMax | `google-ads.yaml` (developer token + client ID + client secret + refresh token) |
-
-### Dari Saya
-
-| Item | Waktu | Status |
-|------|-------|--------|
-| Worker: email tables + endpoints | ~4 jam | 🔴 |
-| Worker: Brevo integration + queue | ~3 jam | 🔴 |
-| Worker: tracking pixel | ~1 jam | 🔴 |
-| Scraper: Indonetwork.py | ~3 jam | 🔴 |
-| Scraper: Google Business.py | ~2 jam | 🔴 |
-| Scraper: Shopee analyzer.py | ~2 jam | 🔴 |
-| Google Ads: Customer Match script | ~2 jam | 🔴 |
-| Orchestrator: run_daily.sh | ~1 jam | 🔴 |
-| Design: 3 email templates | ~2 jam | 🔴 |
-| **Total** | **~20 jam** | |
+- ❌ Publish burst 358k artikel → scaled-content abuse
+- ❌ Cloaked PBN backlinks → manual penalty
+- ❌ AI konten tanpa human verify → EEAT zero → rangking turun
+- ❌ Tool yang butuh daftar + kartu kredit → bounce tinggi
+- ❌ Klaim "#1 di Google" → janji kosong, buang kepercayaan klien
+- ❌ Scraping Meta/TikTok tanpa rate-limit / anti-detection → IP banned, akun DNA kalau pakek akun production
 
 ---
 
-## Roadmap
+## 9. Yang Saya Butuh dari User buat Start Phase 1
 
-```
-Minggu 1:  Worker email system + Indonetwork scraper
-Minggu 2:  Google Business scraper + tracking + auto pipeline
-Minggu 3:  Google Ads API integration + Shopee analyzer
-Minggu 4:  Optimization + scale
-```
+| Item | Untuk |
+|---|---|
+| **Meta App** (Facebook Developer account) | Apply app review buat Ads Archive read permission |
+| **Bing Webmaster** login | Submit sitemap, enable API submit |
+| **Konfirmasi**: stop burst hourly article | Turunkan dari 3/jam → 4/hari |
+| **Konfirmasi**: prune URL matte | 11 minggu, target 30% |
 
----
-
-## Email: Kenapa Brevo (Sendinblue)?
-
-| Fitur | Brevo Free | Mailchimp Free | AWS SES |
-|-------|-----------|---------------|---------|
-| Email/hari | **300** | 500/bln total | 62.000/bln |
-| API | REST ✅ | REST ✅ | SMTP/API |
-| Template | ✅ HTML | ✅ Drag-drop | ❌ No |
-| Tracking | ✅ Open + Click | ✅ | ✅ |
-| Indonesia deliverability | ✅ Bagus | ⚠️ Sedang | ✅ Bagus |
-| Setup SPF/DKIM | ✅ Auto-guide | ✅ Auto | ❌ Manual |
-
-**Brevo** adalah pilihan terbaik untuk Indonesia:
-- 300 email/hari gratis = 9.000 email/bulan
-- REST API langsung bisa integrasi ke Worker (no SMTP library needed)
-- Deliverability bagus untuk domain Indonesia
-- Built-in unsubscribe handling
+Saya bisa mulai tanpa 4 di atas — Phase 1 (gsc-rank-audit + internal link + Spionase hub) jalan pakai yang udah ada.
 
 ---
 
-## Catatan
-
-1. **Sistem SEO yang sudah jalan TIDAK disentuh** — tidak ada perubahan ke cron, article generation, sitemap, atau dashboard
-2. Semua kode baru ada di: endpoint Worker baru (`/api/email/*`) + folder `scripts/scrapers/`
-3. Google Ads API hanya untuk Customer Match + PMax — tidak mengubah struktur akun existing
-4. Database existing (keyword_queue, dll) tidak diubah — hanya menambah tabel baru
-5. Scraping dilakukan legal: hanya data publik, rate-limited, user-agent jelas
+**Versi:** 1.0 (Aug 02 2026)
+**Maintainer:** Beriklan Digital Agency + Codex AI

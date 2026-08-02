@@ -1862,13 +1862,15 @@ async function handleAdminSyncPosts(request, env) {
     //    Fallback urut id ASC agar buffer tidak macet.
     let draftsToPublish;
     try {
-      // Intent + city cascade: commercial+city → commercial → city → long-tail → priority_score.
-      // `intent`/`priority_score` di-backfill dari keyword_queue (join article_slug) via migrate.
+      // Intent + city + industry cascade:
+      //   commercial+city → commercial+industry ("untuk {industri}") → commercial → city → long-tail → priority_score.
+      // `intent`/`priority_score` di-backfill dari keyword_queue (join article_slug / keyword_normalized) via migrate.
       draftsToPublish = await env.DB.prepare(
         `SELECT slug, title, content, service, city, intent, priority_score FROM generated_drafts
          WHERE status='draft'
          ORDER BY
            (CASE WHEN intent IN ('commercial','transactional') AND city IS NOT NULL AND city != '' THEN 0 ELSE 1 END),
+           (CASE WHEN intent IN ('commercial','transactional') AND title LIKE '% untuk %' THEN 0 ELSE 1 END),
            (CASE WHEN intent IN ('commercial','transactional') THEN 0 ELSE 1 END),
            (CASE WHEN city IS NOT NULL AND city != '' THEN 0 ELSE 1 END),
            (CASE WHEN (length(title) - length(replace(title, ' ', ''))) >= 4 THEN 0 ELSE 1 END),
@@ -7590,6 +7592,11 @@ async function handleHourlyGenerate(request, env) {
         ).run();
         await env.DB.prepare(
           "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND city IS NOT NULL AND city != '' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
+        ).run();
+        // Industri × layanan = commercial-intent niche query (e.g. "jasa iklan untuk restoran") —
+        // sangat konversi-ready (bisnis sudah punya kebutuhan spesifik). Boost ke 90 seperti city+core.
+        await env.DB.prepare(
+          "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND intent IN ('commercial','transactional') AND keyword LIKE '% untuk %' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
         ).run();
         log.push({ stage: "priority_rebalance", ok: true });
       } catch (e) {

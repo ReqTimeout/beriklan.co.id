@@ -157,6 +157,8 @@ Tapi cron PAUSED → rebalance tak jalan → publish memakai ORDER BY city DESC,
    ORDER BY
      -- 1. Commercial + city (paling konversi-ready)
      (CASE WHEN intent IN ('commercial','transactional') AND city != '' THEN 0 ELSE 1 END),
+     -- 1b. Commercial + industry ("jasa X untuk {industri}") — bisnis sudah punya kebutuhan spesifik
+     (CASE WHEN intent IN ('commercial','transactional') AND title LIKE '% untuk %' THEN 0 ELSE 1 END),
      -- 2. Commercial flat
      (CASE WHEN intent IN ('commercial','transactional') THEN 0 ELSE 1 END),
      -- 3. City apa pun
@@ -167,6 +169,8 @@ Tapi cron PAUSED → rebalance tak jalan → publish memakai ORDER BY city DESC,
      priority_score DESC,
      id ASC
    ```
+   **Industry keywords** (seeded via layer `industri`: `jasa {svcName} untuk {indName}`, intent=commercial,
+   prio 70) sekarang masuk rebalance boost → 90 (sama seperti city+core) dan dapat tier 1b sendiri di ORDER BY.
 
 ### 2.3 Patahan #3: GSC Indexed = 0
 

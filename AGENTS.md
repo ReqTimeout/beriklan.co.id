@@ -921,8 +921,46 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 - `cron_runs` (log setiap cron run + retry logic)
 - `cron_retry_queue` (auto-retry dengan backoff)
 
+## 💬 WA CLICK TRACKER + AUTO FOLLOW-UP
+
+Setiap klik tombol WhatsApp (link `wa.me/62811919328`) di seluruh halaman
+di-track ke D1 via beacon, dan pengunjung yang klik WA lalu berlangganan
+newsletter otomatis dapat email follow-up (dikirim cron email-send tiap 15 menit).
+
+### Alur
+1. **Beacon klik** — `Layout.astro` inject `navigator.sendBeacon('/api/track/wa?…')`
+   (fallback `fetch keepalive`) pada tiap link `wa.me`. Param dikirim:
+   `page, service, package, price, cta, cta_loc, link, session`.
+   IP di-hash `sha256()` (16 char) — privacy-safe, tanpa simpan IP asli.
+2. **Session cookie** — `bk_wa_session` (`ws_…`, 1 tahun) dibuat sekali per browser.
+   Saat klik WA: `bk_wa_service` & `bk_wa_package` ikut disimpan.
+3. **Subscribe** — form newsletter (`#newsletter-form`) mengirim `wa_session/wa_service/wa_package`
+   dari cookie. `handleNewsletterSubscribe` memanggil `enqueueWaFollowup()`.
+4. **Follow-up** — butuh sinyal layanan (klik WA). Dedupe 14 hari per email.
+   Template `category='followup'` + campaign `'Auto Follow-up WhatsApp'`.
+   Insert ke `email_queue` (pending) + `wa_followups` (queued) → dikirim cron `*/15 * * * *`.
+
+### Tabel D1
+- `wa_clicks` (page_location, service_slug, package_name, package_price, cta_label,
+  cta_location, link_url, referrer, user_agent, ip_hash, session_id, created_at)
+  + index idx_wa_clicks_created, idx_wa_clicks_service, idx_wa_clicks_session
+- `wa_followups` (email, name, service, package_name, page_location, session_id,
+  status 'pending'/'queued'/'sent', sent_at, created_at) + index (email, status)
+- Migrasi: `handleAdminMigrate` (D1) + auto `CREATE TABLE IF NOT EXISTS` di `handleTrackWa`.
+
+### Endpoints
+- `GET /api/track/wa?...` — beacon public (fire-and-forget, selalu balas ok)
+- `GET /api/admin/wa?token=...` — JSON stats (total, today, byPage/byService/byPackage, recent 25, followups)
+- Dashboard: `GET /api/admin/email?token=...&tab=wa` — tab `WA Clicks` di sidebar
+
+### Gotcha (sudah diperbaiki)
+- D1 `all()` hasilnya `{ results: [...] }` (plural) — jangan baca `.result`.
+- `renderWa` async → WAJIB `await` saat dipanggil di ternary dashboard.
+- `renderWa` return **string HTML**, bukan `new Response` (di-interpolasi ke layout dashboard).
+- Hati-hati template literal bersarang di dalam template besar — pakai string concat/helper.
+
 ---
 
-**Versi dokumen:** 1.4
-**Update terakhir:** 23 Juli 2026 (added email system section + Resend quota fix)
+**Versi dokumen:** 1.5
+**Update terakhir:** 02 Agustus 2026 (WA click tracker + auto follow-up WhatsApp)
 **Maintainer:** Beriklan Digital Agency + Codex AI

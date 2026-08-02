@@ -9,8 +9,10 @@
     const baseWa = 'https://wa.me/62811919328';
 
     function buildWaLink(tier) {
+        const isCallUs = /call\s*us/i.test(String(tier.priceLabel));
+        const pricePart = isCallUs ? '(harga custom)' : `— Rp ${tier.priceLabel}`;
         const msg = encodeURIComponent(
-            `Halo Beriklan, saya tertarik dengan paket ${tier.name} (${pageSlug}) — Rp ${tier.priceLabel}. Mohon info lebih lanjut.`
+            `Halo Beriklan, saya tertarik dengan paket ${tier.name} (${pageSlug}) ${pricePart}. Mohon info lebih lanjut.`
         );
         return `${baseWa}?text=${msg}`;
     }

@@ -3259,6 +3259,8 @@ async function handleAdminMigrate(request, env) {
     `UPDATE cron_settings SET cron = '25', label = 'Publish per sync-posts run (25)' WHERE name = 'publish_batch_size'`,
     // intent + priority_score di generated_drafts (untuk ORDER BY publish intent+city cascade).
     // Backfill dari keyword_queue via article_slug (draft yg di-generate dari keyword).
+    // Index article_slug WAJIB: tanpa ini correlated subquery scan 391k baris/draft → CPU limit D1.
+    `CREATE INDEX IF NOT EXISTS idx_q_article_slug ON keyword_queue(article_slug)`,
     `ALTER TABLE generated_drafts ADD COLUMN intent TEXT`,
     `ALTER TABLE generated_drafts ADD COLUMN priority_score INTEGER DEFAULT 50`,
     `UPDATE generated_drafts SET

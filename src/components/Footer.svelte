@@ -8,7 +8,7 @@
         { label: 'TikTok Ads', href: '/jasa-iklan-tiktok' },
         { label: 'YouTube Ads', href: '/jasa-iklan-youtube' },
         { label: 'Buzzer Live', href: '/jasa-view-live', highlight: true },
-        { label: 'Landing Page', href: '/jasa-pembuatan-landing-page' },
+        { label: 'Pembuatan Website', href: '/jasa-pembuatan-website' },
     ];
 
     const live = [

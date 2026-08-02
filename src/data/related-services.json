@@ -22,7 +22,7 @@
         "jasa-iklan-google": [
             { "slug": "jasa-iklan-youtube", "label": "YouTube Ads", "icon": "▶️", "desc": "Lewat Google Ads network, jangkau audiens via video di YouTube." },
             { "slug": "jasa-pembuatan-website", "label": "Jasa Pembuatan Website", "icon": "💻", "desc": "Landing destination untuk traffic Google Ads yang lebih kuat." },
-            { "slug": "jasa-pembuatan-landing-page", "label": "Jasa Pembuatan Landing Page", "icon": "🎯", "desc": "LP konversi tinggi dirancang spesifik untuk Google Ads campaign." }
+            { "slug": "jasa-digital-marketing", "label": "Digital Marketing", "icon": "📈", "desc": "Strategi full-funnel multi-channel: search, social, dan video ads." }
         ],
         "jasa-iklan-youtube": [
             { "slug": "jasa-iklan-google", "label": "Google Ads", "icon": "🔍", "desc": "YouTube Ads bagian dari Google Ads network. Manage bareng lebih efisien." },
@@ -40,8 +40,8 @@
             { "slug": "jasa-iklan-instagram", "label": "Instagram Ads", "icon": "📷", "desc": "Repurpose TikTok content untuk IG; paid boost untuk reach." }
         ],
         "jasa-pembuatan-website": [
-            { "slug": "jasa-pembuatan-landing-page", "label": "Pembuatan Landing Page", "icon": "🎯", "desc": "LP untuk campaign spesifik — design & copy di-tuning untuk konversi." },
             { "slug": "jasa-iklan-google", "label": "Google Ads", "icon": "🔍", "desc": "Traffic dari Google Search Ads ke website baru Anda yang sudah SEO-ready." },
+            { "slug": "jasa-iklan-facebook", "label": "Facebook Ads", "icon": "📘", "desc": "Setelah website live, arahkan traffic Meta Ads ke landing page utama." },
             { "slug": "jasa-digital-marketing", "label": "Digital Marketing", "icon": "📈", "desc": "Setelah website live, butuh full-funnel marketing untuk pertumbuhan." }
         ],
         "jasa-pembuatan-landing-page": [

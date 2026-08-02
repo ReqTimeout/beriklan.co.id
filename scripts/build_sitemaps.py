@@ -86,6 +86,9 @@ def is_static(u):
 
 def is_service(u):
     # /jasa-*/ but not /jasa-*/something
+    # hide dulu landing page dari search (menu disederhanakan ke "Website" saja)
+    if u == '/jasa-pembuatan-landing-page/':
+        return False
     if re.match(r'^/jasa-[\w-]+/$', u):
         return True
     return False

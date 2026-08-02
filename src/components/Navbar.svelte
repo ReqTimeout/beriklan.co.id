@@ -23,8 +23,7 @@
     ];
 
     const build = [
-        { label: 'Pembuatan Website', href: '/jasa-pembuatan-website', desc: 'Mulai Rp 999rb / tahun' },
-        { label: 'Landing Page + Ads', href: '/jasa-pembuatan-landing-page', desc: 'Bundle Rp 1.999.000' },
+        { label: 'Pembuatan Website', href: '/jasa-pembuatan-website', desc: 'Mulai Rp 1.500.000' },
     ];
 
     const buzzerLive = [
@@ -49,7 +48,7 @@
         { key: 'paid', label: 'Paid Ads', Icon: Sparkles, items: paidAds, accent: 'from-amber-500 to-orange-500', popular: true },
         { key: 'buzzer', label: 'Buzzer Live', Icon: Radio, items: buzzerLive, accent: 'from-pink-500 to-cyan-400', popular: true },
         { key: 'organic', label: 'Social Media', Icon: MessageCircle, items: organic, accent: 'from-cyan-500 to-teal-500' },
-        { key: 'build', label: 'Website & Landing Page', Icon: ArrowRight, items: build, accent: 'from-violet-500 to-purple-500' },
+        { key: 'build', label: 'Website', Icon: ArrowRight, items: build, accent: 'from-violet-500 to-purple-500' },
         { key: 'tools', label: 'Tools', Icon: Calculator, items: tools, accent: 'from-sky-500 to-blue-500', countLabel: 'tools' },
     ];
 

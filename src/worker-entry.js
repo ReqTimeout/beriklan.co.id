@@ -934,7 +934,7 @@ async function handleAdminDrafts(request, env) {
     // HTML view
     const html = `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Generated Drafts — Beriklan Admin</title>
+<title>Draft Artikel — Beriklan Admin</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px}
@@ -963,8 +963,8 @@ tr:last-child td{border-bottom:none}
 .btn-outline{background:#fff;color:#0f1e3d;border:1px solid #d1d5db}
 </style></head><body>
 <div class="container">
-<h1>📝 Generated Drafts</h1>
-<p class="sub">Artikel yang sudah di-generate AI tapi belum ter-commit ke GitHub (karena GITHUB_TOKEN error / expired). Bisa di-review di sini, lalu di-commit manual.</p>
+<h1>📝 Draft Artikel</h1>
+<p class="sub">Artikel dari R2 publish-queue yang sudah masuk D1 buffer dan siap di-publish bertahap (pacing anti-spam). Bisa di-review di sini, lalu di-commit manual.</p>
 
 <div class="kpi-grid">
 <div class="kpi"><div class="val">${total}</div><div class="lbl">Total Drafts</div></div>
@@ -1825,15 +1825,36 @@ async function handleAdminSyncPosts(request, env) {
 
     // D1/dynamic publish limit (posts go live via Worker even without static rebuild).
     // GSC Indexing API remains capped at 200/day separately in submitToGscCore.
-    // Tempo sengaja direndahkan (100/hari, 10/jam) agar kualitas terjaga & Google tidak
-    // melihat burst publikasi massal — item 1 Tier 3 (stop bleeding / pacing).
-    let dailyLimit = 100;
+    // Tempo diatur konservatif agar Google tidak melihat burst publikasi massal.
+    // Nilai bisa di-tune via cron_settings: publish_daily_limit & publish_batch_size.
+    let dailyLimit = 150;
+    try {
+      const dl = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_daily_limit'").first();
+      if (dl?.cron && parseInt(dl.cron, 10) > 0) dailyLimit = parseInt(dl.cron, 10);
+    } catch {}
     const remainingToday = Math.max(0, dailyLimit - publishedToday);
-    const batchSize = Math.min(10, remainingToday);
+    let batchSize = Math.min(15, remainingToday);
+    try {
+      const bs = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_batch_size'").first();
+      if (bs?.cron && parseInt(bs.cron, 10) > 0) batchSize = Math.min(parseInt(bs.cron, 10), remainingToday);
+    } catch {}
 
-    // 1. Get drafts to publish (status='draft', limit = batchSize)
+    // 1. Get drafts to publish (status='draft', limit = batchSize).
+    //    Prioritaskan low-competition dulu: long-tail keyword (judul > 4 kata) adalah
+    //    query paling mudah dimenangkan; kota-spesifik (city != '') juga low-competition.
+    //    Fallback urut id ASC agar buffer tidak macet.
     const draftsToPublish = await env.DB.prepare(
-      "SELECT slug, title, content, service, city FROM generated_drafts WHERE status='draft' ORDER BY id ASC LIMIT ?"
+      `SELECT slug, title, content, service, city FROM generated_drafts
+       WHERE status='draft'
+       ORDER BY
+         (CASE WHEN city IS NOT NULL AND city != '' THEN 1 ELSE 0 END) DESC,
+         (CASE
+            WHEN (length(title) - length(replace(title, ' ', ''))) >= 6 THEN 3
+            WHEN (length(title) - length(replace(title, ' ', ''))) >= 4 THEN 2
+            ELSE 1
+          END) DESC,
+         id ASC
+       LIMIT ?`
     ).bind(batchSize).all();
     const drafts = draftsToPublish.results || [];
 
@@ -2144,6 +2165,7 @@ async function handleAdminSyncPosts(request, env) {
         published_today: publishedToday + d1Published,
         daily_limit: dailyLimit,
         batch_size: batchSize,
+        pacing: "low-competition first (city + long-tail title), tuned via cron_settings publish_daily_limit/publish_batch_size",
         remaining_today: Math.max(0, dailyLimit - publishedToday - d1Published),
         total_drafts_pending: Math.max(0, totalDrafts - d1Published),
         total_rejected: rejected,
@@ -3035,15 +3057,21 @@ async function handleAdminMigrate(request, env) {
       enabled INTEGER DEFAULT 1,
       label TEXT
     )`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 1, 'Generate artikel (72/hari)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('hourly', '0 * * * *', 0, 'Generate artikel (PAUSED — 386k sudah di R2 queue)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('indexnow', '15 * * * *', 1, 'IndexNow submit (tiap jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('gsc-indexing', '0 */6 * * *', 1, 'GSC + sitemap + rank (tiap 6 jam)')`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 1, 'Generate trending (tiap 6 jam)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('trending-generate', '30 */6 * * *', 0, 'Generate trending (PAUSED — fokus publish R2 queue)')`,
+    // Pause generate untuk DB yang sudah ada (tidak override jika user enable manual di dashboard)
+    `UPDATE cron_settings SET enabled = 0, label = 'Generate artikel (PAUSED — 386k sudah di R2 queue)' WHERE name = 'hourly' AND enabled = 1`,
+    `UPDATE cron_settings SET enabled = 0, label = 'Generate trending (PAUSED — fokus publish R2 queue)' WHERE name = 'trending-generate' AND enabled = 1`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('content-refresh', '0 0 1 * *', 1, 'Refresh artikel lama (bulanan)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('snippet-optimize', '0 0 * * 1', 1, 'Optimasi snippet (mingguan)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-indonetwork', '30 6 * * *', 1, 'Scrape Indonetwork (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('scrape-google-places', '0 7 * * *', 1, 'Scrape Google Places (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('email-send', '*/15 * * * *', 1, 'Kirim antrian email (tiap 15 menit)')`,
+    // Publish pacing (anti-spam) — tune tanpa deploy. Nilai di kolom `cron` = angka.
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '150', 1, 'Publish harian maksimum (anti-spam)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '15', 1, 'Publish per jam (sync-posts)')`,
     `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (
@@ -3923,7 +3951,7 @@ a{text-decoration:none;color:inherit}
 <h2>🗓 Diposting Hari Ini (${todayWib} WIB)</h2>
 <span class="badge-wrap">${todayPosts.length} artikel · IndexNow otomatis tiap jam · GSC submit tiap 6 jam</span>
 </div>
-${todayPosts.length === 0 ? '<p style="font-size:13px;color:#6b7280">Belum ada post hari ini — cron hourly-generate jalan tiap jam.</p>' : `<table><thead><tr><th>Title</th><th style="width:22%">Layanan</th><th style="width:18%">Status Index</th></tr></thead>
+${todayPosts.length === 0 ? '<p style="font-size:13px;color:#6b7280">Belum ada post hari ini — sync-posts jalan tiap jam dengan pacing anti-spam.</p>' : `<table><thead><tr><th>Title</th><th style="width:22%">Layanan</th><th style="width:18%">Status Index</th></tr></thead>
 <tbody>${todayPosts.slice(0, 50).map(p => {
   const idx = idxMap[p.slug];
   return `<tr>
@@ -4254,11 +4282,27 @@ async function handleKeywordDashboard(request, env) {
     const gscBackoff = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_backoff_until'").first();
     const indexnowBackoff = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='indexnow_backoff_until'").first();
     const lastRun = await env.DB.prepare("SELECT started_at, status, error FROM cron_runs WHERE cron_name='sync-posts' ORDER BY id DESC LIMIT 1").first();
+    let publishDailyLimit = 150;
+    try {
+      const dl = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_daily_limit'").first();
+      if (dl?.cron && parseInt(dl.cron, 10) > 0) publishDailyLimit = parseInt(dl.cron, 10);
+    } catch {}
+    let publishBatchSize = 15;
+    try {
+      const bs = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_batch_size'").first();
+      if (bs?.cron && parseInt(bs.cron, 10) > 0) publishBatchSize = parseInt(bs.cron, 10);
+    } catch {}
+    const committedTodayN = committedToday?.n || 0;
+    const r2Remaining = 386690; // total R2 publish-queue
+    const publishEtaDays = committedTodayN > 0 ? Math.ceil((r2Remaining - committedTotal?.n || 0) / committedTodayN) : null;
     data.publish = {
-      committed_today: committedToday?.n || 0,
+      committed_today: committedTodayN,
       draft_pending: draftCount?.n || 0,
       committed_total: committedTotal?.n || 0,
-      daily_limit: 100,
+      daily_limit: publishDailyLimit,
+      batch_size: publishBatchSize,
+      r2_remaining: Math.max(0, r2Remaining - (committedTotal?.n || 0)),
+      publish_eta_days: publishEtaDays,
       gsc_used_today: gscQuotaDate?.value === todayStr ? parseInt(gscQuotaUsed?.value || '0') : 0,
       gsc_backoff: gscBackoff?.value || null,
       indexnow_backoff: indexnowBackoff?.value || null,
@@ -4455,7 +4499,7 @@ a:hover{text-decoration:underline}
 <div class="health-banner ${healthStatus}">
 ${healthStatus === 'healthy' ? '✅' : healthStatus === 'watch' ? '👀' : healthStatus === 'warning' ? '⚠️' : '🚨'}
 ${healthStatus === 'healthy'
-  ? `Semua sehat — ${data.keywordQueue.byStatus.pending || 0} keyword pending siap di-generate.`
+  ? `Semua sehat — ${num(data.keywordQueue.byStatus.pending || 0)} keyword di queue, ${num(data.drafts.total)} artikel siap publish.`
   : healthStatus === 'watch'
   ? `Perhatian — ${data.indexing.pending} URL belum ter-index.`
   : `${data.drafts.pending} draft belum ter-commit ke GitHub. Cek tab Drafts.`}
@@ -4474,9 +4518,9 @@ ${healthStatus === 'healthy'
 <div class="value">${num(data.keywordQueue.total)}</div>
 </div>
 <div class="flow-step active">
-<div class="icon">🤖</div>
-<div class="label">Step 3 — AI Generate</div>
-<div class="value">${num(data.keywordQueue.byStatus.generated || 0)}</div>
+<div class="icon">🗂️</div>
+<div class="label">Step 3 — Artikel di R2</div>
+<div class="value">${num(data.publish?.r2_remaining || data.keywordQueue.byStatus.generated || 0)}</div>
 </div>
 <div class="flow-step">
 <div class="icon">📝</div>
@@ -4492,10 +4536,10 @@ ${healthStatus === 'healthy'
 
 <!-- TOP KPI -->
 <div class="kpi-grid">
-<div class="kpi good"><div class="label">📋 Total Keyword</div><div class="value">${num(data.keywordQueue.total)}</div><div class="sub">${num(data.keywordQueue.byStatus.pending || 0)} pending · ${num(data.keywordQueue.byStatus.generated || 0)} generated</div></div>
-<div class="kpi ${generationEtaDays === null || generationSuccess < 70 ? 'warn' : ''}"><div class="label">⚙️ Execution 24h</div><div class="value">${num(generationPerDay)}</div><div class="sub">${num(data.generation.requested24h)} requested · ${generationSuccess}% sukses${highPriorityEtaDays !== null ? ` · ETA prioritas ${num(highPriorityEtaDays)} hari` : (generationEtaDays ? ` · ETA semua ${num(generationEtaDays)} hari` : '')}</div></div>
-<div class="kpi ${data.drafts.pending > 0 ? 'highlight' : 'good'}"><div class="label">📝 Drafts</div><div class="value">${num(data.drafts.total)}</div><div class="sub">${num(data.drafts.pending)} pending · ${num(data.drafts.committed)} committed</div></div>
-<div class="kpi"><div class="label">📰 Artikel Live</div><div class="value">${num(data.postsMeta.total)}</div><div class="sub">${num(data.postsMeta.generated)} AI-generated</div></div>
+<div class="kpi good"><div class="label">📋 Total Keyword</div><div class="value">${num(data.keywordQueue.total)}</div><div class="sub">${num(data.keywordQueue.byStatus.pending || 0)} pending · ${num(data.keywordQueue.byStatus.generated || 0)} artikel</div></div>
+<div class="kpi ${(data.publish?.committed_today || 0) < (data.publish?.daily_limit || 100) ? 'good' : 'warn'}"><div class="label">📤 Publikasi Hari Ini</div><div class="value">${num(data.publish?.committed_today || 0)}</div><div class="sub">kuota ${num(data.publish?.daily_limit || 100)}/hari · total ${num(data.publish?.committed_total || 0)} live</div></div>
+<div class="kpi ${data.drafts.pending > 0 ? 'highlight' : 'good'}"><div class="label">📝 Drafts</div><div class="value">${num(data.drafts.total)}</div><div class="sub">${num(data.drafts.pending)} pending · ${num(data.drafts.committed)} live</div></div>
+<div class="kpi"><div class="label">📰 Artikel Live</div><div class="value">${num(data.postsMeta.total)}</div><div class="sub">${num(data.publish?.committed_total || 0)} via pipeline D1</div></div>
 <div class="kpi ${data.indexing.pending > 20 ? 'warn' : 'good'}"><div class="label">⏳ Indexing Pending</div><div class="value">${num(data.indexing.pending)}</div><div class="sub">${num(data.indexing.today)} hari ini</div></div>
 <div class="kpi"><div class="label">📡 IndexNow 24h</div><div class="value">${num(data.indexnow.last24h)}</div><div class="sub">${num(data.indexnow.total)} total</div></div>
 <div class="kpi"><div class="label">🔥 Trending</div><div class="value">${num(data.trending.total)}</div><div class="sub">artikel fetched</div></div>
@@ -4577,7 +4621,7 @@ ${(() => {
 <div class="bar"><div style="width:${Math.min(cov, 100)}%;background:${color}"></div></div>
 <div style="margin-top:6px;font-size:11px;color:#9ca3af;display:flex;gap:8px;flex-wrap:wrap">
 <span>📋 ${num(pend)} pending</span>
-<span>🤖 ${num(gen)} gen</span>
+<span>🤖 ${num(gen)} artikel</span>
 <span>📤 ${num(pub)} pub</span>
 ${gsc ? `<span>🖱 ${num(gsc.clicks)} klik</span>` : ''}
 </div>
@@ -4586,7 +4630,7 @@ ${gsc ? `<span>🖱 ${num(gsc.clicks)} klik</span>` : ''}
   }).join('');
 })()}
 </div>
-<p style="margin-top:12px;font-size:12px;color:#6b7280">Progress pipeline per layanan: pending (di queue) → generated (artikel AI dibuat) → published (live via D1). Grid kini mencakup semua layanan termasuk View Live, Shopee, Tokopedia & Unassigned.</p>
+<p style="margin-top:12px;font-size:12px;color:#6b7280">Progress pipeline per layanan: pending (di queue) → artikel (siap di R2) → published (live via D1). Grid kini mencakup semua layanan termasuk View Live, Shopee, Tokopedia & Unassigned.</p>
 </div>
 
 <!-- KEYWORD EXPLORER -->
@@ -4630,7 +4674,7 @@ ${Object.keys(data.keywordQueue.bySource).length ? `<table>
 <div class="section">
 <div class="section-head"><h2>📋 Keyword per Layanan</h2><span class="meta">pending dan sudah diproses</span></div>
 ${Object.keys(data.keywordQueue.byService).length ? `<table>
-<thead><tr><th>Layanan</th><th>Pending</th><th>Generated</th><th>Published</th></tr></thead>
+<thead><tr><th>Layanan</th><th>Pending</th><th>Artikel</th><th>Published</th></tr></thead>
 <tbody>${Object.entries(data.keywordQueue.byService).sort((a,b)=>b[1]-a[1]).map(([svc, count]) => {
   const s = data.keywordQueue.byServiceStatus[svc] || {};
   return `<tr><td>${esc(svc)}</td><td><strong>${num(count)}</strong></td><td>${num(s.generated || 0)}</td><td>${num(s.published || 0)}</td></tr>`;
@@ -4661,11 +4705,11 @@ ${data.trending.recent.length ? `<table>
 <div class="section">
 <div class="section-head">
 <h2>🚀 Publish Pipeline</h2>
-<span class="meta">sync-posts: batch 10/jam · ${data.publish.daily_limit || 100}/hari (D1 live) · GSC 200/hari</span>
+<span class="meta">sync-posts: batch ${num(data.publish.batch_size || 15)}/jam · ${data.publish.daily_limit || 150}/hari (D1 live) · prioritas low-competition · GSC 200/hari</span>
 </div>
 <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
 <div class="kpi ${data.publish.committed_today >= (data.publish.daily_limit || 200) ? 'warn' : 'good'}"><div class="label">📤 Published Hari Ini</div><div class="value">${num(data.publish.committed_today)}</div><div class="sub">dari ${num(data.publish.daily_limit || 200)} limit</div></div>
-<div class="kpi"><div class="label">📝 Buffer Drafts</div><div class="value">${num(data.publish.draft_pending)}</div><div class="sub">${num(data.publish.committed_total)} total committed</div></div>
+<div class="kpi"><div class="label">🗂️ Sisa R2 Queue</div><div class="value">${num(data.publish.r2_remaining || 0)}</div><div class="sub">${data.publish.publish_eta_days ? 'ETA ±' + num(data.publish.publish_eta_days) + ' hari' : '—'}</div></div>
 <div class="kpi ${(data.publish.gsc_used_today || 0) >= 200 ? 'warn' : 'good'}"><div class="label">🔍 GSC Kuota</div><div class="value">${data.publish.gsc_used_today || 0}/200</div><div class="sub">${data.publish.gsc_backoff ? 'backoff: '+String(data.publish.gsc_backoff).slice(0,10) : 'tersedia'}</div></div>
 </div>
 <div style="margin-top:8px;font-size:12px">
@@ -4786,7 +4830,16 @@ async function handlePublishDashboard(request, env) {
     ]);
     const draftCount = draftCountR?.n || 0;
     const committedToday = committedTodayR?.n || 0;
-    const dailyLimit = 100;
+    let dailyLimit = 150;
+    try {
+      const dl = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_daily_limit'").first();
+      if (dl?.cron && parseInt(dl.cron, 10) > 0) dailyLimit = parseInt(dl.cron, 10);
+    } catch {}
+    let batchSize = 15;
+    try {
+      const bs = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_batch_size'").first();
+      if (bs?.cron && parseInt(bs.cron, 10) > 0) batchSize = parseInt(bs.cron, 10);
+    } catch {}
     const gscUsed = parseInt(gscQuotaR?.value || '0');
     const gscDate = dailyLimitR?.value || '';
     const cursor = cursorR?.cron || 'unknown';
@@ -4811,7 +4864,7 @@ async function handlePublishDashboard(request, env) {
           published_today: committedToday,
           daily_limit: dailyLimit,
           remaining_today: Math.max(0, dailyLimit - committedToday),
-          batch_size: 50,
+          batch_size: batchSize,
           buffer_drafts: draftCount,
         },
         gsc: { quota_used_today: gscDate === todayStr ? gscUsed : 0, quota_limit: 200, backoff_until: gscBackoff },
@@ -4861,7 +4914,7 @@ a{color:#0f1e3d}
 ${lastRun?.status === 'failed' ? '<div class="alert">⚠️ Run terakhir GAGAL: ' + (lastRun.error || 'unknown') + '</div>' : ''}
 <div class="grid">
   <div class="card good"><div class="label">📤 Published Hari Ini</div><div class="value">${committedToday}</div><div class="sub">dari ${dailyLimit} limit harian</div></div>
-  <div class="card ${committedToday >= dailyLimit ? 'bad' : 'warn'}"><div class="label">⏳ Sisa Hari Ini</div><div class="value">${Math.max(0, dailyLimit - committedToday)}</div><div class="sub">batch 50/trigger</div></div>
+  <div class="card ${committedToday >= dailyLimit ? 'bad' : 'warn'}"><div class="label">⏳ Sisa Hari Ini</div><div class="value">${Math.max(0, dailyLimit - committedToday)}</div><div class="sub">batch ${batchSize}/jam</div></div>
   <div class="card"><div class="label">📝 Buffer D1</div><div class="value">${draftCount}</div><div class="sub">draft siap publish</div></div>
   <div class="card"><div class="label">📡 Pending Indexing</div><div class="value">${pendingIndexing}</div><div class="sub">menunggu GSC + IndexNow</div></div>
   <div class="card ${gscUsed >= 200 ? 'warn' : 'good'}"><div class="label">🔍 GSC Quota</div><div class="value">${gscDate === todayStr ? gscUsed : 0}/200</div><div class="sub">${gscBackoff ? 'backoff: ' + gscBackoff.slice(0, 16) : 'tersedia'}</div></div>
@@ -4974,7 +5027,7 @@ async function renderTrendingStatus(env, ks) {
   if (rows.length === 0) {
     return `
       <h3 class="section-title">📰 Trending Articles</h3>
-      <div class="card"><p style="color:#999;font-size:13px;">Belum ada trending article. Cloudflare Cron Triggers fire /api/cron/trending-generate setiap 6 jam (offset :30).</p></div>
+      <div class="card"><p style="color:#999;font-size:13px;">Belum ada trending article. Trending-generate berstatus PAUSED (fokus publish R2 queue).</p></div>
     `;
   }
   // Today's count
@@ -5034,8 +5087,8 @@ async function renderHourlyGenStatus(env) {
 
     if (hourlyRows.length === 0) {
       return `
-        <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
-        <div class="card"><p style="color:#999;font-size:13px;">Belum ada artikel yang di-generate via <code>/api/cron/hourly-generate</code> dalam 24 jam terakhir. Setup cron-job.org untuk trigger.</p></div>
+        <h3 class="section-title">🗂️ Publikasi Terakhir (24h)</h3>
+        <div class="card"><p style="color:#999;font-size:13px;">Tidak ada run dalam 24 jam terakhir. Publikasi berjalan via <code>/api/admin/sync/posts</code> (pacing anti-spam) + IndexNow/GSC.</p></div>
       `;
     }
 
@@ -5071,19 +5124,19 @@ async function renderHourlyGenStatus(env) {
     }).join('');
 
     return `
-      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
+      <h3 class="section-title">🗂️ Publikasi Terakhir (24h)</h3>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:12px;">
         <div class="card success"><h2>Cron Runs (24h)</h2><div class="metric">${ts.runs || 0}</div><div class="sub">/api/cron/hourly-generate</div></div>
-        <div class="card success"><h2>Articles Generated</h2><div class="metric">${ts.generated || 0}</div><div class="sub">dalam 24 jam terakhir</div></div>
+        <div class="card success"><h2>Artikel Diproses</h2><div class="metric">${ts.generated || 0}</div><div class="sub">dalam 24 jam terakhir</div></div>
         <div class="card info"><h2>✅ Committed to GitHub</h2><div class="metric">${ts.committed || 0}</div><div class="sub">posts.json + queue + index</div></div>
         <div class="card info"><h2>🔍 Enqueued for Indexing</h2><div class="metric">${ts.indexed || 0}</div><div class="sub">URL → pending_indexing table</div></div>
         <div class="card info"><h2>IndexNow submitted</h2><div class="metric">${ins.urls_indexnow_24h || 0}</div><div class="sub">dari ${ins.urls_indexnow_total || 0} total (no quota, multi-engine)</div></div>
       </div>
-      <table><thead><tr><th>Timestamp</th><th>Slugs Generated</th><th>Model</th><th>Status</th><th>Duration</th></tr></thead><tbody>${table}</tbody></table>
+      <table><thead><tr><th>Timestamp</th><th>Slugs Diproses</th><th>Model</th><th>Status</th><th>Duration</th></tr></thead><tbody>${table}</tbody></table>
     `;
   } catch (e) {
     return `
-      <h3 class="section-title">🤖 Hourly Auto-Generate Activity (last 24h)</h3>
+      <h3 class="section-title">🗂️ Publikasi Terakhir (24h)</h3>
       <div class="card warning"><p class="sub">D1 table belum ready: ${esc(e.message)}</p></div>
     `;
   }
@@ -5136,10 +5189,10 @@ async function renderRoadmap(env) {
 
   const items = [
     // P1 — Fondasi
-    { phase: "P1", icon: "🔧", title: "Pipeline auto-generate artikel",
-      status: stats.hourlyRuns24h > 0 ? "done" : "pending",
-      metric: `${stats.generated24h || 0} artikel / 24h`,
-      note: "Cron tiap jam (0 *) generate 3 artikel. Total: " + stats.hourlyRuns24h + " runs dalam 24h." },
+    { phase: "P1", icon: "🔧", title: "Publish pipeline dari R2 queue",
+      status: stats.hourlyRuns24h > 0 ? "done" : "in-progress",
+      metric: `${stats.generated24h || 0} artikel diproses / 24h`,
+      note: "386k artikel sudah di R2 queue. sync-posts publish bertahap (pacing anti-spam) + IndexNow/GSC." },
 
     { phase: "P1", icon: "📝", title: "Keyword research & expansion",
       status: stats.pendingTotal > 10000 ? "done" : "in-progress",
@@ -5181,7 +5234,7 @@ async function renderRoadmap(env) {
     { phase: "P3", icon: "❓", title: "FAQ/PAA content di setiap artikel",
       status: "done",
       metric: "3-4 FAQ/artikel",
-      note: "AI generate FAQ section. Target: position 0 (featured snippet)." },
+      note: "FAQ section sudah ada di artikel. Target: position 0 (featured snippet)." },
 
     { phase: "P3", icon: "🧮", title: "Calculator tool (budget iklan)",
       status: "pending",
@@ -5291,7 +5344,7 @@ function renderCoverageGaps(ks) {
   ).join("");
   return `
     <h3 class="section-title">🚨 Coverage Gaps — layanan paling butuh artikel baru</h3>
-    <table><thead><tr><th>Layanan</th><th>Total Keyword</th><th>Generated</th><th>Pending</th><th>Coverage</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>Layanan</th><th>Total Keyword</th><th>Artikel</th><th>Pending</th><th>Coverage</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
   `;
 }
 
@@ -5306,9 +5359,9 @@ function renderFreshness(ks) {
     <h3 class="section-title">⏰ Freshness & Volume</h3>
     <div class="grid">
       <div class="card"><h2>Total Posts</h2><div class="metric">${total.toLocaleString()}</div><div class="sub">di posts.json</div></div>
-      <div class="card info"><h2>Generated (AI)</h2><div class="metric">${generated.toLocaleString()}</div><div class="sub">via Zen / Groq</div></div>
+      <div class="card info"><h2>Artikel (AI)</h2><div class="metric">${generated.toLocaleString()}</div><div class="sub">dari R2 publish-queue</div></div>
       <div class="card"><h2>Manual / Imported</h2><div class="metric">${(total - generated).toLocaleString()}</div><div class="sub">WordPress + manual</div></div>
-      <div class="card warning"><h2>Target 30 hari</h2><div class="metric">5.000</div><div class="sub">~5 artikel/jam × 24 jam × 30 = 3600/bulan</div></div>
+      <div class="card warning"><h2>Target 30 hari</h2><div class="metric">5.000</div><div class="sub">via sync-posts pacing + IndexNow (anti-spam)</div></div>
     </div>
     <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
       ⚠️ Detail freshness per post (recent/aging/stale) ada di <a href="https://beriklan.co.id/data/freshness.json" target="_blank">/data/freshness.json</a>.
@@ -5332,7 +5385,7 @@ function renderTodayProgress(ks, idx) {
     <h3 class="section-title">📅 Today's Progress (snapshot)</h3>
     <div class="grid">
       <div class="card info">
-        <h2>Generated (cumulative)</h2>
+        <h2>Artikel Dibuat (all-time)</h2>
         <div class="metric">${today.generated.toLocaleString()}</div>
         <div class="sub">all-time · ${(today.generated/today.total*100).toFixed(1)}% coverage</div>
       </div>
@@ -5342,7 +5395,7 @@ function renderTodayProgress(ks, idx) {
         <div class="sub">total articles di blog</div>
       </div>
       <div class="card warning">
-        <h2>Pending Generate</h2>
+        <h2>Sisa Queue Artikel</h2>
         <div class="metric">${today.pending.toLocaleString()}</div>
         <div class="sub">queue di keyword-queue.json</div>
       </div>
@@ -5353,7 +5406,7 @@ function renderTodayProgress(ks, idx) {
       </div>
     </div>
     <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
-      💡 Auto-generated rate: ~${Math.round(today.generated/Math.max(1,Math.round((Date.now()-new Date('2026-01-01').getTime())/(1000*60*60*24))))}/day since Jan 2026. Increase cron <code>count</code> atau tambah Workers Paid throughput untuk accelerate.
+      💡 Publish rate: ~${Math.round(today.generated/Math.max(1,Math.round((Date.now()-new Date('2026-01-01').getTime())/(1000*60*60*24))))}/day sejak Jan 2026. Publish pacing via <code>sync-posts</code> (anti-spam) + IndexNow/GSC. Generate baru PAUSED — fokus publish 386k dari R2 queue.
     </p>
   `;
 }
@@ -5374,8 +5427,8 @@ function renderNewKeywords(ks) {
     </tr>`;
   }).join("");
   return `
-    <h3 class="section-title">🆕 Keyword Sources — Mana yang Cepat Di-Generate</h3>
-    <table><thead><tr><th>Source</th><th>Total</th><th>Generated</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3 class="section-title">🆕 Keyword Sources — Mana yang Cepat Siap</h3>
+    <table><thead><tr><th>Source</th><th>Total</th><th>Artikel</th><th>Pending</th><th>Coverage</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="sub" style="color:#666;font-size:12px;margin-bottom:24px;">
       💡 <code>expansion_v1</code> adalah hasil dari keyword matrix expansion (10× target). Prioritaskan source dengan coverage 🔴 (low) untuk article generation.
     </p>
@@ -7282,6 +7335,17 @@ async function handleHourlyGenerate(request, env) {
 //   Override ?count=5 if running on Workers Paid (30s CPU budget).
 //   Wall time per article: ~3-5s with Zen/Groq fallback.
 //   Free tier alternative: schedule 5 cron-job.org triggers with count=1.
+  // PAUSED by default (AGENTS.md §Email System pattern). 386k artikel sudah digenerate
+  // di R2 queue — generate baru hanya menambah duplikat. Indexer & publish tetap jalan.
+  try {
+    const p = await env.DB.prepare("SELECT enabled FROM cron_settings WHERE name='hourly'").first();
+    if (p && p.enabled === 0) {
+      return new Response(JSON.stringify({
+        ok: true, paused: true,
+        message: "hourly-generate PAUSED (386k artikel sudah di R2 queue). Publikasi & indexing tetap berjalan via sync-posts + indexnow.",
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+  } catch {}
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 5));
   const debug = url.searchParams.get("debug") === "1";
   const draftMode = url.searchParams.get("mode") === "draft"; // draft = simpan ke D1, tidak commit GitHub

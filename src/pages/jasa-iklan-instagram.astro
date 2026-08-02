@@ -88,6 +88,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-instagram'] || []).map(ite
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Iklan Instagram Ads Terpercaya — Beriklan" description="Stories, Reels, Feed Ads — semuanya bisa Anda dapatkan. Tim bersertifikat Meta, creative disesuaikan dengan audiens Indonesia. Mulai Rp 1,75 juta per 30 hari, garansi transparan. Diskusi strategi gratis via WhatsApp." canonical="https://beriklan.co.id/jasa-iklan-instagram/"
@@ -488,6 +489,9 @@ const relatedItems = (relatedMap.services['jasa-iklan-instagram'] || []).map(ite
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-iklan-instagram" serviceName="Iklan Instagram" limit={8} />
 
     <Footer />
 </Layout>

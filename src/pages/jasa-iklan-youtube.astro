@@ -122,6 +122,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-youtube'] || []).map(item 
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Iklan YouTube Indonesia — Beriklan" description="Video ads YouTube yang membangun brand awareness & menghasilkan action. TrueView, Bumper, In-Stream — pilihan format untuk setiap objective. Mulai Rp 1,25 juta per 14 hari. Sertifikat Google Partner." canonical="https://beriklan.co.id/jasa-iklan-youtube/"
@@ -522,6 +523,9 @@ const relatedItems = (relatedMap.services['jasa-iklan-youtube'] || []).map(item 
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-iklan-youtube" serviceName="Iklan YouTube" limit={8} />
 
     <Footer />
 </Layout>

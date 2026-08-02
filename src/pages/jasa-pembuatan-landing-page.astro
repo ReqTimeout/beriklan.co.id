@@ -73,6 +73,7 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Landing Page + Google Ads Bundle — Beriklan" description="Paket promo eksklusif: 1 landing page profesional + 1 bulan Google Ads. Copywriting persuasif, form integrasi, tracking analytics — siap generate leads dari hari pertama. Limited slot per bulan." canonical="https://beriklan.co.id/jasa-pembuatan-landing-page/"
@@ -474,6 +475,9 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-landing-page'] || []).
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-pembuatan-landing-page" serviceName="Landing Page" limit={8} />
 
     <Footer />
 </Layout>

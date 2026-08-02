@@ -102,6 +102,7 @@ const relatedItems = (relatedMap.services['jasa-digital-marketing'] || []).map(i
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Digital Marketing Multi-Channel Indonesia — Beriklan" description="Satu tim untuk Meta Ads + Google Ads + TikTok + YouTube + Landing Page. Hemat 30% vs kelola sendiri 5 channel. 9 tahun pengalaman, sertifikat Meta & Google Partner. Hubungi kami untuk konsultasi." canonical="https://beriklan.co.id/jasa-digital-marketing/"
@@ -502,6 +503,9 @@ const relatedItems = (relatedMap.services['jasa-digital-marketing'] || []).map(i
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-digital-marketing" serviceName="Digital Marketing" limit={8} />
 
     <Footer />
 </Layout>

@@ -102,6 +102,7 @@ const relatedItems = (relatedMap.services['jasa-kelola-instagram'] || []).map(it
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Kelola Instagram Profesional — Beriklan" description="Akun Instagram Anda dijaga aktif — desain feed, story harian, copywriting Bahasa Indonesia, dan community management. Hemat waktu 5-10 jam per minggu. Mulai Rp 2,5 juta/bulan. Laporan bulanan via WhatsApp." canonical="https://beriklan.co.id/jasa-kelola-instagram/"
@@ -502,6 +503,9 @@ const relatedItems = (relatedMap.services['jasa-kelola-instagram'] || []).map(it
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-kelola-instagram" serviceName="Kelola Instagram" limit={8} />
 
     <Footer />
 </Layout>

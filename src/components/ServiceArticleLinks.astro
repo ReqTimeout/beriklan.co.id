@@ -1,0 +1,95 @@
+---
+// SSR (bukan Svelte) — link artikel blog per layanan dirender server-side
+// supaya Googlebot bisa ikuti internal links ke artikel baru dari halaman pilar.
+// Halaman pilar adalah authority pages yang sudah ter-index → setiap artikel
+// yang di-link di sini ikut ter-crawl lebih cepat.
+import { getFeaturedImage } from '../utils/featured_image.js';
+
+interface Props {
+    service: string;
+    serviceName: string;
+    limit?: number;
+}
+
+const { service, serviceName, limit = 8 } = Astro.props;
+const { default: allPosts } = await import('../data/posts.json');
+
+// Infer service dari title bila kolom service kosong (banyak artikel lama
+// ter-set service='' atau default). Sama logikanya dengan featured_image.js.
+function inferService(title: string): string {
+    const t = (title || '').toLowerCase();
+    const rules: [string, string][] = [
+        ['kelola tiktok', 'jasa-kelola-tiktok'], ['kelola instagram', 'jasa-kelola-instagram'],
+        ['facebook', 'jasa-iklan-facebook'], ['instagram', 'jasa-iklan-instagram'],
+        ['tiktok', 'jasa-iklan-tiktok'], ['google', 'jasa-iklan-google'],
+        ['youtube', 'jasa-iklan-youtube'], ['digital marketing', 'jasa-digital-marketing'],
+        ['website', 'jasa-pembuatan-website'], ['landing page', 'jasa-pembuatan-landing-page'],
+        ['ads', 'jasa-iklan-google'],
+    ];
+    for (const [kw, svc] of rules) if (t.includes(kw)) return svc;
+    return '';
+}
+
+const posts = allPosts
+    .filter((p: any) => (p.service || inferService(p.title)) === service)
+    .sort((a: any, b: any) => (b.iso_date || '').localeCompare(a.iso_date || ''))
+    .slice(0, limit);
+
+const blogUrl = `/blog/?service=${service}`;
+---
+
+<section class="py-16 md:py-20 bg-soft">
+    <div class="container mx-auto px-6">
+        <div class="flex items-end justify-between gap-4 mb-10">
+            <div>
+                <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+                    <span class="w-8 h-px bg-accent"></span>
+                    Artikel Terbaru
+                </p>
+                <h2 class="font-display font-extrabold text-3xl md:text-4xl text-ink leading-[1.1] tracking-tight">
+                    Panduan {serviceName} dari Tim Beriklan
+                </h2>
+            </div>
+            <a href={blogUrl} class="hidden md:inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-accent hover:text-ink transition-colors">
+                Semua Artikel
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+        </div>
+
+        {
+            posts.length > 0 ? (
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {posts.map((p: any) => (
+                        <a href={`/blog/${p.slug}/`} class="group block bg-white rounded-2xl border border-gray-100 hover:border-accent/40 hover:shadow-pop transition-all overflow-hidden">
+                            <div class="aspect-[16/9] overflow-hidden bg-soft">
+                                <img
+                                    src={getFeaturedImage(p)}
+                                    alt={p.title}
+                                    width="1600"
+                                    height="894"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    onerror={`this.onerror=null;this.src='/images/blog/jasadigitalmarketing1.webp';`}
+                                />
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-sm text-ink leading-snug mb-1.5 group-hover:text-accent transition-colors line-clamp-2">{p.title}</h3>
+                                <p class="text-[11px] text-muted">{p.readTime || '3 min'} baca</p>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            ) : (
+                <p class="text-sm text-muted">Artikel untuk {serviceName} segera hadir. Hubungi kami via WhatsApp untuk konsultasi.</p>
+            )
+        }
+
+        <div class="mt-8 text-center md:hidden">
+            <a href={blogUrl} class="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:text-ink transition-colors">
+                Semua Artikel {serviceName}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
+</section>

@@ -88,6 +88,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-facebook'] || []).map(item
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout
@@ -512,6 +513,9 @@ const relatedItems = (relatedMap.services['jasa-iklan-facebook'] || []).map(item
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-iklan-facebook" serviceName="Iklan Facebook" limit={8} />
 
     <Footer />
 </Layout>

@@ -106,6 +106,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-google'] || []).map(item =
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Google Ads Indonesia | Muncul di Halaman 1 — Beriklan" description="Pasang iklan Google Search, muncul saat calon customer mencari produk Anda. Conversion tinggi, CPA terukur. Mulai Rp 1,75 juta per 30 hari. Tim Google Partner — bukan freelancer. Hubungi kami untuk konsultasi." canonical="https://beriklan.co.id/jasa-iklan-google/"
@@ -527,6 +528,9 @@ const relatedItems = (relatedMap.services['jasa-iklan-google'] || []).map(item =
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-iklan-google" serviceName="Iklan Google Ads" limit={8} />
 
     <Footer />
 </Layout>

@@ -133,6 +133,7 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-website'] || []).map(i
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Pembuatan Website — Landing Page, Compro, Toko Online, Custom SaaS | Beriklan" description="Lepas biaya marketplace. Website sendiri = margin 100% + data pelanggan di tangan Anda + SEO organik tanpa biaya per-klik. Landing Page mulai Rp 1,5jt (domain+hosting 1 tahun). Compro, Toko Online, Custom SaaS — diskusi scope via WhatsApp." canonical="https://beriklan.co.id/jasa-pembuatan-website/"
@@ -578,6 +579,9 @@ const relatedItems = (relatedMap.services['jasa-pembuatan-website'] || []).map(i
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-pembuatan-website" serviceName="Pembuatan Website" limit={8} />
 
     <Footer />
 </Layout>

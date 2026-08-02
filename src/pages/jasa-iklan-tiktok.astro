@@ -105,6 +105,7 @@ const relatedItems = (relatedMap.services['jasa-iklan-tiktok'] || []).map(item =
   desc: item.desc,
   href: '/' + item.slug + '/',
 }));
+import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
 ---
 
 <Layout title="Jasa Iklan TikTok Ads Indonesia — Beriklan" description="TikTok Ads menghasilkan 70.000+ views & leads nyata. Spark Ads, In-Feed, TopView — kami handle dari setup sampai laporan mingguan. Mulai Rp 1 juta untuk 7 hari. Tim bersertifikat TikTok Marketing Partner." canonical="https://beriklan.co.id/jasa-iklan-tiktok/"
@@ -505,6 +506,9 @@ const relatedItems = (relatedMap.services['jasa-iklan-tiktok'] || []).map(item =
             </div>
         </div>
     </section>
+
+    
+    <ServiceArticleLinks service="jasa-iklan-tiktok" serviceName="Iklan TikTok" limit={8} />
 
     <Footer />
 </Layout>

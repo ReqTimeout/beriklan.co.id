@@ -11522,6 +11522,12 @@ async function handleLeadPipelineView(request, env) {
     `SELECT COUNT(*) as n FROM email_queue WHERE status = 'pending'`
   ).first();
   const dailySent = await getDailyEmailCount(env);
+  const sampleLeads = await env.DB.prepare(
+    `SELECT id, email, phone, name, company, city, category, website FROM lead_contacts WHERE (email != '' OR phone != '') AND NOT EXISTS (SELECT 1 FROM lead_pipeline p WHERE p.contact_id = lead_contacts.id) ORDER BY id ASC LIMIT 8`
+  ).all();
+  const samplePipeline = await env.DB.prepare(
+    `SELECT id, name, company, city, category, service, score, status, ai_subject, wa_link FROM lead_pipeline ORDER BY id DESC LIMIT 8`
+  ).all();
 
   return new Response(JSON.stringify({
     ok: true,
@@ -11532,6 +11538,8 @@ async function handleLeadPipelineView(request, env) {
     queue_pending: queued?.n || 0,
     daily_sent: dailySent,
     daily_limit: 100,
+    sample_leads: sampleLeads.results || [],
+    sample_pipeline: samplePipeline.results || [],
   }), { headers: { "Content-Type": "application/json" } });
 }
 

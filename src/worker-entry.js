@@ -11526,7 +11526,7 @@ async function handleLeadPipelineView(request, env) {
     `SELECT id, email, phone, name, company, city, category, website FROM lead_contacts WHERE (email != '' OR phone != '') AND NOT EXISTS (SELECT 1 FROM lead_pipeline p WHERE p.contact_id = lead_contacts.id) ORDER BY id ASC LIMIT 8`
   ).all();
   const samplePipeline = await env.DB.prepare(
-    `SELECT id, name, company, city, category, service, score, status, ai_subject, wa_link FROM lead_pipeline ORDER BY id DESC LIMIT 8`
+    `SELECT id, name, company, city, category, service, score, status, ai_subject, ai_opener, wa_link FROM lead_pipeline ORDER BY (ai_subject IS NOT NULL AND ai_subject != '') DESC, score DESC, id DESC LIMIT 8`
   ).all();
 
   return new Response(JSON.stringify({

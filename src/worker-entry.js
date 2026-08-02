@@ -2027,6 +2027,10 @@ async function handleAdminSyncPosts(request, env) {
     //    GitHub commit is best-effort for static rebuild — must NOT block city articles going live.
     let d1Published = 0;
     const publishedSlugs = new Set();
+    // draft.slug → finalSlug (remap seed-/exp- → keyword slug). Dipakai juga untuk
+    // pending_indexing/GSC/IndexNow — sebelumnya URL submit pakai draft.slug (seed-xxx)
+    // yang 404, sementara D1 disimpan dengan finalSlug → quota GSC 200/hari terbuang.
+    const slugMap = new Map();
     for (const draft of safeDrafts) {
       try {
         // Remap seed-/exp- slugs (keyword_queue.id artifacts) to the SEO slug derived
@@ -2050,6 +2054,7 @@ async function handleAdminSyncPosts(request, env) {
         } else {
           publishedSlugs.add(finalSlug);
         }
+        slugMap.set(draft.slug, finalSlug);
         const post = finalPosts.find(p => p.slug === draft.slug) || {};
         const postTitle = post.title || draft.title || "";
         const postExcerpt = (post.excerpt || "").slice(0, 500);
@@ -2133,7 +2138,8 @@ async function handleAdminSyncPosts(request, env) {
         const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
         const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
         for (const draft of safeDrafts) {
-          const url = `https://www.beriklan.co.id/blog/${draft.slug}/`;
+          const finalSlug = slugMap.get(draft.slug) || draft.slug;
+          const url = `https://www.beriklan.co.id/blog/${finalSlug}/`;
           if (existingSet.has(url)) continue;
           try {
             await env.DB.prepare(
@@ -2148,14 +2154,14 @@ async function handleAdminSyncPosts(request, env) {
     // C. Submit new URLs to GSC Indexing API (max 200/hari, auto-retry 429)
     let gsc = { submitted: 0 };
     if (d1Published > 0 && env.GSC_SERVICE_ACCOUNT_JSON) {
-      const gscUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${d.slug}/`);
+      const gscUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
       gsc = await submitToGscCore(env, gscUrls);
     }
 
     // D. Submit to IndexNow (hindari rate limit, backoff otomatis)
     let indexnow = { submitted: 0 };
     if (d1Published > 0) {
-      const inUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${d.slug}/`);
+      const inUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
       indexnow = await submitToIndexNowCore(env, inUrls);
     }
 

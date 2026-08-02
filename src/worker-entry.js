@@ -106,6 +106,12 @@ export default {
       }
       return Response.redirect(redirect, 302);
     }
+    if (path === "/api/track/wa" || path === "/api/track/wa/") {
+      return await handleTrackWa(request, env);
+    }
+    if (path === "/api/admin/wa" || path === "/api/admin/wa/") {
+      return await handleAdminWa(request, env);
+    }
     if (path === "/api/newsletter/admin" || path === "/api/newsletter/admin/") {
       return await handleNewsletterAdmin(request, env);
     }
@@ -2427,6 +2433,9 @@ async function handleNewsletterSubscribe(request, env) {
   const name = String(body.name || "").trim().slice(0, 100);
   const page_url = String(body.page_url || "").slice(0, 200);
   const source = String(body.source || "").slice(0, 200);
+  const wa_session = String(body.wa_session || "").slice(0, 200);
+  const wa_service = String(body.wa_service || "").slice(0, 100);
+  const wa_package = String(body.wa_package || "").slice(0, 100);
   const honeypot = String(body.website || "");
   // Honeypot: bots fill hidden field; treat as success (no save) to waste their time
   if (honeypot) {
@@ -2468,7 +2477,13 @@ async function handleNewsletterSubscribe(request, env) {
     await env.DB.prepare(
       `INSERT INTO newsletter_subscribers (email, name, page_url, source, status, drip_step) VALUES (?, ?, ?, ?, 'active', 0)`
     ).bind(email, name, page_url, source).run();
-    return new Response(JSON.stringify({ ok: true, new: true }), { headers: { "Content-Type": "application/json" } });
+    // WA Click follow-up: kalau subscriber punya sesi klik WA baru-baru ini,
+    // queue email follow-up otomatis (via cron email-send yang sudah aktif).
+    let followup = null;
+    try {
+      followup = await enqueueWaFollowup(env, { email, name, wa_session, wa_service, wa_package });
+    } catch (fe) { followup = { ok: false, error: String(fe).slice(0, 120) }; }
+    return new Response(JSON.stringify({ ok: true, new: true, followup }), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
@@ -2879,6 +2894,82 @@ async function handleAdminSeedMirror(request, env) {
   return new Response(JSON.stringify({ ok: errors.length === 0, summary, errors }, null, 2), { headers: { "Content-Type": "application/json" } });
 }
 
+// ─── WA Click Tracker ──────────────────────────────────────────
+// Public beacon: simpan klik tombol WhatsApp (fire-and-forget dari frontend).
+// Dipanggil via navigator.sendBeacon / fetch image dari Layout.astro.
+async function handleTrackWa(request, env) {
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB binding not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+  const url = new URL(request.url);
+  const get = (k, max) => (url.searchParams.get(k) || "").slice(0, max || 300);
+  const page = get("page");
+  const service = get("service");
+  const pkg = get("package");
+  const price = get("price");
+  const cta = get("cta");
+  const ctaLoc = get("cta_loc");
+  const link = get("link");
+  const session = get("session");
+  const ip = (request.headers.get("CF-Connecting-IP") || "").slice(0, 64);
+  const ua = (request.headers.get("User-Agent") || "").slice(0, 200);
+  const referrer = (request.headers.get("Referer") || "").slice(0, 300);
+  // Hash IP minimal (privacy): cukup untuk dedupe kasar tanpa menyimpan IP asli
+  const ipHash = ip ? (await sha256(ip)).slice(0, 16) : "";
+  try {
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS wa_clicks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        page_location TEXT, service_slug TEXT, package_name TEXT, package_price TEXT,
+        cta_label TEXT, cta_location TEXT, link_url TEXT, referrer TEXT,
+        user_agent TEXT, ip_hash TEXT, session_id TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )`
+    ).run();
+    await env.DB.prepare(
+      `INSERT INTO wa_clicks (page_location, service_slug, package_name, package_price, cta_label, cta_location, link_url, referrer, user_agent, ip_hash, session_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(page, service, pkg, price, cta, ctaLoc, link, referrer, ua, ipHash, session).run();
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+  } catch (e) {
+    // Beacon tidak boleh gagal di frontend — selalu balas ok
+    return new Response(JSON.stringify({ ok: true, error: String(e).slice(0, 120) }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function sha256(str) {
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch { return str; }
+}
+
+// ─── Admin: WA Clicks stats ────────────────────────────────────
+async function handleAdminWa(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: "Unauthorized", hint: "Provide ?token=" + env.ADMIN_TOKEN }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) {
+    return new Response(JSON.stringify({ ok: false, error: "DB binding not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+  const fmt = (v) => (v || {}).results || [];
+  const total = await env.DB.prepare("SELECT COUNT(*) as c FROM wa_clicks").first().catch(() => ({ c: 0 }));
+  const today = await env.DB.prepare("SELECT COUNT(*) as c FROM wa_clicks WHERE date(created_at) = date('now')").first().catch(() => ({ c: 0 }));
+  const byPage = await env.DB.prepare("SELECT page_location, COUNT(*) as c FROM wa_clicks WHERE page_location IS NOT NULL AND page_location != '' GROUP BY page_location ORDER BY c DESC LIMIT 15").all().then(fmt).catch(() => []);
+  const byService = await env.DB.prepare("SELECT service_slug, COUNT(*) as c FROM wa_clicks WHERE service_slug IS NOT NULL AND service_slug != '' GROUP BY service_slug ORDER BY c DESC LIMIT 15").all().then(fmt).catch(() => []);
+  const byPackage = await env.DB.prepare("SELECT package_name, COUNT(*) as c FROM wa_clicks WHERE package_name IS NOT NULL AND package_name != '' GROUP BY package_name ORDER BY c DESC LIMIT 15").all().then(fmt).catch(() => []);
+  const recent = await env.DB.prepare("SELECT * FROM wa_clicks ORDER BY id DESC LIMIT 25").all().then(fmt).catch(() => []);
+  const followups = await env.DB.prepare("SELECT status, COUNT(*) as c FROM wa_followups GROUP BY status").all().then(fmt).catch(() => []);
+  return new Response(JSON.stringify({
+    ok: true,
+    total: total.c || 0,
+    today: today.c || 0,
+    byPage, byService, byPackage, recent, followups
+  }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
 // ─── P0.5 Admin: Run D1 migrations ──────────────────────────────────
 async function handleAdminMigrate(request, env) {
   const url = new URL(request.url);
@@ -3084,6 +3175,38 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_status ON lead_pipeline (status)`,
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_service ON lead_pipeline (service)`,
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_email ON lead_pipeline (email)`,
+    // WA Click Tracker + Auto Follow-up
+    `CREATE TABLE IF NOT EXISTS wa_clicks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      page_location TEXT,
+      service_slug TEXT,
+      package_name TEXT,
+      package_price TEXT,
+      cta_label TEXT,
+      cta_location TEXT,
+      link_url TEXT,
+      referrer TEXT,
+      user_agent TEXT,
+      ip_hash TEXT,
+      session_id TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_wa_clicks_created ON wa_clicks (created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_wa_clicks_service ON wa_clicks (service_slug)`,
+    `CREATE INDEX IF NOT EXISTS idx_wa_clicks_session ON wa_clicks (session_id)`,
+    `CREATE TABLE IF NOT EXISTS wa_followups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      name TEXT,
+      service TEXT,
+      package_name TEXT,
+      page_location TEXT,
+      session_id TEXT,
+      status TEXT DEFAULT 'pending',
+      sent_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_wa_followups_email ON wa_followups (email, status)`,
     // Cron enable/pause settings
     `CREATE TABLE IF NOT EXISTS cron_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -9810,6 +9933,56 @@ function genTrackingId() {
   return "trk_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
 }
 
+// Auto follow-up: subscriber yang baru-baru ini klik WhatsApp (punya wa_session /
+// wa_service/wa_package dari cookie) → simpan di wa_followups + queue email followup
+// ke email_queue (dikirim otomatis oleh cron email-send tiap 15 menit).
+async function enqueueWaFollowup(env, opts) {
+  const { email, name, wa_session, wa_service, wa_package } = opts;
+  if (!env.DB || !email) return { ok: false, error: "no db/email" };
+  // Tentukan konteks layanan: prefer data langsung dari form, fallback ke klik terakhir sesi
+  let service = (wa_service || "").trim();
+  let pkg = (wa_package || "").trim();
+  let page = "";
+  if (!service && wa_session) {
+    const last = await env.DB.prepare(
+      "SELECT page_location, service_slug, package_name FROM wa_clicks WHERE session_id = ? ORDER BY id DESC LIMIT 1"
+    ).bind(wa_session).first().catch(() => null);
+    if (last) {
+      service = last.service_slug || "";
+      pkg = last.package_name || "";
+      page = last.page_location || "";
+    }
+  }
+  // Hanya follow-up kalau ada sinyal layanan (klik WA) — hindari spam ke subscriber pasif
+  if (!service) return { ok: false, skipped: "no_wa_signal" };
+  // Dedupe: jangan follow-up dua kali untuk email yang sama dalam 14 hari
+  const recent = await env.DB.prepare(
+    "SELECT id FROM wa_followups WHERE email = ? AND created_at > datetime('now', '-14 days') LIMIT 1"
+  ).bind(email).first().catch(() => null);
+  if (recent) return { ok: false, skipped: "recent_followup" };
+  // Template followup (generic) — cari atau gunakan subject default
+  const tpl = await env.DB.prepare("SELECT id, subject FROM email_templates WHERE category = 'followup' ORDER BY id LIMIT 1").first().catch(() => null);
+  // Campaign container untuk WA follow-up
+  let camp = await env.DB.prepare("SELECT id FROM campaigns WHERE name = 'Auto Follow-up WhatsApp' LIMIT 1").first().catch(() => null);
+  if (!camp) {
+    const r = await env.DB.prepare(
+      "INSERT INTO campaigns (name, template_id, list_id, subject, status, total_recipients) VALUES ('Auto Follow-up WhatsApp', ?, 0, ?, 'sending', 0)"
+    ).bind(tpl?.id || null, tpl?.subject || "Masih tertarik dengan layanan kami?").run();
+    camp = { id: r.meta?.last_row_id || 0 };
+  }
+  const trackingId = genTrackingId();
+  const serviceLabel = service.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const subject = tpl?.subject?.replace(/\{\{name\}\}/g, name || "") || `Halo ${name}, masih tertarik dengan ${serviceLabel}?`;
+  await env.DB.prepare(
+    "INSERT INTO email_queue (campaign_id, email, name, status, tracking_id, subject_override, opener) VALUES (?,?,?,?,?,?,?)"
+  ).bind(camp.id, email, name || "", "pending", trackingId, subject, `Kami lihat Anda sempat melihat ${serviceLabel}${pkg ? " (" + pkg + ")" : ""} di website kami. Ingin diskusi strateginya?`).run();
+  await env.DB.prepare(
+    "INSERT INTO wa_followups (email, name, service, package_name, page_location, session_id, status) VALUES (?,?,?,?,?,?, 'queued')"
+  ).bind(email, name || "", service, pkg, page, wa_session || "").run();
+  await env.DB.prepare("UPDATE campaigns SET total_recipients = (SELECT COUNT(*) FROM email_queue WHERE campaign_id = ?) WHERE id = ?").bind(camp.id, camp.id).run();
+  return { ok: true, service, pkg, campaign_id: camp.id };
+}
+
 async function sendEmailViaResend(env, to, subject, html, trackingId) {
   if (!env.RESEND_API_KEY) {
     return { ok: false, error: "RESEND_API_KEY not set" };
@@ -9996,6 +10169,7 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#3741
  <a href="?token=${token}&tab=cron" class="nav ${tab==='cron'?'active':''}"><span class="ico">⏰</span> Cron & Automasi</a>
  <a href="?token=${token}&tab=scraper" class="nav ${tab==='scraper'?'active':''}"><span class="ico">🔍</span> Scraper</a>
  <a href="?token=${token}&tab=leads" class="nav ${tab==='leads'?'active':''}"><span class="ico">🎯</span> Lead Pipeline</a>
+ <a href="?token=${token}&tab=wa" class="nav ${tab==='wa'?'active':''}"><span class="ico">💬</span> WA Clicks</a>
 <div class="sidebar-foot">
 Email · Resend API<br>
 Quota hari ini: ${dailySent}/100 (Resend free)
@@ -10012,6 +10186,7 @@ ${tab === 'overview' ? renderOverview(campaigns, totalSent, totalOpened, totalCl
   tab === 'cron' ? renderCron(cronRows, T, token) :
   tab === 'scraper' ? renderScraper(campaigns, T, token, env) :
   tab === 'leads' ? renderLeads(T, token, env) :
+  tab === 'wa' ? await renderWa(T, token, env) :
   '<div class="card"><p>Halaman tidak ditemukan. <a href="?token='+token+'&tab=overview">← Overview</a></p></div>'}
 </div>
 </div>
@@ -10520,7 +10695,84 @@ ${recent.length ? `<table>
 </body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
-// ─── Email Templates CRUD ─────────────────────────────────────
+// ─── WA Clicks Dashboard ─────────────────────────────────────
+async function renderWa(T, token, env) {
+  try {
+    const total = await env.DB.prepare("SELECT COUNT(*) as n FROM wa_clicks").first().catch(() => ({ n: 0 }));
+    const today = await env.DB.prepare("SELECT COUNT(*) as n FROM wa_clicks WHERE date(created_at) = date('now')").first().catch(() => ({ n: 0 }));
+    const byPage = await env.DB.prepare("SELECT page_location, COUNT(*) as n FROM wa_clicks WHERE page_location != '' GROUP BY page_location ORDER BY n DESC LIMIT 12").all().catch(() => ({ results: [] }));
+    const byService = await env.DB.prepare("SELECT service_slug, COUNT(*) as n FROM wa_clicks WHERE service_slug != '' GROUP BY service_slug ORDER BY n DESC LIMIT 12").all().catch(() => ({ results: [] }));
+    const byPackage = await env.DB.prepare("SELECT package_name, COUNT(*) as n FROM wa_clicks WHERE package_name != '' GROUP BY package_name ORDER BY n DESC LIMIT 12").all().catch(() => ({ results: [] }));
+    const recent = await env.DB.prepare("SELECT * FROM wa_clicks ORDER BY id DESC LIMIT 20").all().catch(() => ({ results: [] }));
+    const fups = await env.DB.prepare("SELECT status, COUNT(*) as n FROM wa_followups GROUP BY status").all().catch(() => ({ results: [] }));
+    const fupRecent = await env.DB.prepare("SELECT * FROM wa_followups ORDER BY id DESC LIMIT 10").all().catch(() => ({ results: [] }));
+
+    const rows = (arr) => (arr.results || []).map(r => `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #e2e8f0;"><span style="font-size:13px;word-break:break-all;">${escHtml(r.page_location || r.service_slug || r.package_name || '—')}</span><strong>${r.n}</strong></div>`).join('') || '<p style="color:#94a3b8">Belum ada data.</p>';
+    const fupBadge = (s) => s === 'queued' ? '<span class="badge b-amber">Queued</span>' : s === 'sent' ? '<span class="badge b-green">Sent</span>' : `<span class="badge b-gray">${s}</span>`;
+
+    const recentRows = (recent.results || []).map(c =>
+      '<tr>' +
+      '<td style="white-space:nowrap;">' + (c.created_at || '').slice(0, 16).replace('T', ' ') + '</td>' +
+      '<td style="word-break:break-all;">' + escHtml(c.page_location || '-') + '</td>' +
+      '<td>' + escHtml(c.service_slug || '-') + '</td>' +
+      '<td>' + escHtml(c.package_name || '-') + '</td>' +
+      '<td>' + escHtml((c.cta_label || '').slice(0, 24) || '-') + '</td>' +
+      '<td style="font-size:11px;color:#94a3b8;">' + escHtml((c.session_id || '').slice(0, 12)) + '</td>' +
+      '</tr>'
+    ).join('');
+    const recentTable = recentRows ? '<table><thead><tr><th>Waktu</th><th>Halaman</th><th>Layanan</th><th>Paket</th><th>CTA</th><th>Sesi</th></tr></thead><tbody>' + recentRows + '</tbody></table>' : '<div style="text-align:center;padding:24px;color:#9ca3af;">Belum ada klik.</div>';
+
+    const fupRows = (fupRecent.results || []).map(f =>
+      '<tr>' +
+      '<td>' + escHtml(f.email) + '</td>' +
+      '<td>' + escHtml(f.service || '-') + '</td>' +
+      '<td>' + escHtml(f.package_name || '-') + '</td>' +
+      '<td>' + fupBadge(f.status) + '</td>' +
+      '<td style="white-space:nowrap;">' + (f.created_at || '').slice(0, 16).replace('T', ' ') + '</td>' +
+      '</tr>'
+    ).join('');
+    const fupTable = fupRows ? '<table><thead><tr><th>Email</th><th>Layanan</th><th>Paket</th><th>Status</th><th>Dibuat</th></tr></thead><tbody>' + fupRows + '</tbody></table>' : '<div style="text-align:center;padding:24px;color:#9ca3af;">Belum ada follow-up. Auto follow-up terpicu saat pengunjung klik WhatsApp lalu berlangganan newsletter di halaman yang sama.</div>';
+
+    return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WA Clicks — Beriklan</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;margin:0;padding:24px;color:#0f1e3d}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.kpi-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+.kpi-val{font-size:28px;font-weight:800;margin-top:4px}
+.kpi-sub{font-size:12px;color:#94a3b8;margin-top:2px}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-head h2{margin:0;font-size:15px;font-weight:800}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #f1f5f9}
+th{color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.b-amber{background:#fef3c7;color:#b45309}.b-green{background:#d1fae5;color:#065f46}.b-gray{background:#f1f5f9;color:#475569}
+.back{display:inline-block;margin-bottom:16px;color:#f59e0b;font-weight:700;text-decoration:none;font-size:13px}
+</style></head><body>
+<a class="back" href="/api/admin?token=${token}">← Kembali ke Dashboard</a>
+<h1 style="margin:0 0 4px;font-size:22px;">💬 WhatsApp Click Tracker</h1>
+<p style="margin:0 0 20px;color:#64748b;font-size:13px;">Setiap klik tombol WhatsApp (beacon dari semua halaman) + status auto follow-up email.</p>
+
+<div class="kpi-grid">
+<div class="kpi"><div class="kpi-label">Total Klik WA</div><div class="kpi-val">${total.n || 0}</div><div class="kpi-sub">sepanjang waktu</div></div>
+<div class="kpi"><div class="kpi-label">Hari Ini</div><div class="kpi-val" style="color:#0ea5e9;">${today.n || 0}</div><div class="kpi-sub">klik hari ini</div></div>
+<div class="kpi"><div class="kpi-label">Follow-up Queued</div><div class="kpi-val" style="color:#f59e0b;">${(fups.results||[]).find(f=>f.status==='queued')?.n || 0}</div><div class="kpi-sub">email menunggu kirim</div></div>
+<div class="kpi"><div class="kpi-label">Follow-up Sent</div><div class="kpi-val" style="color:#10b981;">${(fups.results||[]).find(f=>f.status==='sent')?.n || 0}</div><div class="kpi-sub">terkirim via cron</div></div>
+</div>
+
+<div class="card"><div class="card-head"><h2>📍 Per Halaman</h2></div>${rows(byPage)}</div>
+<div class="card"><div class="card-head"><h2>🛠 Per Layanan</h2></div>${rows(byService)}</div>
+<div class="card"><div class="card-head"><h2>📦 Per Paket</h2></div>${rows(byPackage)}</div>
+
+<div class="card"><div class="card-head"><h2>🕐 20 Klik Terakhir</h2></div>${recentTable}</div>
+<div class="card"><div class="card-head"><h2>📮 Auto Follow-up WhatsApp</h2></div>${fupTable}</div>
+</body></html>`;
+  } catch (e) {
+    return "<div class='card'><p style='color:#dc2626'>renderWa error: " + escHtml(String(e)) + "</p></div>";
+  }
+}
 
 // ─── Email Templates CRUD ─────────────────────────────────────
 async function handleEmailTemplates(request, env) {

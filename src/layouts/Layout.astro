@@ -169,20 +169,56 @@ const showOrganization = true;
 				var isDownload = /\.(pdf|doc|docx|xls|xlsx|zip|rar|7z|jpg|png|webp|svg)$/i.test(href.split('?')[0].split('#')[0]);
 				var isOutbound = href && !href.startsWith(window.location.origin) && !href.startsWith('/') && !href.startsWith('#') && !isWa && !isTel;
 
-				if (isWa) {
-					pushDL({
-						event: 'whatsapp_click',
-						event_category: 'contact',
-						event_label: t.dataset.cta || bk_text(t) || 'whatsapp',
-						page_location: window.location.pathname,
-						page_title: document.title,
-						service_slug: t.dataset.service || '',
-						package_name: t.dataset.package || '',
-						package_price: t.dataset.price || '',
-						cta_location: t.dataset.ctaLocation || '',
-						link_url: t.href || ''
-					});
-				} else if (isTel) {
+			if (isWa) {
+				pushDL({
+					event: 'whatsapp_click',
+					event_category: 'contact',
+					event_label: t.dataset.cta || bk_text(t) || 'whatsapp',
+					page_location: window.location.pathname,
+					page_title: document.title,
+					service_slug: t.dataset.service || '',
+					package_name: t.dataset.package || '',
+					package_price: t.dataset.price || '',
+					cta_location: t.dataset.ctaLocation || '',
+					link_url: t.href || ''
+				});
+
+				// ===== WA Click Tracker beacon (server-side log ke D1) =====
+				try {
+					// Session cookie untuk mengaitkan klik WA → follow-up saat subscribe
+					var sid = '';
+					try {
+						var m = document.cookie.match(/(?:^|;\s*)bk_wa_session=([^;]+)/);
+						sid = m ? decodeURIComponent(m[1]) : '';
+					} catch(_e) {}
+					if (!sid) {
+						sid = 'ws_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+						try {
+							document.cookie = 'bk_wa_session=' + encodeURIComponent(sid) + '; path=/; max-age=' + (60*60*24*365) + '; samesite=Lax';
+						} catch(_e) {}
+					}
+				var qp = new URLSearchParams({
+					page: window.location.pathname,
+					service: t.dataset.service || '',
+					package: t.dataset.package || '',
+					price: t.dataset.price || '',
+					cta: t.dataset.cta || '',
+					cta_loc: t.dataset.ctaLocation || '',
+					link: (t.href || '').slice(0, 300),
+					session: sid
+				});
+				// Simpan konteks layanan di cookie (untuk follow-up saat subscribe)
+				try {
+					if (t.dataset.service) document.cookie = 'bk_wa_service=' + encodeURIComponent(t.dataset.service) + '; path=/; max-age=' + (60*60*24*365) + '; samesite=Lax';
+					if (t.dataset.package) document.cookie = 'bk_wa_package=' + encodeURIComponent(t.dataset.package) + '; path=/; max-age=' + (60*60*24*365) + '; samesite=Lax';
+				} catch(_e) {}
+				if (navigator.sendBeacon) {
+						navigator.sendBeacon('/api/track/wa?' + qp.toString());
+					} else {
+						fetch('/api/track/wa?' + qp.toString(), { method: 'GET', keepalive: true }).catch(function(){});
+					}
+				} catch(_e) {}
+			} else if (isTel) {
 					pushDL({
 						event: 'phone_click',
 						event_category: 'contact',
@@ -490,12 +526,24 @@ const showOrganization = true;
 					btn.disabled = true;
 					btn.textContent = '...';
 					try {
+						var waCtx = { wa_session: '', wa_service: '', wa_package: '' };
+						try {
+							var m = document.cookie.match(/(?:^|;\s*)bk_wa_session=([^;]+)/);
+							if (m) {
+								waCtx.wa_session = decodeURIComponent(m[1]);
+								var sc = document.cookie.match(/(?:^|;\s*)bk_wa_service=([^;]+)/);
+								var pc = document.cookie.match(/(?:^|;\s*)bk_wa_package=([^;]+)/);
+								waCtx.wa_service = sc ? decodeURIComponent(sc[1]) : '';
+								waCtx.wa_package = pc ? decodeURIComponent(pc[1]) : '';
+							}
+						} catch(_e) {}
 						var r = await fetch('/api/newsletter/subscribe', {
 							method: 'POST',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({
 								email: email, name: name,
-								page_url: location.pathname, source: document.referrer || ''
+								page_url: location.pathname, source: document.referrer || '',
+								wa_session: waCtx.wa_session, wa_service: waCtx.wa_service, wa_package: waCtx.wa_package
 							}),
 						});
 						var data = await r.json();

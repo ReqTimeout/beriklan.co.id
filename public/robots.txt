@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /jasa-pembuatan-landing-page
 
 Sitemap: https://beriklan.co.id/sitemap-index.xml

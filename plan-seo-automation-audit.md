@@ -292,8 +292,13 @@ Update `scripts/build_sitemaps.py` tiap publish run menulis `<lastmod>` = `now()
 - Inject di `[slug].astro` section "Related" → PageRank internal ke pilar + page komersial.
 
 #### 3.2 Schema boost per pilar (dari plan.md)
-- AI generate FAQ + HowTo Schema untuk 10 pilar (layanan utama).
-- Cron mingguan `schema-boost`.
+- ✅ **DONE** (commit `0028601`): HowTo JSON-LD (4 steps) di 10 halaman pilar, via
+  `Schema.astro` + `Layout.astro` prop `howTo`, data dari array `steps` per pilar.
+  FAQ schema sudah ada sebelumnya via prop `faq`. Sekaligus bersihkan duplikat
+  props `faq`/`breadcrumb`/`service` di `jasa-iklan-facebook` & `jasa-iklan-google`
+  dan typo "Jasa Jasa" di beberapa service description. Live verified 10/10.
+- Cron mingguan `schema-boost` **tidak dibuat** — schema statis (build-time) sudah
+  cukup & deterministic; AI generate tidak diperlukan untuk 10 halaman tetap.
 
 #### 3.3 Sitemap per indusry change ping
 Tiap minggu, push paket setelah publish batch:

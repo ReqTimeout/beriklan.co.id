@@ -91,12 +91,17 @@ import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
     ]}
     service={{
         name: "Jasa Pembuatan Landing Page",
-        description: "Jasa Jasa Pembuatan Landing Page profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        description: "Jasa pembuatan landing page profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
         url: "https://www.beriklan.co.id/jasa-pembuatan-landing-page/",
         priceRange: "Rp 1.000.000 - Rp 1.500.000",
         serviceType: "Landing Page",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+    howTo={{
+        name: "Cara Membuat Landing Page",
+        description: "Proses pembuatan landing page oleh tim Beriklan — dari brief riset hingga optimasi berkelanjutan, selama 4 tahap terstruktur.",
+        steps: steps.map(s => ({ name: s.title, text: `${s.tag}: ${s.desc}` }))
     }}
 >>
 

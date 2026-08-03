@@ -119,12 +119,17 @@ import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
     ]}
     service={{
         name: "Jasa Kelola Instagram",
-        description: "Jasa Jasa Kelola Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        description: "Jasa kelola Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
         url: "https://www.beriklan.co.id/jasa-kelola-instagram/",
         priceRange: "Rp 1.500.000 - Rp 3.000.000",
         serviceType: "Instagram Management",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+    howTo={{
+        name: "Cara Mengelola Akun Instagram",
+        description: "Proses pengelolaan akun Instagram oleh tim Beriklan — dari brief brand guidelines hingga report bulanan, selama 4 tahap terstruktur.",
+        steps: steps.map(s => ({ name: s.title, text: `${s.tag}: ${s.desc}` }))
     }}
 >>
 

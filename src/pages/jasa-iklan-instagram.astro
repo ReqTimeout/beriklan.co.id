@@ -105,12 +105,17 @@ import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
     ]}
     service={{
         name: "Jasa Iklan Instagram",
-        description: "Jasa Jasa Iklan Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        description: "Jasa iklan Instagram profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
         url: "https://www.beriklan.co.id/jasa-iklan-instagram/",
         priceRange: "Rp 1.750.000 - Rp 3.750.000",
         serviceType: "Instagram Ads",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+    howTo={{
+        name: "Cara Memasang Iklan Instagram Ads",
+        description: "Proses pengelolaan campaign Instagram Ads oleh tim Beriklan — dari brief strategi konten hingga optimasi rutin, selama 4 tahap terstruktur.",
+        steps: steps.map(s => ({ name: s.title, text: `${s.tag}: ${s.desc}` }))
     }}
 >>
 

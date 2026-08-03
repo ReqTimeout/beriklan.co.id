@@ -158,6 +158,11 @@ import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
     }}
+    howTo={{
+        name: "Cara Memesan Pembuatan Website",
+        description: "Proses pembuatan website oleh tim Beriklan — dari brief riset hingga serah terima, selama 4 tahap terstruktur.",
+        steps: steps.map(s => ({ name: s.title, text: `${s.tag}: ${s.desc}` }))
+    }}
 >>
 
     <Navbar client:only="svelte" />

@@ -7,10 +7,23 @@
  * - FAQPage (pages with FAQ section)
  * - BreadcrumbList (all non-homepage pages)
  * - Service (service detail pages)
+ * - HowTo (service pages with method/steps section)
  */
 export interface FAQItem {
   question: string;
   answer: string;
+}
+
+export interface HowToStep {
+  name: string;
+  text: string;
+}
+
+export interface HowToData {
+  name: string;
+  description: string;
+  totalTime?: string;
+  steps: HowToStep[];
 }
 
 export interface BreadcrumbItem {
@@ -53,10 +66,27 @@ interface Props {
   breadcrumb?: BreadcrumbItem[];
   service?: ServiceData;
   localBusiness?: LocalBusinessData;
+  howTo?: HowToData;
 }
 
-const { faq, breadcrumb, service, localBusiness } = Astro.props as Props;
+const { faq, breadcrumb, service, localBusiness, howTo } = Astro.props as Props;
 ---
+
+{howTo && howTo.steps && howTo.steps.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: howTo.name,
+    description: howTo.description,
+    totalTime: howTo.totalTime,
+    step: howTo.steps.map((item, idx) => ({
+      '@type': 'HowToStep',
+      position: idx + 1,
+      name: item.name,
+      text: item.text
+    }))
+  })}></script>
+)}
 
 {faq && faq.length > 0 && (
   <script type="application/ld+json" set:html={JSON.stringify({

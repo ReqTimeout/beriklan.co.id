@@ -119,12 +119,17 @@ import ServiceArticleLinks from '../components/ServiceArticleLinks.astro';
     ]}
     service={{
         name: "Jasa Kelola TikTok",
-        description: "Jasa Jasa Kelola TikTok profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
+        description: "Jasa kelola TikTok profesional dari Beriklan.co.id. Tim bersertifikat, strategi terukur, laporan mingguan, dan optimasi rutin untuk UMKM & bisnis menengah di Indonesia.",
         url: "https://www.beriklan.co.id/jasa-kelola-tiktok/",
         priceRange: "Rp 1.500.000 - Rp 3.000.000",
         serviceType: "TikTok Management",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
+    }}
+    howTo={{
+        name: "Cara Mengelola Akun TikTok",
+        description: "Proses pengelolaan akun TikTok oleh tim Beriklan — dari brief riset hingga optimasi FYP, selama 4 tahap terstruktur.",
+        steps: steps.map(s => ({ name: s.title, text: `${s.tag}: ${s.desc}` }))
     }}
 >>
 

@@ -194,6 +194,12 @@ export default {
     if (path === "/api/cron/growth/freshness" || path === "/api/cron/growth/freshness/") {
       return await handleGrowthFreshness(request, env);
     }
+    if (path === "/api/admin/growth-log" || path === "/api/admin/growth-log/") {
+      return await handleGrowthLogView(request, env);
+    }
+    if (path === "/api/admin/ai-test" || path === "/api/admin/ai-test/") {
+      return await handleAiTest(request, env);
+    }
     if (path === "/api/batch4" || path === "/api/batch4/") {
       // P0.5 Rate limit: 30 req/jam per IP
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/batch4", 30, 3600);
@@ -4084,6 +4090,10 @@ function getGroqKeys(env) {
   return keys;
 }
 
+// Model chat Groq yang MASIH AKTIF di tier akun (verified via /v1/models, 25 Aug 2026).
+// llama-3.3-70b-versatile & llama-3.1-8b-instant sudah dihapus → 404 model_not_found.
+const GROQ_CHAT_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "openai/gpt-oss-20b"];
+
 async function handlePostsDashboard(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
@@ -6924,8 +6934,7 @@ function extractJson(s) {
 }
 
 // Helper: Zen/Groq generation for refresh (lighter than full article)
-async function generateWithZenOrGroq(prompt, env) {
-  const maxTokens = 600;
+async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
   if (env.ZEN_API_KEY) {
     try {
       const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
@@ -6948,23 +6957,28 @@ async function generateWithZenOrGroq(prompt, env) {
   const groqKeys = getGroqKeys(env);
   for (let i = 0; i < groqKeys.length; i++) {
     const key = groqKeys[i];
-    try {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+    for (const model of GROQ_CHAT_MODELS) {
+      try {
+        const body = {
+          model,
           messages: [{ role: "user", content: prompt }],
-          max_tokens: maxTokens,
+          max_tokens: Math.max(maxTokens, model.startsWith("openai/gpt-oss") ? 2048 : maxTokens),
           temperature: 0.7,
-        }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const text = data.choices?.[0]?.message?.content || "";
-        return { _model: `groq/llama-3.3-70b-versatile (groq#${i + 1})`, text };
-      }
-    } catch (e) {}
+        };
+        // gpt-oss: reasoning tokens ikut memakan budget → paksa low untuk output ringkas
+        if (model.startsWith("openai/gpt-oss")) body.reasoning_effort = "low";
+        const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          const text = data.choices?.[0]?.message?.content || "";
+          if (text) return { _model: `groq/${model} (groq#${i + 1})`, text };
+        }
+      } catch (e) {}
+    }
   }
   return null;
 }
@@ -6975,8 +6989,9 @@ async function generateWithZenOrGroq(prompt, env) {
 //   2. growth-enrich    : artikel posisi 3-18 → rewrite intro + FAQ di posts_content
 //   3. growth-ctr-fix   : impresi tinggi + CTR rendah → seo_title/seo_description
 //   4. growth-freshness : refresh jujur artikel lama → refreshed_at + callout "Update"
-// Semua menulis LANGSUNG ke D1 — renderer membaca saat request, tanpa build/deploy.
-// Halaman STATIC (baked-in Astro) di-skip: perubahan D1 tidak tampil sampai rebuild.
+// Semua menulis LANGSUNG ke D1 — halaman blog di-render dinamis dari D1 saat
+// request (fetch() D1-first untuk /blog/<slug>/ di posts_meta), jadi efek live
+// tanpa build/deploy. Static asset hanya fallback kalau slug tidak ada di D1.
 
 async function ensureGrowthSchema(env) {
   const stmts = [
@@ -7034,17 +7049,6 @@ async function growthPing(env, slug, errors) {
   } catch (e) { if (errors) errors.push({ stage: "ping", slug, error: String(e).slice(0, 120) }); }
 }
 
-async function growthIsStaticAsset(slug, env) {
-  // Halaman yang dibake saat build Astro punya marker generator/meta "content=\"Astro"
-  // dan asset /_astro/*.css; halaman D1-render (worker) tidak. Fetch gagal → anggap dinamis.
-  try {
-    const r = await env.ASSETS.fetch(`https://assets/blog/${slug}/`);
-    if (!r.ok) return false;
-    const html = await r.text();
-    return /content="Astro/.test(html) || html.includes("/_astro/");
-  } catch { return false; }
-}
-
 function growthServiceFromQuery(q) {
   const s = String(q || "").toLowerCase();
   if (/facebook|meta ads|fb ads|iklan facebook|iklan fb\b|ig\b|instagram/.test(s)) return "jasa-iklan-facebook";
@@ -7079,7 +7083,7 @@ async function handleGrowthGscLoop(request, env) {
     await ensureGrowthSchema(env);
     const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
     const gscToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
-    const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
+    const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id/";
     const endDate = new Date(Date.now() - 2 * 86400000); // data GSC delay ±2 hari
     const startDate = new Date(endDate.getTime() - days * 86400000);
     const fmt = (d) => d.toISOString().slice(0, 10);
@@ -7165,6 +7169,81 @@ async function handleGrowthGscLoop(request, env) {
   }
 }
 
+// ── AI probe: cek zen + semua groq key tanpa menelan error ──
+// GET /api/admin/ai-test?token=...
+async function handleAiTest(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const probe = "Balas dengan satu kata: OK";
+  const results = [];
+  if (env.ZEN_API_KEY) {
+    try {
+      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+        body: JSON.stringify({ model: "deepseek-v4-flash-free", messages: [{ role: "user", content: probe }], max_tokens: 20, thinking: { type: "disabled" } }),
+      });
+      const body = await r.text().catch(() => "");
+      results.push({ provider: "zen/deepseek-v4-flash-free", status: r.status, ok: r.ok, body: body.slice(0, 200) });
+    } catch (e) { results.push({ provider: "zen", ok: false, error: String(e).slice(0, 200) }); }
+  } else {
+    results.push({ provider: "zen", ok: false, error: "ZEN_API_KEY not set" });
+  }
+  const groqKeys = getGroqKeys(env);
+  if (url.searchParams.get("models") === "1" && groqKeys.length) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/models", { headers: { Authorization: `Bearer ${groqKeys[0]}` } });
+      const d = await r.json().catch(() => ({}));
+      const ids = ((d.data || []).map((m) => m.id)).sort();
+      return new Response(JSON.stringify({ ok: r.ok, status: r.status, models: ids.slice(0, 60) }), { headers: { "Content-Type": "application/json" } });
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 200) }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+  }
+  for (let i = 0; i < groqKeys.length; i++) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKeys[i]}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: GROQ_CHAT_MODELS[0], messages: [{ role: "user", content: probe }], max_tokens: 20, temperature: 1 }),
+      });
+      const body = await r.text().catch(() => "");
+      results.push({ provider: `groq#${i + 1}`, status: r.status, ok: r.ok, body: body.slice(0, 200) });
+    } catch (e) { results.push({ provider: `groq#${i + 1}`, ok: false, error: String(e).slice(0, 200) }); }
+  }
+  const anyOk = results.some((r) => r.ok);
+  return new Response(JSON.stringify({ ok: anyOk, results }), { headers: { "Content-Type": "application/json" } });
+}
+
+// ── Growth log viewer (debugging/audit trail) ──
+// GET /api/admin/growth-log?token=...&action=enrich|ctr-fix|freshness|gsc-loop&slug=&limit=
+async function handleGrowthLogView(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  try {
+    await ensureGrowthSchema(env);
+    const where = []; const params = [];
+    const action = url.searchParams.get("action");
+    const slug = url.searchParams.get("slug");
+    if (action) { where.push("action=?"); params.push(action); }
+    if (slug) { where.push("slug LIKE ?"); params.push(`%${slug}%`); }
+    const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10) || 50, 200);
+    const rows = await env.DB.prepare(`SELECT * FROM growth_log ${whereSql} ORDER BY id DESC LIMIT ?`).bind(...params, limit).all();
+    const byAction = await env.DB.prepare("SELECT action, COUNT(*) n, MAX(created_at) last FROM growth_log GROUP BY action").all();
+    return new Response(JSON.stringify({ ok: true, total: (rows.results || []).length, by_action: byAction.results || [], rows: rows.results || [] }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
 // ── Helper: join keyword_ranks terbaru → posts_meta (slug diekstrak dari page_url) ──
 const GROWTH_SLUG_SQL = `rtrim(replace(replace(replace(replace(kr.page_url,
      'https://beriklan.co.id/blog/',''),
@@ -7184,6 +7263,8 @@ async function handleGrowthEnrich(request, env) {
 
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "3", 10) || 3, 5));
   const minImp = Math.max(1, parseInt(url.searchParams.get("minImp") || "10", 10) || 10);
+  const posMin = Math.max(1, Math.min(parseInt(url.searchParams.get("posMin") || "3", 10) || 3, 50));
+  const posMax = Math.max(posMin, Math.min(parseInt(url.searchParams.get("posMax") || "18", 10) || 18, 100));
   const t0 = Date.now();
   const log = []; const errors = []; const optimized = [];
 
@@ -7197,13 +7278,13 @@ async function handleGrowthEnrich(request, env) {
         SELECT keyword, page_url, MAX(date) AS md FROM keyword_ranks GROUP BY keyword, page_url
       ) latest ON kr.keyword = latest.keyword AND kr.page_url = latest.page_url AND kr.date = latest.md
       JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL}
-      WHERE kr.position BETWEEN 3 AND 18
+      WHERE kr.position BETWEEN ? AND ?
         AND kr.impressions >= ?
         AND pm.slug != ''
         AND (pm.enriched_at IS NULL OR pm.enriched_at < datetime('now', '-21 days'))
       ORDER BY kr.impressions DESC
       LIMIT ?
-    `).bind(minImp, count).all();
+    `).bind(posMin, posMax, minImp, count).all();
     const rows = cands.results || [];
     log.push({ stage: "candidates", count: rows.length });
     if (!rows.length) {
@@ -7213,11 +7294,6 @@ async function handleGrowthEnrich(request, env) {
     for (const cand of rows) {
       const slug = cand.slug;
       try {
-        if (await growthIsStaticAsset(slug, env)) {
-          await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, position: cand.position, impressions: cand.impressions, static_page: 1, error: "skipped: static page (perlu rebuild)" });
-          log.push({ stage: "skip_static", slug });
-          continue;
-        }
         const c = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
         let content = c?.content || "";
         if (!content || content.length < 300) { log.push({ stage: "skip_empty", slug }); continue; }
@@ -7245,12 +7321,12 @@ Aturan wajib:
 - Faq menjawab variasi intent dari query utama (harga/cara/perbandingan/risiko)
 - Output hanya JSON.`;
 
-        const aiResult = await generateWithZenOrGroq(prompt, env);
+        const aiResult = await generateWithZenOrGroq(prompt, env, 1400);
         if (!aiResult) { errors.push({ slug, error: "AI failed" }); await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, error: "AI failed" }); continue; }
         const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
         const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
         const j = extractJson(aiText);
-        if (!j || !j.intro) { errors.push({ slug, error: "JSON parse failed", raw: String(aiText).slice(0, 150) }); continue; }
+        if (!j || !j.intro) { errors.push({ slug, error: "JSON parse failed", raw: String(aiText).slice(0, 150) }); await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, error: "JSON parse failed", before_json: String(aiText).slice(0, 800) }); continue; }
 
         // 2a. Ganti <p> pembuka pertama dengan intro baru
         const pRe = /<p[^>]*>[\s\S]*?<\/p>/i;
@@ -7326,7 +7402,6 @@ async function handleGrowthCtrFix(request, env) {
     for (const cand of rows) {
       const slug = cand.slug;
       try {
-        const isStatic = await growthIsStaticAsset(slug, env);
         const prompt = `Kamu adalah SERP optimization specialist Indonesia untuk beriklan.co.id (agency performance marketing).
 Halaman blog dapat ${cand.impressions} impresi Google tapi CTR hanya ${Math.round((cand.ctr || 0) * 1000) / 10}% di posisi ${cand.position} untuk query "${cand.keyword}".
 Judul saat ini: "${cand.title || ""}"
@@ -7344,7 +7419,7 @@ Aturan wajib:
 - Huruf kapital wajar (title case), tanpa emoji
 - Output hanya JSON.`;
 
-        const aiResult = await generateWithZenOrGroq(prompt, env);
+        const aiResult = await generateWithZenOrGroq(prompt, env, 700);
         if (!aiResult) { errors.push({ slug, error: "AI failed" }); continue; }
         const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
         const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
@@ -7361,11 +7436,9 @@ Aturan wajib:
         await env.DB.prepare(
           "UPDATE posts_meta SET seo_title=?, seo_description=?, ctr_fixed_at=datetime('now') WHERE slug=?"
         ).bind(newTitle, newDesc, slug).run();
-        await growthLogInsert(env, { action: "ctr-fix", slug, keyword: cand.keyword, position: cand.position, ctr: cand.ctr, impressions: cand.impressions, static_page: isStatic ? 1 : 0, before_json: JSON.stringify(before), after_json: JSON.stringify({ title: newTitle, desc: newDesc, reason: j.reason || "" }), ai_model: aiModel });
+        await growthLogInsert(env, { action: "ctr-fix", slug, keyword: cand.keyword, position: cand.position, ctr: cand.ctr, impressions: cand.impressions, before_json: JSON.stringify(before), after_json: JSON.stringify({ title: newTitle, desc: newDesc, reason: j.reason || "" }), ai_model: aiModel });
         await growthPing(env, slug, errors);
-        fixed.push({ slug, keyword: cand.keyword, imps: cand.impressions, ctr: cand.ctr, new_title: newTitle, static: isStatic });
-        log.push({ stage: "fixed", slug, new_title: newTitle });
-        if (isStatic) log.push({ stage: "warn_static", slug, note: "halaman static — efek baru live setelah CF rebuild" });
+        fixed.push({ slug, keyword: cand.keyword, imps: cand.impressions, ctr: cand.ctr, new_title: newTitle });
       } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
     }
 
@@ -7397,8 +7470,8 @@ async function handleGrowthFreshness(request, env) {
       SELECT pm.slug, pm.title, pm.service, pm.iso_date, COALESCE(g.imps, 0) AS imps
       FROM posts_meta pm
       LEFT JOIN (
-        SELECT ${GROWTH_SLUG_SQL} AS slug, SUM(impressions) AS imps
-        FROM keyword_ranks GROUP BY slug
+        SELECT ${GROWTH_SLUG_SQL} AS slug, SUM(kr.impressions) AS imps
+        FROM keyword_ranks kr GROUP BY slug
       ) g ON g.slug = pm.slug
       WHERE pm.iso_date IS NOT NULL
         AND pm.iso_date < datetime('now', '-${ageDays} days')
@@ -7416,11 +7489,6 @@ async function handleGrowthFreshness(request, env) {
     for (const cand of rows) {
       const slug = cand.slug;
       try {
-        if (await growthIsStaticAsset(slug, env)) {
-          await growthLogInsert(env, { action: "freshness", slug, static_page: 1, error: "skipped: static page" });
-          log.push({ stage: "skip_static", slug });
-          continue;
-        }
         const c = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
         const content = c?.content || "";
         if (!content || content.includes('class="freshness-update"')) { log.push({ stage: "skip", slug, reason: content ? "already refreshed" : "empty" }); continue; }
@@ -7435,7 +7503,7 @@ Buat JSON valid (hanya JSON, tanpa markdown):
 
 Aturan: bahasa Indonesia formal, "Anda", tanpa overclaim, tanpa menyebut tanggal spesifik yang tidak bisa diverifikasi. Output hanya JSON.`;
 
-        const aiResult = await generateWithZenOrGroq(prompt, env);
+        const aiResult = await generateWithZenOrGroq(prompt, env, 700);
         if (!aiResult) { errors.push({ slug, error: "AI failed" }); continue; }
         const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
         const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
@@ -7524,7 +7592,7 @@ async function handlePingSitemap(request, env) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   }
     // P0: siteUrl = apex (gunakan env GSC_SITE_URL untuk domain property sc-domain:beriklan.co.id jika perlu)
-  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
+  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id/";
   const subSitemaps = [
     "sitemap-static.xml",
     "sitemap-pillar.xml",
@@ -7758,7 +7826,7 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
     let ai_used_model = null;
     // Prefer OpenCode Zen (free deepseek-v4-flash), fallback Groq
     const zenModels = ["deepseek-v4-flash-free"];
-    const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+    const groqModels = GROQ_CHAT_MODELS;
     const aiEndpoints = [];
     if (env.ZEN_API_KEY) aiEndpoints.push({ name: "zen", url: "https://opencode.ai/zen/v1/chat/completions", key: env.ZEN_API_KEY, models: zenModels, thinkingDisabled: true });
     if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq-1", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
@@ -9265,36 +9333,39 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
       for (let i = 0; i < groqKeys.length && !article; i++) {
         const groqKey = groqKeys[i];
         const keyLabel = `groq#${i + 1}`;
-        try {
-          const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "llama-3.3-70b-versatile",
-              messages: [{ role: "user", content: prompt }],
-              max_tokens: 4000,
-              temperature: 0.7,
-            }),
-          });
-          groqResults.push({ key: keyLabel, status: r.status, ok: r.ok });
-          if (r.ok) {
-            const data = await r.json();
-            const cand = (data.choices?.[0]?.message?.content || "").trim();
-            const cleaned = cand.replace(/^```html/, "").replace(/^```/, "").replace(/```$/, "").trim();
-            if (cleaned.length > 500) {
-              article = cleaned;
-              groqDiag = { key: keyLabel, status: 200, len: cleaned.length, model: data.model };
-              modelUsed = `groq/llama-3.3-70b-versatile (${keyLabel})`;
-              break;
-            }
+        for (const groqModel of GROQ_CHAT_MODELS) {
+          if (article) break;
+          try {
+            const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: groqModel,
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 4000,
+                temperature: 0.7,
+              }),
+            });
+            groqResults.push({ key: keyLabel, model: groqModel, status: r.status, ok: r.ok });
+            if (r.ok) {
+              const data = await r.json();
+              const cand = (data.choices?.[0]?.message?.content || "").trim();
+              const cleaned = cand.replace(/^```html/, "").replace(/^```/, "").replace(/```$/, "").trim();
+              if (cleaned.length > 500) {
+                article = cleaned;
+                groqDiag = { key: keyLabel, status: 200, len: cleaned.length, model: data.model };
+                modelUsed = `groq/${groqModel} (${keyLabel})`;
+                break;
+              }
           } else {
             try {
               const body = await r.text();
               groqResults[groqResults.length - 1].body = body.slice(0, 200);
             } catch {}
           }
-        } catch (e) {
-          groqResults.push({ key: keyLabel, error: String(e).slice(0, 100) });
+          } catch (e) {
+            groqResults.push({ key: keyLabel, model: groqModel, error: String(e).slice(0, 100) });
+          }
         }
       }
       // If none succeeded, set groqDiag to first failure (representative)
@@ -9473,7 +9544,7 @@ async function handleBatch4(request, env) {
       let content = null;
       const groqKeys = getGroqKeys(env);
       if (groqKeys.length > 0) {
-        for (const mdl of ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]) {
+        for (const mdl of GROQ_CHAT_MODELS) {
           if (content) break;
           for (const groqKey of groqKeys) {
             try {
@@ -9668,7 +9739,7 @@ async function handleCityEnrich(request, env) {
       let html = null;
       const groqKeys = getGroqKeys(env);
       if (groqKeys.length > 0) {
-        for (const mdl of ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]) {
+        for (const mdl of GROQ_CHAT_MODELS) {
           if (html) break;
           for (const groqKey of groqKeys) {
             try {
@@ -9894,7 +9965,7 @@ async function handleGscPullCron(request, env) {
     const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
     const gscToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
       // P0: siteUrl = apex (gunakan env GSC_SITE_URL untuk domain property sc-domain:beriklan.co.id jika perlu)
-  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
+  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id/";
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - 28 * 86400000);
     const fmt = (d) => d.toISOString().slice(0, 10);

@@ -899,11 +899,18 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 - `cron_settings` seed `lead-pipeline` (enabled=1, label "Akuisisi klien...")
 
 ### Catatan
-- `run_worker_first` wajib (jangan hapus). Email-send cron aktif → kuota Resend 100/hari, reset 00:00 UTC. Email yang tidak ter-personalize pakai subject template service default.
+- `run_worker_first` wajib (jangan hapus). Email-send cron aktif → kuota Resend 100/hari, reset 00:00 UTC. Email yang tidak ter-personalize pakai subject template service default. Email yang tidak ter-personalize pakai subject template service default.
 - Data `database-siap-pake` (9.9k kontak) mayoritas **email-only tanpa name/phone/category** → semua match ke default service. Indonetwork/Google Places menyimpan fields lebih kaya.
 
 ### Crons aktif (11 job, 5 slot CF cron)
-Slot cron CF gratis cuma 5 ekspresi; job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`:
+Slot cron CF gratis cuma 5 ekspresi **per account** (bukan per-script); job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`.
+**STATUS TERPASANG (2026-08-25): hanya 2 slot di `beriklanweb`** — `0 * * * *` + `*/15 * * * *`.
+Worker legacy `beriklan-app` memakai 3 slot sisanya, jadi `gsc-indexing`/`trending-generate`/`snippet-optimize`
+(`0 */6 * * *`, `30 */6 * * *`, `0 3 * * 1`) BELUM terpasang. Untuk memasang: hapus cron
+`beriklan-app` via PUT array `[]` (tanya user dulu — script-nya bukan dead-code), lalu PUT 5
+cron `beriklanweb` (body array mentah `[{"cron":"..."}]`, BUKAN `{"schedules":[...]}` → error 10026).
+Job growth tetap jalan karena memakai time-gate di dalam slot hourly.
+Daftar job:
 - `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
 - `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)
 - `gsc-indexing` (0 */6 * * *) — GSC + sitemap + rank
@@ -920,10 +927,13 @@ Slot cron CF gratis cuma 5 ekspresi; job growth disusupkan ke dalam slot hourly 
 - `growth-enrich` — harian 09:00 UTC: artikel posisi 3-18 (snapshot `keyword_ranks`) → rewrite paragraf pembuka (`class="growth-intro"`) + FAQ spesifik-query (`class="growth-faq"`) di `posts_content`. Cooldown 21 hari (`posts_meta.enriched_at`). Heading FAQ sama dengan FAQ deterministik renderer → FAQ generik tidak ditumpuk.
 - `growth-ctr-fix` — harian 09:00 UTC: impresi≥50 & CTR≤2% & posisi≤30 → rewrite SERP `seo_title` (≤60) + `seo_description` (≤155) di `posts_meta`. Renderer pakai override ini untuk <title>/og/meta (H1 tidak berubah). Cooldown 30 hari (`posts_meta.ctr_fixed_at`).
 - `growth-freshness` — Senin 02:00 UTC: artikel >90 hari dgn impresi → callout "Update {tahun}" + bullets disisipkan setelah paragraf pertama (`class="freshness-update"`), set `posts_meta.refreshed_at` → badge "Diperbarui" + `dateModified` schema (jujur, `datePublished` tidak diubah).
-- Semua job growth MENULIS LANGSUNG KE D1 (efek live tanpa build) dan SKIP halaman static Astro (perubahan D1 tidak tampil sampai CF rebuild; ter-log di `growth_log.static_page=1`).
+- Semua job growth MENULIS LANGSUNG KE D1 dan langsung live tanpa build/deploy: fetch() worker sudah D1-first untuk `/blog/<slug>/` yang ada di `posts_meta` (render dinamis baca `posts_content`/`posts_meta` saat request; static asset hanya fallback). Kolom `growth_log.static_page` dipertahankan untuk kompatibilitas schema (tidak lagi dipakai filter).
 - Audit trail + debugging: tabel `growth_log` (action/slug/keyword/position/ctr/impressions/static_page/before_json/after_json/ai_model/error).
 - Endpoint manual: `/api/cron/growth/gsc-loop|enrich|ctr-fix|freshness?token=...` (param count/minImp/maxQueue/days sesuai handler).
 - `index-cascade` manual: `/api/cron/index-cascade?token=...&count=50&dry=1` — backfill katalog blog yang belum pernah diqueue ke `pending_indexing` (dikirim oleh cron gsc-indexing/indexnow, bukan submit langsung).
+- Audit trail UI: `/api/admin/growth-log?token=...&action=enrich&slug=...&limit=20`; probe AI: `/api/admin/ai-test?token=...` (+`&models=1` untuk list model Groq live).
+- AI provider: Zen `deepseek-v4-flash-free` (gratis, sering 429) → fallback Groq via konstanta `GROQ_CHAT_MODELS` (`openai/gpt-oss-120b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-20b`; 3 key dirotasi). Model `llama-3.3-70b-versatile` sudah dihapus Groq — JANGAN dipakai lagi. gpt-oss: output reasoning ikut memakan budget → `reasoning_effort: "low"` + `max_tokens` ≥ 2048 untuk prompt JSON.
+- GSC: service account saat ini HANYA punya akses property `https://www.beriklan.co.id/` (secret `GSC_SITE_URL`). Apex/domain property 403/0 rows — user perlu tambahkan SA sebagai Owner, lalu ganti secret via `npx wrangler secret put GSC_SITE_URL`.
 
 ### Tabel Email Flow
 - `email_templates` (12 templates, 11 service + 1 follow-up)

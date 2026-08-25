@@ -289,23 +289,47 @@ sudah ditulis di `src/worker-entry.js` (tanpa GitHub Actions; jalan via CF Worke
 
 **Keputusan arsitektur penting:**
 - Semua loop MENULIS LANGSUNG KE D1 (`posts_meta`/`posts_content`) — efek live tanpa build,
-  karena renderer dinamis membaca D1 saat request. Jalur posts.json→GitHub (lama) hanya
-  berubah setelah CF rebuild.
-- Halaman STATIC Astro di-SKIP (dideteksi via generator meta / `_astro/`); ter-log di
-  `growth_log.static_page=1`. Perubahan D1 tidak tampil di halaman static sampai rebuild.
+  karena `fetch()` sudah D1-first untuk `/blog/<slug>/` yang ada di `posts_meta` (render
+  dinamis baca D1 saat request; static asset hanya fallback kalau slug tak ada di D1).
 - Audit trail lengkap di tabel `growth_log`; schema auto-ensure di tiap handler + migrasi.
 - `renderBlogPost` dibuat defensif: fetch kolom growth terpisah (try/catch) supaya tidak
   500 kalau kolom belum ada.
 - `/api/cron/index-cascade` ditambahkan ulang (kontrak live lama, submit via
   `pending_indexing` agar quota GSC 200/hari tetap terkontrol).
 
-**STATUS DEPLOY: TERBLOKIR — butuh aksi user.**
-Build live masih `v-2026-08-01-enrich-faq-mesh` (1 Agustus). Commit fix P0/P1 + growth
-ini belum bisa naik karena:
-1. Repo TIDAK punya webhook → CF Workers Build tidak auto-trigger saat push (setup
-   "Connect GitHub" di dashboard belum pernah dilakukan; lihat CF-WORKERS-BUILD-SETUP.md).
-2. CF API token di `account.md` sudah INVALID (`code 1000`), jadi `wrangler deploy`
-   lokal juga tidak bisa.
-Opsi buka blokir (pilih salah satu): (a) selesaikan Connect GitHub di dashboard CF
-(5-10 menit), atau (b) buatkan API token baru scope Account "Workers Scripts: Edit"
-agar deploy wrangler lokal bisa dijalankan.
+**STATUS DEPLOY — SELESAI, growth system LIVE & terverifikasi (2026-08-25).**
+CF auto-build via GitHub tidak terpasang (repo tanpa webhook); deploy sekarang via
+`wrangler deploy` lokal dengan token account-scope baru `cfut_wUtY...` (lihat
+`account.md`). Code live = HEAD repo + patch lokal (lihat commit list).
+
+Hasil verifikasi end-to-end:
+- 301 `www→apex` WORKS untuk API/static/blog — syaratnya `assets.run_worker_first: ["/*"]`
+  di `wrangler.jsonc` (kalau hanya `/blog/*`, asset-first mem-bypass Worker → 301 gagal).
+- Build Astro 10.416 file (893MB dist: 7497 blog + 4952 tag + 500 kota) deploy ±30s incremental.
+- `rank-sync` OK (103 rows); `gsc-loop` OK (168 rows GSC, 3 relevan, dedupe jalan).
+- `growth/enrich` OK — intro + 3 FAQ live di `/blog/<slug>/` (`growth-intro` + `growth-faq`).
+- `growth/freshness` OK — badge "Diperbarui" + callout "Update 2026" live (`freshness-update`).
+- `growth/ctr-fix` OK (0 kandidat: belum ada artikel imps≥10 & CTR≤2% di data www property).
+- Audit trail: `/api/admin/growth-log?token=...` menampilkan action/slug/model/error.
+- AI: Zen `deepseek-v4-flash-free` sering 429 → fallback Groq. Model `llama-3.3-70b-versatile`
+  sudah DIHAPUS Groq; konstanta `GROQ_CHAT_MODELS` = `openai/gpt-oss-120b`,
+  `qwen/qwen3.6-27b`, `openai/gpt-oss-20b` (3 API key dirotasi). gpt-oss butuh
+  `reasoning_effort: "low"` + max_tokens lebih besar (output reasoning ikut memakan budget).
+- Debug: `/api/admin/ai-test?token=...` (tambah `&models=1` untuk list model Groq live).
+
+Gotchas operasional yang ditemukan:
+1. **Schedule API** PUT `/accounts/{id}/workers/scripts/{name}/schedules` — body harus
+   **array mentah** `[{"cron":"..."}]`, BUKAN objek `{"schedules":[...]}` (error 10026).
+2. **Cap cron 5/account** (bukan per-script): `beriklan-app` lama memakai 3 slot →
+   `beriklanweb` hanya bisa 2 (`0 * * * *` + `*/15 * * * *`). Job scraper/refresh
+   (`30 6`, `0 7`, `0 3 * * 1`) TIDAK terpasang; growth jobs tetap jalan karena
+   disusupkan ke slot hourly via time-gate (`h%6`, `h===9`, `dow===1 && h===2`).
+   Opsi: hapus cron `beriklan-app` (legacy, bukan dead-code — tanya user dulu) atau upgrade.
+3. **GSC permission**: service account HANYA punya akses property `https://www.beriklan.co.id/`
+   (prefix URL). Apex `https://beriklan.co.id/` → 403; `sc-domain:beriklan.co.id` → 0 rows.
+   Secret `GSC_SITE_URL` saat ini = `https://www.beriklan.co.id/` (satu-satunya yang data).
+   → AKSI USER: tambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
+   Owner di GSC property apex/domain, lalu set `GSC_SITE_URL` ke apex (`wrangler secret put`).
+4. **Root www bisa HIT cache lama** (token tidak punya scope cache purge): `www.beriklan.co.id/`
+   kadang 200 HIT; path lain 301. Menunggu expire atau purge manual via dashboard.
+5. Renderer blog sudah D1-first + fallback asset statis, jadi semua job growth live tanpa rebuild.

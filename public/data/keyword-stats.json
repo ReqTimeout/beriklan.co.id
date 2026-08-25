@@ -1,345 +1,297 @@
 {
-  "generated_at": "2026-07-30T20:28:18",
+  "generated_at": "2026-08-25T20:27:23",
   "keywords": {
-    "total": 387405,
-    "generated": 2356,
-    "pending": 385049,
-    "live_in_posts": 1073,
-    "coverage": 0.6
+    "total": 27458,
+    "generated": 9,
+    "pending": 27449,
+    "live_in_posts": 2942,
+    "coverage": 0.0
   },
   "posts": {
-    "total": 2331,
-    "generated": 1504,
+    "total": 7497,
+    "generated": 6670,
     "by_service": {
-      "jasa-digital-marketing": 719,
-      "jasa-iklan-facebook": 351,
+      "jasa-iklan-tiktok": 3481,
+      "jasa-digital-marketing": 1659,
+      "jasa-iklan-facebook": 981,
       "jasa-pembuatan-website": 198,
-      "jasa-iklan-google": 132,
-      "jasa-iklan-instagram": 26,
-      "jasa-iklan-tiktok": 26,
-      "jasa-iklan-youtube": 26,
+      "jasa-iklan-google": 133,
+      "jasa-iklan-instagram": 127,
+      "jasa-view-live": 38,
+      "jasa-iklan-youtube": 27,
       "jasa-pembuatan-landing-page": 26
     }
   },
   "by_service": [
     {
+      "key": "Jasa View Live",
+      "total": 3635,
+      "generated": 0,
+      "pending": 3635,
+      "coverage": 0.0
+    },
+    {
       "key": "Jasa Iklan Google",
-      "total": 52944,
-      "generated": 40,
-      "pending": 52904,
-      "coverage": 0.1
+      "total": 2713,
+      "generated": 0,
+      "pending": 2713,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Pembuatan Website",
+      "total": 2625,
+      "generated": 0,
+      "pending": 2625,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Iklan Facebook",
+      "total": 2568,
+      "generated": 0,
+      "pending": 2568,
+      "coverage": 0.0
     },
     {
       "key": "Jasa Iklan YouTube",
-      "total": 47159,
-      "generated": 1,
-      "pending": 47158,
+      "total": 2450,
+      "generated": 0,
+      "pending": 2450,
       "coverage": 0.0
     },
     {
       "key": "Jasa Iklan Instagram",
-      "total": 39592,
-      "generated": 4,
-      "pending": 39588,
+      "total": 2447,
+      "generated": 0,
+      "pending": 2447,
+      "coverage": 0.0
+    },
+    {
+      "key": "Jasa Pembuatan Landing Page",
+      "total": 2421,
+      "generated": 0,
+      "pending": 2421,
       "coverage": 0.0
     },
     {
       "key": "Jasa Iklan TikTok",
-      "total": 38686,
-      "generated": 28,
-      "pending": 38658,
-      "coverage": 0.1
+      "total": 2419,
+      "generated": 0,
+      "pending": 2419,
+      "coverage": 0.0
     },
     {
-      "key": "Jasa Iklan Facebook",
-      "total": 33097,
-      "generated": 401,
-      "pending": 32696,
-      "coverage": 1.2
-    },
-    {
-      "key": "Jasa Pembuatan Landing Page",
-      "total": 29583,
-      "generated": 29,
-      "pending": 29554,
-      "coverage": 0.1
+      "key": "Jasa Kelola Instagram",
+      "total": 2366,
+      "generated": 0,
+      "pending": 2366,
+      "coverage": 0.0
     },
     {
       "key": "Jasa Kelola TikTok",
-      "total": 29070,
-      "generated": 1,
-      "pending": 29069,
+      "total": 2286,
+      "generated": 0,
+      "pending": 2286,
       "coverage": 0.0
     },
     {
       "key": "Jasa Digital Marketing",
-      "total": 28714,
-      "generated": 1360,
-      "pending": 27354,
-      "coverage": 4.7
-    },
-    {
-      "key": "Jasa Pembuatan Website",
-      "total": 27717,
-      "generated": 444,
-      "pending": 27273,
-      "coverage": 1.6
-    },
-    {
-      "key": "Jasa Kelola Instagram",
-      "total": 25318,
-      "generated": 0,
-      "pending": 25318,
-      "coverage": 0.0
-    },
-    {
-      "key": "Jasa View Live",
-      "total": 18452,
-      "generated": 0,
-      "pending": 18452,
-      "coverage": 0.0
-    },
-    {
-      "key": "Lainnya / Umum",
-      "total": 17073,
-      "generated": 48,
-      "pending": 17025,
-      "coverage": 0.3
+      "total": 1528,
+      "generated": 9,
+      "pending": 1519,
+      "coverage": 0.6
     }
   ],
   "by_city": [
     {
-      "key": "Yogyakarta",
-      "total": 15329,
-      "generated": 145,
-      "pending": 15184,
-      "coverage": 0.9
-    },
-    {
-      "key": "Surabaya",
-      "total": 15321,
-      "generated": 142,
-      "pending": 15179,
-      "coverage": 0.9
-    },
-    {
       "key": "Bandung",
-      "total": 15317,
-      "generated": 145,
-      "pending": 15172,
-      "coverage": 0.9
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
       "key": "Bekasi",
-      "total": 15313,
-      "generated": 54,
-      "pending": 15259,
-      "coverage": 0.4
-    },
-    {
-      "key": "Medan",
-      "total": 15312,
-      "generated": 54,
-      "pending": 15258,
-      "coverage": 0.4
-    },
-    {
-      "key": "Depok",
-      "total": 15311,
-      "generated": 56,
-      "pending": 15255,
-      "coverage": 0.4
-    },
-    {
-      "key": "Semarang",
-      "total": 15311,
-      "generated": 84,
-      "pending": 15227,
-      "coverage": 0.5
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
       "key": "Denpasar",
-      "total": 15308,
-      "generated": 50,
-      "pending": 15258,
-      "coverage": 0.3
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
+    },
+    {
+      "key": "Depok",
+      "total": 1052,
+      "generated": 2,
+      "pending": 1050,
+      "coverage": 0.2
     },
     {
       "key": "Jakarta",
-      "total": 15308,
-      "generated": 144,
-      "pending": 15164,
-      "coverage": 0.9
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
       "key": "Makassar",
-      "total": 15294,
-      "generated": 52,
-      "pending": 15242,
-      "coverage": 0.3
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
-      "key": "Tangerang",
-      "total": 14433,
-      "generated": 55,
-      "pending": 14378,
-      "coverage": 0.4
+      "key": "Medan",
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
-      "key": "Bogor",
-      "total": 14430,
-      "generated": 51,
-      "pending": 14379,
-      "coverage": 0.4
+      "key": "Semarang",
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
-      "key": "Malang",
-      "total": 14430,
-      "generated": 51,
-      "pending": 14379,
-      "coverage": 0.4
+      "key": "Surabaya",
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
-      "key": "Palembang",
-      "total": 14429,
-      "generated": 50,
-      "pending": 14379,
-      "coverage": 0.3
+      "key": "Yogyakarta",
+      "total": 1052,
+      "generated": 0,
+      "pending": 1052,
+      "coverage": 0.0
     },
     {
       "key": "Batam",
-      "total": 14428,
-      "generated": 50,
-      "pending": 14378,
-      "coverage": 0.3
+      "total": 1032,
+      "generated": 1,
+      "pending": 1031,
+      "coverage": 0.1
     },
     {
-      "key": "Sidoarjo",
-      "total": 13150,
-      "generated": 51,
-      "pending": 13099,
-      "coverage": 0.4
+      "key": "Bogor",
+      "total": 1032,
+      "generated": 2,
+      "pending": 1030,
+      "coverage": 0.2
     },
     {
-      "key": "Solo",
-      "total": 13149,
-      "generated": 55,
-      "pending": 13094,
-      "coverage": 0.4
+      "key": "Malang",
+      "total": 1032,
+      "generated": 2,
+      "pending": 1030,
+      "coverage": 0.2
     },
     {
-      "key": "Padang",
-      "total": 13148,
-      "generated": 49,
-      "pending": 13099,
-      "coverage": 0.4
+      "key": "Palembang",
+      "total": 1032,
+      "generated": 0,
+      "pending": 1032,
+      "coverage": 0.0
     },
     {
-      "key": "Pontianak",
-      "total": 13148,
-      "generated": 49,
-      "pending": 13099,
-      "coverage": 0.4
-    },
-    {
-      "key": "Cimahi",
-      "total": 13147,
-      "generated": 48,
-      "pending": 13099,
-      "coverage": 0.4
-    },
-    {
-      "key": "Lampung",
-      "total": 13147,
-      "generated": 49,
-      "pending": 13098,
-      "coverage": 0.4
-    },
-    {
-      "key": "Pekanbaru",
-      "total": 13133,
-      "generated": 51,
-      "pending": 13082,
-      "coverage": 0.4
-    },
-    {
-      "key": "Banjarmasin",
-      "total": 13131,
-      "generated": 48,
-      "pending": 13083,
-      "coverage": 0.4
+      "key": "Tangerang",
+      "total": 1032,
+      "generated": 2,
+      "pending": 1030,
+      "coverage": 0.2
     },
     {
       "key": "Balikpapan",
-      "total": 13129,
-      "generated": 48,
-      "pending": 13081,
-      "coverage": 0.4
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
     },
     {
-      "key": "Manado",
-      "total": 13129,
-      "generated": 47,
-      "pending": 13082,
-      "coverage": 0.4
+      "key": "Banjarmasin",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Cimahi",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
     },
     {
       "key": "Jambi",
-      "total": 13128,
-      "generated": 46,
-      "pending": 13082,
-      "coverage": 0.4
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
     },
     {
-      "key": "Bali",
-      "total": 19,
-      "generated": 2,
-      "pending": 17,
-      "coverage": 10.5
+      "key": "Lampung",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
     },
     {
-      "key": "Samarinda",
-      "total": 3,
-      "generated": 3,
-      "pending": 0,
-      "coverage": 100.0
+      "key": "Manado",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Padang",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Pekanbaru",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Pontianak",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Sidoarjo",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
+    },
+    {
+      "key": "Solo",
+      "total": 1010,
+      "generated": 0,
+      "pending": 1010,
+      "coverage": 0.0
     }
   ],
   "by_source": [
     {
-      "key": "intent_layer",
-      "total": 175100,
-      "generated": 0,
-      "pending": 175100,
-      "coverage": 0.0
-    },
-    {
-      "key": "expansion_v4",
-      "total": 95518,
-      "generated": 0,
-      "pending": 95518,
-      "coverage": 0.0
-    },
-    {
-      "key": "expansion_v2",
-      "total": 46779,
-      "generated": 0,
-      "pending": 46779,
-      "coverage": 0.0
-    },
-    {
-      "key": "expansion_v3",
-      "total": 39728,
-      "generated": 38,
-      "pending": 39690,
-      "coverage": 0.1
-    },
-    {
       "key": "expansion_v1",
-      "total": 25462,
-      "generated": 1560,
-      "pending": 23902,
-      "coverage": 6.1
+      "total": 25650,
+      "generated": 9,
+      "pending": 25641,
+      "coverage": 0.0
     },
     {
       "key": "industri_v1",
@@ -347,529 +299,7 @@
       "generated": 0,
       "pending": 1808,
       "coverage": 0.0
-    },
-    {
-      "key": "sheet_dm_int",
-      "total": 878,
-      "generated": 0,
-      "pending": 878,
-      "coverage": 0.0
-    },
-    {
-      "key": "miner",
-      "total": 758,
-      "generated": 758,
-      "pending": 0,
-      "coverage": 100.0
-    },
-    {
-      "key": "local_faqs",
-      "total": 446,
-      "generated": 0,
-      "pending": 446,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_website",
-      "total": 312,
-      "generated": 0,
-      "pending": 312,
-      "coverage": 0.0
-    },
-    {
-      "key": "per_city.json",
-      "total": 293,
-      "generated": 0,
-      "pending": 293,
-      "coverage": 0.0
-    },
-    {
-      "key": "google_suggest",
-      "total": 41,
-      "generated": 0,
-      "pending": 41,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_facebook",
-      "total": 28,
-      "generated": 0,
-      "pending": 28,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_google_ads",
-      "total": 27,
-      "generated": 0,
-      "pending": 27,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:facebook",
-      "total": 23,
-      "generated": 0,
-      "pending": 23,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-digital-marketing-jakarta",
-      "total": 22,
-      "generated": 0,
-      "pending": 22,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-iklan-facebook-jakarta",
-      "total": 22,
-      "generated": 0,
-      "pending": 22,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-iklan-google-ads-jakarta",
-      "total": 22,
-      "generated": 0,
-      "pending": 22,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-iklan-instagram-jakarta",
-      "total": 22,
-      "generated": 0,
-      "pending": 22,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-iklan-tiktok-jakarta",
-      "total": 22,
-      "generated": 0,
-      "pending": 22,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:google",
-      "total": 21,
-      "generated": 0,
-      "pending": 21,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:instagram",
-      "total": 18,
-      "generated": 0,
-      "pending": 18,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:tiktok",
-      "total": 14,
-      "generated": 0,
-      "pending": 14,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_rankie:google",
-      "total": 12,
-      "generated": 0,
-      "pending": 12,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_rankie:facebook",
-      "total": 11,
-      "generated": 0,
-      "pending": 11,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_rankie:instagram",
-      "total": 7,
-      "generated": 0,
-      "pending": 7,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-admin-tiktok",
-      "total": 4,
-      "generated": 0,
-      "pending": 4,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:youtube",
-      "total": 4,
-      "generated": 0,
-      "pending": 4,
-      "coverage": 0.0
-    },
-    {
-      "key": "sheet_keywords:jasa-admin-instagram",
-      "total": 3,
-      "generated": 0,
-      "pending": 3,
-      "coverage": 0.0
     }
   ],
-  "recent_generated": [
-    {
-      "keyword": "Singapore",
-      "slug": "singapore",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/singapore/"
-    },
-    {
-      "keyword": "Singapura",
-      "slug": "singapura",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/singapura/"
-    },
-    {
-      "keyword": "Brunei",
-      "slug": "brunei",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/brunei/"
-    },
-    {
-      "keyword": "Malaysia",
-      "slug": "malaysia",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/malaysia/"
-    },
-    {
-      "keyword": "Youtube",
-      "slug": "youtube",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/youtube/"
-    },
-    {
-      "keyword": "Tiktok",
-      "slug": "tiktok",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tiktok/"
-    },
-    {
-      "keyword": "Google",
-      "slug": "google",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/google/"
-    },
-    {
-      "keyword": "Instagram",
-      "slug": "instagram",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/instagram/"
-    },
-    {
-      "keyword": "Facebook",
-      "slug": "facebook",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/facebook/"
-    },
-    {
-      "keyword": "konsultan manfaat website",
-      "slug": "konsultan-manfaat-website",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/konsultan-manfaat-website/"
-    },
-    {
-      "keyword": "belajar membuat web",
-      "slug": "belajar-membuat-web",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/belajar-membuat-web/"
-    },
-    {
-      "keyword": "cara pembuat website",
-      "slug": "cara-pembuat-website",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/cara-pembuat-website/"
-    },
-    {
-      "keyword": "konsultan internet marketing",
-      "slug": "konsultan-internet-marketing",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/konsultan-internet-marketing/"
-    },
-    {
-      "keyword": "membuat web terdekat",
-      "slug": "membuat-web-terdekat",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/membuat-web-terdekat/"
-    },
-    {
-      "keyword": "manfaat web biaya",
-      "slug": "manfaat-web-biaya",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/manfaat-web-biaya/"
-    },
-    {
-      "keyword": "situs web berkualitas",
-      "slug": "situs-web-berkualitas",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/situs-web-berkualitas/"
-    },
-    {
-      "keyword": "tips desain website",
-      "slug": "tips-desain-website",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tips-desain-website/"
-    },
-    {
-      "keyword": "belajar situs web",
-      "slug": "belajar-situs-web",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/belajar-situs-web/"
-    },
-    {
-      "keyword": "buat web terdekat",
-      "slug": "buat-web-terdekat",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/buat-web-terdekat/"
-    },
-    {
-      "keyword": "pembuat website berkualitas",
-      "slug": "pembuat-website-berkualitas",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/pembuat-website-berkualitas/"
-    },
-    {
-      "keyword": "tips pembuat web",
-      "slug": "tips-pembuat-web",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tips-pembuat-web/"
-    },
-    {
-      "keyword": "desain website gratis konsultasi",
-      "slug": "desain-website-gratis-konsultasi",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/desain-website-gratis-konsultasi/"
-    },
-    {
-      "keyword": "belajar pembuat web",
-      "slug": "belajar-pembuat-web",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/belajar-pembuat-web/"
-    },
-    {
-      "keyword": "manfaat website gratis konsultasi",
-      "slug": "manfaat-website-gratis-konsultasi",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/manfaat-website-gratis-konsultasi/"
-    },
-    {
-      "keyword": "tampilan web harga",
-      "slug": "tampilan-web-harga",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-web-harga/"
-    },
-    {
-      "keyword": "konsultan situs website",
-      "slug": "konsultan-situs-website",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/konsultan-situs-website/"
-    },
-    {
-      "keyword": "tampilan website harga",
-      "slug": "tampilan-website-harga",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-website-harga/"
-    },
-    {
-      "keyword": "situs website berkualitas",
-      "slug": "situs-website-berkualitas",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/situs-website-berkualitas/"
-    },
-    {
-      "keyword": "manfaat digital agency",
-      "slug": "manfaat-digital-agency",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/manfaat-digital-agency/"
-    },
-    {
-      "keyword": "konsultan tampilan website",
-      "slug": "konsultan-tampilan-website",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/konsultan-tampilan-website/"
-    },
-    {
-      "keyword": "tampilan website halal",
-      "slug": "tampilan-website-halal",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-website-halal/"
-    },
-    {
-      "keyword": "buat web site terdekat",
-      "slug": "buat-web-site-terdekat",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/buat-web-site-terdekat/"
-    },
-    {
-      "keyword": "tampilan web gratis konsultasi",
-      "slug": "tampilan-web-gratis-konsultasi",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-web-gratis-konsultasi/"
-    },
-    {
-      "keyword": "tampilan website 2026",
-      "slug": "tampilan-website-2026",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-website-2026/"
-    },
-    {
-      "keyword": "tampilan website paket",
-      "slug": "tampilan-website-paket",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tampilan-website-paket/"
-    },
-    {
-      "keyword": "buat web berpengalaman",
-      "slug": "buat-web-berpengalaman",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/buat-web-berpengalaman/"
-    },
-    {
-      "keyword": "buat web site biaya",
-      "slug": "buat-web-site-biaya",
-      "service": "Jasa Pembuatan Website",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/buat-web-site-biaya/"
-    },
-    {
-      "keyword": "tips digital agency",
-      "slug": "tips-digital-agency",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/tips-digital-agency/"
-    },
-    {
-      "keyword": "digital agency biaya",
-      "slug": "digital-agency-biaya",
-      "service": "Jasa Digital Marketing",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/digital-agency-biaya/"
-    },
-    {
-      "keyword": "manfaat website halal",
-      "slug": "manfaat-website-halal",
-      "service": "Lainnya / Umum",
-      "city": null,
-      "live": true,
-      "created_at": "2026-07-24T15:42:48",
-      "url": "https://beriklan.co.id/blog/manfaat-website-halal/"
-    }
-  ]
+  "recent_generated": []
 }

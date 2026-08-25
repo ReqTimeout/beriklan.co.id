@@ -19,6 +19,13 @@ export default {
       return await handleScrapePortal(request, env, ctx);
     }
 
+    // P0: canonical host — 301 www → apex (SEO: konsolidasi equity, fix GSC property mismatch)
+    // Domain property GSC (sc-domain:beriklan.co.id) cover kedua host, tapi canonical = apex.
+    // IndexNow key tersedia di kedua host, jadi redirect aman setelah key di-serve (di atas).
+    if (hostname === "www.beriklan.co.id" || hostname.startsWith("www.beriklan.co.id:") || (hostname === "www.beriklan.co.id.")) {
+      return Response.redirect(`https://beriklan.co.id${url.pathname}${url.search}`, 301);
+    }
+
     // IndexNow key file
     if (path === "/2dac33f6303f4041b9ec7e2f2910ea80.txt") {
       return new Response("2dac33f6303f4041b9ec7e2f2910ea80", {
@@ -32,6 +39,15 @@ export default {
     }
     if (path === "/api/admin/env-check" || path === "/api/admin/env-check/") {
       return await handleEnvCheck(request, env);
+    }
+    if (path === "/api/admin/gsc-whoami" || path === "/api/admin/gsc-whoami/") {
+      const tok = new URL(request.url).searchParams.get("token");
+      if (tok !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      try {
+        const sa = env.GSC_SERVICE_ACCOUNT_JSON ? JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON) : null;
+        if (!sa) return new Response(JSON.stringify({ ok: false, error: "GSC_SERVICE_ACCOUNT_JSON not set" }), { headers: { "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ ok: true, client_email: sa.client_email || null, project_id: sa.project_id || null, type: sa.type || null }, null, 2), { headers: { "Content-Type": "application/json" } });
+      } catch (e) { return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 200) }), { headers: { "Content-Type": "application/json" } }); }
     }
     if (path === "/api/admin/health" || path === "/api/admin/health/") {
       return await handleAdminHealth(request, env);
@@ -446,14 +462,22 @@ export default {
         } catch {}
       }
 
-      // Check retry queue first — kalau ada retry pending untuk cron ini, jalankan
+      // P1: cleanup cron_runs yang nyangkut 'running' >2 jam (timeout) + consume retry queue
+      if (env.DB) {
+        try {
+          await env.DB.prepare("UPDATE cron_runs SET status='timeout', finished_at=datetime('now'), duration_ms=0, error='timeout: running >2h' WHERE status='running' AND started_at < datetime('now','-2 hours')").run();
+        } catch {}
+      }
+      // Retry queue consumer: kalau cron ini punya retry pending yang jatuh tempo, jalankan retry (handler sama, payload sama)
+      // Kalau masih PAUSED, retry tidak dijalankan (menunggu root cause fix manual)
+      let retryRow = null;
       if (cronName && env.DB) {
         try {
-          const retries = await env.DB.prepare(
+          retryRow = await env.DB.prepare(
             "SELECT id, payload, attempts FROM cron_retry_queue WHERE cron_name = ? AND status = 'pending' AND (next_retry_at IS NULL OR next_retry_at <= datetime('now')) ORDER BY id LIMIT 1"
           ).bind(cronName).first();
-          if (retries) {
-            console.log(`[scheduled:${label}] retrying attempt #${retries.attempts + 1} for queue #${retries.id}`);
+          if (retryRow) {
+            console.log(`[scheduled:${label}] retrying attempt #${retryRow.attempts + 1} for queue #${retryRow.id}`);
           }
         } catch {}
       }
@@ -550,9 +574,29 @@ export default {
               "INSERT INTO cron_retry_queue (cron_name, last_error, attempts, next_retry_at, status) VALUES (?, ?, 1, datetime('now', '+5 minutes'), 'pending')"
             ).bind(cronName, errorMsg.slice(0, 200)).run();
           }
+          // P1: tandai retry yang sedang diproses — kalau run ini adalah retry (ada retryRow), update outcome retry tersebut
+          if (retryRow) {
+            try {
+              if (status === "ok") {
+                await env.DB.prepare("UPDATE cron_retry_queue SET status='done', last_error=? WHERE id=?").bind(`retry ok after ${retryRow.attempts + 1} attempts`, retryRow.id).run();
+              } else {
+                const nextAttempts = retryRow.attempts + 1;
+                if (nextAttempts >= 5) {
+                  await env.DB.prepare("UPDATE cron_retry_queue SET status='dead', attempts=?, last_error=? WHERE id=?").bind(nextAttempts, `dead after 5 retries: ${errorMsg.slice(0, 150)}`, retryRow.id).run();
+                } else {
+                  const backoffMin = [15, 30, 60, 120][Math.min(nextAttempts - 1, 3)];
+                  await env.DB.prepare(`UPDATE cron_retry_queue SET attempts=?, last_error=?, next_retry_at=datetime('now', '+${backoffMin} minutes'), status='pending' WHERE id=?`).bind(nextAttempts, errorMsg.slice(0, 200), retryRow.id).run();
+                }
+              }
+            } catch {}
+          }
         } catch (e) {
           console.error(`[scheduled:${label}] retry queue error:`, String(e).slice(0, 200));
         }
+      } else if (retryRow && status === "ok") {
+        try {
+          await env.DB.prepare("UPDATE cron_retry_queue SET status='done', last_error='resolved by next run' WHERE id=?").bind(retryRow.id).run();
+        } catch {}
       }
     };
 
@@ -560,6 +604,9 @@ export default {
 
     const cronMap = {
       "*/15 * * * *":  { cronName: "email-send", handler: handleCronSendEmail, path: "/api/cron/email/send?token=beriklan-admin-2026" },
+      "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: "/api/cron/scrape/indonetwork?token=beriklan-admin-2026" },
+      "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: "/api/cron/scrape/google-places?token=beriklan-admin-2026" },
+      "0 3 * * 1":     { cronName: "snippet-optimize", handler: handleSnippetOptimizer, path: "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3" },
     };
 
     if (cron === "0 * * * *") {
@@ -2145,7 +2192,7 @@ async function handleAdminSyncPosts(request, env) {
         const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
         for (const draft of safeDrafts) {
           const finalSlug = slugMap.get(draft.slug) || draft.slug;
-          const url = `https://www.beriklan.co.id/blog/${finalSlug}/`;
+          const url = `https://beriklan.co.id/blog/${finalSlug}/`;
           if (existingSet.has(url)) continue;
           try {
             await env.DB.prepare(
@@ -2160,14 +2207,14 @@ async function handleAdminSyncPosts(request, env) {
     // C. Submit new URLs to GSC Indexing API (max 200/hari, auto-retry 429)
     let gsc = { submitted: 0 };
     if (d1Published > 0 && env.GSC_SERVICE_ACCOUNT_JSON) {
-      const gscUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
+      const gscUrls = safeDrafts.map(d => `https://beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
       gsc = await submitToGscCore(env, gscUrls);
     }
 
     // D. Submit to IndexNow (hindari rate limit, backoff otomatis)
     let indexnow = { submitted: 0 };
     if (d1Published > 0) {
-      const inUrls = safeDrafts.map(d => `https://www.beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
+      const inUrls = safeDrafts.map(d => `https://beriklan.co.id/blog/${slugMap.get(d.slug) || d.slug}/`);
       indexnow = await submitToIndexNowCore(env, inUrls);
     }
 
@@ -3291,6 +3338,8 @@ async function handleAdminMigrate(request, env) {
        priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') LIMIT 1)
      WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' '))`,
      `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
+    // P0: normalize pending_indexing legacy www → apex (idempotent, run tiap migrate)
+    `UPDATE pending_indexing SET url = replace(url, 'https://www.beriklan.co.id/', 'https://beriklan.co.id/') WHERE url LIKE 'https://www.beriklan.co.id/%'`,
      // Bersihkan URL junk seed-/exp- dari antrian indexing (artefak slug keyword_queue.id
      // yang dipublish sebelum remap finalSlug. URL /blog/seed-xxx/ 404 → boros quota GSC).
      `DELETE FROM pending_indexing WHERE url LIKE '%/blog/seed-%' OR url LIKE '%/blog/exp-%'`,
@@ -4005,7 +4054,7 @@ async function handlePostsDashboard(request, env) {
       const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
       for (const p of (allPosts.results || [])) {
         if (/^(seed|exp)-/.test(p.slug)) continue;
-        const pu = `https://www.beriklan.co.id/blog/${p.slug}/`;
+        const pu = `https://beriklan.co.id/blog/${p.slug}/`;
         if (!existingSet.has(pu)) {
           urls.push(pu);
           await env.DB.prepare("INSERT OR IGNORE INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))").bind(pu).run();
@@ -4029,9 +4078,9 @@ async function handlePostsDashboard(request, env) {
     let inAccepted = false;
     if (submitUrls.length) {
       const inPayload = JSON.stringify({
-        host: "www.beriklan.co.id",
+        host: "beriklan.co.id",
         key: "2dac33f6303f4041b9ec7e2f2910ea80",
-        keyLocation: "https://www.beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt",
+        keyLocation: "https://beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt",
         urlList: submitUrls,
       });
       for (const ep of ["https://www.bing.com/indexnow", "https://api.indexnow.org/indexnow", "https://yandex.com/indexnow"]) {
@@ -4261,7 +4310,7 @@ async function handleLlmsTxt(request, env) {
       "SELECT slug, title, excerpt FROM posts_meta ORDER BY iso_date DESC LIMIT 100"
     ).all();
     recentList = (r.results || [])
-      .map(p => `- [${(p.title || p.slug).replace(/[\[\]]/g, "")}](https://www.beriklan.co.id/blog/${p.slug}/)${p.excerpt ? ": " + String(p.excerpt).slice(0, 120).replace(/[\[\]\n]/g, " ") : ""}`)
+      .map(p => `- [${(p.title || p.slug).replace(/[\[\]]/g, "")}](https://beriklan.co.id/blog/${p.slug}/)${p.excerpt ? ": " + String(p.excerpt).slice(0, 120).replace(/[\[\]\n]/g, " ") : ""}`)
       .join("\n");
   } catch {}
 
@@ -4269,24 +4318,24 @@ async function handleLlmsTxt(request, env) {
 
 > Agency performance marketing Indonesia berbasis Bandung sejak 2016. Mengelola campaign iklan Meta (Facebook/Instagram), Google Ads, TikTok Ads, YouTube Ads, dan pembuatan landing page untuk UMKM & bisnis menengah Indonesia. Konsultasi via WhatsApp, laporan mingguan, dashboard real-time.
 
-Kontak: WhatsApp +62 811-919-328 · https://www.beriklan.co.id/order/
+Kontak: WhatsApp +62 811-919-328 · https://beriklan.co.id/order/
 
 ## Layanan Utama
 
-- [Jasa Digital Marketing](https://www.beriklan.co.id/jasa-digital-marketing/): Layanan multi-channel end-to-end (Meta, Google, TikTok)
-- [Jasa Iklan Facebook Ads](https://www.beriklan.co.id/jasa-iklan-facebook/): Kelola Meta Ads dengan targeting presisi
-- [Jasa Iklan Instagram](https://www.beriklan.co.id/jasa-iklan-instagram/): Iklan Instagram reach & engagement
-- [Jasa Iklan Google Ads](https://www.beriklan.co.id/jasa-iklan-google/): Search, Display & YouTube Ads
-- [Jasa Iklan TikTok Ads](https://www.beriklan.co.id/jasa-iklan-tiktok/): Spark Ads & FYP
-- [Jasa Iklan YouTube](https://www.beriklan.co.id/jasa-iklan-youtube/): Video ads & awareness
-- [Jasa Kelola Instagram](https://www.beriklan.co.id/jasa-kelola-instagram/): Konten & community management
-- [Jasa Kelola TikTok](https://www.beriklan.co.id/jasa-kelola-tiktok/): Konten video rutin
-- [Jasa Pembuatan Website](https://www.beriklan.co.id/jasa-pembuatan-website/): Website profesional custom & CMS
-- [Jasa Pembuatan Landing Page](https://www.beriklan.co.id/jasa-pembuatan-landing-page/): Landing page + Google Ads paket konversi
+- [Jasa Digital Marketing](https://beriklan.co.id/jasa-digital-marketing/): Layanan multi-channel end-to-end (Meta, Google, TikTok)
+- [Jasa Iklan Facebook Ads](https://beriklan.co.id/jasa-iklan-facebook/): Kelola Meta Ads dengan targeting presisi
+- [Jasa Iklan Instagram](https://beriklan.co.id/jasa-iklan-instagram/): Iklan Instagram reach & engagement
+- [Jasa Iklan Google Ads](https://beriklan.co.id/jasa-iklan-google/): Search, Display & YouTube Ads
+- [Jasa Iklan TikTok Ads](https://beriklan.co.id/jasa-iklan-tiktok/): Spark Ads & FYP
+- [Jasa Iklan YouTube](https://beriklan.co.id/jasa-iklan-youtube/): Video ads & awareness
+- [Jasa Kelola Instagram](https://beriklan.co.id/jasa-kelola-instagram/): Konten & community management
+- [Jasa Kelola TikTok](https://beriklan.co.id/jasa-kelola-tiktok/): Konten video rutin
+- [Jasa Pembuatan Website](https://beriklan.co.id/jasa-pembuatan-website/): Website profesional custom & CMS
+- [Jasa Pembuatan Landing Page](https://beriklan.co.id/jasa-pembuatan-landing-page/): Landing page + Google Ads paket konversi
 
 ## Blog & Panduan
 
-- [Blog Digital Marketing](https://www.beriklan.co.id/blog/): Tips, panduan & studi kasus digital marketing Indonesia
+- [Blog Digital Marketing](https://beriklan.co.id/blog/): Tips, panduan & studi kasus digital marketing Indonesia
 - [Sitemap](https://beriklan.co.id/sitemap-index.xml): Daftar lengkap semua halaman
 
 ## Artikel Terbaru
@@ -4336,7 +4385,7 @@ async function handleKeywordList(request, env) {
       try {
         const idxRes = await env.DB.prepare(
           `SELECT url, status, index_state FROM pending_indexing WHERE url IN (${slugs.map(() => "?").join(",")})`
-        ).bind(...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`)).all();
+        ).bind(...slugs.map(s => `https://beriklan.co.id/blog/${s}/`)).all();
         for (const r of (idxRes.results || [])) {
           const slug = r.url.replace(/^https:\/\/(www\.)?beriklan\.co\.id\/blog\//, "").replace(/\/$/, "");
           idxMap[slug] = { status: r.status, index_state: r.index_state };
@@ -4349,7 +4398,7 @@ async function handleKeywordList(request, env) {
            INNER JOIN (SELECT page_url, MAX(date) as md FROM keyword_ranks WHERE page_url IN (${slugs.map(() => "?").join(",")}) GROUP BY page_url) latest
              ON kr.page_url = latest.page_url AND kr.date = latest.md
            WHERE kr.page_url IN (${slugs.map(() => "?").join(",")})`
-        ).bind(...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://www.beriklan.co.id/blog/${s}/`)).all();
+        ).bind(...slugs.map(s => `https://beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://beriklan.co.id/blog/${s}/`), ...slugs.map(s => `https://beriklan.co.id/blog/${s}/`)).all();
         for (const r of (rankRes.results || [])) {
           const slug = r.page_url.replace(/^https:\/\/(www\.)?beriklan\.co\.id\/blog\//, "").replace(/\/$/, "");
           rankMap[slug] = { position: r.position, clicks: r.clicks };
@@ -6371,7 +6420,7 @@ async function handleIndexNowCron(request, env) {
     ).bind(count).all();
     urls = (r.results || []).map(row => ({
       id: row.id,
-      url: row.url.replace("https://beriklan.co.id", "https://www.beriklan.co.id"),
+      url: row.url.replace("https://www.beriklan.co.id", "https://beriklan.co.id"),
     }));
   } catch (e) {
     errors.push({ stage: "query", error: String(e).slice(0, 200) });
@@ -6386,13 +6435,13 @@ async function handleIndexNowCron(request, env) {
   // Bing is the primary IndexNow hub — it fans out to Yandex, DuckDuckGo, Seznam, Naver.
   // api.indexnow.org aggressively rate-limits shared Cloudflare Worker egress IPs (429 TooManyRequests),
   // so we hit Bing directly which tolerates production volume; on failure we fall back to the aggregator.
-  // FIX: host MUST match the host of every URL in urlList. Verified GSC property = www.beriklan.co.id,
+  // Canonical = apex beriklan.co.id — host & keyLocation harus apex agar match urlList
   // and urls above are normalized to www → host & keyLocation must also be www, else IndexNow returns 422 (0 submitted).
   const INDEXNOW_KEY = "2dac33f6303f4041b9ec7e2f2910ea80";
   const payload = {
-    host: "www.beriklan.co.id",
+    host: "beriklan.co.id",
     key: INDEXNOW_KEY,
-    keyLocation: `https://www.beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt`,
+    keyLocation: `https://beriklan.co.id/2dac33f6303f4041b9ec7e2f2910ea80.txt`,
     urlList: urls.map(u => u.url),
   };
 
@@ -6575,7 +6624,8 @@ async function handleRankSync(request, env) {
   const startDate = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
   let gscRows = [];
   try {
-    const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent("https://www.beriklan.co.id/")}/searchAnalytics/query`, {
+    const gscSiteUrl = env.GSC_SITE_URL || "https://beriklan.co.id/";
+    const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(gscSiteUrl)}/searchAnalytics/query`, {
       method: "POST",
       headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -6873,7 +6923,8 @@ async function handlePingSitemap(request, env) {
   if (token !== env.ADMIN_TOKEN) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   }
-  const siteUrl = "https://www.beriklan.co.id";
+    // P0: siteUrl = apex (gunakan env GSC_SITE_URL untuk domain property sc-domain:beriklan.co.id jika perlu)
+  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
   const subSitemaps = [
     "sitemap-static.xml",
     "sitemap-pillar.xml",
@@ -6997,8 +7048,10 @@ async function handlePingSitemap(request, env) {
     results.gsc_sitemap_submit.filter(x => x.ok).length +
     results.gsc_indexnow.filter(x => x.ok).length +
     results.indexnow.filter(x => x.ok).length;
+    // P0 fix: ok harus false kalau 0 sitemap yang sukses (403 permission denied = fail, bukan sukses)
+  const hasGscFailure = results.gsc_sitemap_submit.some(x => !x.ok);
   return new Response(JSON.stringify({
-    ok: results.errors.length === 0,
+    ok: successCount > 0 && !hasGscFailure,
     timestamp: new Date().toISOString(),
     subsitemaps: subSitemaps.length,
     success_count: successCount,
@@ -7383,7 +7436,7 @@ const chosen = pool[Math.floor(Math.random() * pool.length)];
       ai_model: ai_used_model,
       db_id: savedId,
       commit_sha: commitSha,
-      url: `https://www.beriklan.co.id/blog/${slug}/`,
+      url: `https://beriklan.co.id/blog/${slug}/`,
       niche_topics: debug ? nicheTopics.slice(0, 10) : undefined,
       all_topics: debug ? topics.slice(0, 15) : undefined,
       pool_source: poolSource || "niche_trending",
@@ -8095,12 +8148,12 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
     log.push({ stage: "kw_advance", advanced: kwAdvanced });
 
     // 7. Enqueue new URLs in D1 pending_indexing (for IndexNow cron /api/cron/indexing)
-    //    Use www.beriklan.co.id prefix to match the verified GSC property
+    //    Apex canonical — sc-domain:beriklan.co.id property covers apex + www
     //    (sitemap uses www. too — GSC Indexing API ownership check requires match)
     let enqueued = 0;
     for (const p of newPosts) {
       try {
-        const url = `https://www.beriklan.co.id/blog/${p.slug}/`;
+        const url = `https://beriklan.co.id/blog/${p.slug}/`;
         const exists = await env.DB.prepare(
           "SELECT url FROM pending_indexing WHERE url=? AND status IN ('pending','submitted','gsc_submitted')"
         ).bind(url).first();
@@ -8251,9 +8304,9 @@ async function handleGscIndexing(request, env) {
            AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-1 day'))
          ORDER BY CASE WHEN source = 'admin-manual' THEN 0 ELSE 1 END, rowid ASC LIMIT ?`
       ).bind(effectiveCount).all();
-      // Normalize URL to www.beriklan.co.id for GSC submission (matches verified property)
+      // Normalize URL to apex (canonical) for GSC submission (sc-domain property)
       urls = (r.results || []).map(row => {
-        const normalized = row.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
+        const normalized = row.url.replace("https://www.beriklan.co.id/", "https://beriklan.co.id/");
         return { id: row.id, url: normalized, original: row.url };
       });
       log.push({ stage: "queue_fetch", picked: urls.length });
@@ -8415,11 +8468,11 @@ async function handleIndexVerify(request, env) {
     }
 
     // 3. Inspect tiap URL via GSC URL Inspection API
-    const siteUrl = env.GSC_SITE_URL || "https://www.beriklan.co.id/";
+    const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id/";
     let indexed = 0, resubmitted = 0, checked = 0;
     const results = [];
     for (const row of rows) {
-      const inspectUrl = row.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
+      const inspectUrl = row.url; // pending_indexing sekarang apex (canonical)
       try {
         const r = await fetch("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", {
           method: "POST",
@@ -8466,8 +8519,10 @@ async function handleIndexVerify(request, env) {
     } catch {}
     log.push({ stage: "verify", checked, indexed, resubmitted });
 
+        // P0 fix: kalau ada 403 di errors dan checked==0, jangan return ok:true (silent-fail → auto-pause tidak terpicu)
+    const has403 = errors.some(e => e.status === 403 || /PERMISSION_DENIED|does not have sufficient permission|You do not own this site/i.test(e.body || e.error || ''));
     return new Response(JSON.stringify({
-      ok: true,
+      ok: !(has403 && checked === 0),
       checked,
       indexed,
       queued_for_resubmit: resubmitted,
@@ -9238,7 +9293,8 @@ async function handleGscPullCron(request, env) {
   try {
     const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
     const gscToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
-    const siteUrl = "https://www.beriklan.co.id";
+      // P0: siteUrl = apex (gunakan env GSC_SITE_URL untuk domain property sc-domain:beriklan.co.id jika perlu)
+  const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - 28 * 86400000);
     const fmt = (d) => d.toISOString().slice(0, 10);
@@ -11235,11 +11291,15 @@ async function handleCronSendEmail(request, env) {
     // Smart: kalau pending banyak + daily masih sisa, pakai batch besar
     const remainingToday = DAILY_LIMIT - dailySent;
     const pendingCount = (await env.DB.prepare("SELECT COUNT(*) as n FROM email_queue WHERE status='pending'").first())?.n || 0;
+    // P1 fix: batchSize tidak boleh melebihi remainingToday (bug: min(40,max(15,...)) bisa 15 saat remaining=5 → overshoot 109/100)
     let batchSize = 25;
-    if (pendingCount > 5000) batchSize = Math.min(40, Math.max(15, Math.floor(remainingToday / 3)));
-    else if (pendingCount > 1000) batchSize = Math.min(30, Math.max(15, Math.floor(remainingToday / 4)));
+    if (pendingCount > 5000) batchSize = Math.min(remainingToday, Math.min(40, Math.max(15, Math.floor(remainingToday / 3))));
+    else if (pendingCount > 1000) batchSize = Math.min(remainingToday, Math.min(30, Math.max(15, Math.floor(remainingToday / 4))));
     else if (pendingCount > 100) batchSize = Math.min(25, remainingToday);
     else batchSize = Math.min(20, remainingToday);
+    if (batchSize <= 0) {
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: `No quota left (${dailySent}/${DAILY_LIMIT})`, daily_sent: dailySent }), { headers: { "Content-Type": "application/json" } });
+    }
 
     const batch = await env.DB.prepare(
       "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' ORDER BY q.id ASC LIMIT ?"
@@ -11254,6 +11314,8 @@ async function handleCronSendEmail(request, env) {
     let sent = 0, failed = 0;
 
     for (const item of batch.results) {
+      // Per-send quota guard: kalau quota habis di tengah loop (concurrent sends), stop
+      if (dailySent + sent >= DAILY_LIMIT) break;
       try {
         let html = "";
         let subject = "Promo Beriklan";
@@ -11698,7 +11760,7 @@ async function handleScrapeGooglePlaces(request, env) {
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   if (!env.DB) return new Response("DB not available", { status: 503 });
-  if (!env.GOOGLE_PLACES_API_KEY) return new Response(JSON.stringify({ ok: false, error: "GOOGLE_PLACES_API_KEY not set" }), { status: 200, headers: { "Content-Type": "application/json" } });
+  if (!env.GOOGLE_PLACES_API_KEY) return new Response(JSON.stringify({ ok: true, skipped: true, reason: "GOOGLE_PLACES_API_KEY not set — set di CF Worker secrets untuk mengaktifkan" }), { headers: { "Content-Type": "application/json" } });
 
   const categories = [
     { q: "perusahaan manufaktur", label: "Manufaktur" },

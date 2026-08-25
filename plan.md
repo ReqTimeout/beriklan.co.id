@@ -273,3 +273,39 @@ Saya bisa mulai tanpa 4 di atas — Phase 1 (gsc-rank-audit + internal link + Sp
 
 **Versi:** 1.0 (Aug 02 2026)
 **Maintainer:** Beriklan Digital Agency + Codex AI
+---
+
+## Addendum 25 Agustus 2026 — Growth System (GSC feedback loop) DIIMPLEMENTASI
+
+Sesuai `SEO-GROWTH-SYSTEM.md`, 4 loop yang menutup siklus publish→rank→belajar→perbaiki
+sudah ditulis di `src/worker-entry.js` (tanpa GitHub Actions; jalan via CF Workers cron time-gate):
+
+| Cron | Jadwal | Endpoint | Fungsi |
+|---|---|---|---|
+| `growth-gsc-loop` | tiap 6 jam | `/api/cron/growth/gsc-loop` | Query GSC [query,page] 14 hari; query komersial ber-impresi TANPA halaman blog → `keyword_queue` (source `gsc-impression`) |
+| `growth-enrich` | harian 09:00 UTC | `/api/cron/growth/enrich` | Halaman posisi 3-18 → rewrite intro (`growth-intro`) + FAQ spesifik-query (`growth-faq`) di `posts_content`; cooldown 21 hari |
+| `growth-ctr-fix` | harian 09:00 UTC | `/api/cron/growth/ctr-fix` | Impresi≥50 & CTR≤2% → `seo_title`≤60 + `seo_description`≤155 di `posts_meta` (renderer pakai override SERP; H1 tidak berubah); cooldown 30 hari |
+| `growth-freshness` | Senin 02:00 UTC | `/api/cron/growth/freshness` | Artikel >90 hari ber-impresi → callout "Update {tahun}" (`freshness-update`) + `refreshed_at` → badge "Diperbarui" + `dateModified` jujur |
+
+**Keputusan arsitektur penting:**
+- Semua loop MENULIS LANGSUNG KE D1 (`posts_meta`/`posts_content`) — efek live tanpa build,
+  karena renderer dinamis membaca D1 saat request. Jalur posts.json→GitHub (lama) hanya
+  berubah setelah CF rebuild.
+- Halaman STATIC Astro di-SKIP (dideteksi via generator meta / `_astro/`); ter-log di
+  `growth_log.static_page=1`. Perubahan D1 tidak tampil di halaman static sampai rebuild.
+- Audit trail lengkap di tabel `growth_log`; schema auto-ensure di tiap handler + migrasi.
+- `renderBlogPost` dibuat defensif: fetch kolom growth terpisah (try/catch) supaya tidak
+  500 kalau kolom belum ada.
+- `/api/cron/index-cascade` ditambahkan ulang (kontrak live lama, submit via
+  `pending_indexing` agar quota GSC 200/hari tetap terkontrol).
+
+**STATUS DEPLOY: TERBLOKIR — butuh aksi user.**
+Build live masih `v-2026-08-01-enrich-faq-mesh` (1 Agustus). Commit fix P0/P1 + growth
+ini belum bisa naik karena:
+1. Repo TIDAK punya webhook → CF Workers Build tidak auto-trigger saat push (setup
+   "Connect GitHub" di dashboard belum pernah dilakukan; lihat CF-WORKERS-BUILD-SETUP.md).
+2. CF API token di `account.md` sudah INVALID (`code 1000`), jadi `wrangler deploy`
+   lokal juga tidak bisa.
+Opsi buka blokir (pilih salah satu): (a) selesaikan Connect GitHub di dashboard CF
+(5-10 menit), atau (b) buatkan API token baru scope Account "Workers Scripts: Edit"
+agar deploy wrangler lokal bisa dijalankan.

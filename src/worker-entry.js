@@ -179,6 +179,21 @@ export default {
     if (path === "/api/cron/gsc-pull" || path === "/api/cron/gsc-pull/") {
       return await handleGscPullCron(request, env);
     }
+    if (path === "/api/cron/index-cascade" || path === "/api/cron/index-cascade/") {
+      return await handleIndexCascade(request, env);
+    }
+    if (path === "/api/cron/growth/gsc-loop" || path === "/api/cron/growth/gsc-loop/") {
+      return await handleGrowthGscLoop(request, env);
+    }
+    if (path === "/api/cron/growth/enrich" || path === "/api/cron/growth/enrich/") {
+      return await handleGrowthEnrich(request, env);
+    }
+    if (path === "/api/cron/growth/ctr-fix" || path === "/api/cron/growth/ctr-fix/") {
+      return await handleGrowthCtrFix(request, env);
+    }
+    if (path === "/api/cron/growth/freshness" || path === "/api/cron/growth/freshness/") {
+      return await handleGrowthFreshness(request, env);
+    }
     if (path === "/api/batch4" || path === "/api/batch4/") {
       // P0.5 Rate limit: 30 req/jam per IP
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/batch4", 30, 3600);
@@ -617,6 +632,7 @@ export default {
 
       const h = new Date().getUTCHours();
       const d = new Date().getUTCDate();
+      const dow = new Date().getUTCDay();
       // ── Every hour: GSC Indexing submit (pakai quota 200/hari secara maksimal,
       //    bukan 4×/hari seperti sebelumnya). count=50 karena Workers Free = 50
       //    subrequests per invocation; 50/jam × 24 = 200 quota/hari tercapai. ──
@@ -629,9 +645,20 @@ export default {
         ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
         ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=5", "gsc-indexing"));
         ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
+        // Growth: tangkap query GSC ber-impresi tanpa halaman layak → keyword_queue
+        ctx.waitUntil(run("growth-gsc-loop", handleGrowthGscLoop, "/api/cron/growth/gsc-loop?token=beriklan-admin-2026&days=14&minImp=20&maxQueue=10", "growth-gsc-loop"));
         ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
         ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
         ctx.waitUntil(run("lead-pipeline", handleLeadPipeline, "/api/cron/leads/process?token=beriklan-admin-2026&limit=100&ai=10&campaign=1", "lead-pipeline"));
+      }
+      // ── Growth harian 09:00 UTC: enrich posisi 3-18 + CTR fix ──
+      if (h === 9) {
+        ctx.waitUntil(run("growth-enrich", handleGrowthEnrich, "/api/cron/growth/enrich?token=beriklan-admin-2026&count=3", "growth-enrich"));
+        ctx.waitUntil(run("growth-ctr-fix", handleGrowthCtrFix, "/api/cron/growth/ctr-fix?token=beriklan-admin-2026&count=3", "growth-ctr-fix"));
+      }
+      // ── Growth mingguan Senin 02:00 UTC: refresh jujur artikel lama ──
+      if (dow === 1 && h === 2) {
+        ctx.waitUntil(run("growth-freshness", handleGrowthFreshness, "/api/cron/growth/freshness?token=beriklan-admin-2026&count=2", "growth-freshness"));
       }
       // ── 1st of month at 00:00 UTC ──
       if (d === 1 && h === 0) {
@@ -3321,6 +3348,33 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '25', 1, 'Publish per sync-posts run (25)')`,
     `UPDATE cron_settings SET cron = '600', label = 'Publish harian maksimum (ramp-up 600/hari)' WHERE name = 'publish_daily_limit'`,
     `UPDATE cron_settings SET cron = '25', label = 'Publish per sync-posts run (25)' WHERE name = 'publish_batch_size'`,
+    // ── Growth system (GSC feedback loop): schema + cron seeds ──
+    `CREATE TABLE IF NOT EXISTS growth_log (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       action TEXT NOT NULL,
+       slug TEXT,
+       keyword TEXT,
+       position REAL,
+       ctr REAL,
+       impressions INTEGER,
+       static_page INTEGER DEFAULT 0,
+       before_json TEXT,
+       after_json TEXT,
+       ai_model TEXT,
+       error TEXT,
+       created_at TEXT DEFAULT CURRENT_TIMESTAMP
+     )`,
+    `CREATE INDEX IF NOT EXISTS idx_growth_log_action ON growth_log (action)`,
+    `CREATE INDEX IF NOT EXISTS idx_growth_log_slug ON growth_log (slug)`,
+    `ALTER TABLE posts_meta ADD COLUMN seo_title TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN seo_description TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN enriched_at TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN ctr_fixed_at TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN refreshed_at TEXT`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-gsc-loop', '0 */6 * * *', 1, 'Growth: query GSC ber-impresi tanpa halaman layak → keyword_queue (tiap 6 jam)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-enrich', '0 9 * * *', 1, 'Growth: enrich intro+FAQ artikel posisi 3-18 (harian)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-ctr-fix', '0 9 * * *', 1, 'Growth: rewrite SERP title+meta untuk CTR rendah (harian)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-freshness', '0 2 * * 1', 1, 'Growth: refresh jujur artikel lama (mingguan, Senin)')`,
     // intent + priority_score di generated_drafts (untuk ORDER BY publish intent+city cascade).
     // Backfill dari keyword_queue via article_slug (draft yg di-generate dari keyword).
     // Index article_slug WAJIB: tanpa ini correlated subquery scan 391k baris/draft → CPU limit D1.
@@ -6915,7 +6969,553 @@ async function generateWithZenOrGroq(prompt, env) {
   return null;
 }
 
+// ─── GROWTH SYSTEM (GSC feedback loop, D1-native) ──────────────────
+// Menutup siklus "publish → rank → belajar → perbaiki" TANPA GitHub Actions:
+//   1. growth-gsc-loop  : query GSC ber-impresi tanpa halaman layak → keyword_queue
+//   2. growth-enrich    : artikel posisi 3-18 → rewrite intro + FAQ di posts_content
+//   3. growth-ctr-fix   : impresi tinggi + CTR rendah → seo_title/seo_description
+//   4. growth-freshness : refresh jujur artikel lama → refreshed_at + callout "Update"
+// Semua menulis LANGSUNG ke D1 — renderer membaca saat request, tanpa build/deploy.
+// Halaman STATIC (baked-in Astro) di-skip: perubahan D1 tidak tampil sampai rebuild.
+
+async function ensureGrowthSchema(env) {
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS growth_log (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       action TEXT NOT NULL, slug TEXT, keyword TEXT,
+       position REAL, ctr REAL, impressions INTEGER,
+       static_page INTEGER DEFAULT 0,
+       before_json TEXT, after_json TEXT, ai_model TEXT, error TEXT,
+       created_at TEXT DEFAULT CURRENT_TIMESTAMP
+     )`,
+    `CREATE INDEX IF NOT EXISTS idx_growth_log_action ON growth_log (action)`,
+    `CREATE INDEX IF NOT EXISTS idx_growth_log_slug ON growth_log (slug)`,
+    `ALTER TABLE posts_meta ADD COLUMN seo_title TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN seo_description TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN enriched_at TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN ctr_fixed_at TEXT`,
+    `ALTER TABLE posts_meta ADD COLUMN refreshed_at TEXT`,
+  ];
+  for (const s of stmts) { try { await env.DB.prepare(s).run(); } catch {} }
+}
+
+function growthSlugFromUrl(pageUrl) {
+  if (!pageUrl) return "";
+  const m = String(pageUrl).match(/^https?:\/\/(www\.)?beriklan\.co\.id(.*)$/i);
+  if (!m) return "";
+  const p = (m[2] || "/").split("?")[0].split("#")[0];
+  const bm = p.match(/^\/blog\/([^\/]+)\/?$/i);
+  return bm ? decodeURIComponent(bm[1]) : "";
+}
+
+async function growthLogInsert(env, row) {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO growth_log (action, slug, keyword, position, ctr, impressions, static_page, before_json, after_json, ai_model, error)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(
+      row.action || "", row.slug || null, row.keyword || null,
+      row.position ?? null, row.ctr ?? null, row.impressions ?? null,
+      row.static_page ? 1 : 0,
+      row.before_json ? String(row.before_json).slice(0, 2000) : null,
+      row.after_json ? String(row.after_json).slice(0, 2000) : null,
+      row.ai_model || null, row.error || null
+    ).run();
+  } catch {}
+}
+
+async function growthPing(env, slug, errors) {
+  try {
+    const url = `https://beriklan.co.id/blog/${slug}/`;
+    const exist = await env.DB.prepare("SELECT id FROM pending_indexing WHERE url=? LIMIT 1").bind(url).first();
+    if (!exist) {
+      await env.DB.prepare("INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))").bind(url).run();
+    }
+  } catch (e) { if (errors) errors.push({ stage: "ping", slug, error: String(e).slice(0, 120) }); }
+}
+
+async function growthIsStaticAsset(slug, env) {
+  // Halaman yang dibake saat build Astro punya marker generator/meta "content=\"Astro"
+  // dan asset /_astro/*.css; halaman D1-render (worker) tidak. Fetch gagal → anggap dinamis.
+  try {
+    const r = await env.ASSETS.fetch(`https://assets/blog/${slug}/`);
+    if (!r.ok) return false;
+    const html = await r.text();
+    return /content="Astro/.test(html) || html.includes("/_astro/");
+  } catch { return false; }
+}
+
+function growthServiceFromQuery(q) {
+  const s = String(q || "").toLowerCase();
+  if (/facebook|meta ads|fb ads|iklan facebook|iklan fb\b|ig\b|instagram/.test(s)) return "jasa-iklan-facebook";
+  if (/instagram|ig ads/.test(s)) return "jasa-iklan-instagram";
+  if (/tiktok/.test(s)) return "jasa-iklan-tiktok";
+  if (/google ads|adwords|iklan google|\bsem\b|\bseo\b/.test(s)) return "jasa-iklan-google";
+  if (/youtube/.test(s)) return "jasa-iklan-youtube";
+  if (/landing page/.test(s)) return "jasa-pembuatan-landing-page";
+  if (/\bwebsite\b|\bweb\b|pembuatan web/.test(s)) return "jasa-pembuatan-website";
+  return "";
+}
+
+// ── 1. GSC loop: tangkap query ber-impresi yang belum punya halaman layak ──
+// GET /api/cron/growth/gsc-loop?token=...&days=14&minImp=20&maxQueue=10
+async function handleGrowthGscLoop(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  if (!env.GSC_SERVICE_ACCOUNT_JSON) return new Response(JSON.stringify({ ok: false, error: "GSC_SERVICE_ACCOUNT_JSON not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const days = Math.max(3, Math.min(parseInt(url.searchParams.get("days") || "14", 10) || 14, 28));
+  const minImp = Math.max(1, parseInt(url.searchParams.get("minImp") || "20", 10) || 20);
+  const maxQueue = Math.max(1, Math.min(parseInt(url.searchParams.get("maxQueue") || "10", 10) || 10, 25));
+  const t0 = Date.now();
+  const log = []; const errors = [];
+  const sample = { existingPage: [], pageless: [], queued: [] };
+
+  try {
+    await ensureGrowthSchema(env);
+    const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT_JSON);
+    const gscToken = await getGoogleAccessToken(sa, "https://www.googleapis.com/auth/webmasters.readonly");
+    const siteUrl = env.GSC_SITE_URL || "https://beriklan.co.id";
+    const endDate = new Date(Date.now() - 2 * 86400000); // data GSC delay ±2 hari
+    const startDate = new Date(endDate.getTime() - days * 86400000);
+    const fmt = (d) => d.toISOString().slice(0, 10);
+
+    const resp = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${gscToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ startDate: fmt(startDate), endDate: fmt(endDate), dimensions: ["query", "page"], rowLimit: 500 }),
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => "");
+      return new Response(JSON.stringify({ ok: false, error: `GSC query failed ${resp.status}`, detail: t.slice(0, 200) }), { status: 502, headers: { "Content-Type": "application/json" } });
+    }
+    const rows = (await resp.json()).rows || [];
+    log.push({ stage: "gsc_fetch", rows: rows.length, period: `${fmt(startDate)}..${fmt(endDate)}` });
+
+    const relevant = rows.filter((r) => (r.impressions || 0) >= minImp);
+
+    // Slug mana saja yang sudah ada di posts_meta? (batch query)
+    const slugs = [...new Set(relevant.map((r) => growthSlugFromUrl(r.keys && r.keys[1])).filter(Boolean))];
+    const existingSlugs = new Set();
+    for (let i = 0; i < slugs.length; i += 200) {
+      const chunk = slugs.slice(i, i + 200);
+      try {
+        const r = await env.DB.prepare(`SELECT slug FROM posts_meta WHERE slug IN (${chunk.map(() => "?").join(",")})`).bind(...chunk).all();
+        (r.results || []).forEach((x) => existingSlugs.add(x.slug));
+      } catch (e) { errors.push({ stage: "slug_lookup", error: String(e).slice(0, 150) }); }
+    }
+    log.push({ stage: "slug_lookup", slugs: slugs.length, existing: existingSlugs.size });
+
+    let queued = 0;
+    for (const r of relevant) {
+      try {
+        const query = (r.keys && r.keys[0]) || "";
+        const pageUrl = (r.keys && r.keys[1]) || "";
+        const imps = r.impressions || 0;
+        const clicks = r.clicks || 0;
+        const pos = Math.round((r.position || 0) * 10) / 10;
+        if (!query || /beriklan/i.test(query)) continue; // branded → bukan demand baru
+
+        const slug = growthSlugFromUrl(pageUrl);
+        if (slug && existingSlugs.has(slug)) {
+          // Halaman sudah ada: kandidat enrich/ctr-fix dihitung dari keyword_ranks (rank-sync).
+          if (sample.existingPage.length < 5) sample.existingPage.push({ query, slug, imps, clicks, pos });
+          if (imps >= minImp * 2 && pos >= 3 && pos <= 18) {
+            await growthLogInsert(env, { action: "gsc-loop", slug, keyword: query, position: pos, ctr: r.ctr, impressions: imps });
+          }
+          continue;
+        }
+
+        // Pageless: demand tanpa halaman blog layak → antri keyword baru
+        if (sample.pageless.length < 8) sample.pageless.push({ query, pageUrl, imps, clicks, pos });
+        const commercial = /\b(jasa|harga|biaya|paket|murah|cara|tips|terbaik|contoh|vendor|kontraktor|supplier|review|rekomendasi|berapa|estimasi)\b/i.test(query);
+        if (!commercial || queued >= maxQueue) continue;
+
+        const norm = query.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim().replace(/\s+/g, " ").slice(0, 120);
+        if (norm.length < 6) continue;
+        const normKey = norm.replace(/ /g, "-");
+        // Dedupe: sudah ada di queue / sudah dipublish?
+        const dupQueue = await env.DB.prepare("SELECT id FROM keyword_queue WHERE keyword_normalized=? LIMIT 1").bind(norm).first();
+        const dupSlug = await env.DB.prepare("SELECT slug FROM posts_meta WHERE slug=? LIMIT 1").bind(normKey.slice(0, 80)).first();
+        if (dupQueue || dupSlug) continue;
+
+        const intent = /\b(harga|biaya|paket|murah|order|jasa|vendor|kontraktor|supplier)\b/i.test(norm) ? "transactional" : "informational";
+        const service = growthServiceFromQuery(norm) || "";
+        const priority = Math.min(95, 40 + Math.floor(imps / 5));
+        const qid = `gsc-${normKey.slice(0, 70)}`;
+        await env.DB.prepare(
+          "INSERT INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent) VALUES (?, ?, ?, 'gsc-impression', 0, datetime('now'), 'pending', ?, NULL, ?, ?)"
+        ).bind(qid, query.slice(0, 200), norm, service, priority, intent).run();
+        queued++;
+        sample.queued.push({ keyword: query, impressions: imps, intent, service: service || "(default)", priority });
+      } catch (e) { errors.push({ stage: "row", error: String(e).slice(0, 150) }); }
+    }
+
+    return new Response(JSON.stringify({
+      ok: true, action: "gsc-loop", days, rows: rows.length, relevant: relevant.length,
+      slugs_checked: slugs.length, pages_existing: existingSlugs.size,
+      queued, maxQueue, elapsed_ms: Date.now() - t0, sample, log, errors,
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ── Helper: join keyword_ranks terbaru → posts_meta (slug diekstrak dari page_url) ──
+const GROWTH_SLUG_SQL = `rtrim(replace(replace(replace(replace(kr.page_url,
+     'https://beriklan.co.id/blog/',''),
+     'https://www.beriklan.co.id/blog/',''),
+     'https://beriklan.co.id/',''),
+     'https://www.beriklan.co.id/',''), '/')`;
+
+// ── 2. Enrich artikel posisi 3-18 (intro + FAQ sesuai query) ──
+// GET /api/cron/growth/enrich?token=...&count=3&minImp=10
+async function handleGrowthEnrich(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "3", 10) || 3, 5));
+  const minImp = Math.max(1, parseInt(url.searchParams.get("minImp") || "10", 10) || 10);
+  const t0 = Date.now();
+  const log = []; const errors = []; const optimized = [];
+
+  try {
+    await ensureGrowthSchema(env);
+    const cands = await env.DB.prepare(`
+      SELECT kr.keyword, kr.page_url, kr.position, kr.impressions, kr.ctr, kr.date,
+             pm.slug, pm.title, pm.enriched_at
+      FROM keyword_ranks kr
+      JOIN (
+        SELECT keyword, page_url, MAX(date) AS md FROM keyword_ranks GROUP BY keyword, page_url
+      ) latest ON kr.keyword = latest.keyword AND kr.page_url = latest.page_url AND kr.date = latest.md
+      JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL}
+      WHERE kr.position BETWEEN 3 AND 18
+        AND kr.impressions >= ?
+        AND pm.slug != ''
+        AND (pm.enriched_at IS NULL OR pm.enriched_at < datetime('now', '-21 days'))
+      ORDER BY kr.impressions DESC
+      LIMIT ?
+    `).bind(minImp, count).all();
+    const rows = cands.results || [];
+    log.push({ stage: "candidates", count: rows.length });
+    if (!rows.length) {
+      return new Response(JSON.stringify({ ok: true, message: "no enrich candidates", optimized: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    for (const cand of rows) {
+      const slug = cand.slug;
+      try {
+        if (await growthIsStaticAsset(slug, env)) {
+          await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, position: cand.position, impressions: cand.impressions, static_page: 1, error: "skipped: static page (perlu rebuild)" });
+          log.push({ stage: "skip_static", slug });
+          continue;
+        }
+        const c = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
+        let content = c?.content || "";
+        if (!content || content.length < 300) { log.push({ stage: "skip_empty", slug }); continue; }
+        if (content.includes('class="growth-intro"')) { log.push({ stage: "skip_already", slug }); continue; }
+
+        const prompt = `Kamu adalah SEO content editor Indonesia untuk blog Beriklan.co.id (agency performance marketing, tone: senior partner, formal-terukur).
+Tugas: optimasi pembukaan artikel agar paling relevan untuk query Google: "${cand.keyword}" (posisi ${cand.position}, ${cand.impressions} impresi).
+
+Artikel saat ini (potongan awal):
+${content.slice(0, 1500)}
+
+Buat JSON valid (hanya JSON, tanpa markdown):
+{
+  "intro": "paragraf pembuka baru 60-80 kata; keyword disebut natural di 2 kalimat pertama; langsung jawab intent pencari",
+  "faq": [
+    {"q": "pertanyaan natural seperti diketik di Google", "a": "jawaban 1-2 kalimat"},
+    {"q": "...", "a": "..."},
+    {"q": "...", "a": "..."}
+  ]
+}
+
+Aturan wajib:
+- Bahasa Indonesia formal, sapaan "Anda"
+- DILARANG: bikin, gak, pasti, garansi 100%, overclaim
+- Faq menjawab variasi intent dari query utama (harga/cara/perbandingan/risiko)
+- Output hanya JSON.`;
+
+        const aiResult = await generateWithZenOrGroq(prompt, env);
+        if (!aiResult) { errors.push({ slug, error: "AI failed" }); await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, error: "AI failed" }); continue; }
+        const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
+        const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
+        const j = extractJson(aiText);
+        if (!j || !j.intro) { errors.push({ slug, error: "JSON parse failed", raw: String(aiText).slice(0, 150) }); continue; }
+
+        // 2a. Ganti <p> pembuka pertama dengan intro baru
+        const pRe = /<p[^>]*>[\s\S]*?<\/p>/i;
+        const newIntro = `<p class="growth-intro">${escapeHtml(j.intro)}</p>`;
+        if (pRe.test(content)) content = content.replace(pRe, newIntro);
+        else content = newIntro + "\n" + content;
+
+        // 2b. FAQ spesifik-query (heading sama dengan FAQ deterministik renderer →
+        //     FAQ generik otomatis tidak ditumpuk; lihat _buildArticleBody)
+        const faqs = (j.faq || []).filter((f) => f && f.q && f.a).slice(0, 3);
+        if (faqs.length && !content.includes('class="growth-faq"') && !/Pertanyaan yang Sering Diajukan/i.test(content)) {
+          const faqHtml = `\n<div class="growth-faq my-8 p-6 md:p-7 bg-soft rounded-2xl border border-gray-100">\n<h2 class="font-display font-bold text-xl md:text-2xl text-ink mb-4">Pertanyaan yang Sering Diajukan</h2>\n`
+            + faqs.map((f) => `<p class="font-bold text-ink mt-4 mb-1">${escapeHtml(f.q)}</p>\n<p class="text-muted leading-relaxed">${escapeHtml(f.a)}</p>`).join("\n")
+            + `\n</div>`;
+          content = content.trimEnd() + faqHtml;
+        }
+
+        await env.DB.prepare("UPDATE posts_content SET content=? WHERE slug=?").bind(content, slug).run();
+        await env.DB.prepare("UPDATE posts_meta SET enriched_at=datetime('now') WHERE slug=?").bind(slug).run();
+        await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, position: cand.position, impressions: cand.impressions, ai_model: aiModel, before_json: JSON.stringify({ intro_len: (c?.content || "").length }), after_json: JSON.stringify({ intro: j.intro.slice(0, 200), faqs: faqs.length }) });
+        await growthPing(env, slug, errors);
+        optimized.push({ slug, keyword: cand.keyword, position: cand.position, imps: cand.impressions, faqs: faqs.length, model: aiModel });
+        log.push({ stage: "enriched", slug, keyword: cand.keyword });
+      } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
+    }
+
+    return new Response(JSON.stringify({ ok: true, action: "enrich", candidates: rows.length, optimized: optimized.length, optimized_list: optimized, elapsed_ms: Date.now() - t0, log, errors }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ── 3. CTR fix: SERP title + meta description untuk page impresi-tinggi CTR-rendah ──
+// GET /api/cron/growth/ctr-fix?token=...&count=3&minImp=50&maxCtr=0.02
+async function handleGrowthCtrFix(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "3", 10) || 3, 5));
+  const minImp = Math.max(10, parseInt(url.searchParams.get("minImp") || "50", 10) || 50);
+  const maxCtr = Math.min(0.1, Math.max(0.001, parseFloat(url.searchParams.get("maxCtr") || "0.02") || 0.02));
+  const t0 = Date.now();
+  const log = []; const errors = []; const fixed = [];
+
+  try {
+    await ensureGrowthSchema(env);
+    const cands = await env.DB.prepare(`
+      SELECT kr.keyword, kr.page_url, kr.position, kr.impressions, kr.ctr,
+             pm.slug, pm.title, pm.excerpt, pm.seo_title, pm.seo_description, pm.ctr_fixed_at
+      FROM keyword_ranks kr
+      JOIN (
+        SELECT keyword, page_url, MAX(date) AS md FROM keyword_ranks GROUP BY keyword, page_url
+      ) latest ON kr.keyword = latest.keyword AND kr.page_url = latest.page_url AND kr.date = latest.md
+      JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL}
+      WHERE kr.impressions >= ?
+        AND kr.ctr <= ?
+        AND kr.position <= 30
+        AND pm.slug != ''
+        AND (pm.ctr_fixed_at IS NULL OR pm.ctr_fixed_at < datetime('now', '-30 days'))
+      ORDER BY kr.impressions DESC
+      LIMIT ?
+    `).bind(minImp, maxCtr, count).all();
+    const rows = cands.results || [];
+    log.push({ stage: "candidates", count: rows.length, minImp, maxCtr });
+    if (!rows.length) {
+      return new Response(JSON.stringify({ ok: true, message: "no ctr-fix candidates", fixed: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    for (const cand of rows) {
+      const slug = cand.slug;
+      try {
+        const isStatic = await growthIsStaticAsset(slug, env);
+        const prompt = `Kamu adalah SERP optimization specialist Indonesia untuk beriklan.co.id (agency performance marketing).
+Halaman blog dapat ${cand.impressions} impresi Google tapi CTR hanya ${Math.round((cand.ctr || 0) * 1000) / 10}% di posisi ${cand.position} untuk query "${cand.keyword}".
+Judul saat ini: "${cand.title || ""}"
+
+Buat JSON valid (hanya JSON, tanpa markdown):
+{
+  "title": "judul SERP baru, maksimal 60 karakter, keyword di depan, memuat benefit spesifik atau tahun 2026",
+  "meta_description": "meta description baru, maksimal 155 karakter, memuat keyword + 1 alasan klik + ajakan konsultasi",
+  "reason": "1 kalimat kenapa ini menaikkan CTR"
+}
+
+Aturan wajib:
+- DILARANG clickbait yang tidak bisa dipenuhi isi artikel
+- DILARANG: pasti, garansi 100%, gratis (kecuali konsultasi gratis), overclaim
+- Huruf kapital wajar (title case), tanpa emoji
+- Output hanya JSON.`;
+
+        const aiResult = await generateWithZenOrGroq(prompt, env);
+        if (!aiResult) { errors.push({ slug, error: "AI failed" }); continue; }
+        const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
+        const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
+        const j = extractJson(aiText);
+        if (!j || !j.title) { errors.push({ slug, error: "JSON parse failed" }); continue; }
+
+        let newTitle = String(j.title).replace(/\s+/g, " ").trim();
+        if (newTitle.length > 60) newTitle = newTitle.slice(0, 60).replace(/\s+\S*$/, "");
+        let newDesc = String(j.meta_description || "").replace(/\s+/g, " ").trim();
+        if (newDesc.length > 155) newDesc = newDesc.slice(0, 155).replace(/\s+\S*$/, "") + "…";
+        if (newTitle.length < 10 || newDesc.length < 40) { errors.push({ slug, error: "AI output too short" }); continue; }
+
+        const before = { title: cand.title, seo_title: cand.seo_title, seo_description: cand.seo_description };
+        await env.DB.prepare(
+          "UPDATE posts_meta SET seo_title=?, seo_description=?, ctr_fixed_at=datetime('now') WHERE slug=?"
+        ).bind(newTitle, newDesc, slug).run();
+        await growthLogInsert(env, { action: "ctr-fix", slug, keyword: cand.keyword, position: cand.position, ctr: cand.ctr, impressions: cand.impressions, static_page: isStatic ? 1 : 0, before_json: JSON.stringify(before), after_json: JSON.stringify({ title: newTitle, desc: newDesc, reason: j.reason || "" }), ai_model: aiModel });
+        await growthPing(env, slug, errors);
+        fixed.push({ slug, keyword: cand.keyword, imps: cand.impressions, ctr: cand.ctr, new_title: newTitle, static: isStatic });
+        log.push({ stage: "fixed", slug, new_title: newTitle });
+        if (isStatic) log.push({ stage: "warn_static", slug, note: "halaman static — efek baru live setelah CF rebuild" });
+      } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
+    }
+
+    return new Response(JSON.stringify({ ok: true, action: "ctr-fix", candidates: rows.length, fixed: fixed.length, fixed_list: fixed, elapsed_ms: Date.now() - t0, log, errors }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ── 4. Freshness mingguan: update jujur artikel lama (tanpa ubah tanggal publish) ──
+// GET /api/cron/growth/freshness?token=...&count=2&ageDays=90
+async function handleGrowthFreshness(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "2", 10) || 2, 3));
+  const ageDays = Math.max(30, parseInt(url.searchParams.get("ageDays") || "90", 10) || 90);
+  const t0 = Date.now();
+  const log = []; const errors = []; const refreshed = [];
+
+  try {
+    await ensureGrowthSchema(env);
+    // Artikel tua yang masih mendatangkan impresi → prioritas refresh (bukan asal tertua)
+    const cands = await env.DB.prepare(`
+      SELECT pm.slug, pm.title, pm.service, pm.iso_date, COALESCE(g.imps, 0) AS imps
+      FROM posts_meta pm
+      LEFT JOIN (
+        SELECT ${GROWTH_SLUG_SQL} AS slug, SUM(impressions) AS imps
+        FROM keyword_ranks GROUP BY slug
+      ) g ON g.slug = pm.slug
+      WHERE pm.iso_date IS NOT NULL
+        AND pm.iso_date < datetime('now', '-${ageDays} days')
+        AND (pm.refreshed_at IS NULL OR pm.refreshed_at < datetime('now', '-90 days'))
+      ORDER BY imps DESC, pm.iso_date ASC
+      LIMIT ?
+    `).bind(count).all();
+    const rows = cands.results || [];
+    log.push({ stage: "candidates", count: rows.length, ageDays });
+    if (!rows.length) {
+      return new Response(JSON.stringify({ ok: true, message: "no freshness candidates", refreshed: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    const year = new Date().getUTCFullYear();
+    for (const cand of rows) {
+      const slug = cand.slug;
+      try {
+        if (await growthIsStaticAsset(slug, env)) {
+          await growthLogInsert(env, { action: "freshness", slug, static_page: 1, error: "skipped: static page" });
+          log.push({ stage: "skip_static", slug });
+          continue;
+        }
+        const c = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
+        const content = c?.content || "";
+        if (!content || content.includes('class="freshness-update"')) { log.push({ stage: "skip", slug, reason: content ? "already refreshed" : "empty" }); continue; }
+
+        const prompt = `Kamu adalah SEO content editor Indonesia untuk beriklan.co.id. Artikel "${cand.title}" terbit ${cand.iso_date || "lama"} dan perlu disegarkan secara jujur (tanpa mengubah fakta lama).
+
+Buat JSON valid (hanya JSON, tanpa markdown):
+{
+  "callout": "maksimal 50 kata: apa yang berubah/relevan di ${year} untuk topik ini (tren, kisaran harga, kebijakan platform, praktik terbaru)",
+  "bullets": ["poin praktis 1 (maks 20 kata)", "poin praktis 2", "poin praktis 3"]
+}
+
+Aturan: bahasa Indonesia formal, "Anda", tanpa overclaim, tanpa menyebut tanggal spesifik yang tidak bisa diverifikasi. Output hanya JSON.`;
+
+        const aiResult = await generateWithZenOrGroq(prompt, env);
+        if (!aiResult) { errors.push({ slug, error: "AI failed" }); continue; }
+        const aiText = (typeof aiResult === "string") ? aiResult : (aiResult.text || "");
+        const aiModel = (typeof aiResult === "object" && aiResult._model) || "";
+        const j = extractJson(aiText);
+        if (!j || !j.callout) { errors.push({ slug, error: "JSON parse failed" }); continue; }
+
+        const bullets = (j.bullets || []).filter((b) => b && String(b).trim()).slice(0, 3);
+        const calloutHtml = `\n<div class="freshness-update my-6 p-5 bg-beige border-l-4 border-accent rounded-r-lg">\n<p class="text-xs font-bold text-accent uppercase tracking-wider mb-1.5">Update ${year}</p>\n<p class="text-sm text-ink leading-relaxed">${escapeHtml(j.callout)}</p>\n`
+          + (bullets.length ? `<ul class="mt-3 space-y-1.5 text-sm text-muted list-disc pl-5">${bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>` : "")
+          + `\n</div>`;
+
+        // Sisipkan setelah paragraf pertama (konten lama tetap, update transparan di atas)
+        let newContent;
+        if (/<\/p>/i.test(content)) newContent = content.replace(/<\/p>/i, "</p>" + calloutHtml);
+        else newContent = calloutHtml + "\n" + content;
+
+        await env.DB.prepare("UPDATE posts_content SET content=? WHERE slug=?").bind(newContent, slug).run();
+        await env.DB.prepare("UPDATE posts_meta SET refreshed_at=datetime('now') WHERE slug=?").bind(slug).run();
+        await growthLogInsert(env, { action: "freshness", slug, keyword: cand.title, impressions: cand.imps, before_json: JSON.stringify({ iso_date: cand.iso_date }), after_json: JSON.stringify({ callout: j.callout.slice(0, 200), bullets: bullets.length }), ai_model: aiModel });
+        await growthPing(env, slug, errors);
+        refreshed.push({ slug, title: cand.title, imps: cand.imps, model: aiModel });
+        log.push({ stage: "refreshed", slug });
+      } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
+    }
+
+    return new Response(JSON.stringify({ ok: true, action: "freshness", candidates: rows.length, refreshed: refreshed.length, refreshed_list: refreshed, elapsed_ms: Date.now() - t0, log, errors }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
 // ─── Sitemap Ping (GSC + IndexNow) ──────────────────────────────
+// ─── Index cascade: backfill katalog blog ke antrian indexing ─────────
+// Kontrak sama dengan versi live lama (dry_run preview), tapi submit via
+// pending_indexing → pipeline gsc-indexing/indexnow harian (quota terkontrol).
+// GET /api/cron/index-cascade?token=...&count=50&dry=1
+async function handleIndexCascade(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "50", 10) || 50, 200));
+  const dry = url.searchParams.get("dry") === "1";
+  const t0 = Date.now();
+  try {
+    // Artikel yang BELUM pernah masuk antrian indexing (status apa pun) → oldest first
+    const rows = await env.DB.prepare(`
+      SELECT pm.slug FROM posts_meta pm
+      LEFT JOIN pending_indexing pi ON pi.url = 'https://beriklan.co.id/blog/' || pm.slug || '/'
+      WHERE pi.url IS NULL AND pm.slug IS NOT NULL AND pm.slug != ''
+      ORDER BY pm.iso_date ASC LIMIT ?
+    `).bind(count).all();
+    const slugs = (rows.results || []).map((r) => r.slug);
+    const preview = slugs.slice(0, 20).map((s) => `https://beriklan.co.id/blog/${s}/`);
+    if (dry) {
+      return new Response(JSON.stringify({
+        ok: true, gsc_submitted: 0, indexnow_submitted: 0, total_urls: slugs.length,
+        skipped: 0, dry_run: true, duration_ms: Date.now() - t0, preview,
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+    for (const s of slugs) {
+      try {
+        await env.DB.prepare("INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))")
+          .bind(`https://beriklan.co.id/blog/${s}/`).run();
+      } catch {}
+    }
+    return new Response(JSON.stringify({
+      ok: true, gsc_submitted: 0, indexnow_submitted: 0, queued: slugs.length,
+      total_urls: slugs.length, skipped: 0, dry_run: false,
+      note: "masuk pending_indexing; dikirim oleh cron gsc-indexing (200/hari) + indexnow (50/jam)",
+      duration_ms: Date.now() - t0, preview,
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
 // ─── Sitemap Ping (GSC Search Console API + IndexNow) ──────────────
 async function handlePingSitemap(request, env) {
   const url = new URL(request.url);
@@ -12863,6 +13463,12 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
   const isoDate = meta.iso_date || '';
   const readTime = escHtml(meta.readTime || '3 min');
   const excerpt = escHtml(meta.excerpt || '');
+  // Growth freshness: label "Diperbarui" (jujur — tanggal publish TIDAK diubah)
+  let refreshedLabel = '';
+  if (meta.refreshed_at) {
+    try { refreshedLabel = new Date(meta.refreshed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
+    catch { refreshedLabel = String(meta.refreshed_at).slice(0, 10); }
+  }
   let body = sanitizeWaNumber(content?.content || '');
   let tags = [];
   try { tags = JSON.parse(meta.tags || '[]'); } catch {}
@@ -12879,7 +13485,7 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
 
   const articleSchema = `<script type="application/ld+json">${JSON.stringify({
     "@context":"https://schema.org","@type":"Article",headline:meta.title||slug,
-    description:meta.excerpt||'',datePublished:meta.iso_date||null,dateModified:meta.iso_date||null,
+    description:meta.excerpt||'',datePublished:meta.iso_date||null,dateModified:(meta.refreshed_at ? String(meta.refreshed_at).replace(' ', 'T') : meta.iso_date)||null,
     author:{"@type":"Person","name":"Tim Beriklan","jobTitle":"Performance Marketing Strategist",
       "url":"https://beriklan.co.id/tentang-kami/",
       "worksFor":{"@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id/",
@@ -12922,6 +13528,10 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-book-open w-3.5 h-3.5"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
     Oleh ${escHtml(authorName)}
   </span>
+  ${refreshedLabel ? `<span class="flex items-center gap-1.5 text-green font-semibold" title="Konten disegarkan pada ${escHtml(refreshedLabel)}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-refresh-cw w-3.5 h-3.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+    Diperbarui ${escHtml(refreshedLabel)}
+  </span>` : ''}
 </div>`;
 
   const featImg = _featuredImageFor(meta);
@@ -13158,10 +13768,27 @@ async function renderBlogPost(slug, env) {
       }
     }
 
-    const title = escHtml(meta.title || slug);
-    const excerpt = escHtml(buildMetaDescription(meta));
+    // Growth columns (seo_title/seo_description/refreshed_at) — best-effort fetch terpisah
+    // supaya render TIDAK pecah kalau kolom belum ada (migrasi growth belum jalan).
+    try {
+      const g = await env.DB.prepare(
+        "SELECT seo_title, seo_description, refreshed_at FROM posts_meta WHERE slug=?"
+      ).bind(slug).first();
+      if (g) {
+        meta.seo_title = g.seo_title || null;
+        meta.seo_description = g.seo_description || null;
+        meta.refreshed_at = g.refreshed_at || null;
+      }
+    } catch {}
+
+    // CTR-fix growth loop: SERP title/description override dari posts_meta (kalau sudah
+    // di-rewrite handleGrowthCtrFix). H1 tetap judul asli — yang diubah hanya SERP snippet.
+    const seoTitle = (meta.seo_title || "").trim();
+    const seoDesc = (meta.seo_description || "").trim();
+    const title = escHtml(seoTitle || meta.title || slug);
+    const excerpt = escHtml(seoDesc || buildMetaDescription(meta));
     const canonical = `https://beriklan.co.id/blog/${slug}/`;
-    const ogTitle = escHtml(meta.title || slug);
+    const ogTitle = escHtml(seoTitle || meta.title || slug);
 
     let relatedRows = [];
     try {

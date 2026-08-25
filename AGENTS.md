@@ -902,17 +902,28 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 - `run_worker_first` wajib (jangan hapus). Email-send cron aktif → kuota Resend 100/hari, reset 00:00 UTC. Email yang tidak ter-personalize pakai subject template service default.
 - Data `database-siap-pake` (9.9k kontak) mayoritas **email-only tanpa name/phone/category** → semua match ke default service. Indonetwork/Google Places menyimpan fields lebih kaya.
 
-### Crons aktif (9 total)
+### Crons aktif (11 job, 5 slot CF cron)
+Slot cron CF gratis cuma 5 ekspresi; job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`:
 - `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
 - `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)
 - `gsc-indexing` (0 */6 * * *) — GSC + sitemap + rank
 - `trending-generate` (30 */6 * * *) — Trending article dari Google Trends
-- `content-refresh` (0 0 1 * *) — Refresh artikel lama (bulanan)
-- `snippet-optimize` (0 0 * * 1) — Optimasi snippet (mingguan)
+- `content-refresh` (0 0 1 * *) — Refresh artikel lama (bulanan, jalur posts.json)
+- `snippet-optimize` (0 0 * * 1) — Optimasi snippet (mingguan, jalur posts.json)
 - `scrape-indonetwork` (30 6 * * *) — Scrape Indonetwork
 - `scrape-google-places` (0 7 * * *) — Scrape Google Places (perlu API key)
 - `lead-pipeline` (0 */6 * * *) — Akuisisi klien: match + personalisasi + auto-campaign
 - `email-send` (*/15 * * * *) — **AKTIF (default)** — kirim antrian email (batch 25)
+
+**Growth system — GSC feedback loop (cron settings, tanpa GH Actions):**
+- `growth-gsc-loop` — tiap 6 jam (h%6==0): query GSC dimensions [query,page] 14 hari; query komersial ber-impresi TANPA halaman blog layak → `keyword_queue` (source `gsc-impression`, priority 40+imps/5, dedupe by keyword_normalized). Lihat `handleGrowthGscLoop`.
+- `growth-enrich` — harian 09:00 UTC: artikel posisi 3-18 (snapshot `keyword_ranks`) → rewrite paragraf pembuka (`class="growth-intro"`) + FAQ spesifik-query (`class="growth-faq"`) di `posts_content`. Cooldown 21 hari (`posts_meta.enriched_at`). Heading FAQ sama dengan FAQ deterministik renderer → FAQ generik tidak ditumpuk.
+- `growth-ctr-fix` — harian 09:00 UTC: impresi≥50 & CTR≤2% & posisi≤30 → rewrite SERP `seo_title` (≤60) + `seo_description` (≤155) di `posts_meta`. Renderer pakai override ini untuk <title>/og/meta (H1 tidak berubah). Cooldown 30 hari (`posts_meta.ctr_fixed_at`).
+- `growth-freshness` — Senin 02:00 UTC: artikel >90 hari dgn impresi → callout "Update {tahun}" + bullets disisipkan setelah paragraf pertama (`class="freshness-update"`), set `posts_meta.refreshed_at` → badge "Diperbarui" + `dateModified` schema (jujur, `datePublished` tidak diubah).
+- Semua job growth MENULIS LANGSUNG KE D1 (efek live tanpa build) dan SKIP halaman static Astro (perubahan D1 tidak tampil sampai CF rebuild; ter-log di `growth_log.static_page=1`).
+- Audit trail + debugging: tabel `growth_log` (action/slug/keyword/position/ctr/impressions/static_page/before_json/after_json/ai_model/error).
+- Endpoint manual: `/api/cron/growth/gsc-loop|enrich|ctr-fix|freshness?token=...` (param count/minImp/maxQueue/days sesuai handler).
+- `index-cascade` manual: `/api/cron/index-cascade?token=...&count=50&dry=1` — backfill katalog blog yang belum pernah diqueue ke `pending_indexing` (dikirim oleh cron gsc-indexing/indexnow, bukan submit langsung).
 
 ### Tabel Email Flow
 - `email_templates` (12 templates, 11 service + 1 follow-up)
@@ -961,6 +972,6 @@ newsletter otomatis dapat email follow-up (dikirim cron email-send tiap 15 menit
 
 ---
 
-**Versi dokumen:** 1.5
-**Update terakhir:** 02 Agustus 2026 (WA click tracker + auto follow-up WhatsApp)
+**Versi dokumen:** 1.6
+**Update terakhir:** 25 Agustus 2026 (Growth system — GSC feedback loop, tanpa GitHub Actions)
 **Maintainer:** Beriklan Digital Agency + Codex AI

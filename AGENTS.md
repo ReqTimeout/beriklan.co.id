@@ -904,12 +904,14 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 
 ### Crons aktif (11 job, 5 slot CF cron)
 Slot cron CF gratis cuma 5 ekspresi **per account** (bukan per-script); job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`.
-**STATUS TERPASANG (2026-08-25): hanya 2 slot di `beriklanweb`** — `0 * * * *` + `*/15 * * * *`.
-Worker legacy `beriklan-app` memakai 3 slot sisanya, jadi `gsc-indexing`/`trending-generate`/`snippet-optimize`
-(`0 */6 * * *`, `30 */6 * * *`, `0 3 * * 1`) BELUM terpasang. Untuk memasang: hapus cron
-`beriklan-app` via PUT array `[]` (tanya user dulu — script-nya bukan dead-code), lalu PUT 5
-cron `beriklanweb` (body array mentah `[{"cron":"..."}]`, BUKAN `{"schedules":[...]}` → error 10026).
-Job growth tetap jalan karena memakai time-gate di dalam slot hourly.
+**STATUS TERPASANG (2026-08-25): 5 slot penuh di `beriklanweb`** — `0 * * * *`, `*/15 * * * *`, `30 6 * * *`, `0 7 * * *`, `0 3 * * 1` (persis sesuai `wrangler.jsonc` triggers).
+Worker legacy `beriklan-app` (dashboard Google Ads di `app.beriklan.co.id`, project
+`capi-gateway-v2`) cron-nya **di-nol-kan atas instruksi user** (dashboard tidak dipakai).
+Script-nya tetap ter-deploy & bisa diakses; job-nya punya HTTP fallback
+(`/api/cron/anomaly-all`, `/api/cron/brain-all`, `/api/cron/audit-all` di worker itu)
+kalau mau dihidupkan lagi lewat trigger eksternal.
+Catatan API: PUT schedules butuh body **array mentah** `[{"cron":"..."}]`,
+BUKAN `{"schedules":[...]}` (error 10026). Error 10072 = cap 5 cron/account tercapai.
 Daftar job:
 - `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
 - `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)

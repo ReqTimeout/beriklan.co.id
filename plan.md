@@ -320,16 +320,21 @@ Hasil verifikasi end-to-end:
 Gotchas operasional yang ditemukan:
 1. **Schedule API** PUT `/accounts/{id}/workers/scripts/{name}/schedules` — body harus
    **array mentah** `[{"cron":"..."}]`, BUKAN objek `{"schedules":[...]}` (error 10026).
-2. **Cap cron 5/account** (bukan per-script): `beriklan-app` lama memakai 3 slot →
-   `beriklanweb` hanya bisa 2 (`0 * * * *` + `*/15 * * * *`). Job scraper/refresh
-   (`30 6`, `0 7`, `0 3 * * 1`) TIDAK terpasang; growth jobs tetap jalan karena
-   disusupkan ke slot hourly via time-gate (`h%6`, `h===9`, `dow===1 && h===2`).
-   Opsi: hapus cron `beriklan-app` (legacy, bukan dead-code — tanya user dulu) atau upgrade.
+2. **Cap cron 5/account** (bukan per-script) — SELESAI 2026-08-25: user memutuskan
+   `beriklan-app` (dashboard Google Ads `app.beriklan.co.id`, project `capi-gateway-v2`)
+   TIDAK dipakai → cron-nya di-PUT `[]` via API schedules. Kelima slot kini milik
+   `beriklanweb`: `0 * * * *` (hourly + time-gate growth), `*/15 * * * *` (email-send),
+   `30 6 * * *` (scrape-indonetwork), `0 7 * * *` (scrape-google-places),
+   `0 3 * * 1` (snippet-optimize) — persis `wrangler.jsonc` triggers. Script
+   `beriklan-app` tetap ter-deploy; job-nya punya HTTP fallback
+   (`/api/cron/anomaly-all|brain-all|audit-all`) kalau mau dihidupkan lagi.
 3. **GSC permission**: service account HANYA punya akses property `https://www.beriklan.co.id/`
    (prefix URL). Apex `https://beriklan.co.id/` → 403; `sc-domain:beriklan.co.id` → 0 rows.
    Secret `GSC_SITE_URL` saat ini = `https://www.beriklan.co.id/` (satu-satunya yang data).
-   → AKSI USER: tambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
-   Owner di GSC property apex/domain, lalu set `GSC_SITE_URL` ke apex (`wrangler secret put`).
+   → User setuju menambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
+   Owner di GSC property apex/domain (Search Console → Settings → Users & permissions).
+   Setelah selesai: `echo "https://beriklan.co.id/" | npx wrangler secret put GSC_SITE_URL`,
+   lalu test `rank-sync` + `growth/gsc-loop` untuk pastikan data apex terbaca.
 4. **Root www bisa HIT cache lama** (token tidak punya scope cache purge): `www.beriklan.co.id/`
    kadang 200 HIT; path lain 301. Menunggu expire atau purge manual via dashboard.
 5. Renderer blog sudah D1-first + fallback asset statis, jadi semua job growth live tanpa rebuild.

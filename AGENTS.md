@@ -935,7 +935,7 @@ Daftar job:
 - `index-cascade` manual: `/api/cron/index-cascade?token=...&count=50&dry=1` — backfill katalog blog yang belum pernah diqueue ke `pending_indexing` (dikirim oleh cron gsc-indexing/indexnow, bukan submit langsung).
 - Audit trail UI: `/api/admin/growth-log?token=...&action=enrich&slug=...&limit=20`; probe AI: `/api/admin/ai-test?token=...` (+`&models=1` untuk list model Groq live).
 - AI provider: Zen `deepseek-v4-flash-free` (gratis, sering 429) → fallback Groq via konstanta `GROQ_CHAT_MODELS` (`openai/gpt-oss-120b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-20b`; 3 key dirotasi). Model `llama-3.3-70b-versatile` sudah dihapus Groq — JANGAN dipakai lagi. gpt-oss: output reasoning ikut memakan budget → `reasoning_effort: "low"` + `max_tokens` ≥ 2048 untuk prompt JSON.
-- GSC: service account saat ini HANYA punya akses property `https://www.beriklan.co.id/` (secret `GSC_SITE_URL`). Apex/domain property 403/0 rows — user perlu tambahkan SA sebagai Owner, lalu ganti secret via `npx wrangler secret put GSC_SITE_URL`.
+- GSC: service account saat ini HANYA punya akses property `https://www.beriklan.co.id/` (secret `GSC_SITE_URL`). Apex/domain property 403/0 rows (retest 2026-08-25: tetap 403, secret tetap www). Menunggu user tambahkan SA sebagai Owner; lalu `printf 'https://beriklan.co.id/' | npx wrangler secret put GSC_SITE_URL` dan test `rank-sync` + `growth/gsc-loop`. Data www tipis → `growth-ctr-fix` masih 0 kandidat (clamp minImp=50).
 
 ### Tabel Email Flow
 - `email_templates` (12 templates, 11 service + 1 follow-up)

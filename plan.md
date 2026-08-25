@@ -331,10 +331,14 @@ Gotchas operasional yang ditemukan:
 3. **GSC permission**: service account HANYA punya akses property `https://www.beriklan.co.id/`
    (prefix URL). Apex `https://beriklan.co.id/` → 403; `sc-domain:beriklan.co.id` → 0 rows.
    Secret `GSC_SITE_URL` saat ini = `https://www.beriklan.co.id/` (satu-satunya yang data).
-   → User setuju menambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
+   Retest langsung 2026-08-25: secret di-switch ke apex → tetap 403 (SA belum ditambahkan),
+   lalu di-revert ke www dan diverifikasi hidup lagi (gsc-loop 71 rows, rank-sync 63 rows).
+   → Menunggu user menambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
    Owner di GSC property apex/domain (Search Console → Settings → Users & permissions).
    Setelah selesai: `echo "https://beriklan.co.id/" | npx wrangler secret put GSC_SITE_URL`,
    lalu test `rank-sync` + `growth/gsc-loop` untuk pastikan data apex terbaca.
+   Catatan: data www tipis (~60-70 rows), sehingga `growth-ctr-fix` masih 0 kandidat
+   (clamp produksi minImp=50, maxCtr=0.02) — akan terisi setelah data apex masuk.
 4. **Root www bisa HIT cache lama** (token tidak punya scope cache purge): `www.beriklan.co.id/`
    kadang 200 HIT; path lain 301. Menunggu expire atau purge manual via dashboard.
 5. Renderer blog sudah D1-first + fallback asset statis, jadi semua job growth live tanpa rebuild.

@@ -1,4 +1,69 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /api/admin/
 
+# AI Crawlers — allow all untuk mendukung Google AI Overview, ChatGPT, Perplexity, Claude, Gemini
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /api/
+
+User-agent: CCBot
+Allow: /
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+
+User-agent: Bytespider
+Allow: /
+Disallow: /api/
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /api/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /api/
+
+# Sitemaps & AI discovery endpoints
 Sitemap: https://beriklan.co.id/sitemap-index.xml
+Sitemap: https://beriklan.co.id/sitemap-static.xml
+Sitemap: https://beriklan.co.id/sitemap-blog.xml
+Sitemap: https://beriklan.co.id/sitemap-city.xml
+Sitemap: https://beriklan.co.id/sitemap-tag.xml
+Sitemap: https://beriklan.co.id/sitemap-pillar.xml
+
+# AI-friendly content index
+# llms.txt → ringkasan situs untuk AI
+# llms-full.txt → extended structured list (semua artikel + service)

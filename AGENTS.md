@@ -939,7 +939,7 @@ Daftar job:
 - Endpoint manual: `/api/cron/growth/gsc-loop|enrich|ctr-fix|freshness?token=...` (param count/minImp/maxQueue/days sesuai handler).
 - `index-cascade` manual: `/api/cron/index-cascade?token=...&count=50&dry=1` — backfill katalog blog yang belum pernah diqueue ke `pending_indexing` (dikirim oleh cron gsc-indexing/indexnow, bukan submit langsung).
 - Audit trail UI: `/api/admin/growth-log?token=...&action=enrich&slug=...&limit=20`; probe AI: `/api/admin/ai-test?token=...` (+`&models=1` untuk list model Groq live).
-- AI provider: Zen `deepseek-v4-flash-free` (gratis, sering 429) → fallback Groq via konstanta `GROQ_CHAT_MODELS` (`openai/gpt-oss-120b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-20b`; 3 key dirotasi). Model `llama-3.3-70b-versatile` sudah dihapus Groq — JANGAN dipakai lagi. gpt-oss: output reasoning ikut memakan budget → `reasoning_effort: "low"` + `max_tokens` ≥ 2048 untuk prompt JSON.
+- AI provider: **Zen FREE models** (zero cost, 6 model rotasi: `big-pickle`, `x-preview-f-free`, `mimo-v2.5-free`, `hy3-free`, `nemotron-3.5-lightning-free`, `nemotron-3-ultra-free`) → fallback **Groq** via konstanta `GROQ_CHAT_MODELS` (`openai/gpt-oss-20b`, `openai/gpt-oss-120b`, `qwen/qwen3.6-27b`; 3 key dirotasi). **`deepseek-v4-flash-free` dan `llama-3.3-70b-versatile` SUDAH DIHAPUS** dari provider — diverifikasi 2026-08-26 via `opencode.ai/docs/zen` + `groq.com/openai/v1/models`. Update: pakai `ZEN_FREE_MODELS` first, lalu Groq. gpt-oss: output reasoning ikut memakan budget → `reasoning_effort: "low"` + `max_tokens` ≥ 2048 untuk prompt JSON.
 - GSC: service account saat ini HANYA punya akses property `https://www.beriklan.co.id/` (secret `GSC_SITE_URL`). Apex/domain property 403/0 rows (retest 2026-08-25: tetap 403, secret tetap www). Menunggu user tambahkan SA sebagai Owner; lalu `printf 'https://beriklan.co.id/' | npx wrangler secret put GSC_SITE_URL` dan test `rank-sync` + `growth/gsc-loop`. Data www tipis → `growth-ctr-fix` masih 0 kandidat (clamp minImp=50).
 - Retest 2026-08-26 (setelah user menyatakan SA sudah ditambahkan): apex `https://beriklan.co.id/` masih 403, domain `sc-domain:beriklan.co.id` sudah bisa diakses (bukan 403) tetapi 0 rows window 14/28 hari (kemungkinan property baru / data belum tersedia). Secret `GSC_SITE_URL` tetap `https://www.beriklan.co.id/` (satu-satunya yang data). `rank-sync` dengan www = 295 rows / 14 hari, `growth/gsc-loop` jalan.
 
@@ -1051,6 +1051,6 @@ gotcha, checklist replikasi. Baca dulu sebelum setup domain baru.
 
 ---
 
-**Versi dokumen:** 1.7
-**Update terakhir:** 26 Agustus 2026 (sync-posts mirror gate, keywords/import, riset v2, beriklan-app dihapus)
+**Versi dokumen:** 1.8
+**Update terakhir:** 26 Agustus 2026 (Zen free models rotasi 6 model, per-campaign email rotation, llms-full.txt, AEO FAQ JSON-LD, robots AI-crawler allow, email quota per-campaign rotation fix)
 **Maintainer:** Beriklan Digital Agency + Codex AI

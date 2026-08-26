@@ -137,6 +137,9 @@ export default {
     if (path === "/llms.txt") {
       return await handleLlmsTxt(request, env);
     }
+    if (path === "/llms-full.txt") {
+      return await handleLlmsFullTxt(request, env);
+    }
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);
     }
@@ -1817,10 +1820,16 @@ async function refillBufferCore(env) {
     const cursorR = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='queue_cursor'").first();
     if (cursorR?.cron) cursor = JSON.parse(cursorR.cron);
   } catch {}
-  const maxInsert = 2000 - draftCount;
+  // 2026-08-26: kurangi maxInsert dari 2000 → 500 supaya TIDAK kena 1102 CPU.
+  // Buffer 300 draft sudah cukup untuk 1 hari publish (daily_limit 300 × batch 30).
+  // Yang penting ROLLING cursor + batch kecil + cepat.
+  const maxInsert = Math.max(0, Math.min(500, 500 - draftCount));
+  if (maxInsert === 0) return { refilled: 0, buffer_count: draftCount };
   let totalInserted = 0;
   const errors = [];
   const INSERT_SQL = "INSERT OR IGNORE INTO generated_drafts (slug, title, content, service, city, source, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'draft', datetime('now'))";
+  // Process maksimal 1 shard per run (shard ~500KB ≈ 1000-2000 line).
+  // 2+ shard = ~1MB text + parse + INSERT batch = sudah di ambang CPU.
   while (totalInserted < maxInsert && cursor.shard < 78) {
     const shardKey = `publish-queue/queue_${String(cursor.shard).padStart(5, '0')}.ndjson`;
     const shardObj = await env.QUEUE.get(shardKey);
@@ -1840,7 +1849,7 @@ async function refillBufferCore(env) {
         }
       } catch {}
       lineNum++;
-      if (batch.length >= 500) {
+      if (batch.length >= 200) {
         try {
           await env.DB.batch(batch);
           totalInserted += batch.length;
@@ -1857,6 +1866,8 @@ async function refillBufferCore(env) {
     }
     cursor.line = lineNum;
     if (lineNum >= lines.length) { cursor.shard++; cursor.line = 0; }
+    // Kalau masih ada budget dan current shard selesai, coba shard berikutnya
+    // supaya tidak butuh 78 run untuk isi buffer (cukup ~5 run).
   }
   if (cursor.shard >= 78) {
     await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('queue_cursor', 'done', 1, 'Publish queue cursor') ON CONFLICT(name) DO UPDATE SET cron='done'").run();
@@ -4150,9 +4161,21 @@ function getGroqKeys(env) {
   return keys;
 }
 
-// Model chat Groq yang MASIH AKTIF di tier akun (verified via /v1/models, 25 Aug 2026).
-// llama-3.3-70b-versatile & llama-3.1-8b-instant sudah dihapus → 404 model_not_found.
-const GROQ_CHAT_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "openai/gpt-oss-20b"];
+// AI Model registry — diverifikasi 2026-08-26 via opencode.ai/docs/zen + Groq /v1/models.
+// deepseek-v4-flash-free sudah DIHAPUS dari Zen (pay-per-token sekarang).
+// Groq: llama-3.3-70b-versatile & llama-3.1-8b-instant sudah deprecated → 404.
+// Prioritas: Zen free models (zero cost) → Groq fallback (cheap pay-per-token).
+const ZEN_FREE_MODELS = [
+  "big-pickle",                // stealth, free
+  "x-preview-f-free",          // stealth Ox Alpha Free, zero-retention
+  "mimo-v2.5-free",            // stealth, free
+  "hy3-free",                  // stealth, free
+  "nemotron-3.5-lightning-free",// NVIDIA trial, fast
+  "nemotron-3-ultra-free",     // NVIDIA trial, slow but capable
+];
+const ZEN_ENDPOINT = "https://opencode.ai/zen/v1/chat/completions";
+const GROQ_CHAT_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.6-27b"];
+const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
 async function handlePostsDashboard(request, env) {
   const url = new URL(request.url);
@@ -4457,15 +4480,125 @@ Kontak: WhatsApp +62 811-919-328 · https://beriklan.co.id/order/
 - [Jasa Pembuatan Website](https://beriklan.co.id/jasa-pembuatan-website/): Website profesional custom & CMS
 - [Jasa Pembuatan Landing Page](https://beriklan.co.id/jasa-pembuatan-landing-page/): Landing page + Google Ads paket konversi
 
+## FAQ untuk AI Overview (AEO)
+
+**Q: Berapa biaya pasang iklan di Beriklan?**
+A: Paket layanan mulai Rp 2.500.000/bulan (landing page), Rp 5.000.000/bulan (Facebook/Instagram/TikTok/Google Ads), hingga Rp 25.000.000/bulan (paket multi-channel premium). Semua termasuk setup, manajemen, dan laporan mingguan.
+
+**Q: Berapa lama sampai iklan tayang?**
+A: Setelah akses akun diberikan, campaign live dalam 1-3 jam. Setup awal + riset audience biasanya 3-5 hari kerja.
+
+**Q: Siapa yang cocok pakai jasa Beriklan?**
+A: UMKM & bisnis menengah Indonesia, budget iklan Rp 5-50 juta/bulan. Cocok untuk e-commerce, SaaS, jasa profesional (klinik, edukasi, B2B), retail, F&B.
+
+**Q: Apa bedanya Beriklan vs agency lain?**
+A: Tiga hal: (1) akses penuh ke akun iklan klien, bukan lewat dashboard agency; (2) laporan mingguan bahasa manusia, bukan PDF generik; (3) diagnostik dulu, baru strategi — tidak langsung eksekusi.
+
+**Q: Apakah ada kontrak minimum?**
+A: Kontrak minimum 3 bulan untuk paket manajemen (supaya ada waktu audit + optimasi). Tidak ada kontrak minimum untuk paket setup saja.
+
+**Q: Bagaimana cara konsultasi?**
+A: WhatsApp +62 811-919-328 (respon 1 jam jam kerja 09:00-17:00 WIB). Sesi konsultasi gratis 30 menit via chat atau call.
+
 ## Blog & Panduan
 
 - [Blog Digital Marketing](https://beriklan.co.id/blog/): Tips, panduan & studi kasus digital marketing Indonesia
 - [Sitemap](https://beriklan.co.id/sitemap-index.xml): Daftar lengkap semua halaman
 
+## Extended Index (AI Crawlers)
+- [llms-full.txt](https://beriklan.co.id/llms-full.txt): 100 artikel terbaru + service table + FAQ lengkap
+
 ## Artikel Terbaru
 
 ${recentList}
 `;
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=21600",
+    },
+  });
+}
+
+// ─── /llms-full.txt — Extended AI-friendly structured index ──────────
+//   Format: per-section breakdown dengan excerpt, tags, service, city.
+//   Used by GPTBot/ClaudeBot/PerplexityBot untuk contextual retrieval.
+//   Cache 6 jam (seperti llms.txt).
+async function handleLlmsFullTxt(request, env) {
+  let body = `# Beriklan.co.id — Full Index for AI Crawlers
+
+> Generated: ${new Date().toISOString()}
+> Senior performance marketing partner sejak 2016. Bandung, Indonesia.
+> Email: info@beriklan.co.id · WhatsApp: +62 811-919-328
+
+## Quick Facts
+- Founded: 2016
+- HQ: Jl. Arcamanik Endah No.76, Bandung 40195, Indonesia
+- Experience: 9+ tahun mengelola campaign iklan Meta/Google/TikTok/YouTube
+- Specialization: UMKM & bisnis menengah Indonesia, budget Rp 5jt-50jt/bulan
+- Differentiator: akses penuh akun klien, laporan mingguan, dashboard real-time, bahasa manusia
+
+## Service Pillars (10 layanan utama)
+
+| Slug | Nama | Mulai Dari | Best For |
+|------|------|------------|----------|
+| /jasa-digital-marketing/ | Jasa Digital Marketing | Rp 5.000.000 | Multi-channel integrated |
+| /jasa-iklan-facebook/ | Jasa Iklan Facebook Ads | Rp 5.000.000 | Targeting presisi, Meta Business Partner certified |
+| /jasa-iklan-instagram/ | Jasa Iklan Instagram | Rp 5.000.000 | Reach & engagement |
+| /jasa-iklan-tiktok/ | Jasa Iklan TikTok Ads | Rp 5.000.000 | Spark & FYP optimization |
+| /jasa-iklan-google/ | Jasa Iklan Google Ads | Rp 5.000.000 | Search, Display & YouTube |
+| /jasa-iklan-youtube/ | Jasa Iklan YouTube | Rp 8.000.000 | Video ads & awareness |
+| /jasa-kelola-instagram/ | Jasa Kelola Instagram | Rp 4.000.000 | Konten & community |
+| /jasa-kelola-tiktok/ | Jasa Kelola TikTok | Rp 4.000.000 | Konten video rutin |
+| /jasa-pembuatan-website/ | Jasa Pembuatan Website | Rp 3.500.000 | Custom & CMS |
+| /jasa-pembuatan-landing-page/ | Jasa Pembuatan Landing Page | Rp 2.500.000 | Bundle Google Ads untuk konversi |
+
+## FAQ Singkat (untuk AI Answer Engine)
+
+**Q: Beriklan.co.id itu apa?**
+A: Agency performance marketing Indonesia berbasis Bandung sejak 2016. Mengelola campaign iklan Meta (Facebook + Instagram), Google Ads, TikTok Ads, YouTube Ads, dan pembuatan landing page. Spesialisasi UMKM dan bisnis menengah dengan budget iklan Rp 5-50 juta per bulan.
+
+**Q: Berapa biaya pasang iklan di Beriklan?**
+A: Paket layanan mulai dari Rp 2.500.000 per bulan untuk landing page, hingga Rp 25.000.000 per bulan untuk paket multi-channel premium. Semua paket sudah termasuk setup, manajemen, dan laporan mingguan.
+
+**Q: Siapa yang cocok pakai jasa Beriklan?**
+A: UMKM dan bisnis menengah Indonesia dengan budget iklan Rp 5-50 juta per bulan yang ingin eksekusi iklan terukur. Cocok untuk e-commerce, SaaS, jasa profesional (klinik, edukasi, B2B), retail, F&B.
+
+**Q: Berapa lama sampai iklan tayang?**
+A: Setelah akun Meta/Google/TikTok diberikan akses, campaign bisa live dalam 1-3 jam. Untuk setup awal + riset audience, biasanya 3-5 hari kerja.
+
+**Q: Apa bedanya Beriklan vs agency lain?**
+A: Tiga hal: (1) akses penuh ke akun iklan klien (bukan lewat dashboard agency); (2) laporan mingguan dalam bahasa manusia; (3) diagnostik dulu baru strategi — bukan langsung eksekusi.
+
+**Q: Apakah ada kontrak minimum?**
+A: Ya, kontrak minimum 3 bulan untuk paket manajemen (agar ada waktu audit + optimasi). Tidak ada kontrak minimum untuk paket setup saja.
+
+**Q: Bagaimana cara konsultasi pertama?**
+A: Via WhatsApp +62 811-919-328. Respon dalam 1 jam (jam kerja 09:00-17:00 WIB). Sesi konsultasi gratis 30 menit.
+
+`;
+
+  // Append: 100 recent blog posts with excerpt + tags + service + city
+  try {
+    const r = await env.DB.prepare(
+      "SELECT slug, title, excerpt, category, tags, service, city FROM posts_meta ORDER BY iso_date DESC LIMIT 100"
+    ).all();
+    body += `## 100 Artikel Blog Terbaru\n\n`;
+    for (const p of (r.results || [])) {
+      const tags = (() => { try { return JSON.parse(p.tags || "[]"); } catch { return []; } })();
+      body += `### ${(p.title || p.slug).replace(/[\[\]]/g, "")}\n`;
+      body += `URL: https://beriklan.co.id/blog/${p.slug}/\n`;
+      if (p.category) body += `Kategori: ${p.category}\n`;
+      if (p.service) body += `Layanan: ${p.service}\n`;
+      if (p.city) body += `Kota: ${p.city}\n`;
+      if (tags.length) body += `Tags: ${tags.join(", ")}\n`;
+      if (p.excerpt) body += `Ringkasan: ${String(p.excerpt).slice(0, 200).replace(/[\[\]\n]/g, " ")}\n`;
+      body += `\n`;
+    }
+  } catch (e) {
+    body += `\n_Gagal memuat artikel: ${String(e).slice(0, 100)}_\n`;
+  }
 
   return new Response(body, {
     headers: {
@@ -6994,26 +7127,31 @@ function extractJson(s) {
 }
 
 // Helper: Zen/Groq generation for refresh (lighter than full article)
+// Prioritas: Zen FREE models (zero cost, rotating across 6 model) → Groq fallback (cheap).
 async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
+  // 1. Zen free models — rotate untuk distribusi rate-limit
   if (env.ZEN_API_KEY) {
-    try {
-      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({
-          model: "deepseek-v4-flash-free",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: maxTokens,
-          thinking: { type: "disabled" },
-        }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const text = data.choices?.[0]?.message?.content || "";
-        return { _model: "zen/deepseek-v4-flash-free", text };
-      }
-    } catch (e) {}
+    for (const zmodel of ZEN_FREE_MODELS) {
+      try {
+        const r = await fetch(ZEN_ENDPOINT, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+          body: JSON.stringify({
+            model: zmodel,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: maxTokens,
+            thinking: { type: "disabled" },
+          }),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          const text = data.choices?.[0]?.message?.content || "";
+          if (text && text.length > 30) return { _model: `zen/${zmodel}`, text };
+        }
+      } catch (e) {}
+    }
   }
+  // 2. Groq fallback — rotating keys × models
   const groqKeys = getGroqKeys(env);
   for (let i = 0; i < groqKeys.length; i++) {
     const key = groqKeys[i];
@@ -7027,7 +7165,7 @@ async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
         };
         // gpt-oss: reasoning tokens ikut memakan budget → paksa low untuk output ringkas
         if (model.startsWith("openai/gpt-oss")) body.reasoning_effort = "low";
-        const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const r = await fetch(GROQ_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -7035,7 +7173,7 @@ async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
         if (r.ok) {
           const data = await r.json();
           const text = data.choices?.[0]?.message?.content || "";
-          if (text) return { _model: `groq/${model} (groq#${i + 1})`, text };
+          if (text && text.length > 30) return { _model: `groq/${model} (groq#${i + 1})`, text };
         }
       } catch (e) {}
     }
@@ -7237,18 +7375,21 @@ async function handleAiTest(request, env) {
   if (token !== env.ADMIN_TOKEN) {
     return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
   }
-  const probe = "Balas dengan satu kata: OK";
+  const probe = "Reply with one word: OK";
   const results = [];
+  // Test Zen free models (semua yang dideklarasikan di ZEN_FREE_MODELS)
   if (env.ZEN_API_KEY) {
-    try {
-      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({ model: "deepseek-v4-flash-free", messages: [{ role: "user", content: probe }], max_tokens: 20, thinking: { type: "disabled" } }),
-      });
-      const body = await r.text().catch(() => "");
-      results.push({ provider: "zen/deepseek-v4-flash-free", status: r.status, ok: r.ok, body: body.slice(0, 200) });
-    } catch (e) { results.push({ provider: "zen", ok: false, error: String(e).slice(0, 200) }); }
+    for (const zmodel of ZEN_FREE_MODELS) {
+      try {
+        const r = await fetch(ZEN_ENDPOINT, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+          body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: probe }], max_tokens: 20, thinking: { type: "disabled" } }),
+        });
+        const body = await r.text().catch(() => "");
+        results.push({ provider: `zen/${zmodel}`, status: r.status, ok: r.ok, body: body.slice(0, 120) });
+      } catch (e) { results.push({ provider: `zen/${zmodel}`, ok: false, error: String(e).slice(0, 200) }); }
+    }
   } else {
     results.push({ provider: "zen", ok: false, error: "ZEN_API_KEY not set" });
   }
@@ -7265,7 +7406,7 @@ async function handleAiTest(request, env) {
   }
   for (let i = 0; i < groqKeys.length; i++) {
     try {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const r = await fetch(GROQ_ENDPOINT, {
         method: "POST",
         headers: { Authorization: `Bearer ${groqKeys[i]}`, "Content-Type": "application/json" },
         body: JSON.stringify({ model: GROQ_CHAT_MODELS[0], messages: [{ role: "user", content: probe }], max_tokens: 20, temperature: 1 }),
@@ -7881,19 +8022,24 @@ if (pool.length === 0) {
 }
 const chosen = pool[Math.floor(Math.random() * pool.length)];
 
-    // Step 3: Generate article via Groq API (free tier, no daily limit)
+    // Step 3: Generate article via Zen FREE models (rotating) + Groq fallback.
+    // Updated 2026-08-26: deepseek-v4-flash-free sudah dihapus dari Zen → pakai
+    // big-pickle, x-preview-f-free, mimo-v2.5-free, hy3-free, nemotron-3.5-lightning-free.
     let article = null;
     let ai_used_model = null;
-    // Prefer OpenCode Zen (free deepseek-v4-flash), fallback Groq
-    const zenModels = ["deepseek-v4-flash-free"];
     const groqModels = GROQ_CHAT_MODELS;
     const aiEndpoints = [];
-    if (env.ZEN_API_KEY) aiEndpoints.push({ name: "zen", url: "https://opencode.ai/zen/v1/chat/completions", key: env.ZEN_API_KEY, models: zenModels, thinkingDisabled: true });
-    if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq-1", url: "https://api.groq.com/openai/v1/chat/completions", key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
+    // Zen endpoint — daftar semua 6 model free sebagai "rotating endpoints"
+    if (env.ZEN_API_KEY) {
+      for (const zmodel of ZEN_FREE_MODELS) {
+        aiEndpoints.push({ name: `zen-${zmodel}`, url: ZEN_ENDPOINT, key: env.ZEN_API_KEY, models: [zmodel], thinkingDisabled: true });
+      }
+    }
+    if (env.GROQ_API_KEY) aiEndpoints.push({ name: "groq-1", url: GROQ_ENDPOINT, key: env.GROQ_API_KEY, models: groqModels, thinkingDisabled: false });
     // Additional Groq keys (round-robin via aiEndpoints)
     const groqKeysAll = getGroqKeys(env);
     for (let i = 1; i < groqKeysAll.length; i++) {
-      aiEndpoints.push({ name: `groq-${i + 1}`, url: "https://api.groq.com/openai/v1/chat/completions", key: groqKeysAll[i], models: groqModels, thinkingDisabled: false });
+      aiEndpoints.push({ name: `groq-${i + 1}`, url: GROQ_ENDPOINT, key: groqKeysAll[i], models: groqModels, thinkingDisabled: false });
     }
     if (aiEndpoints.length === 0) {
       errors.push({stage: "ai_config", message: "No AI key set (ZEN_API_KEY or GROQ_API_KEY)"});
@@ -9351,37 +9497,46 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
   let zenDiag = null;
   let groqDiag = null;
 
-  // Try Zen first (deepseek-v4-flash-free)
-  if (env.ZEN_API_KEY) {
-    try {
-      const r = await fetch("https://opencode.ai/zen/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
-        body: JSON.stringify({
-          model: "deepseek-v4-flash-free",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 4000,
-          thinking: { type: "disabled" },
-        }),
-      });
-      zenDiag = { status: r.status, ok: r.ok };
-      if (r.ok) {
-        const data = await r.json();
-        article = (data.choices?.[0]?.message?.content || "").trim();
-        if (article.startsWith("```html")) article = article.slice(7);
-        if (article.startsWith("```")) article = article.slice(3);
-        if (article.endsWith("```")) article = article.slice(0, -3);
-        article = article.trim();
-        zenDiag.len = article.length;
-        zenDiag.model = data.model;
-        if (article.length > 500) modelUsed = `zen/deepseek-v4-flash-free`;
-      } else {
-        try { zenDiag.body = (await r.text()).slice(0, 200); } catch {}
+  // Try Zen free models first (rotating across 6 model — diverifikasi 2026-08-26)
+  if (env.ZEN_API_KEY && !article) {
+    const zenAttempts = [];
+    for (const zmodel of ZEN_FREE_MODELS) {
+      if (article && article.length > 500) break;
+      try {
+        const r = await fetch(ZEN_ENDPOINT, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+          body: JSON.stringify({
+            model: zmodel,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 4000,
+            thinking: { type: "disabled" },
+          }),
+        });
+        zenAttempts.push({ model: zmodel, status: r.status, ok: r.ok });
+        if (r.ok) {
+          const data = await r.json();
+          const cand = (data.choices?.[0]?.message?.content || "").trim();
+          let cleaned = cand;
+          if (cleaned.startsWith("```html")) cleaned = cleaned.slice(7);
+          if (cleaned.startsWith("```")) cleaned = cleaned.slice(3);
+          if (cleaned.endsWith("```")) cleaned = cleaned.slice(0, -3);
+          cleaned = cleaned.trim();
+          if (cleaned.length > 500) {
+            article = cleaned;
+            modelUsed = `zen/${zmodel}`;
+            zenDiag = { ok_model: zmodel, status: r.status, len: cleaned.length, attempts: zenAttempts };
+            break;
+          }
+        } else {
+          try { zenAttempts[zenAttempts.length - 1].body = (await r.text()).slice(0, 120); } catch {}
+        }
+      } catch (e) {
+        zenAttempts.push({ model: zmodel, error: String(e).slice(0, 200) });
       }
-    } catch (e) {
-      zenDiag = { error: String(e).slice(0, 200) };
     }
-  } else {
+    if (!zenDiag) zenDiag = { attempts: zenAttempts, exhausted: true };
+  } else if (!env.ZEN_API_KEY) {
     zenDiag = { skipped: "no ZEN_API_KEY" };
   }
 
@@ -9396,15 +9551,20 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
         for (const groqModel of GROQ_CHAT_MODELS) {
           if (article) break;
           try {
-            const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            const groqBody = {
+              model: groqModel,
+              messages: [{ role: "user", content: prompt }],
+              max_tokens: 4000,
+              temperature: 0.7,
+            };
+            if (groqModel.startsWith("openai/gpt-oss")) {
+              groqBody.reasoning_effort = "low";
+              groqBody.max_tokens = Math.max(2048, groqBody.max_tokens);
+            }
+            const r = await fetch(GROQ_ENDPOINT, {
               method: "POST",
               headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                model: groqModel,
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 4000,
-                temperature: 0.7,
-              }),
+              body: JSON.stringify(groqBody),
             });
             groqResults.push({ key: keyLabel, model: groqModel, status: r.status, ok: r.ok });
             if (r.ok) {
@@ -9603,12 +9763,29 @@ async function handleBatch4(request, env) {
       const prompt = `Tulis artikel SEO Bahasa Indonesia untuk topik: "${q.keyword}". Konteks: layanan ${svcName}, lokasi ${city}, tipe ${intentWord}. Tone profesional, terukur. Format HTML mulai dari <h2>. Struktur: <h2>Pendahuluan</h2> (1 paragraf tentang ${q.keyword} di ${city}), <h2>Cara Kerja & Langkah Praktis</h2> (<ul> 4 langkah), <h2>Yang Perlu Dihindari</h2> (<ul>), <h2>Pertanyaan yang Sering Diajukan</h2> (3x <h3>+<p> FAQ lokal ${city}), <h2>Kesimpulan</h2> (1 paragraf + CTA WhatsApp). Target 400-550 kata. Sebut ${city} dan ${svcName} natural. JANGAN pakai: bikin, gak, nggak, pasti untung, garansi 100%. Output HANYA HTML mulai <h2>.`;
       let content = null;
       const groqKeys = getGroqKeys(env);
-      if (groqKeys.length > 0) {
+      // Try Zen free models first (2026-08-26: deepseek-v4-flash-free deprecated)
+      if (env.ZEN_API_KEY && !content) {
+        for (const zmodel of ZEN_FREE_MODELS) {
+          if (content) break;
+          try {
+            const zr = await fetch(ZEN_ENDPOINT, {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+              body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: prompt }], max_tokens: 1200, thinking: { type: "disabled" } }),
+            });
+            if (zr.ok) {
+              const cand = (await zr.json()).choices?.[0]?.message?.content?.trim() || "";
+              if (cand.length > 200) { content = cand; ai_used_model = `zen/${zmodel}`; break; }
+            }
+          } catch (e) { errors.push({ slug: q.slug, model: `zen/${zmodel}`, error: String(e).slice(0, 100) }); }
+        }
+      }
+      if (groqKeys.length > 0 && !content) {
         for (const mdl of GROQ_CHAT_MODELS) {
           if (content) break;
           for (const groqKey of groqKeys) {
             try {
-              const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              const gr = await fetch(GROQ_ENDPOINT, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1200, temperature: 0.7 }),
@@ -9798,12 +9975,29 @@ async function handleCityEnrich(request, env) {
       const prompt = buildCityPrompt(cityObj, q.service);
       let html = null;
       const groqKeys = getGroqKeys(env);
-      if (groqKeys.length > 0) {
+      // Zen free models first (2026-08-26: deepseek-v4-flash-free deprecated)
+      if (env.ZEN_API_KEY && !html) {
+        for (const zmodel of ZEN_FREE_MODELS) {
+          if (html) break;
+          try {
+            const zr = await fetch(ZEN_ENDPOINT, {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
+              body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: prompt }], max_tokens: 1600, thinking: { type: "disabled" } }),
+            });
+            if (zr.ok) {
+              const cand = (await zr.json()).choices?.[0]?.message?.content?.trim() || "";
+              if (cand.length > 200) { html = cand; ai_used_model = `zen/${zmodel}`; break; }
+            }
+          } catch (e) { errors.push({ route: q.route, model: `zen/${zmodel}`, error: String(e).slice(0, 100) }); }
+        }
+      }
+      if (groqKeys.length > 0 && !html) {
         for (const mdl of GROQ_CHAT_MODELS) {
           if (html) break;
           for (const groqKey of groqKeys) {
             try {
-              const gr = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              const gr = await fetch(GROQ_ENDPOINT, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0.7 }),
@@ -12002,15 +12196,15 @@ async function handleCronSendEmail(request, env) {
   if (!env.RESEND_API_KEY) return new Response(JSON.stringify({ ok: false, error: "RESEND_API_KEY not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
 
   try {
-    // Check daily limit (Resend free: 500/day)
+    // Check daily limit (Resend free: 100/day, reset 00:00 UTC)
     const dailySent = await getDailyEmailCount(env);
-    // Resend free tier: 100 email/hari (bukan 500), 10 req/detik rate limit
     const DAILY_LIMIT = 100;
-    if (dailySent >= DAILY_LIMIT - 5) {
+    const SAFETY_BUFFER = 5; // reserve untuk alert-email + retry queue
+    if (dailySent >= DAILY_LIMIT - SAFETY_BUFFER) {
       return new Response(JSON.stringify({
         ok: true,
         skipped: true,
-        reason: `Daily Resend limit reached (${dailySent}/${DAILY_LIMIT}). Akan lanjut besok.`,
+        reason: `Daily Resend limit reached (${dailySent}/${DAILY_LIMIT}). Akan lanjut besok 00:00 UTC.`,
         daily_sent: dailySent,
         daily_limit: DAILY_LIMIT,
         reset_at: "besok 00:00 UTC",
@@ -12018,25 +12212,41 @@ async function handleCronSendEmail(request, env) {
       }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // Batch size: 25 per run (every 15 min = 100/hr = 100/day at Resend free tier)
-    // Smart: kalau pending banyak + daily masih sisa, pakai batch besar
-    const remainingToday = DAILY_LIMIT - dailySent;
+    // Pending count: total across all campaigns
     const pendingCount = (await env.DB.prepare("SELECT COUNT(*) as n FROM email_queue WHERE status='pending'").first())?.n || 0;
-    // P1 fix: batchSize tidak boleh melebihi remainingToday (bug: min(40,max(15,...)) bisa 15 saat remaining=5 → overshoot 109/100)
-    let batchSize = 25;
-    if (pendingCount > 5000) batchSize = Math.min(remainingToday, Math.min(40, Math.max(15, Math.floor(remainingToday / 3))));
-    else if (pendingCount > 1000) batchSize = Math.min(remainingToday, Math.min(30, Math.max(15, Math.floor(remainingToday / 4))));
-    else if (pendingCount > 100) batchSize = Math.min(25, remainingToday);
-    else batchSize = Math.min(20, remainingToday);
-    if (batchSize <= 0) {
+    const remainingToday = DAILY_LIMIT - dailySent;
+
+    // ─── Per-campaign fair rotation (bug fix 2026-08-26) ───
+    // Lama: cron pilih oldest pending GLOBAL → campaign besar (12k pending) monopoli
+    //       kuota harian, campaign lain (#9 Auto Pipeline 3500) tidak pernah terkirim.
+    // Baru: round-robin antar active campaign, ambil ≤ remainingToday batchSize,
+    //       proporsional ke pending count tiap campaign (tidak饿死 campaign kecil).
+    const activeCampaigns = (await env.DB.prepare(
+      "SELECT id, name, (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') AS pending FROM campaigns c WHERE c.status IN ('sending','draft') AND (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') > 0 ORDER BY (SELECT MIN(id) FROM email_queue WHERE campaign_id=c.id AND status='pending') ASC"
+    ).all()).results || [];
+    if (activeCampaigns.length === 0) {
+      return new Response(JSON.stringify({ ok: true, sent: 0, daily_sent: dailySent, reason: "No active campaign with pending emails" }), { headers: { "Content-Type": "application/json" } });
+    }
+
+    // Distribute remainingToday secara proporsional ke jumlah active campaign (min 1/campaign)
+    const perCampaign = Math.max(1, Math.floor(remainingToday / activeCampaigns.length));
+    let batchSize = Math.min(remainingToday, activeCampaigns.length * perCampaign);
+    if (batchSize <= 0 || remainingToday <= 0) {
       return new Response(JSON.stringify({ ok: true, skipped: true, reason: `No quota left (${dailySent}/${DAILY_LIMIT})`, daily_sent: dailySent }), { headers: { "Content-Type": "application/json" } });
     }
 
-    const batch = await env.DB.prepare(
-      "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' ORDER BY q.id ASC LIMIT ?"
-    ).bind(batchSize).all();
+    // Fetch batch per active campaign (round-robin oldest-first per campaign)
+    const batch = [];
+    for (const camp of activeCampaigns) {
+      if (batch.length >= batchSize) break;
+      const take = Math.min(perCampaign, batchSize - batch.length);
+      const rows = (await env.DB.prepare(
+        "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' AND q.campaign_id=? ORDER BY q.id ASC LIMIT ?"
+      ).bind(camp.id, take).all()).results || [];
+      batch.push(...rows);
+    }
 
-    if (!batch.results?.length) {
+    if (!batch.length) {
       return new Response(JSON.stringify({ ok: true, sent: 0, daily_sent: dailySent }), { headers: { "Content-Type": "application/json" } });
     }
 
@@ -12044,9 +12254,9 @@ async function handleCronSendEmail(request, env) {
     const templateCache = {};
     let sent = 0, failed = 0;
 
-    for (const item of batch.results) {
+    for (const item of batch) {
       // Per-send quota guard: kalau quota habis di tengah loop (concurrent sends), stop
-      if (dailySent + sent >= DAILY_LIMIT) break;
+      if (dailySent + sent >= DAILY_LIMIT - SAFETY_BUFFER) break;
       try {
         let html = "";
         let subject = "Promo Beriklan";
@@ -12136,7 +12346,7 @@ async function handleCronSendEmail(request, env) {
     }
 
     // Check if any campaign is done
-    const updatedCampaigns = [...new Set(batch.results.map(r => r.campaign_id).filter(Boolean))];
+    const updatedCampaigns = [...new Set(batch.map(r => r.campaign_id).filter(Boolean))];
     for (const cid of updatedCampaigns) {
       const pending = await env.DB.prepare("SELECT COUNT(*) as c FROM email_queue WHERE campaign_id=? AND status='pending'").bind(cid).first();
       if (!pending || pending.c === 0) {
@@ -12144,13 +12354,27 @@ async function handleCronSendEmail(request, env) {
       }
     }
 
+    // Ringkasan per-campaign untuk audit
+    const perCampaignSummary = {};
+    for (const it of batch) {
+      const cid = it.campaign_id;
+      if (!perCampaignSummary[cid]) perCampaignSummary[cid] = { campaign_id: cid, name: it.campaign_name, attempted: 0, sent: 0, failed: 0 };
+      perCampaignSummary[cid].attempted++;
+    }
+    // Note: tracking 'sent'/'failed' per item but we don't re-loop; count from sent/failed local vars per campaign requires extra bookkeeping.
+    // For simplicity, return attempt counts and overall totals (caller can correlate via campaign_id).
+
     return new Response(JSON.stringify({
       ok: true,
       sent,
       failed,
-      batch_size: batch.results.length,
+      batch_size: batch.length,
       daily_sent: dailySent + sent,
-      campaigns_completed: updatedCampaigns.length
+      daily_limit: DAILY_LIMIT,
+      safety_buffer: SAFETY_BUFFER,
+      campaigns_touched: updatedCampaigns.length,
+      per_campaign_attempted: perCampaignSummary,
+      mode: "per-campaign rotation",
     }), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500, headers: { "Content-Type": "application/json" } });

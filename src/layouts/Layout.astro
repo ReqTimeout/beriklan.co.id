@@ -126,14 +126,43 @@ const showOrganization = true;
 			<script type="application/ld+json" set:html={JSON.stringify({
 				'@context': 'https://schema.org',
 				'@type': 'Organization',
-				name: 'Beriklan.co.id',
+				name: 'Beriklan Digital Agency',
+				alternateName: 'Beriklan.co.id',
 				url: 'https://beriklan.co.id',
 				logo: 'https://beriklan.co.id/logoweb.webp',
-				description: 'Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.',
+				description: 'Senior performance marketing partner sejak 2016. Mengelola campaign iklan Meta, Google, TikTok, YouTube, dan Landing Page untuk UMKM & bisnis menengah Indonesia.',
 				foundingDate: '2016',
+				address: {
+					'@type': 'PostalAddress',
+					streetAddress: 'Jl. Arcamanik Endah No.76',
+					addressLocality: 'Bandung',
+					postalCode: '40195',
+					addressRegion: 'Jawa Barat',
+					addressCountry: 'ID'
+				},
+				contactPoint: {
+					'@type': 'ContactPoint',
+					telephone: '+62-81-1919-328',
+					contactType: 'customer service',
+					areaServed: 'ID',
+					availableLanguage: ['Indonesian', 'English']
+				},
 				sameAs: [
 					'https://www.instagram.com/beriklan.co.id',
-					'https://www.facebook.com/beriklan.co.id'
+					'https://www.facebook.com/beriklan.co.id',
+					'https://www.tiktok.com/@beriklan.co.id'
+				],
+				knowsAbout: [
+					'Digital Marketing',
+					'Facebook Ads',
+					'Instagram Ads',
+					'Google Ads',
+					'TikTok Ads',
+					'YouTube Ads',
+					'SEO',
+					'Landing Page Optimization',
+					'Performance Marketing',
+					'Conversion Rate Optimization'
 				]
 			})}></script>
 		)}

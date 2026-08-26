@@ -1790,7 +1790,45 @@ Referensi live:
 
 ---
 
-**Versi dokumen:** 2.1
-**Update terakhir:** 26 Agustus 2026 (AI provider rotasi 2026-08-26, mirror gate fix, per-campaign email rotation, AEO enhancement)
+## 26. STATUS REPLIKASI —DOMAIN AKTIF
+
+Blueprint ini sudah berjalan di **dua domain** (satu account Cloudflare, berbagi
+kuota cron 5 trigger/account):
+
+| Domain | Worker | D1 | Cron slot | Catatan |
+|---|---|---|---|---|
+| `beriklan.co.id` | `beriklanweb` | D1 utama | `0 * * * *` + `*/15 * * * *` | Full system aktif |
+| `beriklan.my` | `beriklanmy` | `beriklan-my-seo` | `0 * * * *` | Growth + lead + indexing aktif, **email DIMATIKAN** (belum ada list) |
+
+**Porting beriklan.my selesai 2026-08-26** (commit `44a5470` di repo `beriklan.my`):
+- Growth loop (`gsc-loop`/`enrich`/`ctr-fix`/`freshness`) + tabel `growth_log` ✅
+- Bulk `keywords/import` ✅
+- `/llms-full.txt` dinamis ✅
+- Mirror-gate `sync/posts` (lean default, `?mirror=1` full) ✅
+- Lead pipeline (match + score + AI personalisasi + WA link), cron `campaign=0` ✅
+- `robots.txt` allow AI crawlers ✅
+- AI provider Zen-only + Groq fallback registry (Groq key belum dipasang) ✅
+
+**Yang belum di beriklan.my:**
+- Per-campaign email rotation (tidak perlu — email dimatikan)
+- GROQ_API_KEY secret (fallback Zen rate-limit)
+- GSC: SA `beriklanmy@cool-component-463913-b7` **sudah bisa akses** domain
+  property `sc-domain:beriklan.my` (gsc-loop narik 119 rows ✅). Property
+  URL-prefix (`https://beriklan.my/`) tidak ada di GSC — semua query pakai
+  `env.GSC_SITE_URL` = domain property. `rank-sync` juga sudah bekerja via domain property.
+
+**Konsolidasi cron 2 domain (3 dari 5 slot terpakai):**
+- `beriklanweb`: `0 * * * *` (hourly, semua job time-gate) + `*/15 * * * *` (email-send).
+- `beriklanmy`: `0 * * * *` (hourly, semua job time-gate; scrape-indonetwork h==6 UTC,
+  scrape-google-places h==7 UTC, growth-enrich/ctr-fix h==9 UTC, freshness Senin 02:00 UTC).
+- Slot khusus `30 6 * * *` / `0 7 * * *` / `0 3 * * 1` sudah dilepas dari `beriklanweb`
+  (digabung ke time-gate hourly) supaya cap 5 trigger/account cukup untuk 2 domain.
+- Setelah `wrangler deploy` schedules bisa ke-reset sesuai `wrangler.jsonc` →
+  re-PUT manual via API (body array mentah) jika perlu.
+
+---
+
+**Versi dokumen:** 2.2
+**Update terakhir:** 26 Agustus 2026 (replication status 2 domain + konsolidasi cron 3 slot)
 **Maintainer:** Beriklan Digital Agency + Codex AI
 **Lisensi:** Bebas disalin & adaptasi untuk project sendiri.

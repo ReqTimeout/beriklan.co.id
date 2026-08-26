@@ -902,9 +902,18 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 - `run_worker_first` wajib (jangan hapus). Email-send cron aktif → kuota Resend 100/hari, reset 00:00 UTC. Email yang tidak ter-personalize pakai subject template service default. Email yang tidak ter-personalize pakai subject template service default.
 - Data `database-siap-pake` (9.9k kontak) mayoritas **email-only tanpa name/phone/category** → semua match ke default service. Indonetwork/Google Places menyimpan fields lebih kaya.
 
-### Crons aktif (11 job, 5 slot CF cron)
-Slot cron CF gratis cuma 5 ekspresi **per account** (bukan per-script); job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`.
-**STATUS TERPASANG (2026-08-25): 5 slot penuh di `beriklanweb`** — `0 * * * *`, `*/15 * * * *`, `30 6 * * *`, `0 7 * * *`, `0 3 * * 1` (persis sesuai `wrangler.jsonc` triggers).
+### Crons aktif (konsolidasi 3 slot, 2026-08-26)
+Slot cron CF gratis cuma 5 ekspresi **per account** (bukan per-script). Semua job
+disusupkan via time-gate di dalam slot hourly `scheduled()` supaya muat 2 domain.
+**STATUS TERPASANG (2026-08-26): 3 dari 5 slot terpakai:**
+- `beriklanweb` (beriklan.co.id): `0 * * * *` + `*/15 * * * *` (email-send, per-campaign rotation)
+- `beriklanmy` (beriklan.my): `0 * * * *` (semua job time-gate; email DIMATIKAN — belum ada list)
+- Slot `30 6 * * *` / `0 7 * * *` / `0 3 * * 1` sudah dilepas; scrape-indonetwork
+  (h==6 UTC), scrape-google-places (h==7 UTC), snippet-optimize (6-jam) sekarang
+  jalan dari time-gate hourly di kedua worker.
+- Setelah `wrangler deploy`, schedules bisa ke-reset sesuai `wrangler.jsonc`
+  (`beriklanweb`: 2 trigger; `beriklanmy`: tidak ada triggers di jsonc → PUT manual
+  `[{"cron":"0 * * * *"}]` wajib setelah deploy).
 Worker legacy `beriklan-app` (dashboard Google Ads di `app.beriklan.co.id`, project
 `capi-gateway-v2`) **sudah dihapus seluruhnya pada 2026-08-26** lewat
 `DELETE /accounts/{id}/workers/scripts/beriklan-app` (token `cfut_wUtY…`). Konsekuensi:

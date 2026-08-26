@@ -676,6 +676,14 @@ export default {
       if (d === 1 && h === 0) {
         ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
       }
+      // ── Lead scrape harian (dulu slot sendiri 30 6 / 0 7 UTC; konsolidasi ke hourly
+      //    supaya slot cron account cukup untuk beriklan.my) ──
+      if (h === 6) {
+        ctx.waitUntil(run("scrape-indonetwork", handleScrapeIndonetwork, "/api/cron/scrape/indonetwork?token=beriklan-admin-2026", "scrape-indonetwork"));
+      }
+      if (h === 7) {
+        ctx.waitUntil(run("scrape-google-places", handleScrapeGooglePlaces, "/api/cron/scrape/google-places?token=beriklan-admin-2026", "scrape-google-places"));
+      }
     } else {
       const c = cronMap[cron];
       if (c) {

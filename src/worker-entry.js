@@ -7128,12 +7128,21 @@ function extractJson(s) {
 
 // Helper: Zen/Groq generation for refresh (lighter than full article)
 // Prioritas: Zen FREE models (zero cost, rotating across 6 model) → Groq fallback (cheap).
+// 2026-08-26: tambah fetch timeout 20s/attempt supaya loop tidak hang.
+const _fetchAI = async (url, init, timeoutMs = 20000) => {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally { clearTimeout(timer); }
+};
+
 async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
   // 1. Zen free models — rotate untuk distribusi rate-limit
   if (env.ZEN_API_KEY) {
     for (const zmodel of ZEN_FREE_MODELS) {
       try {
-        const r = await fetch(ZEN_ENDPOINT, {
+        const r = await _fetchAI(ZEN_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
           body: JSON.stringify({
@@ -7165,7 +7174,7 @@ async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
         };
         // gpt-oss: reasoning tokens ikut memakan budget → paksa low untuk output ringkas
         if (model.startsWith("openai/gpt-oss")) body.reasoning_effort = "low";
-        const r = await fetch(GROQ_ENDPOINT, {
+        const r = await _fetchAI(GROQ_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -7381,7 +7390,7 @@ async function handleAiTest(request, env) {
   if (env.ZEN_API_KEY) {
     for (const zmodel of ZEN_FREE_MODELS) {
       try {
-        const r = await fetch(ZEN_ENDPOINT, {
+        const r = await _fetchAI(ZEN_ENDPOINT, {
           method: "POST",
           headers: { Authorization: `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
           body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: probe }], max_tokens: 20, thinking: { type: "disabled" } }),
@@ -7406,7 +7415,7 @@ async function handleAiTest(request, env) {
   }
   for (let i = 0; i < groqKeys.length; i++) {
     try {
-      const r = await fetch(GROQ_ENDPOINT, {
+      const r = await _fetchAI(GROQ_ENDPOINT, {
         method: "POST",
         headers: { Authorization: `Bearer ${groqKeys[i]}`, "Content-Type": "application/json" },
         body: JSON.stringify({ model: GROQ_CHAT_MODELS[0], messages: [{ role: "user", content: probe }], max_tokens: 20, temperature: 1 }),
@@ -8511,7 +8520,7 @@ async function handleHourlyGenerate(request, env) {
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "1", 10), 5));
   const debug = url.searchParams.get("debug") === "1";
   const draftMode = url.searchParams.get("mode") === "draft"; // draft = simpan ke D1, tidak commit GitHub
-  const perArticleTimeoutMs = parseInt(url.searchParams.get("timeout") || "25000", 10);
+  const perArticleTimeoutMs = parseInt(url.searchParams.get("timeout") || "120000", 10);
 
   const t0 = Date.now();
   const log = [];
@@ -9503,7 +9512,7 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
     for (const zmodel of ZEN_FREE_MODELS) {
       if (article && article.length > 500) break;
       try {
-        const r = await fetch(ZEN_ENDPOINT, {
+        const r = await _fetchAI(ZEN_ENDPOINT, {
           method: "POST",
           headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
           body: JSON.stringify({
@@ -9561,7 +9570,7 @@ Output: hanya HTML body, mulai dari <h2>. Tidak ada markdown fences.`;
               groqBody.reasoning_effort = "low";
               groqBody.max_tokens = Math.max(2048, groqBody.max_tokens);
             }
-            const r = await fetch(GROQ_ENDPOINT, {
+            const r = await _fetchAI(GROQ_ENDPOINT, {
               method: "POST",
               headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
               body: JSON.stringify(groqBody),
@@ -9768,7 +9777,7 @@ async function handleBatch4(request, env) {
         for (const zmodel of ZEN_FREE_MODELS) {
           if (content) break;
           try {
-            const zr = await fetch(ZEN_ENDPOINT, {
+            const zr = await _fetchAI(ZEN_ENDPOINT, {
               method: "POST",
               headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
               body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: prompt }], max_tokens: 1200, thinking: { type: "disabled" } }),
@@ -9785,7 +9794,7 @@ async function handleBatch4(request, env) {
           if (content) break;
           for (const groqKey of groqKeys) {
             try {
-              const gr = await fetch(GROQ_ENDPOINT, {
+              const gr = await _fetchAI(GROQ_ENDPOINT, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1200, temperature: 0.7 }),
@@ -9980,7 +9989,7 @@ async function handleCityEnrich(request, env) {
         for (const zmodel of ZEN_FREE_MODELS) {
           if (html) break;
           try {
-            const zr = await fetch(ZEN_ENDPOINT, {
+            const zr = await _fetchAI(ZEN_ENDPOINT, {
               method: "POST",
               headers: { "Authorization": `Bearer ${env.ZEN_API_KEY}`, "Content-Type": "application/json", "User-Agent": "BeriklanWorker/1.0" },
               body: JSON.stringify({ model: zmodel, messages: [{ role: "user", content: prompt }], max_tokens: 1600, thinking: { type: "disabled" } }),
@@ -9997,7 +10006,7 @@ async function handleCityEnrich(request, env) {
           if (html) break;
           for (const groqKey of groqKeys) {
             try {
-              const gr = await fetch(GROQ_ENDPOINT, {
+              const gr = await _fetchAI(GROQ_ENDPOINT, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ model: mdl, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0.7 }),

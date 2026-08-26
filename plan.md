@@ -325,20 +325,52 @@ Gotchas operasional yang ditemukan:
    TIDAK dipakai → cron-nya di-PUT `[]` via API schedules. Kelima slot kini milik
    `beriklanweb`: `0 * * * *` (hourly + time-gate growth), `*/15 * * * *` (email-send),
    `30 6 * * *` (scrape-indonetwork), `0 7 * * *` (scrape-google-places),
-   `0 3 * * 1` (snippet-optimize) — persis `wrangler.jsonc` triggers. Script
-   `beriklan-app` tetap ter-deploy; job-nya punya HTTP fallback
-   (`/api/cron/anomaly-all|brain-all|audit-all`) kalau mau dihidupkan lagi.
+   `0 3 * * 1` (snippet-optimize) — persis `wrangler.jsonc` triggers.
+   **2026-08-26: script `beriklan-app` dihapus total** via
+   `DELETE /accounts/{id}/workers/scripts/beriklan-app`. Tidak ada route zone yang
+   pointing ke script itu sejak awal (semua 9 route di `beriklan.co.id` point ke
+   `beriklanweb`), jadi tidak ada yang putus. `app.beriklan.co.id` sekarang 522.
 3. **GSC permission**: service account HANYA punya akses property `https://www.beriklan.co.id/`
    (prefix URL). Apex `https://beriklan.co.id/` → 403; `sc-domain:beriklan.co.id` → 0 rows.
    Secret `GSC_SITE_URL` saat ini = `https://www.beriklan.co.id/` (satu-satunya yang data).
-   Retest langsung 2026-08-25: secret di-switch ke apex → tetap 403 (SA belum ditambahkan),
+   Retest 2026-08-25: secret di-switch ke apex → tetap 403 (SA belum ditambahkan),
    lalu di-revert ke www dan diverifikasi hidup lagi (gsc-loop 71 rows, rank-sync 63 rows).
-   → Menunggu user menambahkan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sebagai
-   Owner di GSC property apex/domain (Search Console → Settings → Users & permissions).
-   Setelah selesai: `echo "https://beriklan.co.id/" | npx wrangler secret put GSC_SITE_URL`,
-   lalu test `rank-sync` + `growth/gsc-loop` untuk pastikan data apex terbaca.
-   Catatan: data www tipis (~60-70 rows), sehingga `growth-ctr-fix` masih 0 kandidat
-   (clamp produksi minImp=50, maxCtr=0.02) — akan terisi setelah data apex masuk.
+   Retest 2026-08-26 (setelah user menyatakan SA sudah ditambahkan): apex `https://beriklan.co.id/`
+   masih 403; domain property `sc-domain:beriklan.co.id` sudah bisa diakses (bukan 403)
+   tapi 0 rows window 14/28 hari (kemungkinan property baru, data belum tersedia).
+   Secret `GSC_SITE_URL` tetap `https://www.beriklan.co.id/` (satu-satunya yang punya data).
+   **`rank-sync` www = 295 rows / 14 hari**, `growth/gsc-loop` jalan.
+   → Menunggu user memastikan `beriklan-seo-bot@lgc-indexer.iam.gserviceaccount.com` sudah
+   ditambahkan sebagai **Owner** (bukan Full/User) di GSC property apex `https://beriklan.co.id/`
+   (Search Console → Settings → Users & permissions). Domain property baru mungkin butuh waktu
+   untuk akumulasi data historis; alternatif: setup SA Owner di apex URL-prefix lalu
+   `printf 'https://beriklan.co.id/' | npx wrangler secret put GSC_SITE_URL`,
+   test `rank-sync` + `growth/gsc-loop` untuk pastikan data apex terbaca.
+   Catatan: data www masih tipis (~295 rows/14d, growth/ctr-fix butuh ≥50 imp/keyword
+   sehingga 0 kandidat; clamp produksi minImp=50, maxCtr=0.02) — akan terisi setelah data
+   apex/domain masuk.
 4. **Root www bisa HIT cache lama** (token tidak punya scope cache purge): `www.beriklan.co.id/`
    kadang 200 HIT; path lain 301. Menunggu expire atau purge manual via dashboard.
 5. Renderer blog sudah D1-first + fallback asset statis, jadi semua job growth live tanpa rebuild.
+6. **`sync-posts` mirror gate** — `/api/admin/sync/posts` sebelumnya kena `1102` karena mode
+   penalu memuat `posts_meta` + `posts_content` (~40MB), fetch/merge/PUT `src/data/posts.json`
+   ke GitHub. Sekarang ada query param `mirror`: default `lean` (publish D1 saja, aman di
+   Workers Free), `mirror=1` full GitHub mirror (manual only). Cron `0 * * * *` pakai lean;
+   full mirror dipanggil manual saat perlu rebuild static. Lean run terakhir:
+   `d1_published:30`, `auto_index_enqueued:30`, `published_today:90`, `remaining_today:210`,
+   `daily_limit:300`, `batch_size:30`, `total_drafts_pending:380`, `elapsed:9.4s`.
+7. **Bulk keyword import** — `POST /api/admin/keywords/import?token=…&source=…` (JSON array atau
+   `{keywords:[…]}`). Handler `handleAdminKeywordsImport` normalisasi `keyword_normalized`
+   (lowercase + trim + collapse space), dedupe by `keyword`/`keyword_normalized`, insert ke
+   `keyword_queue` status `pending`. Riset v2 (`web/public/data/keyword-research-v2.json`,
+   583 keyword unik, fokus jasa live & website + layanan inti × industri/kota) diimport:
+   359 inserted, 224 skipped. Cek via `GET /api/admin/keywords/list`.
+8. **Stat pipeline (cek 2026-08-26 sebelum sync manual)**:
+   - `generated_drafts` total ~11.007; committed ~10.627; pending ~380.
+   - `keyword_queue` total ~391.121; pending ~381.783; published ~9.010 (+359 baru setelah
+     import riset v2 → pending ~382.142).
+   - Audit konten: `total_committed 10567`, `avg_len 3813`, `min 2448`, `max 9133`,
+     `thin_count 198` (threshold 3000 char) di checkpoint sebelumnya.
+9. **Endpoint utama debug baru** — `/api/admin/sync/posts?mirror=1`,
+   `/api/admin/keywords/import?source=curated_research_v2`,
+   `/api/admin/audit/content?format=json`, `/api/admin/drafts?format=json`.

@@ -312,6 +312,9 @@ export default {
     if (path === "/api/admin/keywords/expand" || path === "/api/admin/keywords/expand/") {
       return await handleAdminKeywordExpand(request, env);
     }
+    if (path === "/api/admin/keywords/import" || path === "/api/admin/keywords/import/") {
+      return await handleAdminKeywordsImport(request, env);
+    }
     if (path === "/api/admin" || path === "/api/admin/") {
       // P0.4 Admin Dashboard HTML
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/admin/dashboard", 60, 3600);
@@ -1260,6 +1263,42 @@ async function handleAdminDraftsCommit(request, env) {
 
 
 // ─── Admin: Seed keywords for View Live + Shopee + Tokopedia ─────
+// ─── Admin: Bulk Import Keywords (curated research, dedupe-safe) ────
+// POST body JSON: array of {keyword, service, city, intent, priority} ATAU
+//                 {keywords:[...]}. Insert ke keyword_queue dengan dedupe.
+async function handleAdminKeywordsImport(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (!env.DB) return new Response("DB not available", { status: 503 });
+  let payload;
+  try { payload = await request.json(); } catch (e) { return new Response("invalid JSON body", { status: 400 }); }
+  const items = Array.isArray(payload) ? payload : (payload.keywords || payload.items || []);
+  const source = url.searchParams.get("source") || "curated_import";
+  let inserted = 0, skipped = 0;
+  const errors = [];
+  for (const it of items) {
+    const kw = String(it.keyword || it.kw || "").trim();
+    if (!kw) { skipped++; continue; }
+    const norm = kw.toLowerCase().trim();
+    const service = it.service || "jasa-digital-marketing";
+    const city = it.city || "";
+    const intent = it.intent || "commercial";
+    const priority = it.priority || 60;
+    const slug = norm.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+    const id = `imp-${slug}-${Math.random().toString(36).slice(2, 7)}`;
+    try {
+      const existing = await env.DB.prepare("SELECT id FROM keyword_queue WHERE keyword = ? OR keyword_normalized = ?").bind(kw, norm).first();
+      if (existing) { skipped++; continue; }
+      await env.DB.prepare("INSERT INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent) VALUES (?, ?, ?, ?, ?, datetime('now'), 'pending', ?, ?, ?, ?)")
+        .bind(id, kw, norm, source, norm, service, city, priority, intent).run();
+      inserted++;
+    } catch (e) { if (errors.length < 10) errors.push(`${norm}: ${String(e.message || e).slice(0, 60)}`); }
+  }
+  return new Response(JSON.stringify({ ok: true, inserted, skipped, total: items.length, source, sample_errors: errors }, null, 2), { headers: { "Content-Type": "application/json" } });
+}
+
 async function handleAdminSeedKeywords(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
@@ -1993,74 +2032,84 @@ async function handleAdminSyncPosts(request, env) {
       }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // 2. Read ALL posts_meta from D1
-    const all = await env.DB.prepare(`
-      SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated
-      FROM posts_meta
-      ORDER BY iso_date DESC
-    `).all();
-    const posts = (all.results || []).map(p => ({
-      ...p,
-      generated: p.generated === 1 || p.generated === true,
-      excerpt: p.excerpt || p.title,
-      tags: p.tags || [p.service, p.city || 'Indonesia'],
-      readTime: p.readTime || '3 min',
-      category: p.category || 'trending',
-      featured: p.featured === 1 || p.featured === true,
-    }));
-
-    // 2b. Join content from posts_content (posts_meta has NO content column — it lives
-    //     only in posts_content). Without this, the GitHub posts.json mirror ends up with
-    //     empty content for every D1-only post, producing blank static pages after rebuild.
-    try {
-      const contentRes = await env.DB.prepare(
-        "SELECT slug, content FROM posts_content WHERE content IS NOT NULL AND length(content) > 0"
-      ).all();
-      const contentMap = new Map((contentRes.results || []).map(r => [r.slug, r.content]));
-      for (const p of posts) {
-        const c = contentMap.get(p.slug);
-        if (c) p.content = c;
-      }
-      for (const p of posts) {
-        if (!p.content) p.content = "";
-      }
-    } catch (e) {}
-
-    // 3. Cap future dates
+    const mirror = url.searchParams.get("mirror") === "1";
     const nowIso = new Date().toISOString();
     const nowWibDate = wibPublishStamp().date;
-    for (const p of posts) {
-      if (!p.iso_date || p.iso_date > nowIso) {
-        p.iso_date = nowIso;
-        p.date = nowWibDate;
-      }
-    }
-
-    // 4. Get current posts.json from GitHub
     const owner = "ReqTimeout";
     const repo = "beriklan.co.id";
     const filePath = "src/data/posts.json";
 
+    // ─── Step 2–4 (muat SEMUA posts_meta/content, fetch posts.json GitHub, merge)
+    //     HANYA diperlukan saat rebuild mirror statis GitHub (?mirror=1). Cron hourly
+    //     menjalankan mode lean (mirror=0): skip muat ~40MB content + serialize+PUT
+    //     file 40MB supaya TIDAK kena CPU ceiling Workers Free (error 1102). Artikel
+    //     tetap LIVE via D1-first (posts_meta/posts_content) tanpa GitHub mirror. ───
+    let posts = [];
     let existing = [];
     let fileSha = null;
-    try {
-      const getResp = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-        { headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
-      );
-      if (getResp.ok) {
-        const fd = await getResp.json();
-        fileSha = fd.sha;
-        if (fd.content) {
-          existing = JSON.parse(atob(fd.content.replace(/\n/g, "")));
+    let finalPosts = [];
+    let merged = new Map();
+    if (mirror) {
+      // 2. Read ALL posts_meta from D1
+      const all = await env.DB.prepare(`
+        SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated
+        FROM posts_meta
+        ORDER BY iso_date DESC
+      `).all();
+      posts = (all.results || []).map(p => ({
+        ...p,
+        generated: p.generated === 1 || p.generated === true,
+        excerpt: p.excerpt || p.title,
+        tags: p.tags || [p.service, p.city || 'Indonesia'],
+        readTime: p.readTime || '3 min',
+        category: p.category || 'trending',
+        featured: p.featured === 1 || p.featured === true,
+      }));
+
+      // 2b. Join content from posts_content (posts_meta has NO content column — it lives
+      //     only in posts_content). Without this, the GitHub posts.json mirror ends up with
+      //     empty content for every D1-only post, producing blank static pages after rebuild.
+      try {
+        const contentRes = await env.DB.prepare(
+          "SELECT slug, content FROM posts_content WHERE content IS NOT NULL AND length(content) > 0"
+        ).all();
+        const contentMap = new Map((contentRes.results || []).map(r => [r.slug, r.content]));
+        for (const p of posts) {
+          const c = contentMap.get(p.slug);
+          if (c) p.content = c;
+        }
+        for (const p of posts) {
+          if (!p.content) p.content = "";
+        }
+      } catch (e) {}
+
+      // 3. Cap future dates
+      for (const p of posts) {
+        if (!p.iso_date || p.iso_date > nowIso) {
+          p.iso_date = nowIso;
+          p.date = nowWibDate;
         }
       }
-    } catch (e) {}
 
-     // 5. Merge: existing + D1 + new drafts
-     const merged = new Map();
-     for (const p of existing) merged.set(p.slug, p);
-     for (const p of posts) merged.set(p.slug, p);
+      // 4. Get current posts.json from GitHub
+      try {
+        const getResp = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+          { headers: { Authorization: `token ${env.GITHUB_TOKEN}`, "User-Agent": "BeriklanWorker/1.0" } }
+        );
+        if (getResp.ok) {
+          const fd = await getResp.json();
+          fileSha = fd.sha;
+          if (fd.content) {
+            existing = JSON.parse(atob(fd.content.replace(/\n/g, "")));
+          }
+        }
+      } catch (e) {}
+
+      // 5. Merge: existing + D1 + new drafts
+      for (const p of existing) merged.set(p.slug, p);
+      for (const p of posts) merged.set(p.slug, p);
+    }
 
      // ─── Self-check (§3.4) — reject invalid drafts ────
      let rejected = 0;
@@ -2083,29 +2132,32 @@ async function handleAdminSyncPosts(request, env) {
        safeDrafts.push(draft);
      }
 
-     // Add new drafts as posts
-     for (const draft of safeDrafts) {
-       if (!merged.has(draft.slug)) {
-         const dateStr = wibPublishStamp().date;
-         merged.set(draft.slug, {
-           slug: draft.slug,
-           title: draft.title,
-           excerpt: (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200),
-           content: draft.content,
-           date: dateStr,
-           iso_date: nowIso,
-           category: "trending",
-           readTime: Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min",
-           tags: [draft.service, draft.city].filter(Boolean),
-           featured: false,
-           generated: true,
-           service: draft.service,
-           city: draft.city,
-           publish_date: dateStr,
-         });
+     // Add new drafts as posts (mirror only — lean run tidak membangun finalPosts)
+     if (mirror) {
+       for (const draft of safeDrafts) {
+         if (!merged.has(draft.slug)) {
+           const dateStr = wibPublishStamp().date;
+           merged.set(draft.slug, {
+             slug: draft.slug,
+             title: draft.title,
+             excerpt: (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 200),
+             content: draft.content,
+             date: dateStr,
+             iso_date: nowIso,
+             category: "trending",
+             readTime: Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min",
+             tags: [draft.service, draft.city].filter(Boolean),
+             featured: false,
+             generated: true,
+             service: draft.service,
+             city: draft.city,
+             publish_date: dateStr,
+           });
+         }
        }
+       finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
      }
-     const finalPosts = Array.from(merged.values()).sort((a, b) => (b.iso_date || "").localeCompare(a.iso_date || ""));
+
 
     // 5. ALWAYS publish safe drafts to D1 first (dynamic blog render serves from posts_meta/content).
     //    GitHub commit is best-effort for static rebuild — must NOT block city articles going live.
@@ -2139,11 +2191,18 @@ async function handleAdminSyncPosts(request, env) {
           publishedSlugs.add(finalSlug);
         }
         slugMap.set(draft.slug, finalSlug);
-        const post = finalPosts.find(p => p.slug === draft.slug) || {};
+        const post = mirror ? (finalPosts.find(p => p.slug === draft.slug) || {}) : {};
         const postTitle = post.title || draft.title || "";
         // Sanitasi nomor WA di content DRAFT (artefak placeholder AI) sebelum live.
         const postContent = sanitizeWaNumber(draft.content || "");
-        const postExcerpt = (post.excerpt || "").slice(0, 500);
+        // Lean mode (mirror=0) tidak membangun finalPosts — hitung excerpt/readTime langsung dari draft.
+        const draftExcerpt = (post.excerpt || (draft.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()).substring(0, 200);
+        const postExcerpt = draftExcerpt.slice(0, 500);
+        const postDate = post.date || nowWibDate;
+        const postIso = post.iso_date || nowIso;
+        const postReadTime = post.readTime || (Math.max(1, Math.round((draft.content || "").split(/\s+/).length / 200)) + " min");
+        const postCategory = draft.service || post.category || "strategy";
+        const postTags = post.tags || [draft.service, draft.city].filter(Boolean);
         await env.DB.prepare(
           `INSERT INTO posts_meta (slug, title, excerpt, date, iso_date, category, readTime, tags, service, city, featured, generated, iso_updated)
            VALUES (?,?,?,?,?,?,?,?,?,?,0,1,datetime('now'))
@@ -2155,11 +2214,11 @@ async function handleAdminSyncPosts(request, env) {
           finalSlug,
           postTitle,
           postExcerpt,
-          post.date || "",
-          post.iso_date || nowIso,
-          draft.service || post.category || "strategy",
-          post.readTime || "3 min",
-          JSON.stringify(post.tags || [draft.service, draft.city].filter(Boolean)).slice(0, 1000),
+          postDate,
+          postIso,
+          postCategory,
+          postReadTime,
+          JSON.stringify(postTags).slice(0, 1000),
           draft.service || "",
           draft.city || "",
         ).run();
@@ -2181,9 +2240,9 @@ async function handleAdminSyncPosts(request, env) {
       }
     }
 
-    // 5b. Commit to GitHub (best-effort static mirror)
+    // 5b. Commit to GitHub (best-effort static mirror — only when mirror=1)
     let commitResult = null;
-    if (env.GITHUB_TOKEN && safeDrafts.length > 0) {
+    if (mirror && env.GITHUB_TOKEN && safeDrafts.length > 0) {
       try {
         const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(finalPosts, null, 2))));
         const putResp = await fetch(
@@ -2214,7 +2273,7 @@ async function handleAdminSyncPosts(request, env) {
         commitResult = { ok: false, error: e.message, d1_published: d1Published };
       }
     } else {
-      commitResult = { ok: d1Published > 0, d1_published: d1Published, error: env.GITHUB_TOKEN ? null : "GITHUB_TOKEN not set" };
+      commitResult = { ok: d1Published > 0, d1_published: d1Published, error: mirror ? (env.GITHUB_TOKEN ? null : "GITHUB_TOKEN not set") : "mirror skipped (lean run)" };
     }
 
     // 6. Auto-enqueue NEW URLs to pending_indexing (www for GSC property match)
@@ -2280,9 +2339,10 @@ async function handleAdminSyncPosts(request, env) {
 
       return new Response(JSON.stringify({
         ok: true,
-        total_in_d1: posts.length,
-        existing_in_git: existing.length,
-        final_count: finalPosts.length,
+        mode: mirror ? "mirror" : "lean",
+        total_in_d1: mirror ? posts.length : undefined,
+        existing_in_git: mirror ? existing.length : undefined,
+        final_count: mirror ? finalPosts.length : undefined,
         commit: commitResult,
         d1_published: d1Published,
         auto_index_enqueued: enqueued,

@@ -906,10 +906,15 @@ email via AI gratis, auto-campaign email per layanan, dan fallback WhatsApp.
 Slot cron CF gratis cuma 5 ekspresi **per account** (bukan per-script); job growth disusupkan ke dalam slot hourly `0 * * * *` via time-gate di `scheduled()`.
 **STATUS TERPASANG (2026-08-25): 5 slot penuh di `beriklanweb`** — `0 * * * *`, `*/15 * * * *`, `30 6 * * *`, `0 7 * * *`, `0 3 * * 1` (persis sesuai `wrangler.jsonc` triggers).
 Worker legacy `beriklan-app` (dashboard Google Ads di `app.beriklan.co.id`, project
-`capi-gateway-v2`) cron-nya **di-nol-kan atas instruksi user** (dashboard tidak dipakai).
-Script-nya tetap ter-deploy & bisa diakses; job-nya punya HTTP fallback
-(`/api/cron/anomaly-all`, `/api/cron/brain-all`, `/api/cron/audit-all` di worker itu)
-kalau mau dihidupkan lagi lewat trigger eksternal.
+`capi-gateway-v2`) **sudah dihapus seluruhnya pada 2026-08-26** lewat
+`DELETE /accounts/{id}/workers/scripts/beriklan-app` (token `cfut_wUtY…`). Konsekuensi:
+- `beriklan-app` sudah tidak ada di daftar scripts.
+- Semua 9 Workers Routes di zone `beriklan.co.id` memang sejak awal point ke
+  `beriklanweb` (tidak ada route ke `beriklan-app`), jadi tidak ada yang putus.
+- `app.beriklan.co.id` sekarang balik ke 522 (host unreachable) — sesuai keinginan:
+  dashboard dimatikan, bukan di-pause.
+- Slot cron `beriklan-app` sudah di-PUT `[]` sejak 2026-08-25; 5 slot penuh tetap
+  milik `beriklanweb`. Tidak perlu re-route atau reassign.
 Catatan API: PUT schedules butuh body **array mentah** `[{"cron":"..."}]`,
 BUKAN `{"schedules":[...]}` (error 10026). Error 10072 = cap 5 cron/account tercapai.
 Daftar job:
@@ -936,6 +941,7 @@ Daftar job:
 - Audit trail UI: `/api/admin/growth-log?token=...&action=enrich&slug=...&limit=20`; probe AI: `/api/admin/ai-test?token=...` (+`&models=1` untuk list model Groq live).
 - AI provider: Zen `deepseek-v4-flash-free` (gratis, sering 429) → fallback Groq via konstanta `GROQ_CHAT_MODELS` (`openai/gpt-oss-120b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-20b`; 3 key dirotasi). Model `llama-3.3-70b-versatile` sudah dihapus Groq — JANGAN dipakai lagi. gpt-oss: output reasoning ikut memakan budget → `reasoning_effort: "low"` + `max_tokens` ≥ 2048 untuk prompt JSON.
 - GSC: service account saat ini HANYA punya akses property `https://www.beriklan.co.id/` (secret `GSC_SITE_URL`). Apex/domain property 403/0 rows (retest 2026-08-25: tetap 403, secret tetap www). Menunggu user tambahkan SA sebagai Owner; lalu `printf 'https://beriklan.co.id/' | npx wrangler secret put GSC_SITE_URL` dan test `rank-sync` + `growth/gsc-loop`. Data www tipis → `growth-ctr-fix` masih 0 kandidat (clamp minImp=50).
+- Retest 2026-08-26 (setelah user menyatakan SA sudah ditambahkan): apex `https://beriklan.co.id/` masih 403, domain `sc-domain:beriklan.co.id` sudah bisa diakses (bukan 403) tetapi 0 rows window 14/28 hari (kemungkinan property baru / data belum tersedia). Secret `GSC_SITE_URL` tetap `https://www.beriklan.co.id/` (satu-satunya yang data). `rank-sync` dengan www = 295 rows / 14 hari, `growth/gsc-loop` jalan.
 
 ### Tabel Email Flow
 - `email_templates` (12 templates, 11 service + 1 follow-up)
@@ -984,6 +990,67 @@ newsletter otomatis dapat email follow-up (dikirim cron email-send tiap 15 menit
 
 ---
 
-**Versi dokumen:** 1.6
-**Update terakhir:** 25 Agustus 2026 (Growth system — GSC feedback loop, tanpa GitHub Actions)
+## 🛠️ Publish Pipeline (sync-posts) — mirror gate
+
+`/api/admin/sync/posts` dulu kena error `1102` (CPU/time limit Workers Free) karena mode
+penalu memuat `posts_meta` + `posts_content` (~40MB), fetch `src/data/posts.json` dari
+GitHub, merge, lalu PUT balik ke GitHub sebagai static mirror. Sekarang ada **mirror
+gate** lewat query param:
+
+| Mode | Trigger | Perilaku |
+|---|---|---|
+| **lean** (default, `?mirror=0`) | cron hourly `0 * * * *`, dan saat dipanggil tanpa param | Hanya refill buffer dari `keyword_queue`, publish draft ke D1, advance status keyword, enqueue indexing, submit GSC/IndexNow. **Tidak** fetch/posts.json, **tidak** PUT ke GitHub. Aman di CPU free. |
+| **full mirror** (`?mirror=1`) | manual `/api/admin/sync/posts?token=…&mirror=1` | Sinkronkan `posts_meta` + `posts_content` ke `src/data/posts.json` di GitHub (untuk Astro static build). **Berat** — risiko `1102` di Workers Free. Hanya untuk build terjadwal/manual. |
+
+Response lean berisi: `mode`, `d1_published`, `auto_index_enqueued`, `gsc_submitted`,
+`indexnow_sent`, `buffer_count`, `published_today`, `daily_limit`, `batch_size`,
+`total_drafts_pending`, `elapsed_seconds`. Setting `daily_limit=300`,
+`batch_size=30` di konstanta worker — bisa di-tune via secret `PUBLISH_DAILY_LIMIT`
+dan `PUBLISH_BATCH_SIZE` kalau dipasang (saat ini hard-coded).
+
+State draft terakhir (cek 2026-08-26 sebelum sync manual):
+- `generated_drafts` total ~11.007; committed ~10.627; pending ~380.
+- `keyword_queue` total ~391.121; pending ~381.783; published ~9.010.
+- Lean sync manual: `d1_published:30`, `auto_index_enqueued:30`, `elapsed:9.4s`.
+
+## 🔑 Bulk Keyword Import
+
+Untuk riset keyword massal (terutama `jasa-view-live`, `jasa-pembuatan-website`,
+`jasa-pembuatan-landing-page`, dan coverage layanan inti × industri/kota) sekarang
+ada endpoint tanpa build/deploy:
+
+```
+POST /api/admin/keywords/import?token=beriklan-admin-2026&source=curated_research_v2
+Content-Type: application/json
+
+[
+  {"keyword":"jasa host live facebook live","service":"jasa-view-live",
+   "city":"bandung","intent":"commercial","priority":85},
+  …
+]
+```
+
+Atau `{keywords:[…]}` untuk envelope. Handler `handleAdminKeywordsImport` melakukan:
+- Normalisasi `keyword_normalized` (lowercase + trim + collapse space).
+- Dedupe by `keyword` & `keyword_normalized` (skip kalau sudah ada di queue).
+- Insert ke `keyword_queue` status `pending` dengan `source`/`priority`/`city`/`intent`.
+- Return `{received, inserted, skipped, sample_inserted:[…]}`.
+
+Riset terbaru tersimpan di `web/public/data/keyword-research-v2.json` (583 keyword
+unik, fokus jasa live & website). Hasil import: 359 inserted, 224 skipped.
+
+## 📚 Duplikasi Sistem — `SEO-SYSTEM-REPLICATION.md`
+
+Dokumen blueprint lengkap untuk coding agent yang akan menduplikasi sistem SEO
+ini di domain lain. Berisi: arsitektur Worker + D1, schema tabel (`keyword_queue`,
+`generated_drafts`, `posts_meta`, `posts_content`, `growth_log`, `keyword_ranks`,
+`pending_indexing`, …), 5 cron + time-gate, pipeline keyword → artikel → publish →
+indexing → growth loop, AI fallback (Zen + Groq), endpoint API, deploy manual,
+kuota penting (Resend 100/hari, GSC Indexing 200/hari, index-verify 300/hari),
+gotcha, checklist replikasi. Baca dulu sebelum setup domain baru.
+
+---
+
+**Versi dokumen:** 1.7
+**Update terakhir:** 26 Agustus 2026 (sync-posts mirror gate, keywords/import, riset v2, beriklan-app dihapus)
 **Maintainer:** Beriklan Digital Agency + Codex AI

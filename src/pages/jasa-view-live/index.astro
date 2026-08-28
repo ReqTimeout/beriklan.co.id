@@ -3,107 +3,65 @@ import Layout from '../../layouts/Layout.astro';
 
 import Navbar from '../../components/Navbar.svelte';
 import StickyCTA from '../../components/StickyCTA.svelte';
-import PricingCards from '../../components/PricingCards.svelte';
 import FaqAccordion from '../../components/FaqAccordion.svelte';
 import RelatedServices from '../../components/RelatedServices.svelte';
 import FeatureGrid from '../../components/FeatureGrid.svelte';
 import StepGrid from '../../components/StepGrid.svelte';
 import Footer from '../../components/Footer.svelte';
-import { MessageCircle, ArrowRight, Radio, Sparkles, Target, Zap, Users, Shield, Database, Clock, Tv, Cast, TrendingUp, Check, Smartphone, Globe } from 'lucide-svelte';
+import { MessageCircle, ArrowRight, Radio, Sparkles, Target, Zap, Users, Shield, Database, Clock, Tv, Cast, TrendingUp, Smartphone, Globe } from 'lucide-svelte';
 
-const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20untuk%20live%20streaming.%20Mohon%20info%20paket%20dan%20harga.";
+const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live.%20Mohon%20info%20kategori%20live%20yang%20cocok%20untuk%20bisnis%20saya.";
 
-const tiers = [
+const categories = [
     {
-        name: 'Pemanasan',
-        priceLabel: '12.000',
-        duration: '20 viewers / 1 jam live',
-        tagline: 'Cocok untuk live pendek, tes, atau warming up sebelum live utama.',
-        features: [
-            '20 viewers real aktif masuk gradual',
-            'Durasi sampai 1 jam live',
-            'Multi-platform (TikTok, Shopee, YouTube, IG, Twitch)',
-            'Cocok untuk live pendek atau tes',
-            'Tanpa risiko untuk akun Anda',
-        ],
-        priceNote: 'harga per sesi live',
-        disclaimer: 'Viewers masuk dalam 5-15 menit setelah order.',
+        slug: 'tiktok',
+        platform: 'TikTok Live',
+        tagline: 'Boost viewers untuk FYP algorithm',
+        iconLabel: '📱',
+        LucideIcon: Smartphone,
+        href: '/jasa-view-live/tiktok',
+        suitableFor: ['Seller TikTok Shop', 'Creator konten viral', 'Live interaksi FYP'],
+        accent: 'from-pink-500 via-rose-500 to-red-500',
     },
     {
-        name: 'Starter',
-        priceLabel: '25.000',
-        duration: '50 viewers / 1 jam live',
-        tagline: 'Untuk live rutin yang butuh boost awal biar algoritma notice Anda.',
-        features: [
-            '50 viewers real aktif',
-            'Durasi sampai 1 jam live',
-            'Multi-platform (semua channel)',
-            'Cocok untuk seller & streamer pemula',
-            'Star Pick — paket paling sering dipilih',
-        ],
-        priceNote: 'Rp 500/viewer/jam',
-        disclaimer: 'Bonus paket mingguan/bulanan: diskon 10-15%.',
-        highlight: true,
+        slug: 'shopee',
+        platform: 'Shopee Live',
+        tagline: 'Naikkan ranking produk di live commerce',
+        iconLabel: '🛍️',
+        LucideIcon: Sparkles,
+        href: '/jasa-view-live/shopee',
+        suitableFor: ['Seller Shopee', 'Brand launching produk', 'Daily live commerce'],
+        accent: 'from-orange-500 via-amber-500 to-yellow-500',
     },
     {
-        name: 'Basic',
-        priceLabel: '45.000',
-        duration: '100 viewers / 1 jam live',
-        tagline: 'Sweet spot untuk seller Shopee Live yang mau boost ranking.',
-        features: [
-            '100 viewers real aktif stay selama live',
-            'Durasi sampai 1 jam live',
-            'Multi-platform (semua channel)',
-            'Cocok untuk seller Shopee / TikTok Shop',
-            'Real account, no bot — aman untuk akun',
-        ],
-        priceNote: 'Rp 450/viewer/jam',
-        disclaimer: 'Cocok untuk live mingguan / konsistensi algorithm boost.',
+        slug: 'youtube',
+        platform: 'YouTube Live',
+        tagline: 'Tingkatkan watch time & monetisasi',
+        iconLabel: '📺',
+        LucideIcon: Tv,
+        href: '/jasa-view-live/youtube',
+        suitableFor: ['Creator YouTube', 'Live streaming event', 'Webinar & conference'],
+        accent: 'from-red-500 via-rose-500 to-pink-500',
     },
     {
-        name: 'Pro',
-        priceLabel: '80.000',
-        duration: '200 viewers / 1 jam live',
-        tagline: 'Untuk yang serius push conversion dan product placement.',
-        features: [
-            '200 viewers real aktif',
-            'Durasi sampai 1 jam live',
-            'Multi-platform semua channel',
-            'Cocok untuk launching produk & event',
-            'Boost organic distribution algorithm',
-        ],
-        priceNote: 'Rp 400/viewer/jam',
-        disclaimer: 'Repeat order diskon khusus.',
+        slug: 'instagram',
+        platform: 'Instagram Live',
+        tagline: 'Boost IG reach & interaksi audience',
+        iconLabel: '📸',
+        LucideIcon: Globe,
+        href: '/jasa-view-live/instagram',
+        suitableFor: ['Influencer & selebgram', 'Brand fashion & beauty', 'Live shopping IG'],
+        accent: 'from-fuchsia-500 via-purple-500 to-indigo-500',
     },
     {
-        name: 'Bisnis',
-        priceLabel: '115.000',
-        duration: '300 viewers / 1 jam live',
-        tagline: 'Untuk brand dan toko yang live commerce setiap hari.',
-        features: [
-            '300 viewers real aktif',
-            'Durasi sampai 1 jam live',
-            'Multi-platform semua channel',
-            'Cocok untuk brand rutin live commerce',
-            'Support prioritas + dedicated account manager',
-        ],
-        priceNote: 'Rp 383/viewer/jam',
-        disclaimer: 'Cocok untuk paket mingguan dengan jadwal tetap.',
-    },
-    {
-        name: 'Premium',
-        priceLabel: '175.000',
-        duration: '500 viewers / 1 jam live',
-        tagline: 'Untuk event launching besar atau live dengan target viewers tinggi.',
-        features: [
-            '500 viewers real aktif',
-            'Durasi sampai 1 jam live',
-            'Multi-platform semua channel',
-            'Cocok untuk launching / event korporat',
-            'Support 24/7 + flexible reschedule',
-        ],
-        priceNote: 'Rp 350/viewer/jam',
-        disclaimer: 'Untuk >500 viewers atau paket bulanan, custom price.',
+        slug: 'twitch',
+        platform: 'Twitch Live',
+        tagline: 'Tumbuhkan komunitas & partnership',
+        iconLabel: '🎙️',
+        LucideIcon: Radio,
+        href: '/jasa-view-live/twitch',
+        suitableFor: ['Streamer gaming', 'Kreator musik & art', 'Komunitas niche'],
+        accent: 'from-violet-500 via-purple-500 to-fuchsia-500',
     },
 ];
 
@@ -128,7 +86,7 @@ const faqs = [
     { q: 'Apakah aman untuk akun saya?', a: 'Sangat aman. Viewers dari kami tidak berinteraksi aneh dari akun Anda — semua aktivitas berasal dari viewer, bukan akun Anda. Sudah dipakai 1.200+ seller dan streamer tanpa satu pun akun kena masalah.' },
     { q: 'Berapa lama viewers muncul setelah order?', a: '5-15 menit setelah live Anda mulai. Tidak langsung muncul tiba-tiba — gradual seperti live normal pada umumnya.' },
     { q: 'Platform apa saja yang didukung?', a: 'TikTok Live, Shopee Live, YouTube Live, Instagram Live, Twitch, Lazada Live. Platform lain yang support live streaming juga bisa — chat dulu saja untuk konfirmasi.' },
-    { q: 'Bisakah order untuk viewer lebih dari 500 atau paket bulanan?', a: 'Bisa. Untuk 500+ viewers atau paket mingguan/bulanan dengan jadwal tetap, kita ngobrol dulu via WA untuk dapat harga terbaik. Recurring schedule (misal: tiap Selasa & Jumat) bisa dapet diskon tambahan 10-15%.' },
+    { q: 'Bisakah order untuk viewer lebih dari 500 atau jadwal rutin?', a: 'Bisa. Untuk kebutuhan viewer 500+ atau jadwal rutin mingguan/bulanan, kita ngobrol dulu via WA untuk diskusi strategi dan skala viewer. Recurring schedule (misal: tiap Selasa & Jumat) juga tersedia untuk konsistensi algorithm boost.' },
     { q: 'Apa yang terjadi kalau viewers drop sebelum durasi selesai?', a: 'Kalau viewers drop karena force majeure atau platform issue, kami refund pro-rata atau replace viewers di sesi berikutnya. Yang penting komunikasi dulu — kami komunikatif, bukan template bot.' },
     { q: 'Apakah ada minimum durasi live?', a: 'Order 1 sesi = viewers masuk untuk 1 jam durasi live. Untuk live lebih panjang, bisa dihitung sebagai multiple sesi atau paket khusus.' },
 ];
@@ -149,7 +107,7 @@ const categoryLabels = {
 };
 ---
 
-<Layout title="Jasa View Live Multi-Platform | Boost Viewers Live Streaming — Beriklan" description="Boost viewers live streaming untuk TikTok, Shopee, YouTube, Instagram, Twitch. Real account, no bot, aman untuk akun Anda. Mulai Rp 12.000 untuk 20 viewers.">
+<Layout title="Jasa View Live Multi-Platform — 5 Kategori Live Streaming | Beriklan" description="Boost viewers live streaming untuk TikTok, Shopee, YouTube, Instagram, Twitch. Pilih kategori live sesuai platform Anda. Real account, no bot, aman untuk akun Anda.">
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
@@ -192,14 +150,14 @@ const categoryLabels = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 group-hover:rotate-12 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </span>
                     </a>
-                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink hover:-translate-y-0.5 transition-all">
-                        Lihat Paket & Harga
+                    <a href="#kategori" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full font-bold text-ink border border-gray-200 bg-white hover:border-ink hover:-translate-y-0.5 transition-all">
+                        Lihat Kategori Live
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </a>
                 </div>
 
                 <div class="hero-trust pt-6 border-t border-gray-200/60 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
-                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">Mulai Rp 12.000</strong> untuk 20 viewers</span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted"><strong class="text-ink">5 kategori platform</strong> live</span></div>
                     <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Real account, <strong class="text-ink">no bot</strong></span></div>
                     <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-muted">Aman untuk akun Anda</span></div>
                 </div>
@@ -368,38 +326,159 @@ const categoryLabels = {
         </div>
     </section>
 
-    <!-- ====================== PRICING ====================== -->
-    <section id="pricing" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
+    <!-- ====================== KATEGORI LIVE ====================== -->
+    <section id="kategori" class="py-20 md:py-28 bg-gradient-to-br from-soft via-white to-beige relative overflow-hidden">
         <div class="abs-blob abs-blob-3"></div>
         <div class="container mx-auto px-6 relative">
             <div class="text-center max-w-2xl mx-auto mb-12 reveal">
                 <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">
                     <span class="w-8 h-px bg-accent"></span>
-                    Paket & Harga
+                    5 Kategori Live
                     <span class="w-8 h-px bg-accent"></span>
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
-                    Enam paket, dari pemanasan<br/>
-                    <span class="text-accent">sampai launching akbar.</span>
+                    Pilih platform live Anda.<br/>
+                    <span class="text-accent">Kami sesuaikan strateginya.</span>
                 </h2>
                 <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
-                    Semua paket sudah termasuk viewers riil (bukan bot), gradual entry, dan support via WhatsApp. Untuk paket mingguan/bulanan atau viewer 500+, chat dulu untuk harga khusus.
+                    Setiap platform punya algorithm dan audience yang berbeda. Kami sudah mengelola ratusan live di 5 channel ini — pilih kategori sesuai dengan bisnis Anda.
                 </p>
             </div>
 
-            <PricingCards tiers={tiers} pageSlug="View Live Multi-Platform" highlightIndex={1} columns={3} client:only="svelte" />
+            <div class="reveal-stagger">
+                <!-- Row 1: 3 cards (TikTok, Shopee, YouTube) -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+                    <!-- TikTok Live -->
+                    <a href="/jasa-view-live/tiktok" class="category-card group">
+                        <div class="category-header">
+                            <div class="category-icon bg-gradient-to-br from-pink-500 via-rose-500 to-red-500">
+                                <Smartphone class="w-7 h-7 text-white" strokeWidth="2.2" />
+                            </div>
+                            <span class="category-num">01</span>
+                        </div>
+                        <p class="category-eyebrow">Kategori 01</p>
+                        <h3 class="category-platform">TikTok Live</h3>
+                        <p class="category-tagline">Boost viewers untuk FYP algorithm</p>
+                        <p class="category-desc">Viewers aktif masuk gradual bikin live Anda trending di For You Page. Cocok untuk seller TikTok Shop dan creator yang mau push viral.</p>
+                        <div class="category-tags">
+                            <span>Seller TikTok Shop</span>
+                            <span>Creator viral</span>
+                            <span>FYP boost</span>
+                        </div>
+                        <span class="category-cta">
+                            Lihat Solusi TikTok Live
+                            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+
+                    <!-- Shopee Live -->
+                    <a href="/jasa-view-live/shopee" class="category-card group">
+                        <div class="category-header">
+                            <div class="category-icon bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500">
+                                <Sparkles class="w-7 h-7 text-white" strokeWidth="2.2" />
+                            </div>
+                            <span class="category-num">02</span>
+                        </div>
+                        <p class="category-eyebrow">Kategori 02</p>
+                        <h3 class="category-platform">Shopee Live</h3>
+                        <p class="category-tagline">Naikkan ranking produk di live commerce</p>
+                        <p class="category-desc">Viewers aktif bantu produk Anda naik di ranking Shopee Live dan naikkan conversion. Cocok untuk seller harian dan launching produk.</p>
+                        <div class="category-tags">
+                            <span>Seller Shopee</span>
+                            <span>Brand launching</span>
+                            <span>Live commerce</span>
+                        </div>
+                        <span class="category-cta">
+                            Lihat Solusi Shopee Live
+                            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+
+                    <!-- YouTube Live -->
+                    <a href="/jasa-view-live/youtube" class="category-card group">
+                        <div class="category-header">
+                            <div class="category-icon bg-gradient-to-br from-red-500 via-rose-500 to-pink-500">
+                                <Tv class="w-7 h-7 text-white" strokeWidth="2.2" />
+                            </div>
+                            <span class="category-num">03</span>
+                        </div>
+                        <p class="category-eyebrow">Kategori 03</p>
+                        <h3 class="category-platform">YouTube Live</h3>
+                        <p class="category-tagline">Tingkatkan watch time & monetisasi</p>
+                        <p class="category-desc">Viewer aktif bantu algoritma YouTube merekomendasikan live Anda lebih sering. Cocok untuk creator, event streaming, dan webinar.</p>
+                        <div class="category-tags">
+                            <span>Creator YouTube</span>
+                            <span>Live event</span>
+                            <span>Webinar</span>
+                        </div>
+                        <span class="category-cta">
+                            Lihat Solusi YouTube Live
+                            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Row 2: 2 cards centered (Instagram, Twitch) -->
+                <div class="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto mt-5">
+                    <!-- Instagram Live -->
+                    <a href="/jasa-view-live/instagram" class="category-card group">
+                        <div class="category-header">
+                            <div class="category-icon bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-500">
+                                <Globe class="w-7 h-7 text-white" strokeWidth="2.2" />
+                            </div>
+                            <span class="category-num">04</span>
+                        </div>
+                        <p class="category-eyebrow">Kategori 04</p>
+                        <h3 class="category-platform">Instagram Live</h3>
+                        <p class="category-tagline">Boost IG reach & interaksi audience</p>
+                        <p class="category-desc">Viewers aktif masuk gradual bikin live IG Anda muncul di Explore dan Story. Cocok untuk influencer, brand fashion, dan live shopping.</p>
+                        <div class="category-tags">
+                            <span>Influencer</span>
+                            <span>Brand fashion</span>
+                            <span>Live shopping</span>
+                        </div>
+                        <span class="category-cta">
+                            Lihat Solusi Instagram Live
+                            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+
+                    <!-- Twitch Live -->
+                    <a href="/jasa-view-live/twitch" class="category-card group">
+                        <div class="category-header">
+                            <div class="category-icon bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500">
+                                <Radio class="w-7 h-7 text-white" strokeWidth="2.2" />
+                            </div>
+                            <span class="category-num">05</span>
+                        </div>
+                        <p class="category-eyebrow">Kategori 05</p>
+                        <h3 class="category-platform">Twitch Live</h3>
+                        <p class="category-tagline">Tumbuhkan komunitas & partnership</p>
+                        <p class="category-desc">Viewers aktif bantu channel Anda naik di direktori Twitch dan menarik sponsor. Cocok untuk streamer gaming, musik, dan kreator niche.</p>
+                        <div class="category-tags">
+                            <span>Streamer gaming</span>
+                            <span>Kreator musik</span>
+                            <span>Komunitas niche</span>
+                        </div>
+                        <span class="category-cta">
+                            Lihat Solusi Twitch Live
+                            <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                    </a>
+                </div>
+            </div>
 
             <div class="mt-10 max-w-2xl mx-auto reveal">
                 <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-                            <Check class="w-5 h-5 text-accent" strokeWidth="2.5" />
+                            <MessageCircle class="w-5 h-5 text-accent" strokeWidth="2.2" />
                         </div>
                         <div>
-                            <p class="font-display font-bold text-base text-ink mb-1">Butuh paket recurring atau viewer 500+?</p>
-                            <p class="text-sm text-muted leading-relaxed">Hubungi kami untuk konsultasi via WhatsApp. Kami bantu pilih paket yang paling cocok dengan jadwal live dan objective Anda.</p>
+                            <p class="font-display font-bold text-base text-ink mb-1">Belum yakin platform mana yang paling cocok?</p>
+                            <p class="text-sm text-muted leading-relaxed">Ceritakan jenis bisnis dan jadwal live Anda via WhatsApp. Kami bantu rekomendasi platform dan strategi viewer yang sesuai dengan objective Anda.</p>
                             <a href={waLink} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-accent hover:text-ink transition-colors group">
-                                Chat via WhatsApp
+                                Diskusi via WhatsApp
                                 <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                             </a>
                         </div>
@@ -612,11 +691,11 @@ const categoryLabels = {
                             <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </span>
                     </a>
-                    <a href="#pricing" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
-                        Lihat Paket & Harga
+                    <a href="#kategori" class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold border border-white/30 text-white hover:bg-white/10 transition-all">
+                        Lihat Kategori Live
                     </a>
                 </div>
-                <p class="text-white/50 text-xs mt-6">Paket recurring mingguan/bulanan · diskon 10-15%</p>
+                <p class="text-white/50 text-xs mt-6">Jadwal rutin mingguan/bulanan tersedia untuk konsistensi algorithm boost</p>
             </div>
         </div>
     </section>
@@ -741,6 +820,122 @@ const categoryLabels = {
     .why-card:hover .why-icon { transform: scale(1.08) rotate(-4deg); }
     .why-title { font-family: 'Plus Jakarta Sans Variable', sans-serif; font-weight: 800; font-size: 1.125rem; color: #0b1426; margin-bottom: 0.5rem; }
     .why-desc { font-size: 0.9rem; color: #5b6478; line-height: 1.6; }
+
+    /* Category cards (live platform taxonomy) */
+    .category-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border: 1px solid #f1f3f8;
+        border-radius: 1.5rem;
+        padding: 1.75rem;
+        box-shadow: 0 1px 2px rgba(15,30,61,0.04), 0 6px 20px rgba(15,30,61,0.05);
+        transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+    }
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f59e0b, #fb923c, #f472b6);
+        opacity: 0;
+        transition: opacity 0.35s ease;
+    }
+    .category-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(245,158,11,0.4);
+        box-shadow: 0 16px 48px -10px rgba(15,30,61,0.18);
+    }
+    .category-card:hover::before { opacity: 1; }
+    .category-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    .category-icon {
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 16px rgba(15,30,61,0.18);
+        transition: transform 0.35s ease;
+    }
+    .category-card:hover .category-icon {
+        transform: scale(1.08) rotate(-4deg);
+    }
+    .category-num {
+        font-family: 'Plus Jakarta Sans Variable', sans-serif;
+        font-weight: 800;
+        font-size: 0.875rem;
+        color: rgba(15,30,61,0.18);
+        letter-spacing: 0.08em;
+    }
+    .category-eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: #f59e0b;
+        margin-bottom: 0.5rem;
+    }
+    .category-platform {
+        font-family: 'Plus Jakarta Sans Variable', sans-serif;
+        font-weight: 800;
+        font-size: 1.375rem;
+        color: #0b1426;
+        line-height: 1.15;
+        margin-bottom: 0.4rem;
+    }
+    .category-tagline {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #0f1e3d;
+        margin-bottom: 0.75rem;
+    }
+    .category-desc {
+        font-size: 0.875rem;
+        color: #5b6478;
+        line-height: 1.6;
+        margin-bottom: 1.25rem;
+    }
+    .category-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 1.5rem;
+    }
+    .category-tags span {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #5b6478;
+        background: #f7f8fb;
+        border: 1px solid #eef0f6;
+        border-radius: 9999px;
+        padding: 0.3rem 0.7rem;
+    }
+    .category-card:hover .category-tags span {
+        border-color: rgba(245,158,11,0.3);
+        color: #0b1426;
+    }
+    .category-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #f59e0b;
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px dashed #eef0f6;
+    }
+    .category-card:hover .category-cta { color: #0b1426; }
 
     /* Stat cards */
     .stat-card {

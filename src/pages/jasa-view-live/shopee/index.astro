@@ -13,7 +13,6 @@ import { MessageCircle, ArrowRight, Radio, Sparkles, Users, Shield, Clock, Trend
 const waLink = "https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20jasa%20view%20live%20Shopee.%20Mohon%20info%20paket%20dan%20harga.";
 
 const tiers = [
-    { name: 'Pemanasan', priceLabel: '12.000', duration: '20 viewers / 1 jam live', tagline: 'Cocok untuk warming up sebelum live utama biar algoritma notice Anda sejak awal.', features: ['20 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform (semua channel)', 'Cocok untuk live pendek atau tes', 'Tanpa risiko untuk akun Shopee'], priceNote: 'harga per sesi live', disclaimer: 'Viewers real account, no bot.' },
     { name: 'Starter', priceLabel: '25.000', duration: '50 viewers / 1 jam live', tagline: 'Untuk live rutin yang butuh boost awal agar Shopee algorithm notice Anda.', features: ['50 viewers riil aktif', 'Bergabung gradual 5-15 menit', 'Multi-platform semua channel', 'Cocok untuk Shopee creator & streamer', 'Real account, no flag dari Shopee'], priceNote: 'Rp 500/viewer/jam', disclaimer: 'Paling sering dipilih Shopee user.', highlight: true },
     { name: 'Basic', priceLabel: '45.000', duration: '100 viewers / 1 jam live', tagline: 'Sweet spot untuk seller Shopee yang mau boost ranking & konversi.', features: ['100 viewers riil stay selama live', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk live commerce Shopee', 'distribusi live'], priceNote: 'Rp 450/viewer/jam', disclaimer: 'Cocok untuk live mingguan.' },
     { name: 'Pro', priceLabel: '80.000', duration: '200 viewers / 1 jam live', tagline: 'Untuk launching produk baru & live event yang butuh distribusi FYP luas.', features: ['200 viewers riil aktif', 'Bergabung gradual natural', 'Multi-platform semua channel', 'Cocok untuk launching & event', 'Boost organik distribusi live'], priceNote: 'Rp 400/viewer/jam', disclaimer: 'Repeat order diskon khusus.' },
@@ -54,7 +53,7 @@ const relatedItems = [
 ];
 ---
 
-<Layout title="Jasa View Live Shopee | Boost Viewers Live Shopping — Beriklan" description="Boost viewers live streaming Shopee agar Shopee algorithm notice live Anda. Real account, no bot, aman untuk akun Shopee. Mulai Rp 12.000 untuk 20 viewers." canonical="https://beriklan.co.id/jasa-view-live/shopee/"
+<Layout title="Jasa View Live Shopee | Boost Viewers Live Shopping — Beriklan" description="Boost viewers live streaming Shopee agar Shopee algorithm notice live Anda. Real account, no bot, aman untuk akun Shopee. Mulai Rp 25.000 untuk 50 viewers." canonical="https://beriklan.co.id/jasa-view-live/shopee/"
     faq={[
             { question: 'Apakah viewers-nya buyer asli atau akun fake?', answer: 'Buyer real yang aktif di Shopee, bukan bot. Mereka stay, like, dan beberapa ada yang checkout. Interaksi natural, no flag dari Shopee algorithm.' },
             { question: 'Apakah aman untuk toko Shopee saya?', answer: 'Sangat aman. Viewers tidak spam click-buy yang trigger Shopee fraud detection. Tidak ada aktivitas dari toko Anda. Sudah dipakai 800+ seller Shopee tanpa masalah.' },
@@ -66,9 +65,9 @@ const relatedItems = [
         ]}
     service={{
         name: "Jasa View Live Shopee",
-        description: "Jasa viewers live streaming untuk Jasa View Live Shopee. Real account, no bot, aman untuk platform. Mulai dari Rp 12.000 untuk 20 viewers.",
+        description: "Jasa viewers live streaming untuk Jasa View Live Shopee. Real account, no bot, aman untuk platform. Mulai dari Rp 25.000 untuk 50 viewers.",
         url: "https://www.beriklan.co.id/jasa-view-live/shopee/",
-        priceRange: "Rp 12.000 - Rp 175.000",
+        priceRange: "Rp 25.000 - Rp 175.000",
         serviceType: "Live Viewers Service",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
@@ -90,9 +89,9 @@ const relatedItems = [
     ]}
     service={{
         name: "Jasa View Live Shopee",
-        description: "Jasa viewers live streaming untuk Jasa View Live Shopee. Real account, no bot, aman untuk platform. Mulai dari Rp 12.000 untuk 20 viewers.",
+        description: "Jasa viewers live streaming untuk Jasa View Live Shopee. Real account, no bot, aman untuk platform. Mulai dari Rp 25.000 untuk 50 viewers.",
         url: "https://www.beriklan.co.id/jasa-view-live/shopee/",
-        priceRange: "Rp 12.000 - Rp 175.000",
+        priceRange: "Rp 25.000 - Rp 175.000",
         serviceType: "Live Viewers Service",
         areaServed: "Indonesia",
         provider: { name: "Beriklan.co.id", url: "https://www.beriklan.co.id" }
@@ -127,7 +126,7 @@ const relatedItems = [
 
                 <h1 class="hero-h1 font-display font-extrabold text-4xl md:text-5xl lg:text-[2.6rem] xl:text-[2.9rem] text-white leading-[1.05] tracking-tight">
                     <span class="anim-fade-up">Live Shopee Sepi,</span><br/>
-                    <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400" style="animation-delay: 80ms;">Produk Tidak Naik di Feed.</span><br/>
+                    <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-amber-800 to-red-900" style="animation-delay: 80ms;">Produk Tidak Naik di Feed.</span><br/>
                     <span class="anim-fade-up" style="animation-delay: 160ms;">— Live Shopping Butuh Viewers.</span>
                 </h1>
 
@@ -149,7 +148,7 @@ const relatedItems = [
                 </div>
 
                 <div class="hero-trust pt-6 border-t border-white/20 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-xs md:text-sm reveal" style="transition-delay: 200ms;">
-                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80"><strong class="text-white">Mulai Rp 12.000</strong> untuk 20 viewers</span></div>
+                    <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80"><strong class="text-white">Mulai Rp 25.000</strong> untuk 50 viewers</span></div>
                     <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80">Real account, <strong class="text-white">no bot</strong></span></div>
                     <div class="flex items-center gap-2 trust-item"><span class="check-icon"></span><span class="text-white/80">Aman untuk toko Shopee</span></div>
                 </div>
@@ -273,7 +272,7 @@ const relatedItems = [
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
                     Apa algoritma Shopee Live satu hal:<br/>
-                    <span class="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">banyak viewers = ranking naik.</span>
+                    <span class="bg-gradient-to-r from-amber-800 to-red-900 bg-clip-text text-transparent">banyak viewers = ranking naik.</span>
                 </h2>
                 <p class="mt-4 text-white/70 max-w-xl mx-auto text-base leading-relaxed">
                     Shopee memprioritaskan live dengan viewers aktif. Live dengan 100+ viewers muncul lebih sering di rekomendasi — conversion naik 3-4x dibanding live sepi.
@@ -334,7 +333,7 @@ const relatedItems = [
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
                     Dari order sampai FYP trending,<br/>
-                    <span class="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">kurang dari 30 menit.</span>
+                    <span class="bg-gradient-to-r from-amber-800 to-red-900 bg-clip-text text-transparent">kurang dari 30 menit.</span>
                 </h2>
             </div>
 
@@ -352,7 +351,7 @@ const relatedItems = [
                     <span class="w-8 h-px bg-accent"></span>
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-ink leading-[1.1] tracking-tight mt-3">
-                    Enam paket, dari pemanasan<br/>
+                    Lima paket, dari starter<br/>
                     <span class="text-accent">sampai launching akbar.</span>
                 </h2>
                 <p class="mt-4 text-muted max-w-xl mx-auto text-base leading-relaxed">
@@ -360,7 +359,7 @@ const relatedItems = [
                 </p>
             </div>
 
-            <PricingCards tiers={tiers} pageSlug="View Live Shopee" highlightIndex={1} columns={3} client:only="svelte" />
+            <PricingCards tiers={tiers} pageSlug="View Live Shopee" highlightIndex={0} columns={3} client:only="svelte" />
 
             <div class="mt-10 max-w-2xl mx-auto reveal">
                 <div class="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-soft">
@@ -394,7 +393,7 @@ const relatedItems = [
                 </p>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl text-white leading-[1.1] tracking-tight mt-3">
                     Sudah 1.200+<br/>
-                    <span class="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">live Shopee.</span>
+                    <span class="bg-gradient-to-r from-amber-800 to-red-900 bg-clip-text text-transparent">live Shopee.</span>
                 </h2>
             </div>
 
@@ -486,7 +485,7 @@ const relatedItems = [
                 </div>
                 <h2 class="font-display font-extrabold text-3xl md:text-5xl lg:text-6xl text-white leading-[1.05] tracking-tight mb-6 mt-3">
                     Live Shopee berikutnya<br/>
-                    <span class="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">naik ranking di feed.</span>
+                    <span class="bg-gradient-to-r from-amber-800 to-red-900 bg-clip-text text-transparent">naik ranking di feed.</span>
                 </h2>
                 <p class="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-8">
                     Ceritakan tanggal live Shopee Anda via WhatsApp. Kami kirim rekomendasi paket & timeline. Tanpa komitmen — order hanya saat Anda siap live.

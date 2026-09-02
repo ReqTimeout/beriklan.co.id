@@ -13755,6 +13755,11 @@ async function handlePostsIndex(env) {
       headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" }
     });
   } catch {
+    // D1 quota habis (7500) → fallback ke static asset 827 slug (13KB) biar blog tidak kosong.
+    try {
+      const r = await env.ASSETS.fetch(new Request("https://assets/data/posts-index.json"));
+      if (r.ok) return new Response(await r.text(), { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" } });
+    } catch {}
     return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
   }
 }

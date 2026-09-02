@@ -141,7 +141,7 @@ export default {
       return await handleLlmsFullTxt(request, env);
     }
     if (path === "/news.xml" || path === "/news.xml/") {
-      return await handleNewsSitemap(request, env);
+      return await handleNewsSitemap(request, env, ctx);
     }
     if (path === "/api/cron/indexing" || path === "/api/cron/indexing/") {
       return await handleIndexingCron(request, env);
@@ -432,12 +432,12 @@ export default {
 
     // Dynamic posts-index.json (daftar semua artikel untuk BlogFilter)
     if (path === "/data/posts-index.json") {
-      return await handlePostsIndex(env);
+      return await handlePostsIndex(request, env, ctx);
     }
 
     // Dynamic sitemap-blog.xml — includes committed drafts from queue
     if (path === "/sitemap-blog.xml") {
-      return await handleBlogSitemap(env);
+      return await handleBlogSitemap(request, env, ctx);
     }
 
     // /sitemap.xml — conventional alias serving the sitemap index (some tools/GSC probe this path)
@@ -13795,8 +13795,21 @@ ${(users.results||[]).map(u => `<tr><td>${u.id}</td><td>${escHtml(u.name)}</td><
 }
 
 // ─── Dynamic posts-index.json (BlogFilter runtime) ─────────────────
-async function handlePostsIndex(env) {
+async function handlePostsIndex(request, env, ctx) {
   if (!env.DB) return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+  // Edge cache TTL 1 jam — hemat 2 full-scan D1 query per request (posts_meta + generated_drafts).
+  // HIT = tidak sentuh D1 sama sekali. Fallback static & empty TIDAK di-cache (D1 recovery serve fresh).
+  const cache = caches.default;
+  const cacheKey = new Request("https://beriklan.co.id/data/posts-index.json", request);
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      const h = new Headers(cached.headers);
+      h.set("X-Cache", "HIT");
+      h.set("Cache-Control", "public, max-age=300, s-maxage=3600");
+      return new Response(cached.body, { status: cached.status, headers: h });
+    }
+  } catch {}
   try {
     const existing = await env.DB.prepare(
       "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, featured FROM posts_meta ORDER BY iso_date DESC"
@@ -13823,9 +13836,14 @@ async function handlePostsIndex(env) {
         });
       }
     }
-    return new Response(JSON.stringify(Array.from(map.values())), {
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" }
+    const res = new Response(JSON.stringify(Array.from(map.values())), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300, s-maxage=3600", "X-Cache": "MISS" }
     });
+    try {
+      const toCache = res.clone();
+      ctx.waitUntil(cache.put(cacheKey, toCache));
+    } catch {}
+    return res;
   } catch {
     // D1 quota habis (7500) → fallback ke static asset 827 slug (13KB) biar blog tidak kosong.
     try {
@@ -13837,8 +13855,21 @@ async function handlePostsIndex(env) {
 }
 
 // ─── Dynamic sitemap-blog.xml ───────────────────────────────────
-async function handleBlogSitemap(env) {
+async function handleBlogSitemap(request, env, ctx) {
   if (!env.DB) return new Response("DB unavailable", { status: 503 });
+  // Edge cache TTL 1 jam — hemat 2 full-scan D1 query per request (posts_meta + generated_drafts).
+  // Googlebot/Bing sering fetch sitemap-blog.xml setelah ping sitemap → HIT tanpa sentuh D1.
+  const cache = caches.default;
+  const cacheKey = new Request("https://beriklan.co.id/sitemap-blog.xml", request);
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      const h = new Headers(cached.headers);
+      h.set("X-Cache", "HIT");
+      h.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+      return new Response(cached.body, { status: cached.status, headers: h });
+    }
+  } catch {}
   try {
     const posts = await env.DB.prepare("SELECT slug, iso_date FROM posts_meta ORDER BY iso_date DESC").all();
     const drafts = await env.DB.prepare("SELECT slug, committed_at FROM generated_drafts WHERE status='committed'").all();
@@ -13864,8 +13895,19 @@ ${urls.map(u => `  <url>
     <priority>0.8</priority>
   </url>`).join('\n')}
 </urlset>`;
-    return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+    const res = new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600", "X-Cache": "MISS" } });
+    try {
+      const toCache = res.clone();
+      ctx.waitUntil(cache.put(cacheKey, toCache));
+    } catch {}
+    return res;
   } catch(e) {
+    // D1 error (7500) → fallback ke static asset sitemap-blog.xml (827 slug dari Astro build).
+    // JANGAN di-cache supaya saat D1 recovery, versi dynamic (lebih lengkap) langsung terserve.
+    try {
+      const r = await env.ASSETS.fetch(new Request("https://assets/sitemap-blog.xml"));
+      if (r.ok) return new Response(await r.text(), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=600" } });
+    } catch {}
     return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
   }
 }
@@ -13874,8 +13916,21 @@ ${urls.map(u => `  <url>
 // /news.xml — kirim 10 artikel terbaru/hari untuk fresh-news discovery.
 // BUKAN Google News (butuh original reporting), tapi submit ke Bing News
 // + IndexNow + GSC sitemap ping. ArticleNews schema sudah ada.
-async function handleNewsSitemap(request, env) {
+async function handleNewsSitemap(request, env, ctx) {
   if (!env.DB) return new Response("DB unavailable", { status: 503 });
+  // Edge cache TTL 30 menit — query iso_date 36 jam tidak dilayani index mana pun (full scan).
+  // Empty urlset TIDAK di-cache supaya artikel baru langsung keluar saat crawl berikutnya.
+  const cache = caches.default;
+  const cacheKey = new Request("https://beriklan.co.id/news.xml", request);
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      const h = new Headers(cached.headers);
+      h.set("X-Cache", "HIT");
+      h.set("Cache-Control", "public, max-age=1800, s-maxage=1800");
+      return new Response(cached.body, { status: cached.status, headers: h });
+    }
+  } catch {}
   try {
     // 10 artikel terbaru yang dipublish 24 jam terakhir (WIB aware)
     const articles = await env.DB.prepare(`
@@ -13907,9 +13962,14 @@ ${rows.map(a => `  <url>
     </news:news>
   </url>`).join('\n')}
 </urlset>`;
-    return new Response(xml, {
-      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=1800" }
+    const res = new Response(xml, {
+      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=1800, s-maxage=1800", "X-Cache": "MISS" }
     });
+    try {
+      const toCache = res.clone();
+      ctx.waitUntil(cache.put(cacheKey, toCache));
+    } catch {}
+    return res;
   } catch (e) {
     return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`,
       { headers: { "Content-Type": "application/xml; charset=utf-8" } });

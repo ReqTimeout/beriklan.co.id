@@ -9223,7 +9223,8 @@ async function handleGscIndexing(request, env) {
       await env.DB.prepare(`ALTER TABLE pending_indexing ADD COLUMN gsc_submitted_at TEXT`).run().catch(() => {});
       const r = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
-         WHERE (url LIKE 'https://www.beriklan.co.id/%' OR url LIKE 'https://beriklan.co.id/%')
+         WHERE status IN ('pending','submitted','gsc_submitted','failed')
+           AND (url LIKE 'https://www.beriklan.co.id/%' OR url LIKE 'https://beriklan.co.id/%')
            AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-1 day'))
          ORDER BY CASE WHEN source = 'admin-manual' THEN 0 ELSE 1 END, rowid ASC LIMIT ?`
       ).bind(effectiveCount).all();

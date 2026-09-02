@@ -385,6 +385,20 @@ export default {
     const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
     if (blogMatch && !path.startsWith("/blog/category") && !path.startsWith("/blog/tag")) {
       const slug = blogMatch[1];
+      // Edge cache untuk blog post (hemat D1 5-6 query per hit, TTL 1 jam).
+      // Cache HIT = tidak sentuh D1 sama sekali → quota aman. MISS = render + simpan.
+      // Saat quota habis, cache yang sudah ada tetap serve (tidak butuh D1).
+      const cache = caches.default;
+      const cacheKey = new Request(`https://beriklan.co.id/blog/${slug}/`, request);
+      try {
+        const cached = await cache.match(cacheKey);
+        if (cached) {
+          const h = new Headers(cached.headers);
+          h.set("X-Cache", "HIT");
+          h.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+          return new Response(cached.body, { status: cached.status, headers: h });
+        }
+      } catch {}
       let dynamic = null;
       try {
         const exists = await env.DB.prepare(
@@ -398,7 +412,19 @@ export default {
         // asset so the 827 Astro-built slugs still serve. D1-only slugs 404 today.
         dynamic = null;
       }
-      if (dynamic) return dynamic;
+      if (dynamic) {
+        try {
+          const toCache = dynamic.clone();
+          toCache.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+          toCache.headers.set("CDN-Cache-Control", "public, max-age=3600");
+          toCache.headers.set("X-Cache", "MISS");
+          ctx.waitUntil(cache.put(cacheKey, toCache));
+          dynamic.headers.set("X-Cache", "MISS");
+          dynamic.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+          dynamic.headers.set("CDN-Cache-Control", "public, max-age=3600");
+        } catch {}
+        return dynamic;
+      }
     }
 
     // Dynamic posts-index.json (daftar semua artikel untuk BlogFilter)
@@ -456,12 +482,32 @@ export default {
       const legacyRedirect = await handleGenericCityRedirect(request, env);
       if (legacyRedirect) return legacyRedirect;
       const assetResp = await env.ASSETS.fetch(request);
-      // If 404 and path is /blog/*, render dynamically from D1
+      // If 404 and path is /blog/*, render dynamically from D1 (with edge cache)
       if (assetResp.status === 404) {
         const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
         if (blogMatch) {
-          const dynamic = await renderBlogPost(blogMatch[1], env);
-          if (dynamic) return dynamic;
+          const slug = blogMatch[1];
+          const cache = caches.default;
+          const cacheKey = new Request(`https://beriklan.co.id/blog/${slug}/`, request);
+          try {
+            const cached = await cache.match(cacheKey);
+            if (cached) {
+              const h = new Headers(cached.headers);
+              h.set("X-Cache", "HIT-FALLBACK");
+              return new Response(cached.body, { status: cached.status, headers: h });
+            }
+          } catch {}
+          const dynamic = await renderBlogPost(slug, env);
+          if (dynamic) {
+            try {
+              const toCache = dynamic.clone();
+              toCache.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+              toCache.headers.set("X-Cache", "MISS-FALLBACK");
+              ctx.waitUntil(cache.put(cacheKey, toCache));
+              dynamic.headers.set("X-Cache", "MISS-FALLBACK");
+            } catch {}
+            return dynamic;
+          }
         }
       }
       // Force correct content-type for HTML so browsers never download .txt/.html
@@ -476,11 +522,31 @@ export default {
       }
       return assetResp;
     } catch (e) {
-      // Last resort: try dynamic blog post render
+      // Last resort: try dynamic blog post render (with cache)
       const blogMatch = path.match(/^\/blog\/([^\/]+)\/?$/);
       if (blogMatch) {
-        const dynamic = await renderBlogPost(blogMatch[1], env);
-        if (dynamic) return dynamic;
+        const slug = blogMatch[1];
+        try {
+          const cache = caches.default;
+          const cacheKey = new Request(`https://beriklan.co.id/blog/${slug}/`, request);
+          const cached = await cache.match(cacheKey);
+          if (cached) {
+            const h = new Headers(cached.headers);
+            h.set("X-Cache", "HIT-ERROR");
+            return new Response(cached.body, { status: cached.status, headers: h });
+          }
+        } catch {}
+        const dynamic = await renderBlogPost(slug, env);
+        if (dynamic) {
+          try {
+            const cache = caches.default;
+            const cacheKey = new Request(`https://beriklan.co.id/blog/${slug}/`, request);
+            const toCache = dynamic.clone();
+            toCache.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+            ctx.waitUntil(cache.put(cacheKey, toCache));
+          } catch {}
+          return dynamic;
+        }
       }
       return new Response("Not Found", { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
@@ -3485,6 +3551,10 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_generated_drafts_status ON generated_drafts(status)`,
     // Infra for upcoming pending_indexing query rewrite (OR-LIKE prevents index use today).
     `CREATE INDEX IF NOT EXISTS idx_pending_indexing_status ON pending_indexing(status)`,
+    // Smooth-free round 3 (2026-09-02): cache blog post 1 jam + fix citySibling 410/run.
+    // citySibling = city + service filter → butuh composite (city, service, iso_date).
+    `CREATE INDEX IF NOT EXISTS idx_posts_meta_city_service_iso ON posts_meta(city, service, iso_date DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_posts_meta_iso_date ON posts_meta(iso_date DESC)`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-gsc-loop', '0 */6 * * *', 1, 'Growth: query GSC ber-impresi tanpa halaman layak → keyword_queue (tiap 6 jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-enrich', '0 9 * * *', 1, 'Growth: enrich intro+FAQ artikel posisi 3-18 (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-ctr-fix', '0 9 * * *', 1, 'Growth: rewrite SERP title+meta untuk CTR rendah (harian)')`,

@@ -158,6 +158,9 @@ export default {
     if (path === "/api/cron/hourly-generate" || path === "/api/cron/hourly-generate/") {
       return await handleHourlyGenerate(request, env);
     }
+    if (path === "/api/cron/priority-rebalance" || path === "/api/cron/priority-rebalance/") {
+      return await handlePriorityRebalance(request, env);
+    }
     if (path === "/api/cron/gsc-indexing" || path === "/api/cron/gsc-indexing/") {
       return await handleGscIndexing(request, env);
     }
@@ -752,6 +755,10 @@ export default {
       if (h === 9) {
         ctx.waitUntil(run("growth-enrich", handleGrowthEnrich, "/api/cron/growth/enrich?token=beriklan-admin-2026&count=3", "growth-enrich"));
         ctx.waitUntil(run("growth-ctr-fix", handleGrowthCtrFix, "/api/cron/growth/ctr-fix?token=beriklan-admin-2026&count=3", "growth-ctr-fix"));
+      }
+      // ── Priority rebalance harian 03:00 UTC: re-score keyword_queue (city+industri → prio 90, view-live → 25)
+      if (h === 3) {
+        ctx.waitUntil(run("priority-rebalance", handlePriorityRebalance, "/api/cron/priority-rebalance?token=beriklan-admin-2026", "priority-rebalance"));
       }
       // ── Growth mingguan Senin 02:00 UTC: refresh jujur artikel lama ──
       if (dow === 1 && h === 2) {
@@ -3559,6 +3566,11 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-enrich', '0 9 * * *', 1, 'Growth: enrich intro+FAQ artikel posisi 3-18 (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-ctr-fix', '0 9 * * *', 1, 'Growth: rewrite SERP title+meta untuk CTR rendah (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-freshness', '0 2 * * 1', 1, 'Growth: refresh jujur artikel lama (mingguan, Senin)')`,
+    // Priority-rebalance: butuh index untuk WHERE status='pending' + service/city/intent filter
+    // Tanpa index, 3 UPDATE scan 391k baris ×3 = 1.17M reads/run. Dengan index → jauh lebih murah.
+    `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status ON keyword_queue(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status_service ON keyword_queue(status, service)`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status_priority ON keyword_queue(status, priority_score)`,
     // intent + priority_score di generated_drafts (untuk ORDER BY publish intent+city cascade).
     // Backfill dari keyword_queue via article_slug (draft yg di-generate dari keyword).
     // Index article_slug WAJIB: tanpa ini correlated subquery scan 391k baris/draft → CPU limit D1.
@@ -9214,6 +9226,66 @@ log.push({ stage: "github_commit_queue", ok: qPut.ok });
       ok: false, error: String(e), stack: e.stack?.split("\n").slice(0, 5).join("\n"),
       log, errors,
     }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ─── Priority Rebalance (standalone cron, tidak tergantung hourly-generate PAUSED) ───
+//   GET /api/cron/priority-rebalance?token=...&dry=1
+//   Re-score keyword_queue.priority_score: demote view-live, boost core×city + industri.
+//   Idempotent, aman run harian. Dipisah dari handleHourlyGenerate yang PAUSED (386k queue).
+async function handlePriorityRebalance(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const dry = url.searchParams.get("dry") === "1";
+  const t0 = Date.now();
+  const log = [];
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not available" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  try {
+    // Hitung sebelum
+    const before = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending'").first().catch(() => ({ n: 0 }));
+    const highBefore = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending' AND priority_score >= 90").first().catch(() => ({ n: 0 }));
+    if (dry) {
+      return new Response(JSON.stringify({ ok: true, dry: true, pending: before?.n || 0, high_priority_before: highBefore?.n || 0, elapsed_ms: Date.now() - t0 }), { headers: { "Content-Type": "application/json" } });
+    }
+    // 1. Demote view-live/marketplace (prio tinggi tapi konversi rendah, sudah 0 generated)
+    let r1 = { changes: 0 };
+    try {
+      r1 = await env.DB.prepare(
+        "UPDATE keyword_queue SET priority_score = 25 WHERE status='pending' AND (service LIKE '%view-live%' OR service LIKE '%viewers%' OR service LIKE '%shopee%' OR service LIKE '%tokopedia%') AND COALESCE(priority_score,0) > 30"
+      ).run();
+      log.push({ stage: "demote_view_live", changes: r1.changes || 0 });
+    } catch (e) { log.push({ stage: "demote_view_live", error: String(e.message || e).slice(0, 120) }); }
+    // 2. Boost core × city (layanan inti + kota = high-intent local SEO)
+    let r2 = { changes: 0 };
+    try {
+      r2 = await env.DB.prepare(
+        "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND city IS NOT NULL AND city != '' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
+      ).run();
+      log.push({ stage: "boost_core_city", changes: r2.changes || 0 });
+    } catch (e) { log.push({ stage: "boost_core_city", error: String(e.message || e).slice(0, 120) }); }
+    // 3. Boost industri × layanan (keyword "untuk {industri}" = commercial intent niche)
+    let r3 = { changes: 0 };
+    try {
+      r3 = await env.DB.prepare(
+        "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND intent IN ('commercial','transactional') AND keyword LIKE '% untuk %' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
+      ).run();
+      log.push({ stage: "boost_industri", changes: r3.changes || 0 });
+    } catch (e) { log.push({ stage: "boost_industri", error: String(e.message || e).slice(0, 120) }); }
+    const after = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending' AND priority_score >= 90").first().catch(() => ({ n: 0 }));
+    return new Response(JSON.stringify({
+      ok: true,
+      pending: before?.n || 0,
+      high_priority_before: highBefore?.n || 0,
+      high_priority_after: after?.n || 0,
+      changes: { demote_view_live: r1.changes || 0, boost_core_city: r2.changes || 0, boost_industri: r3.changes || 0 },
+      elapsed_ms: Date.now() - t0,
+      log,
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e), log, elapsed_ms: Date.now() - t0 }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

@@ -1,0 +1,33 @@
+# §8.3 FASE 8 — probe eksternal 5 menit (soft-404 desync guard).
+# BELUM AKTIF: butuh (1) git push file ini, (2) secrets PROBE_ALERT_URL =
+# https://beriklan.co.id/api/admin/email/test-alert?token=<ADMIN_TOKEN> (opsional utk email alert).
+# Alarm: / != 200, sitemap != 200, atau URL blog acak != 404 (soft-404 = ASSET DESYNC,
+# lihat DEPLOY_OPERATIONS.md §ASSET DESYNC).
+name: external-probe
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+permissions: {}
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe beriklan.co.id
+        env:
+          WEBHOOK: ${{ secrets.PROBE_ALERT_URL }}
+        run: |
+          fail=""
+          chk() {
+            code=$(curl -s -o /dev/null -w "%{http_code}" -A curl/8.7.1 --max-time 20 "$1" || echo ERR)
+            [ "$code" = "$2" ] || fail="$fail | $1 => $code (harus $2)"
+          }
+          chk "https://beriklan.co.id/" 200
+          chk "https://beriklan.co.id/sitemap.xml" 200
+          chk "https://beriklan.co.id/blog/probe-tidak-akan-pernah-ada-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT/" 404
+          if [ -n "$fail" ]; then
+            echo "PROBE FAIL:$fail"
+            if [ -n "$WEBHOOK" ]; then curl -s --max-time 20 "$WEBHOOK" -A curl/8.7.1 || true; fi
+            exit 1
+          fi
+          echo "probe ok"

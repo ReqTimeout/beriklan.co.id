@@ -54,7 +54,7 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
 LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
 LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "beriklan-admin-2026")
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 
 # AdSense policy blocklist (P0/§48.2 — auto-reject if matched)
 POLICY_BLOCKLIST = {

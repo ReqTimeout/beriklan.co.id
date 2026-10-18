@@ -2,6 +2,14 @@
 
 Performance marketing agency website — Astro 5 static site.
 
+## Dokumen SEO terbaru (24 Sep 2026)
+Audit + rencana + tracker ada di folder **[`DOCS-SEO-2026-09-24/`](DOCS-SEO-2026-09-24/README.md)**.
+Mulai dari `DOCS-SEO-2026-09-24/README.md` (indeks + urutan baca).
+
+> Catatan: bagian "Deploy Stack" di bawah masih menyebut Cloudflare Pages sebagai host utama.
+> Untuk co.id hal itu **tidak lagi direkomendasikan** (soft-404 pada 9.298 URL yang hanya ada di D1,
+> dan cap 20.000 file/project sudah terpakai 10.178). Bukti: `DOCS-SEO-2026-09-24/SEO-AUDIT-2026-09-24.md` §10.2.
+
 ## Deploy Stack
 - **Frontend**: Astro 5 + Svelte 5 islands + Tailwind CSS v3
 - **Host**: Cloudflare Pages (recommended)

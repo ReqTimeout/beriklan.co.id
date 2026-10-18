@@ -6,6 +6,7 @@ dist/
 
 # Env
 .env
+.env.admin
 .env.local
 .env.*.local
 
@@ -34,6 +35,12 @@ backup/
 *.broken-*
 imageartikel/
 
+# Draft/kerja besar — jangan commit
+drafts/
+drafts_patched/
+Database Siap Pake/
+.qoder/
+
 # Generated SQL chunks (regenerate via scripts/db/gen_seed_chunks.py)
 scripts/db/chunks/
 scripts/db/chunks_small/
@@ -46,3 +53,7 @@ web
 web/secrets/
 .last-deployed-sha
 .wrangler/
+
+# service account keys — NEVER commit (repo publik)
+cool-component-*.json
+*service-account*.json

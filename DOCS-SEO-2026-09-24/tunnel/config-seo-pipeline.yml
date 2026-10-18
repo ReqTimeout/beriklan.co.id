@@ -1,0 +1,4 @@
+tunnel: dd1473c5-d223-4e9d-8346-786351c0200a
+credentials-file: /etc/cloudflared/credentials.json
+metrics: localhost:2000
+no-autoupdate: true

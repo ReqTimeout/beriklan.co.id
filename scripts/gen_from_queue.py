@@ -296,7 +296,7 @@ def main():
 def enqueue_for_indexing(new_posts):
     """Push new blog post URLs to worker /api/index-url so the daily
     indexing cron auto-submits them to IndexNow/Google."""
-    token = os.environ.get("ADMIN_TOKEN", "beriklan-admin-2026")
+    token = os.environ.get("ADMIN_TOKEN", "")
     worker_base = os.environ.get("WORKER_BASE", "https://beriklan.co.id")
     urls = [f"https://beriklan.co.id/blog/{p['slug']}/" for p in new_posts]
     if not urls:

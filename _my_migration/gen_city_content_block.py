@@ -1,0 +1,377 @@
+#!/usr/bin/env python3
+"""Write CityContentBlock.astro into beriklan.my (English / MYR / MY context).
+
+Ported from beriklan.co.id CityContentBlock.astro. Emits the component verbatim
+so no fragile string escaping is required at runtime.
+"""
+import os
+
+ROOT = os.path.expanduser("~/Desktop/beriklan.my")
+OUT = os.path.join(ROOT, "web/src/components/CityContentBlock.astro")
+
+COMPONENT = r'''---
+// CityContentBlock.astro — Beautiful wrapper for city SEO content (Beriklan.my).
+// Renders: byline + reading time + hero callout + enhanced typography +
+// internal linking + end-of-article CTA. English copy, Malaysia context.
+// Props:
+//   route: string (e.g. "facebook-ads-management/kuala-lumpur/")
+//   content: string (the HTML body — H2 sections with <p>, <ul>, <li>, <h3>)
+//   cityName: string (for byline)
+//   serviceName: string (for byline)
+//   lastUpdated: string (ISO date, optional)
+import cityContentMap from '../data/city-content.json';
+import cities from '../data/cities.json';
+import { Sparkles, ArrowRight, MapPin, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-svelte';
+
+const { route, content, cityName, serviceName, lastUpdated } = Astro.props;
+const html = content || cityContentMap[route] || '';
+
+// Extract service slug + city slug from route
+const routeParts = route.replace(/\/$/, '').split('/');
+const serviceSlug = routeParts[0] || '';
+const currentCitySlug = routeParts[1] || '';
+
+// City display map + popular cities (built from cities.json — MY cities only)
+const myCities = cities.filter(c => !c.is_international);
+const CITY_DISPLAY = Object.fromEntries(myCities.map(c => [c.slug, c.name]));
+const POPULAR_CITIES = myCities
+    .slice()
+    .sort((a, b) => (a.tier || 9) - (b.tier || 9))
+    .map(c => c.slug);
+const relatedCities = POPULAR_CITIES.filter(c => c !== currentCitySlug).slice(0, 6);
+
+// Extract H2 headings to build TOC
+const h2Regex = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+const toc = [];
+let m;
+while ((m = h2Regex.exec(html)) !== null) {
+    const text = m[1].replace(/<[^>]+>/g, '').trim();
+    const id = text.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 60);
+    toc.push({ id, text });
+}
+
+// Auto-inject ids into H2 tags so anchor links work
+const htmlWithIds = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (match, attrs, inner) => {
+    const text = inner.replace(/<[^>]+>/g, '').trim();
+    const id = text.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 60);
+    return `<h2 id="${id}"${attrs}><span class="h2-num">${String(toc.findIndex(t => t.id === id) + 1).padStart(2, '0')}</span><span>${inner}</span></h2>`;
+});
+
+// Extract first paragraph after first H2 for callout
+const firstPMatch = htmlWithIds.match(/<h2[^>]*>[\s\S]*?<\/h2>\s*<p>([\s\S]*?)<\/p>/i);
+const firstParagraph = firstPMatch ? firstPMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+
+// Calculate reading time (English: ~230 words/min)
+const wordCount = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+const readMinutes = Math.max(1, Math.round(wordCount / 230));
+
+// Current date
+const updated = lastUpdated || new Date().toISOString().split('T')[0];
+---
+
+<!-- AdSense loader — lazy load on interaction or 3s timeout (city pages only) -->
+<script is:inline>
+    window.adsbygoogle = window.adsbygoogle || [];
+    window.__loadAdSense = function() {
+        if (window.__adSenseLoaded) return;
+        window.__adSenseLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4438184351486735';
+        s.crossOrigin = 'anonymous';
+        document.head.appendChild(s);
+    };
+    ['scroll','click','touchstart','keydown'].forEach(function(evt){ window.addEventListener(evt, window.__loadAdSense, {once:true, passive:true}); });
+    setTimeout(window.__loadAdSense, 3000);
+</script>
+
+<div class="city-content-block relative pt-12 md:pt-16" data-route={route}>
+    <!-- Reading time + byline (compact, emoji + small text) -->
+    <div class="container mx-auto px-6 max-w-3xl mb-10">
+        <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted py-5 px-4 border-y border-gray-200 bg-soft/30 rounded-lg">
+            <div class="flex items-center gap-1.5">
+                <span class="text-accent">📖</span>
+                <span><strong class="text-ink">{serviceName}</strong> in <strong class="text-ink">{cityName}</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-accent">⏱️</span>
+                <span>{readMinutes} min read</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-accent">📅</span>
+                <span>Updated {updated}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero callout (first paragraph highlighted) -->
+    {firstParagraph && (
+        <div class="container mx-auto px-6 max-w-3xl mb-10">
+            <div class="relative bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-l-4 border-accent rounded-r-xl p-6 shadow-soft">
+                <div class="absolute -top-3 -left-3 w-8 h-8 bg-accent rounded-full flex items-center justify-center shadow-md">
+                    <Sparkles class="w-4 h-4 text-white" />
+                </div>
+                <p class="text-base md:text-lg text-ink leading-relaxed font-medium italic pl-4">
+                    "{firstParagraph.length > 220 ? firstParagraph.slice(0, 220) + '…' : firstParagraph}"
+                </p>
+            </div>
+        </div>
+    )}
+
+    <!-- Main content -->
+    <div class="container mx-auto px-6 max-w-3xl city-content-body" set:html={htmlWithIds} />
+
+    <!-- AdSense Slot: in-article mid (between content and CTA) -->
+    <div class="container mx-auto px-6 max-w-3xl mt-10">
+        <div class="p-5 bg-soft/30 rounded-2xl border border-gray-100">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+            <ins class="adsbygoogle"
+                 style="display:block; text-align:center;"
+                 data-ad-layout="in-article"
+                 data-ad-format="fluid"
+                 data-ad-client="ca-pub-4438184351486735"
+                 data-ad-slot="6162580059"></ins>
+            <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+
+    <!-- Internal linking: pillar + related cities -->
+    <div class="container mx-auto px-6 max-w-3xl mt-10">
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft">
+            <div class="flex items-center gap-2 mb-4">
+                <TrendingUp class="w-5 h-5 text-accent" />
+                <h3 class="font-display font-bold text-base text-ink">Keep reading</h3>
+            </div>
+            <ul class="space-y-3 text-sm">
+                {serviceSlug && (
+                    <li class="flex items-start gap-3">
+                        <span class="text-accent text-xs mt-1">📘</span>
+                        <div>
+                            <a href={`/${serviceSlug}/`} class="font-bold text-ink hover:text-accent transition-colors">
+                                {serviceName} — Full Service Details
+                            </a>
+                            <p class="text-xs text-muted mt-0.5">Strategy, ad formats, budget optimisation and how we measure ROI for Malaysian businesses.</p>
+                        </div>
+                    </li>
+                )}
+                {relatedCities.length > 0 && (
+                    <li class="flex items-start gap-3">
+                        <span class="text-accent text-xs mt-1">📍</span>
+                        <div>
+                            <p class="font-bold text-ink">{serviceName} in other cities</p>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                {relatedCities.map(rc => (
+                                    <a href={`/${serviceSlug}/${rc}/`} class="inline-flex items-center gap-1 px-2.5 py-1 bg-soft rounded-full text-xs font-semibold text-ink hover:bg-accent hover:text-white transition-all">
+                                        {CITY_DISPLAY[rc] || rc}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </li>
+                )}
+                <li class="flex items-start gap-3">
+                    <span class="text-accent text-xs mt-1">📞</span>
+                    <div>
+                        <a href="https://wa.me/62811919328?text=Hi%20Beriklan%2C%20I%27d%20like%20a%20consultation." target="_blank" rel="noopener" class="font-bold text-ink hover:text-accent transition-colors">
+                            Consultation via WhatsApp
+                        </a>
+                        <p class="text-xs text-muted mt-0.5">Reply within 1 hour during business hours. Our team will review your current campaign.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- End-of-article CTA card -->
+    <div class="container mx-auto px-6 max-w-3xl mt-12">
+        <div class="bg-gradient-to-br from-ink via-primary-2 to-ink rounded-2xl p-6 md:p-8 text-white relative overflow-hidden">
+            <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.2) 0%, transparent 50%);"></div>
+            <div class="relative flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
+                    <MapPin class="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                    <h3 class="font-display font-bold text-lg md:text-xl mb-2">Consultation for businesses in {cityName}</h3>
+                    <p class="text-white/70 text-sm leading-relaxed mb-4">A 15-minute chat on WhatsApp. Our team will review your current {serviceName} setup and share concrete recommendations — no commitment.</p>
+                    <a href={`https://wa.me/62811919328?text=${encodeURIComponent(`Hi Beriklan, I read your ${serviceName} guide for ${cityName} and would like to chat.`)}`}
+                       target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 bg-accent text-ink px-5 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-pop transition-all btn-shine-accent">
+                        <span class="relative z-10 flex items-center gap-2">
+                            Chat with our team
+                            <ArrowRight class="w-4 h-4" />
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- "Was this helpful?" feedback card -->
+    <div class="container mx-auto px-6 max-w-3xl mt-8">
+        <div class="bg-soft rounded-2xl p-5 text-center">
+            <p class="text-sm text-ink font-semibold mb-3">Was this article helpful?</p>
+            <div class="flex items-center justify-center gap-3">
+                <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-semibold hover:border-accent hover:text-accent transition-all flex items-center gap-1.5">
+                    <CheckCircle2 class="w-4 h-4" /> Yes, helpful
+                </button>
+                <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-semibold hover:border-accent hover:text-accent transition-all flex items-center gap-1.5">
+                    <AlertCircle class="w-4 h-4" /> Could be better
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style is:global>
+    /* Enhanced typography for city content */
+    .city-content-block .city-content-body {
+        color: #1f2937;
+    }
+    .city-content-block .city-content-body h2 {
+        position: relative;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        font-size: 1.625rem;
+        font-weight: 800;
+        color: #0f1e3d;
+        line-height: 1.2;
+        margin: 2.5rem 0 1rem;
+        padding: 1rem 0 0.5rem 3.5rem;
+        border-top: 2px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+    }
+    .city-content-block .city-content-body h2:first-of-type {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 1rem;
+    }
+    .city-content-block .city-content-body h2 .h2-num {
+        position: absolute;
+        left: 0;
+        top: 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #f59e0b;
+        background: #fff7ed;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        letter-spacing: 0.05em;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .city-content-block .city-content-body h2:first-of-type .h2-num {
+        top: 0.25rem;
+    }
+    .city-content-block .city-content-body h3 {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f1e3d;
+        margin: 1.75rem 0 0.5rem;
+        padding-left: 1.25rem;
+        position: relative;
+    }
+    .city-content-block .city-content-body h3::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.4rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background: #f59e0b;
+        border-radius: 9999px;
+    }
+    .city-content-block .city-content-body p {
+        font-size: 1rem;
+        line-height: 1.85;
+        color: #374151;
+        margin: 0 0 1.25rem;
+    }
+    .city-content-block .city-content-body p:first-of-type::first-letter {
+        font-size: 1.4em;
+        font-weight: 700;
+        color: #0f1e3d;
+        line-height: 1;
+    }
+    .city-content-block .city-content-body strong {
+        font-weight: 700;
+        color: #0f1e3d;
+        background: linear-gradient(180deg, transparent 60%, rgba(245, 158, 11, 0.25) 60%);
+        padding: 0 2px;
+    }
+    .city-content-block .city-content-body ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 1.25rem 0 1.5rem;
+    }
+    .city-content-block .city-content-body ul li {
+        position: relative;
+        padding: 0.5rem 0 0.5rem 2rem;
+        line-height: 1.7;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .city-content-block .city-content-body ul li:last-child {
+        border-bottom: none;
+    }
+    .city-content-block .city-content-body ul li::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 1.05rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background: #f59e0b;
+        border-radius: 9999px;
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+    }
+    .city-content-block .city-content-body a {
+        color: #f59e0b;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+    .city-content-block .city-content-body a:hover {
+        color: #ea580c;
+    }
+    /* Read progress indicator */
+    .city-content-block::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f59e0b 0%, #fb923c 50%, #f59e0b 100%);
+        background-size: 200% 100%;
+        opacity: 0.6;
+    }
+    /* Smooth scroll for anchor links */
+    .city-content-block .city-content-body h2[id],
+    .city-content-block .city-content-body h3[id] {
+        scroll-margin-top: 5rem;
+    }
+    @media (min-width: 768px) {
+        .city-content-block .city-content-body h2 {
+            font-size: 1.875rem;
+        }
+    }
+</style>
+'''
+
+
+def main():
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write(COMPONENT)
+    print(f"Wrote {OUT} ({len(COMPONENT)} bytes)")
+
+
+if __name__ == "__main__":
+    main()

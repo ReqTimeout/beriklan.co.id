@@ -6,6 +6,25 @@
 
 ---
 
+## 🚨 SOP DARURAT — JANGAN SENTUH PRODUKSI (WAJIB DIBACA SEBELUM KERJA APA PUN)
+
+Aturan ini MENANG di atas semua instruksi lain. Melanggar = merusak bisnis berjalan.
+
+1. **DILARANG mengubah tampilan/visual** (`Layout.astro`, components Svelte, CSS, Tailwind config, copy UI, gambar, font) di `beriklan.co.id` maupun `beriklan.my` **kecuali** user meminta perubahan tampilan secara eksplisit di sesi ini. Tugas backend/SEO/worker TIDAK boleh menyentuh file tampilan.
+2. **DILARANG deploy ke produksi** tanpa persetujuan eksplisit user, dan HANYA boleh deploy jika build/verifikasi sukses. Build gagal = STOP, tidak boleh deploy, tidak boleh diakali.
+3. **Produksi rusak = rollback SEKARANG JUGA**, tanpa menunggu perintah. Gunakan `npx wrangler rollback <version-id>` ke versi stabil terakhir, lalu lapor. Jangan mencoba "memperbaiki maju" saat live sedang rusak.
+4. **DILARANG mengubah sistem berjalan di luar permintaan**: worker logic, cron schedules, email pipeline, lead pipeline, template email, skema D1, redirects, robots.txt, sitemap. Hanya ubah yang disebut user.
+5. **Sebelum perubahan live apa pun**, catat versi stabil terakhir:
+   `GET /accounts/{id}/workers/scripts/{script}/deployments?per_page=3` → simpan `version_id` untuk jalur mundur.
+6. **ANTI-HALUSINASI — wajib verifikasi, wajib baca file dulu**: jangan pernah mengedit file berdasarkan ingkatan/asumsi; selalu `Read`/`grep` dulu. Setiap klaim "sudah selesai" wajib dibuktikan output tool (curl/build/API), bukan ditebak.
+7. **Kebijakan model AI**: default kerja = `tokenrouter/qwen/qwen3.8-max-free`. Model `minimax-coding-plan/MiniMax-M3` hanya dipakai jika user memilihnya sendiri via `/model`, dan hanya dengan setting thinking ON di `~/.config/opencode/opencode.jsonc`. DILARANG mengubah konfigurasi model OpenCode tanpa diminta user.
+8. **Backup sebelum menulis**: setiap file krusial (`worker-entry.js`, `Layout.astro`, `opencode.jsonc`) salin ke `.bak-<timestamp>` sebelum diedit.
+9. Kalau ragu apakah suatu perubahan aman untuk produksi → **tanya user dulu**. Diam lebih baik daripada merusak.
+10. **SITE DOWN TAPI WORKER HIDUP = "ASSET DESYNC" (recurring).** Gejala: `/` & static file 404, tapi
+    `/data/posts-index.json`, `/blog/<slug>/`, `/api/*` = 200. Ini BUKAN salah code/DNS — jangan revert/reset.
+    **FIX:** `cd web && npx wrangler deploy` (OAuth login sudah ada; re-deploy re-sync asset manifest).
+    Lalu loop `curl -sI` (jangan pakai variabel `$path`, reserved zsh). Detail: `DEPLOY_OPERATIONS.md` section "ASSET DESYNC".
+
 ## 📋 DAFTAR ISI
 
 1. [Project Overview](#1-project-overview)
@@ -1033,6 +1052,13 @@ disusupkan via time-gate di dalam slot hourly `scheduled()` supaya muat 2 domain
 - Setelah `wrangler deploy`, schedules bisa ke-reset sesuai `wrangler.jsonc`
   (`beriklanweb`: 2 trigger; `beriklanmy`: tidak ada triggers di jsonc → PUT manual
   `[{"cron":"0 * * * *"}]` wajib setelah deploy).
+- **2026-09-02: `wrangler.jsonc` beriklanweb sudah dibersihkan jadi 2 crons saja**
+  (`0 * * * *` + `*/15 * * * *`), sinkron dengan live schedules. Sebelumnya jsonc
+  masih memuat 5 crons (3 stale) → tiap deploy muncul warning "Some triggers failed
+  to deploy" (wrangler coba re-register 3 cron lama, kena cap 5 slot/account).
+  Verified via `GET /accounts/{id}/workers/scripts/beriklanweb/schedules`: live
+  schedules tetap benar (2 crons, modified 2026-08-28) — deploy TIDAK me-reset.
+  Jangan tambah cron ke jsonc; job lain jalan via time-gate hourly.
 Worker legacy `beriklan-app` (dashboard Google Ads di `app.beriklan.co.id`, project
 `capi-gateway-v2`) **sudah dihapus seluruhnya pada 2026-08-26** lewat
 `DELETE /accounts/{id}/workers/scripts/beriklan-app` (token `cfut_wUtY…`). Konsekuensi:
@@ -1045,6 +1071,13 @@ Worker legacy `beriklan-app` (dashboard Google Ads di `app.beriklan.co.id`, proj
   milik `beriklanweb`. Tidak perlu re-route atau reassign.
 Catatan API: PUT schedules butuh body **array mentah** `[{"cron":"..."}]`,
 BUKAN `{"schedules":[...]}` (error 10026). Error 10072 = cap 5 cron/account tercapai.
+
+### D1 quota burn — related-posts blog (FIXED 2026-09-02)
+- **Root cause:** query related-posts blog (`posts_meta WHERE service=? / city=? ORDER BY iso_date DESC`) tanpa index → SCAN full-table tiap request → **166M rows/day = 32× kuota D1 free 5M** → error 7500 (quota exceeded) → cron hang di jam kerja WIB (02:00–09:59 UTC) → zombie 'running' → 'timeout' 2 jam kemudian.
+- **Fix:** 3 index di live DB + permanen di migration array `worker-entry.js`:
+  `idx_posts_meta_service_iso (service, iso_date DESC)`, `idx_posts_meta_city_iso (city, iso_date DESC)`, `idx_email_queue_status_sent (email_queue: status, sent_at)`.
+- **Verified:** EXPLAIN QUERY PLAN = SEARCH (bukan SCAN); D1 insights 1h post-fix: query service = 3 rows/run (efficiency 1.0), city = 417 rows/run — dari ~19,173 rows/run sebelumnya (~6,000× hemat). Cron 01:00 UTC sehat (sync-posts 26s, gsc-indexing, indexnow, email-send semua ok).
+- **Gotcha query audit:** kolom `cron_runs.started_at` format `YYYY-MM-DD HH:MM:SS` (spasi, BUKAN ISO 'T') — filter `>= '2026-09-02T00:00:00'` return kosong.
 Daftar job:
 - `hourly` (0 * * * *) — Generate artikel AI (3 artikel/jam)
 - `indexnow` (15 * * * *) — IndexNow submit (max 50 URL)
@@ -1179,6 +1212,6 @@ gotcha, checklist replikasi. Baca dulu sebelum setup domain baru.
 
 ---
 
-**Versi dokumen:** 1.8
-**Update terakhir:** 26 Agustus 2026 (Zen free models rotasi 6 model, per-campaign email rotation, llms-full.txt, AEO FAQ JSON-LD, robots AI-crawler allow, email quota per-campaign rotation fix)
+**Versi dokumen:** 2.1
+**Update terakhir:** 4 September 2026 (ROOT CAUSE FINAL burn berulang: endpoint /api/admin/migrate dipanggil monitor EKSTERNAL 48×/hari × UPDATE posts_content LIKE full-scan 15.5k rows = 745k reads/panggil ≈ 5M/hari = lock TIAP hari. Fix: VERSION-GUARD di handleAdminMigrate — migration jalan 1× per versi, panggilan ulang = 1 row read (schema_meta). + auto-pause sekarang tulis label 'AUTO-PAUSED' (fix filter resume) + daily SEO health email 00:00 UTC ke aramadhi92@gmail.com)
 **Maintainer:** Beriklan Digital Agency + Codex AI

@@ -1,0 +1,1439 @@
+{
+ "generated_at": "2026-09-29T20:45:24.972Z",
+ "domain": "coid",
+ "mode": "pool-audit",
+ "source": null,
+ "min_words": 1200,
+ "apply": false,
+ "checked": 60,
+ "passed": 0,
+ "failed": 60,
+ "pass_rate": 0,
+ "reason_distribution": {
+  "word_count": 60,
+  "dup_title": 96,
+  "answer_block": 31,
+  "banned_words": 3
+ },
+ "thresholds": {
+  "min_words": 1200,
+  "answer_block": [
+   40,
+   60
+  ],
+  "faq_min": 3,
+  "links_min": 3,
+  "jaccard_body": 0.85,
+  "jaccard_title": 0.8
+ },
+ "words": {
+  "min": 454,
+  "p50": 656,
+  "max": 871
+ },
+ "slugs_passed": [],
+ "items": [
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-berpengalaman",
+   "title": "Jasa Iklan Facebook Di Makassar Berpengalaman",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 681,
+   "answer_block": "49 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:681<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-berpengalaman-di-makassar"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-berpengalaman-di-makassar",
+   "title": "Jasa Iklan Facebook Berpengalaman Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 550,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:550<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "banned_words:\\bpasti\\b",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-berpengalaman"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-profesional",
+   "title": "Jasa Iklan Facebook Di Makassar Profesional",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 626,
+   "answer_block": "42 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:626<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-profesional-di-makassar"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-profesional-di-makassar",
+   "title": "Jasa Iklan Facebook Profesional Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 727,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:727<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-profesional"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-terbaik",
+   "title": "Jasa Iklan Facebook Di Makassar Terbaik",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 603,
+   "answer_block": "59 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:603<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-terbaik-di-makassar"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-terbaik-di-makassar",
+   "title": "Jasa Iklan Facebook Terbaik Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 454,
+   "answer_block": "58 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:454<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-terbaik"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-promo",
+   "title": "Jasa Iklan Facebook Di Makassar Promo",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 601,
+   "answer_block": "60 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:601<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-promo-di-makassar"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-promo-di-makassar",
+   "title": "Jasa Iklan Facebook Promo Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 669,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:669<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-promo"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-paket",
+   "title": "Jasa Iklan Facebook Di Makassar Paket",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 695,
+   "answer_block": "49 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 6,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:695<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-paket-di-makassar"
+   ],
+   "notes": [
+    "answer_block_heading:\"Jasa Iklan Facebook Di Makassar Paket: Solusi Optimal untuk Bisnis Lokal\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-paket-di-makassar",
+   "title": "Jasa Iklan Facebook Paket Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 640,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:640<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-paket"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-tarif",
+   "title": "Jasa Iklan Facebook Di Makassar Tarif",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 686,
+   "answer_block": "57 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:686<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-tarif-di-makassar"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-tarif-di-makassar",
+   "title": "Jasa Iklan Facebook Tarif Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 703,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:703<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-tarif"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-biaya",
+   "title": "Jasa Iklan Facebook Di Makassar Biaya",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 548,
+   "answer_block": "58 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 6,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:548<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-biaya-di-makassar"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-biaya-di-makassar",
+   "title": "Jasa Iklan Facebook Biaya Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 731,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:731<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-biaya"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-harga",
+   "title": "Jasa Iklan Facebook Di Makassar Harga",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 637,
+   "answer_block": "40 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:637<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-harga-di-makassar"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-harga-di-makassar",
+   "title": "Jasa Iklan Facebook Harga Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 715,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:715<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "banned_words:\\bpasti\\b",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-harga"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-makassar-murah",
+   "title": "Jasa Iklan Facebook Di Makassar Murah",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 715,
+   "answer_block": "41 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:715<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-murah-di-makassar"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-murah-di-makassar",
+   "title": "Jasa Iklan Facebook Murah Di Makassar",
+   "service": "jasa-iklan-facebook",
+   "city": "makassar",
+   "words": 693,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:693<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-makassar-murah"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "berapa-biaya-iklan-facebook-di-medan",
+   "title": "Berapa Biaya Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 647,
+   "answer_block": "45 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:647<1200",
+    "dup_title:0.86>=0.8↔berapa-biaya-jasa-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "bagaimana-iklan-facebook-di-medan",
+   "title": "Bagaimana Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 603,
+   "answer_block": "42 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:603<1200",
+    "dup_title:0.83>=0.8↔bagaimana-jasa-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "strategi-iklan-facebook-di-medan",
+   "title": "Strategi Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 690,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:690<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.83>=0.8↔strategi-jasa-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "tutorial-iklan-facebook-di-medan",
+   "title": "Tutorial Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 665,
+   "answer_block": "56 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:665<1200",
+    "dup_title:0.83>=0.8↔tutorial-jasa-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-untuk-umkm",
+   "title": "Iklan Facebook Di Medan Untuk Umkm",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 837,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:837<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "banned_words:\\bpasti\\b",
+    "dup_title:1.00>=0.8↔iklan-facebook-untuk-umkm-di-medan",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-di-medan-untuk-umkm",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-untuk-umkm-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-untuk-umkm-di-medan",
+   "title": "Iklan Facebook Untuk Umkm Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 793,
+   "answer_block": "60 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:793<1200",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-untuk-umkm",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-di-medan-untuk-umkm",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-untuk-umkm-di-medan"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-untuk-toko-online",
+   "title": "Iklan Facebook Di Medan Untuk Toko Online",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 518,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:518<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-untuk-toko-online-di-medan",
+    "dup_title:0.88>=0.8↔jasa-iklan-facebook-di-medan-untuk-toko-online",
+    "dup_title:0.88>=0.8↔jasa-iklan-facebook-untuk-toko-online-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-untuk-toko-online-di-medan",
+   "title": "Iklan Facebook Untuk Toko Online Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 606,
+   "answer_block": "60 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:606<1200",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-untuk-toko-online",
+    "dup_title:0.88>=0.8↔jasa-iklan-facebook-di-medan-untuk-toko-online",
+    "dup_title:0.88>=0.8↔jasa-iklan-facebook-untuk-toko-online-di-medan"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-meta-ads",
+   "title": "Iklan Facebook Di Medan Meta Ads",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 681,
+   "answer_block": "40 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:681<1200",
+    "dup_title:1.00>=0.8↔iklan-facebook-meta-ads-di-medan",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-di-medan-meta-ads",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-meta-ads-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-meta-ads-di-medan",
+   "title": "Iklan Facebook Meta Ads Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 666,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:666<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-meta-ads",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-di-medan-meta-ads",
+    "dup_title:0.86>=0.8↔jasa-iklan-facebook-meta-ads-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-terpercaya",
+   "title": "Iklan Facebook Di Medan Terpercaya",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 726,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:726<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-terpercaya-di-medan",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-terpercaya",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-terpercaya-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-terpercaya-di-medan",
+   "title": "Iklan Facebook Terpercaya Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 641,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 7,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:641<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-terpercaya",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-terpercaya",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-terpercaya-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-berpengalaman",
+   "title": "Iklan Facebook Di Medan Berpengalaman",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 823,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:823<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-berpengalaman-di-medan",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-berpengalaman",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-berpengalaman-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-berpengalaman-di-medan",
+   "title": "Iklan Facebook Berpengalaman Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 654,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:654<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-berpengalaman",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-berpengalaman",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-berpengalaman-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-di-medan-profesional",
+   "title": "Iklan Facebook Di Medan Profesional",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 793,
+   "answer_block": "53 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:793<1200",
+    "dup_title:1.00>=0.8↔iklan-facebook-profesional-di-medan",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-profesional"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "iklan-facebook-profesional-di-medan",
+   "title": "Iklan Facebook Profesional Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 656,
+   "answer_block": "43 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 7,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:656<1200",
+    "dup_title:1.00>=0.8↔iklan-facebook-di-medan-profesional",
+    "dup_title:0.83>=0.8↔jasa-iklan-facebook-di-medan-profesional"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-2027",
+   "title": "Jasa Iklan Facebook Di Medan 2027",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 764,
+   "answer_block": "48 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 6,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:764<1200"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-2026",
+   "title": "Jasa Iklan Facebook Di Medan 2026",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 654,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:654<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "berapa-biaya-jasa-iklan-facebook-di-medan",
+   "title": "Berapa Biaya Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 639,
+   "answer_block": "44 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:639<1200",
+    "dup_title:0.86>=0.8↔berapa-biaya-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "kenapa-jasa-iklan-facebook-di-medan",
+   "title": "Kenapa Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 693,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:693<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "bagaimana-jasa-iklan-facebook-di-medan",
+   "title": "Bagaimana Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 653,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 7,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:653<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.83>=0.8↔bagaimana-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "apa-itu-jasa-iklan-facebook-di-medan",
+   "title": "Apa Itu Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 544,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:544<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "strategi-jasa-iklan-facebook-di-medan",
+   "title": "Strategi Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 592,
+   "answer_block": "60 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:592<1200",
+    "dup_title:0.83>=0.8↔strategi-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "langkah-jasa-iklan-facebook-di-medan",
+   "title": "Langkah Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 716,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:716<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "tutorial-jasa-iklan-facebook-di-medan",
+   "title": "Tutorial Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 600,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 7,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:600<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.83>=0.8↔tutorial-iklan-facebook-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "tips-jasa-iklan-facebook-di-medan",
+   "title": "Tips Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 661,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:661<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "cara-jasa-iklan-facebook-di-medan",
+   "title": "Cara Jasa Iklan Facebook Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 651,
+   "answer_block": "46 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:651<1200"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-leadgen",
+   "title": "Jasa Iklan Facebook Di Medan Leadgen",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 681,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:681<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-leadgen-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-leadgen-di-medan",
+   "title": "Jasa Iklan Facebook Leadgen Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 642,
+   "answer_block": "49 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:642<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-leadgen"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-untuk-umkm",
+   "title": "Jasa Iklan Facebook Di Medan Untuk Umkm",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 584,
+   "answer_block": "55 kata @blok1",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:584<1200",
+    "dup_title:0.86>=0.8↔iklan-facebook-di-medan-untuk-umkm",
+    "dup_title:0.86>=0.8↔iklan-facebook-untuk-umkm-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-untuk-umkm-di-medan"
+   ],
+   "notes": [
+    "answer_block_heading:\"Pendahuluan\"",
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-untuk-umkm-di-medan",
+   "title": "Jasa Iklan Facebook Untuk Umkm Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 638,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:638<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.86>=0.8↔iklan-facebook-di-medan-untuk-umkm",
+    "dup_title:0.86>=0.8↔iklan-facebook-untuk-umkm-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-untuk-umkm"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-untuk-toko-online",
+   "title": "Jasa Iklan Facebook Di Medan Untuk Toko Online",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 579,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:579<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.88>=0.8↔iklan-facebook-di-medan-untuk-toko-online",
+    "dup_title:0.88>=0.8↔iklan-facebook-untuk-toko-online-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-untuk-toko-online-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-untuk-toko-online-di-medan",
+   "title": "Jasa Iklan Facebook Untuk Toko Online Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 871,
+   "answer_block": "43 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:871<1200",
+    "dup_title:0.88>=0.8↔iklan-facebook-di-medan-untuk-toko-online",
+    "dup_title:0.88>=0.8↔iklan-facebook-untuk-toko-online-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-untuk-toko-online"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-fb-ads",
+   "title": "Jasa Iklan Facebook Di Medan Fb Ads",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 656,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:656<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-fb-ads-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-fb-ads-di-medan",
+   "title": "Jasa Iklan Facebook Fb Ads Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 609,
+   "answer_block": "42 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 3,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:609<1200",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-fb-ads"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-meta-ads",
+   "title": "Jasa Iklan Facebook Di Medan Meta Ads",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 638,
+   "answer_block": null,
+   "faq_count": 6,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:638<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.86>=0.8↔iklan-facebook-di-medan-meta-ads",
+    "dup_title:0.86>=0.8↔iklan-facebook-meta-ads-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-meta-ads-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-meta-ads-di-medan",
+   "title": "Jasa Iklan Facebook Meta Ads Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 705,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:705<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.86>=0.8↔iklan-facebook-di-medan-meta-ads",
+    "dup_title:0.86>=0.8↔iklan-facebook-meta-ads-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-meta-ads"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-terpercaya",
+   "title": "Jasa Iklan Facebook Di Medan Terpercaya",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 642,
+   "answer_block": "44 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:642<1200",
+    "dup_title:0.83>=0.8↔iklan-facebook-di-medan-terpercaya",
+    "dup_title:0.83>=0.8↔iklan-facebook-terpercaya-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-terpercaya-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-terpercaya-di-medan",
+   "title": "Jasa Iklan Facebook Terpercaya Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 718,
+   "answer_block": "52 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:718<1200",
+    "dup_title:0.83>=0.8↔iklan-facebook-di-medan-terpercaya",
+    "dup_title:0.83>=0.8↔iklan-facebook-terpercaya-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-terpercaya"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-berpengalaman",
+   "title": "Jasa Iklan Facebook Di Medan Berpengalaman",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 633,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:633<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.83>=0.8↔iklan-facebook-di-medan-berpengalaman",
+    "dup_title:0.83>=0.8↔iklan-facebook-berpengalaman-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-berpengalaman-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-berpengalaman-di-medan",
+   "title": "Jasa Iklan Facebook Berpengalaman Di Medan",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 724,
+   "answer_block": "41 kata @blok3",
+   "faq_count": 5,
+   "internal_links": 5,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:724<1200",
+    "dup_title:0.83>=0.8↔iklan-facebook-di-medan-berpengalaman",
+    "dup_title:0.83>=0.8↔iklan-facebook-berpengalaman-di-medan",
+    "dup_title:1.00>=0.8↔jasa-iklan-facebook-di-medan-berpengalaman"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  },
+  {
+   "slug": "jasa-iklan-facebook-di-medan-profesional",
+   "title": "Jasa Iklan Facebook Di Medan Profesional",
+   "service": "jasa-iklan-facebook",
+   "city": "medan",
+   "words": 621,
+   "answer_block": null,
+   "faq_count": 5,
+   "internal_links": 4,
+   "keyword": null,
+   "source_row": "hourly-generate",
+   "status": "draft",
+   "priority_score": null,
+   "fails": [
+    "word_count:621<1200",
+    "answer_block:tidak_ada_40-60_kata_di_100_kata_pertama",
+    "dup_title:0.83>=0.8↔iklan-facebook-di-medan-profesional",
+    "dup_title:0.83>=0.8↔iklan-facebook-profesional-di-medan"
+   ],
+   "notes": [
+    "slug_keyword:tidak_diperiksa (tidak ada baris keyword_queue)",
+    "schema:article_disuntik_saat_render(bukan_di_draft)"
+   ]
+  }
+ ]
+}

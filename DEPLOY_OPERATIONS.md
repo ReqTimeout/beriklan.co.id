@@ -1,7 +1,7 @@
 # Cloudflare Deployment — Memory File untuk Next Agent
 
 > **PENTING:** File ini di-update setiap ada perubahan deployment. Selalu baca dulu sebelum kerja.
-> Update terakhir: 2026-07-13 (setelah deploy Astro static site ke beriklan.co.id via CF Workers + Zone-scoped API)
+> Update terakhir: 2026-08-27 — FIX recurring "asset desync" (site 404 tapi worker hidup). Wrangler OAuth login WORKS.
 
 ---
 
@@ -14,7 +14,50 @@
 - Email TIDAK terganggu (MX records aman)
 - Subdomain lain (`api`, `ftp`, `id`, `os`, `mta`, `gateway`, dll) **TIDAK** tersentuh
 
-**JANGAN PERNAH deploy via wrangler CLI** dari terminal — token yang ada ZONE-scoped, wrangler butuh ACCOUNT-scoped. Pakai workflow GitHub push → CF auto-build.
+**✅ DEPLOY VIA WRANGLER CLI = WORKS** (update 2026-08-27). OAuth login sudah tersimpan di
+`/Users/maabook/Library/Preferences/.wrangler/config/default.toml` dengan scope `workers_scripts: write`.
+Cek dulu: `npx wrangler whoami`. Token zone-scoped di `account.md` TETAP tidak cukup, tapi OAuth ini cukup.
+Perintah deploy: `cd web && npx wrangler deploy`.
+
+---
+
+## 🚨🚨 KNOWN RECURRING ISSUE: "ASSET DESYNC" — SITE 404 TAPI WORKER HIDUP (BACA INI DULU KALAU SITE DOWN)
+
+**Gejala (2026-08-27, terjadi berulang):**
+- `https://beriklan.co.id/` → **404** (juga `/index.html`, `/sitemap-index.xml`, `/favicon*`, `/robots.txt`, `/cities.json`, semua static file)
+- TAPI dynamic route hidup: `/data/posts-index.json` → **200**, `/blog/<slug>/` → **200**, `/api/*` → **200**
+- Header `server-timing: cfWorker;dur=2, cfOrigin;dur=0` (worker jalan, origin asset 404 instan)
+
+**Root cause:** CF edge asset manifest/binding **desync / stale / corrupt**. Worker script-nya oke
+(yang render dynamic route dari D1), tapi `env.ASSETS.fetch()` return 404 untuk semua static file.
+Sering dipicu oleh CF platform glitch (tadi CF status "Minor Service Outage") atau deploy yang tidak
+sempat mengunci asset manifest. BUKAN salah source code, BUKAN salah DNS/routes.
+
+**JANGAN:** revert code, reset git, hapus routes, ubah DNS, panik. Source code FINE.
+
+**FIX 1 COMMAND (ini yang bener):**
+```bash
+cd /Users/maabook/Desktop/beriklan.co.id/web && npx wrangler deploy
+```
+Wrangler akan print **"No updated asset files to upload. Proceeding with deployment..."** — itu NORMAL.
+Artinya asset hash lokal = remote, tapi re-deploy worker cukup untuk me-**re-sync asset manifest** di edge.
+Deploy selesai (±30-90 detik), site langsung UP.
+
+**Verifikasi (SEMUA harus 200):**
+```bash
+for p in "/" "/jasa-iklan-facebook/" "/order/" "/blog/" "/sitemap-index.xml" "/robots.txt"; do
+  echo "$p → $(curl -sI -o /dev/null -w '%{http_code}' -L "https://beriklan.co.id$p" --max-time 12)"
+done
+```
+Hati-hati di zsh: **jangan pakai `$path` sebagai variabel loop** (itu reserved, keikat ke `$PATH` dan bikin
+`curl` hilang). Pakai `$p` atau `$u`.
+
+**Kenapa bisa berulang:** selama CF edge cache/manifest bisa desync sendiri (platform issue), ini bisa kumat.
+Yang bisa kita lakukan = (1) selalu `wrangler deploy` setelah perubahan, (2) tahu recovery command di atas,
+(3) pasang monitoring (opsional) yang alert kalau `/` != 200.
+
+**Version ID terakhir stabil (untuk rollback):** `a5090f33-a44f-427d-ba03-95fe31f90ebe`
+**Backup worker-entry.js pra-deploy:** `web/src/worker-entry.js.bak-predeploy-20260827-083810`
 
 ---
 
@@ -218,9 +261,12 @@ export GITHUB_TOKEN="<<<LIHAT account.md>>>"
    - Kalau pakai `script_name`, request sukses tapi `script: null` di response
    - Route jadi gak ke-bind ke worker mana pun
 
-3. **Jangan pakai `wrangler deploy`/`wrangler pages deploy` dari terminal**
-   - Token zone-scope ini gak cukup
-   - Pakai GitHub push → CF auto-build. User setup Connect GitHub di Dashboard.
+3. **`wrangler deploy` SEKARANG BISA via terminal (update 2026-08-27)** ✅
+   - Dulu gagal karena cuma ada token zone-scope. Sekarang sudah ada **OAuth login** di
+     `/Users/maabook/Library/Preferences/.wrangler/config/default.toml` (scope `workers_scripts: write`).
+   - Cek valid: `npx wrangler whoami` → harus login `3smedianet@gmail.com` + list scope.
+   - Deploy: `cd web && npx wrangler deploy`. **Ini juga cara recovery asset desync** (lihat section darurat di atas).
+   - Kalau OAuth hilang → `npx wrangler login` (buka browser), atau fallback GH push → CF auto-build.
 
 4. **Worker name adalah `beriklanweb` BUKAN `beriklancoid`**
    - `beriklanweb` = Worker Script (target deploy)

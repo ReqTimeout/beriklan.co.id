@@ -63,21 +63,6 @@ const localBusiness = {
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
 
-    <script is:inline>
-        window.adsbygoogle = window.adsbygoogle || [];
-        window.__loadAdSense = function() {
-            if (window.__adSenseLoaded) return;
-            window.__adSenseLoaded = true;
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4438184351486735';
-            s.crossOrigin = 'anonymous';
-            document.head.appendChild(s);
-        };
-        ['scroll','click','touchstart','keydown'].forEach(function(evt){ window.addEventListener(evt, window.__loadAdSense, {once:true, passive:true}); });
-        setTimeout(window.__loadAdSense, 3000);
-    </script>
-
     <!-- ====================== HERO ====================== -->
     <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-28 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
         <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
@@ -238,21 +223,6 @@ const localBusiness = {
                     <h3 class="trust-title">Tanpa kontrak minimum</h3>
                     <p class="trust-desc">Sistem kerja bulanan. Anda bebas lanjut atau berhenti kapan saja — tanpa kontrak panjang yang lazim di kebanyakan agency.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ====================== ADSENSE (non-intrusive, post-stats) ====================== -->
-    <section class="py-10 bg-white">
-        <div class="container mx-auto px-6 max-w-4xl">
-            <div class="p-5 bg-soft/30 rounded-xl border border-gray-100">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-format="autorelaxed"
-                     data-ad-client="ca-pub-4438184351486735"
-                     data-ad-slot="4505315237"></ins>
-                <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
         </div>
     </section>

@@ -22,6 +22,7 @@ interface Props {
     heroImage?: string;
     heroImageWidth?: number;
     heroImageHeight?: number;
+    showAdsense?: boolean;
 }
 
 const {
@@ -41,6 +42,7 @@ const {
     heroImage,
     heroImageWidth = 1200,
     heroImageHeight = 675,
+    showAdsense = false,
 } = Astro.props as Props;
 
 // Auto-detect schema: ProfessionalService on all pages (sitewide), Organization always
@@ -71,6 +73,11 @@ const showOrganization = true;
 		<link rel="canonical" href={canonical} />
 		{prevUrl && <link rel="prev" href={prevUrl} />}
 		{nextUrl && <link rel="next" href={nextUrl} />}
+
+		<!-- AdSense: only on blog posts + tag archive. NEVER on service/home/order to avoid funnel disruption. -->
+		{showAdsense && (
+			<meta name="google-adsense-account" content="ca-pub-4438184351486735" />
+		)}
 
 		<!-- Open Graph Tags -->
 		<meta property="og:type" content="website" />
@@ -185,8 +192,39 @@ const showOrganization = true;
 			function gtag(){dataLayer.push(arguments);}
 			gtag('js', new Date());
 			gtag('config', 'G-PBQF8MMN40');
+			gtag('config', 'AW-18377273345');
 		</script>
 		<!-- End Google tag (gtag.js) -->
+
+		<!-- Google Ads tag (AW-18377273345) — dimerger ke gtag GA4 di atas
+		     (satu dataLayer/gtag declaration, config terpisah; load script sendiri) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18377273345"></script>
+
+		<!-- Google tag (gtag.js) event - delayed navigation helper (AW-18377273345)
+		     Konversi klik WhatsApp. Delayed navigation: link tanpa target=_blank ditahan
+		     maksimal 2s sampai event terkirim (event_callback), lalu navigate.
+		     Link _blank: event terkirim paralel, tab baru tidak memutus beacon. -->
+		<script is:inline>
+			function gtagSendEvent(url, skipNav) {
+				var navigated = false;
+				var go = function () {
+					if (navigated || skipNav) return;
+					navigated = true;
+					window.location.href = url;
+				};
+				if (typeof gtag === 'function') {
+					gtag('event', 'ads_conversion_outbound_click', {
+						'event_callback': go,
+						'event_timeout': 2000
+					});
+					// Fallback kalau event_callback tidak pernah dipanggil
+					setTimeout(go, 2200);
+				} else {
+					go();
+				}
+				return false;
+			}
+		</script>
 
 		<!-- Global dataLayer push helpers (GTM event tracking) -->
 		<script is:inline>
@@ -223,6 +261,21 @@ const showOrganization = true;
 					cta_location: t.dataset.ctaLocation || '',
 					link_url: t.href || ''
 				});
+
+				// ===== Google Ads conversion (AW-18377273345) — klik WhatsApp =====
+				// Link _blank: gtag kirim paralel (tidak perlu tahan navigasi).
+				// Link same-tab: gtagSendEvent menahan navigasi sampai event terkirim
+				// (event_callback/timeout 2s) supaya conversion tidak hilang saat pindah halaman.
+				try {
+					var waUrl = t.href || '';
+					var sameTab = t.target !== '_blank' && !t.hasAttribute('download');
+					if (waUrl && sameTab) {
+						e.preventDefault();
+						gtagSendEvent(waUrl, false);
+					} else {
+						gtag('event', 'ads_conversion_outbound_click');
+					}
+				} catch(_e) {}
 
 				// ===== WA Click Tracker beacon (server-side log ke D1) =====
 				try {

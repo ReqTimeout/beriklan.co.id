@@ -1,0 +1,347 @@
+{
+ "keywords": [
+  {
+   "keyword": "iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan kontraktor bangunan",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan kontraktor rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan jasa kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "contoh iklan kontraktor rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "digital marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "marketing proyek kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "cara marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "cara promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan jasa kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "landing page kontraktor",
+   "service": "jasa-pembuatan-landing-page",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan jasa renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "contoh iklan jasa renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "digital marketing konstruksi",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan perusahaan konstruksi",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan kontraktor bandung",
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan kontraktor jakarta",
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan kontraktor makassar",
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan kontraktor medan",
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "harga iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "biaya iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan facebook kontraktor",
+   "service": "jasa-iklan-facebook",
+   "city": "",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan google kontraktor",
+   "service": "jasa-iklan-google",
+   "city": "",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan tiktok kontraktor",
+   "service": "jasa-iklan-tiktok",
+   "city": "",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan instagram kontraktor",
+   "service": "jasa-iklan-instagram",
+   "city": "",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "digital marketing kontraktor bandung",
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "digital marketing kontraktor jakarta",
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "digital marketing kontraktor makassar",
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "digital marketing kontraktor medan",
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "harga digital marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "biaya digital marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan renovasi rumah bandung",
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan renovasi rumah jakarta",
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan renovasi rumah makassar",
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "iklan renovasi rumah medan",
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "harga iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "biaya iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "promosi kontraktor bandung",
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "promosi kontraktor jakarta",
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "promosi kontraktor makassar",
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "promosi kontraktor medan",
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "priority": 91
+  },
+  {
+   "keyword": "harga promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  },
+  {
+   "keyword": "biaya promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "priority": 91
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+---
+/**
+ * STUB — placeholder untuk unblock build (2026-08-26).
+ * Sebelumnya komponen ini dipakai di tutorial/[platform]/index.astro
+ * dan tutorial/[platform]/[topic].astro tapi file sumbernya hilang.
+ *
+ * Render nothing agar build Astro/Rollup tidak error.
+ * TODO: implement AdSense lazy-load pattern (lihat blog/[slug].astro:192-209)
+ * setelah diskusi dengan owner apakah tutorial page butuh monetisasi AdSense.
+ */
+export interface Props {
+    slot?: string;
+    format?: 'rectangle' | 'horizontal' | 'vertical' | 'auto' | 'anchor';
+    className?: string;
+}
+
+const { slot = 'default', format = 'auto', className = '' } = Astro.props as Props;
+---
+<span class={`adsense-stub adsense-stub--${slot} adsense-stub--${format} ${className}`} style="display:none" aria-hidden="true" data-stub-adsense={slot}></span>

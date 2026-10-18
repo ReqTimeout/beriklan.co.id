@@ -1,5 +1,5 @@
 // WordPress-style sitemap index (mimics Yoast SEO structure)
-// Lists: post-sitemap.xml + page-sitemap.xml + sitemap-index.xml
+// Lists all live sub-sitemaps: post-sitemap.xml + page-sitemap.xml + sitemap-index.xml + news.xml
 const SITE = 'https://beriklan.co.id';
 
 export function GET() {
@@ -7,6 +7,10 @@ export function GET() {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="//beriklan.co.id/sitemap.xsl"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <sitemap>
+        <loc>${SITE}/sitemap-index.xml</loc>
+        <lastmod>${today}</lastmod>
+    </sitemap>
     <sitemap>
         <loc>${SITE}/post-sitemap.xml</loc>
         <lastmod>${today}</lastmod>
@@ -16,7 +20,7 @@ export function GET() {
         <lastmod>${today}</lastmod>
     </sitemap>
     <sitemap>
-        <loc>${SITE}/sitemap-index.xml</loc>
+        <loc>${SITE}/news.xml</loc>
         <lastmod>${today}</lastmod>
     </sitemap>
 </sitemapindex>`;

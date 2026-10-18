@@ -1,12 +1,13 @@
 ---
 // Paginated blog archive — /blog/page/2/, /blog/page/3/, ...
-// SEO: each page has a self-canonical + rel=prev/rel=next chain so paginated
-// archives don't create duplicate-content/cannibalization issues.
+// SEO: self-canonical + rel=prev/rel=next chain, BreadcrumbList, ItemList JSON-LD,
+// unique per-page count text, and internal links to service pillars.
+// PAGE_SIZE wajib tetap 24 — mengubahnya membatalkan 179 URL paginasi yang sudah live.
 import Layout from '../../../layouts/Layout.astro';
 import Navbar from '../../../components/Navbar.svelte';
 import StickyCTA from '../../../components/StickyCTA.svelte';
 import Footer from '../../../components/Footer.svelte';
-import { Calendar, Clock, ArrowRight, ArrowLeft } from 'lucide-svelte';
+import { Calendar, Clock, ArrowRight, ArrowLeft, BookOpen } from 'lucide-svelte';
 import { getFeaturedImage } from '../../../utils/featured_image.js';
 import posts from '../../../data/posts.json';
 
@@ -27,84 +28,183 @@ export function getStaticPaths() {
 const { n: nStr } = Astro.params;
 const pageNum = parseInt(nStr, 10);
 const start = (pageNum - 1) * PAGE_SIZE;
-const pagePosts = posts.slice(start, start + PAGE_SIZE);
+const end = Math.min(start + PAGE_SIZE, total);
+const pagePosts = posts.slice(start, end);
 
 const base = 'https://beriklan.co.id';
 const selfUrl = `${base}/blog/page/${pageNum}/`;
 const prevUrl = pageNum === 2 ? `${base}/blog/` : `${base}/blog/page/${pageNum - 1}/`;
 const nextUrl = pageNum < totalPages ? `${base}/blog/page/${pageNum + 1}/` : undefined;
 
-function getImage(post: any) {
-    return getFeaturedImage(post);
+const fmt = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+const CAT_META: Record<string, { label: string; cls: string }> = {
+    'strategy':              { label: 'Strategi',          cls: 'bg-soft text-ink border border-gray-200' },
+    'trending':              { label: 'Trending',          cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
+    'jasa-iklan-facebook':   { label: 'Meta Ads',          cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
+    'meta':                  { label: 'Meta Ads',          cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
+    'jasa-iklan-instagram':  { label: 'Instagram Ads',     cls: 'bg-pink-50 text-pink-700 border border-pink-200' },
+    'jasa-iklan-tiktok':     { label: 'TikTok Ads',        cls: 'bg-slate-100 text-slate-700 border border-slate-300' },
+    'tiktok':                { label: 'TikTok',            cls: 'bg-slate-100 text-slate-700 border border-slate-300' },
+    'jasa-view-live':        { label: 'View & Live',       cls: 'bg-purple-50 text-purple-700 border border-purple-200' },
+    'jasa-digital-marketing':{ label: 'Digital Marketing', cls: 'bg-teal-50 text-teal-700 border border-teal-200' },
+    'google':                { label: 'Google & SEO',      cls: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+    'youtube':               { label: 'YouTube',           cls: 'bg-red-50 text-red-700 border border-red-200' },
+};
+const catMeta = (c: string) => CAT_META[c] ?? { label: c ?? 'Umum', cls: 'bg-soft text-ink border border-gray-200' };
+
+function pageWindow(current: number, last: number): (number | '…')[] {
+    const set = new Set<number>([1, 2, last - 1, last, current - 1, current, current + 1]);
+    const pages = [...set].filter((p) => p >= 1 && p <= last).sort((a, b) => a - b);
+    const out: (number | '…')[] = [];
+    let prev = 0;
+    for (const p of pages) {
+        if (p - prev > 1) out.push('…');
+        out.push(p);
+        prev = p;
+    }
+    return out;
 }
+const pageUrl = (p: number) => (p === 1 ? '/blog/' : `/blog/page/${p}/`);
+
+const serviceLinks = [
+    { label: 'Jasa Iklan Facebook Ads', url: '/jasa-iklan-facebook/' },
+    { label: 'Jasa Iklan Instagram', url: '/jasa-iklan-instagram/' },
+    { label: 'Jasa Iklan TikTok', url: '/jasa-iklan-tiktok/' },
+    { label: 'Jasa Iklan Google', url: '/jasa-iklan-google/' },
+    { label: 'Jasa Iklan YouTube', url: '/jasa-iklan-youtube/' },
+    { label: 'Jasa Pembuatan Landing Page', url: '/jasa-pembuatan-landing-page/' },
+    { label: 'Jasa Pembuatan Website', url: '/jasa-pembuatan-website/' },
+    { label: 'Jasa Digital Marketing', url: '/jasa-digital-marketing/' },
+];
+
+const itemListLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': `Arsip Artikel Digital Marketing Beriklan — Halaman ${pageNum}`,
+    'itemListOrder': 'https://schema.org/ItemListUnordered',
+    'itemListElement': pagePosts.map((p: any, i: number) => ({
+        '@type': 'ListItem',
+        'position': start + i + 1,
+        'url': `${base}/blog/${p.slug}/`,
+        'name': p.title,
+    })),
+};
 ---
 
-<Layout title={`Blog Digital Marketing — Halaman ${pageNum} | Beriklan`} description={`Tips, strategi, dan studi kasus digital marketing dari tim Beriklan. Halaman ${pageNum} dari ${totalPages}.`} canonical={selfUrl} prevUrl={prevUrl} nextUrl={nextUrl}>
+<Layout
+    title={`Blog Digital Marketing — Halaman ${pageNum} dari ${totalPages} | Beriklan`}
+    description={`Arsip artikel digital marketing Beriklan halaman ${pageNum} dari ${totalPages} — tips, panduan, dan studi kasus Facebook Ads, Google Ads, TikTok Ads, dan performance marketing sejak 2016.`}
+    canonical={selfUrl}
+    prevUrl={prevUrl}
+    nextUrl={nextUrl}
+    breadcrumb={[
+        { name: 'Beranda', url: `${base}/` },
+        { name: 'Blog', url: `${base}/blog/` },
+        { name: `Halaman ${pageNum}`, url: selfUrl },
+    ]}
+>
+    <script type="application/ld+json" set:html={JSON.stringify(itemListLd)} />
 
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
 
-    <!-- ====================== HERO ====================== -->
-    <header class="hero relative pt-28 md:pt-44 pb-16 md:pb-20 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+    <!-- ====================== HEADER ARSIP ====================== -->
+    <header class="relative pt-28 md:pt-36 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
         <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
-        <div class="container mx-auto px-6 text-center max-w-3xl relative z-10">
-            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6">
-                Blog · Halaman {pageNum} / {totalPages}
+        <div class="container mx-auto px-6 max-w-3xl text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-6 anim-fade-up">
+                <BookOpen class="w-3.5 h-3.5 text-accent" />
+                Blog Beriklan · Halaman {pageNum} dari {totalPages}
             </div>
-            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight mb-6">
-                Artikel Digital Marketing<br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent">Halaman {pageNum}.</span>
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.05] tracking-tight anim-fade-up">
+                Artikel Digital Marketing
             </h1>
-            <p class="text-base md:text-lg text-muted leading-relaxed">
-                Tips, panduan, dan studi kasus dari tim Beriklan — berdasarkan data dan pengalaman mengelola campaign lintas industri sejak 2016.
+            <p class="mt-5 text-base md:text-lg text-muted leading-relaxed anim-fade-up" style="animation-delay: 100ms;">
+                Arsip tips, panduan, dan studi kasus dari tim Beriklan — ditulis dari pengalaman
+                mengelola campaign lintas industri sejak 2016.
             </p>
         </div>
     </header>
 
-    <!-- ====================== POSTS GRID ====================== -->
-    <section class="py-16 md:py-20 bg-white">
-        <div class="container mx-auto px-6 max-w-5xl">
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 reveal-stagger">
-                {pagePosts.map((post, i) => (
-                    <a href={`/blog/${post.slug}`} class="grid-card group" style={`animation-delay:${i * 40}ms;`}>
-                        <div class="grid-thumb">
-                            <img src={getImage(post)} alt={post.title} class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror={`this.onerror=null;this.src='https://picsum.photos/seed/beriklan-${post.slug}/600/400';`} />
-                        </div>
-                        <div class="p-5">
-                            <span class="inline-block px-2 py-0.5 bg-soft text-ink text-[10px] font-bold uppercase tracking-wider rounded mb-3">{post.category}</span>
-                            <h3 class="font-display font-bold text-base text-ink leading-tight mb-2 group-hover:text-accent transition-colors line-clamp-2">{post.title}</h3>
-                            <p class="text-xs text-muted leading-relaxed line-clamp-3">{post.excerpt}</p>
-                            <div class="flex items-center gap-3 mt-3 text-[10px] text-muted">
-                                <span class="flex items-center gap-1"><Calendar class="w-3 h-3" /> {post.date}</span>
-                                <span class="flex items-center gap-1"><Clock class="w-3 h-3" /> {post.readTime}</span>
-                            </div>
-                        </div>
-                    </a>
-                ))}
+    <!-- ====================== DAFTAR ARTIKEL ====================== -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6 max-w-6xl">
+
+            <!-- Bar info: unik per halaman (angka range berbeda tiap page) -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-8 px-5 py-3.5 rounded-2xl bg-soft border border-gray-100">
+                <p class="text-sm text-muted">
+                    Menampilkan artikel <span class="font-bold text-ink">{fmt(start + 1)}–{fmt(end)}</span>
+                    dari <span class="font-bold text-ink">{fmt(total)}</span> arsip blog.
+                </p>
+                <a href="/blog/" class="text-xs font-bold text-accent hover:underline">← Halaman utama blog</a>
             </div>
 
-            <!-- ====================== PAGINATION ====================== -->
-            <nav class="flex items-center justify-center gap-2 mt-12 flex-wrap" aria-label="Pagination blog">
-                <a href={prevUrl} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border border-gray-200 bg-white hover:border-ink transition-all">
-                    <ArrowLeft class="w-3.5 h-3.5" /> Sebelumnya
-                </a>
-                <span class="px-4 py-2 text-xs font-bold text-ink">
-                    Halaman {pageNum} dari {totalPages}
-                </span>
-                {nextUrl ? (
-                    <a href={nextUrl} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-ink text-white hover:bg-primary-2 transition-all">
-                        Berikutnya <ArrowRight class="w-3.5 h-3.5" />
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pagePosts.map((post: any, i: number) => {
+                    const cat = catMeta(post.category);
+                    return (
+                        <a href={`/blog/${post.slug}/`} class="grid-card group" style={`animation-delay:${Math.min(i, 8) * 50}ms;`}>
+                            <div class="grid-thumb bg-gradient-to-br from-primary to-primary-2">
+                                <span class="absolute inset-0 z-0 flex items-center justify-center text-white/30 font-display font-extrabold text-sm tracking-[0.25em] uppercase select-none">Beriklan</span>
+                                <img src={getFeaturedImage(post)} alt={post.title} class="absolute inset-0 z-10 w-full h-full object-cover" loading="lazy" onerror="this.onerror=null;this.style.display='none';" />
+                                <span class={`absolute left-3 top-3 z-20 inline-block px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full backdrop-blur bg-white/95 ${cat.cls}`}>{cat.label}</span>
+                            </div>
+                            <div class="p-5">
+                                <h3 class="font-display font-bold text-base md:text-[17px] text-ink leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">{post.title}</h3>
+                                <p class="text-sm text-muted leading-relaxed line-clamp-2">{post.excerpt}</p>
+                                <div class="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-100 text-[11px] text-muted">
+                                    <span class="flex items-center gap-1.5"><Calendar class="w-3 h-3" /> {post.date}</span>
+                                    <span class="flex items-center gap-1.5"><Clock class="w-3 h-3" /> {post.readTime}</span>
+                                </div>
+                            </div>
+                        </a>
+                    );
+                })}
+            </div>
+
+            <!-- ====================== PAGINATION (windowed) ====================== -->
+            <nav class="mt-12" aria-label="Navigasi halaman arsip blog">
+                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                    <a href={prevUrl} rel="prev" class="pg-btn pg-nav" aria-label="Halaman sebelumnya">
+                        <ArrowLeft class="w-3.5 h-3.5" /> Sebelumnya
                     </a>
-                ) : (
-                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border border-gray-100 text-muted cursor-default">
-                        Berikutnya <ArrowRight class="w-3.5 h-3.5" />
-                    </span>
-                )}
+                    {pageWindow(pageNum, totalPages).map((p) => (
+                        p === '…' ? (
+                            <span class="px-2 text-sm text-muted select-none" aria-hidden="true">…</span>
+                        ) : p === pageNum ? (
+                            <span class="pg-btn pg-current" aria-current="page">{p}</span>
+                        ) : (
+                            <a href={pageUrl(p as number)} class="pg-btn">{p}</a>
+                        )
+                    ))}
+                    {nextUrl ? (
+                        <a href={nextUrl} rel="next" class="pg-btn pg-next">
+                            Berikutnya <ArrowRight class="w-3.5 h-3.5" />
+                        </a>
+                    ) : (
+                        <span class="pg-btn pg-disabled" aria-disabled="true">
+                            Berikutnya <ArrowRight class="w-3.5 h-3.5" />
+                        </span>
+                    )}
+                </div>
+                <p class="text-center text-xs text-muted mt-4">
+                    Halaman {pageNum} dari {totalPages} · {fmt(total)} artikel
+                </p>
             </nav>
 
-            <div class="text-center mt-6">
-                <a href="/blog/" class="text-sm font-bold text-accent hover:underline">← Kembali ke halaman utama blog</a>
+            <!-- ====================== TOPIK TERKAIT (internal link) ====================== -->
+            <div class="mt-12 rounded-2xl border border-gray-100 bg-soft/60 p-6 md:p-8">
+                <h2 class="font-display font-bold text-sm text-ink uppercase tracking-[0.15em] mb-4">Lanjutkan dengan layanan kami</h2>
+                <div class="flex flex-wrap gap-2">
+                    {serviceLinks.map((l) => (
+                        <a href={l.url} class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200 text-xs font-bold text-ink hover:border-accent hover:text-accent transition-colors">
+                            {l.label}
+                        </a>
+                    ))}
+                </div>
             </div>
+
         </div>
     </section>
 
@@ -123,7 +223,11 @@ function getImage(post: any) {
         overflow: hidden;
         transition: all 0.3s ease;
         display: block;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: cardIn 0.5s ease forwards;
     }
+    @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
     .grid-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 40px -8px rgba(15,30,61,0.15);
@@ -141,5 +245,37 @@ function getImage(post: any) {
         transform: scale(1.04);
     }
     .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .pg-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #0b1426;
+        font-size: 12px;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+    a.pg-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+    .pg-current,
+    .pg-next {
+        background: #0b1426;
+        border-color: #0b1426;
+        color: #fff;
+    }
+    a.pg-next:hover { background: #1a2f5c; border-color: #1a2f5c; color: #fff; }
+    a.pg-nav:hover { border-color: #0b1426; color: #0b1426; }
+    .pg-disabled {
+        color: #9ca3af;
+        background: #f9fafb;
+        cursor: default;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .grid-card { animation: none; opacity: 1; transform: none; }
+    }
 </style>

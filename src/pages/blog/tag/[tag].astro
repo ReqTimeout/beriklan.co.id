@@ -82,7 +82,7 @@ const relatedKeywords = Object.values(keywordMap)
     .filter(k => k.service === service && k.slug !== slug && k.has_posts)
     .slice(0, 8);
 ---
-<Layout title={pageTitle} description={pageDesc} canonical={canonical}>
+<Layout title={pageTitle} description={pageDesc} canonical={canonical} showAdsense={true}>
     <Navbar client:only="svelte" />
     <StickyCTA client:only="svelte" />
 
@@ -200,11 +200,11 @@ const relatedKeywords = Object.values(keywordMap)
         </div>
     </section>
 
-    <!-- AdSense Slot 3: After-article (autorelaxed) -->
-    <section class="py-10 bg-white">
-        <div class="container mx-auto px-6 max-w-3xl">
+    <!-- Tag archive monetization: matched-content related posts slot (Adsense) -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-6 max-w-5xl">
             <div class="p-5 bg-soft/30 rounded-2xl border border-gray-100">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Advertisement</p>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-muted text-center mb-3">Artikel Terkait Lainnya</p>
                 <ins class="adsbygoogle"
                      style="display:block"
                      data-ad-format="autorelaxed"

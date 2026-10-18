@@ -1,0 +1,151 @@
+{
+ "keywords": [
+  {
+   "keyword": "iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan kontraktor bangunan",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan kontraktor rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan jasa kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "contoh iklan kontraktor rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "digital marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "marketing proyek kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "cara marketing kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "cara promosi kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan jasa kontraktor",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "landing page kontraktor",
+   "service": "jasa-pembuatan-landing-page",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan jasa renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "contoh iklan renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "contoh iklan jasa renovasi rumah",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "priority": 93
+  },
+  {
+   "keyword": "digital marketing konstruksi",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  },
+  {
+   "keyword": "iklan perusahaan konstruksi",
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "priority": 92
+  }
+ ]
+}

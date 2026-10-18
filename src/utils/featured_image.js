@@ -14,7 +14,7 @@ const IMG_EXT = ".webp";
 
 // Service → local image file (from imageartikel/)
 const SERVICE_IMAGES = {
-    "jasa-iklan-facebook": "jasafacebokads",
+    "jasa-iklan-facebook": "jasafacebookads",
     "jasa-iklan-instagram": "jasainstagramads",
     "jasa-iklan-tiktok": "jasatiktokads",
     "jasa-iklan-google": "jasagoogleads",
@@ -25,6 +25,17 @@ const SERVICE_IMAGES = {
     "jasa-kelola-instagram": "jasainstagramads",
     "jasa-kelola-tiktok": "jasatiktokads",
     "jasa-view-live": "jasaviewlivetiktok",
+    "jasa-view-live-tiktok": "jasaviewlivetiktok",
+    "jasa-view-live-youtube": "jasaviewliveyoutube",
+    "jasa-view-live-instagram": "jasaviewliveinstagram",
+    "jasa-view-live-shopee": "jasaviewliveshopee",
+    "jasa-view-live-twitch": "jasaviewlivetwitch",
+    "jasa-buzzer": "jasaviewlivetiktok",
+    "jasa-buzzer-tiktok": "jasaviewlivetiktok",
+    "jasa-buzzer-youtube": "jasaviewliveyoutube",
+    "jasa-buzzer-instagram": "jasaviewliveinstagram",
+    "jasa-buzzer-shopee": "jasaviewliveshopee",
+    "jasa-buzzer-twitch": "jasaviewlivetwitch",
     "jasa-viewers-youtube": "jasaviewliveyoutube",
     "jasa-viewers-instagram": "jasaviewliveinstagram",
     "jasa-viewers-shopee": "jasaviewliveshopee",
@@ -37,21 +48,41 @@ const DEFAULT_IMG = "jasadigitalmarketing1";
 // Infer service from title/slug (untuk post lama tanpa field service)
 function inferServiceFromTitle(title) {
     const t = (title || "").toLowerCase();
+    // Urutan paling spesifik → umum. Generic "ads" rule dihapus (terlalu greedy).
     const rules = [
-        ["facebook", "jasa-iklan-facebook"],
-        ["instagram", "jasa-iklan-instagram"],
-        ["tiktok", "jasa-iklan-tiktok"],
-        ["google", "jasa-iklan-google"],
-        ["youtube", "jasa-iklan-youtube"],
-        ["website", "jasa-pembuatan-website"],
         ["landing page", "jasa-pembuatan-landing-page"],
+        ["pembuatan website", "jasa-pembuatan-website"],
+        ["jasa website", "jasa-pembuatan-website"],
+        ["jasa buat website", "jasa-pembuatan-website"],
         ["kelola instagram", "jasa-kelola-instagram"],
         ["kelola tiktok", "jasa-kelola-tiktok"],
-        ["digital marketing", "jasa-digital-marketing"],
         ["view live", "jasa-view-live"],
+        ["live streaming", "jasa-view-live"],
+        ["jasa live", "jasa-view-live"],
         ["viewers", "jasa-view-live"],
+        ["jasa iklan facebook", "jasa-iklan-facebook"],
+        ["facebook ads", "jasa-iklan-facebook"],
+        ["iklan facebook", "jasa-iklan-facebook"],
+        ["jasa iklan instagram", "jasa-iklan-instagram"],
+        ["instagram ads", "jasa-iklan-instagram"],
+        ["iklan instagram", "jasa-iklan-instagram"],
+        ["jasa iklan tiktok", "jasa-iklan-tiktok"],
+        ["tiktok ads", "jasa-iklan-tiktok"],
+        ["iklan tiktok", "jasa-iklan-tiktok"],
+        ["jasa iklan youtube", "jasa-iklan-youtube"],
+        ["youtube ads", "jasa-iklan-youtube"],
+        ["iklan youtube", "jasa-iklan-youtube"],
+        ["jasa iklan google", "jasa-iklan-google"],
+        ["google ads", "jasa-iklan-google"],
+        ["iklan google", "jasa-iklan-google"],
+        ["adwords", "jasa-iklan-google"],
+        ["facebook", "jasa-iklan-facebook"],
+        ["tiktok", "jasa-iklan-tiktok"],
+        ["instagram", "jasa-iklan-instagram"],
+        ["youtube", "jasa-iklan-youtube"],
+        ["google", "jasa-iklan-google"],
         ["shopee", "jasa-view-live"],
-        ["ads", "jasa-iklan-google"],
+        ["digital marketing", "jasa-digital-marketing"],
     ];
     for (const [kw, svc] of rules) if (t.includes(kw)) return svc;
     return "";
@@ -85,12 +116,29 @@ function imageUrl(name) {
 export function getFeaturedImage(post) {
     // 1. Explicit override
     if (post && post.featuredImage) return post.featuredImage;
-    // 2. Service-based local image. Service default 'jasa-digital-marketing' sering
-    //    dipakai sebagai fallback saat generate — coba infer dari title dulu biar
-    //    shopee/tiktok/google dll dapat gambar yang sesuai konten.
+    // 2. Service-based local image. Infer dari title lebih spesifik dari service field
+    //    yang kadang salah di artikel lama (mis. svc='jasa-iklan-tiktok' tapi title
+    //    jelas-jelas "Jasa Pembuatan Landing Page").
+    const SPECIFICITY = {
+        "jasa-pembuatan-landing-page": 5,
+        "jasa-pembuatan-website": 4,
+        "jasa-iklan-facebook": 3,
+        "jasa-iklan-google": 3,
+        "jasa-iklan-tiktok": 3,
+        "jasa-iklan-instagram": 3,
+        "jasa-iklan-youtube": 3,
+        "jasa-kelola-instagram": 2,
+        "jasa-kelola-tiktok": 2,
+        "jasa-digital-marketing": 1,
+        "jasa-view-live": 0,
+    };
     let svc = (post?.service || "").toLowerCase();
     const inferred = inferServiceFromTitle(post?.title);
-    if (!svc || svc === "jasa-digital-marketing") svc = inferred || svc;
+    if (!svc || svc === "jasa-digital-marketing") {
+        svc = inferred || svc;
+    } else if (inferred && (SPECIFICITY[inferred] || 0) > (SPECIFICITY[svc] || 0)) {
+        svc = inferred;
+    }
     let name = "";
     if (svc === "jasa-view-live") {
         name = viewLiveImage(post?.title, post?.slug);

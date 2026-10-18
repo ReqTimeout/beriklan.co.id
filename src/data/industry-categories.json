@@ -1,0 +1,591 @@
+{
+  "fashion": {
+    "label": "Fashion & Lifestyle",
+    "icon": "👗",
+    "service_primary": "jasa-iklan-instagram",
+    "service_secondary": [
+      "jasa-kelola-instagram",
+      "jasa-iklan-facebook",
+      "jasa-iklan-tiktok"
+    ],
+    "indonetwork_categories": [
+      "pakaian-wanita",
+      "pakaian-pria",
+      "baju-muslim-wanita",
+      "baju-muslim-pria",
+      "kaos-dan-atasan-wanita",
+      "kaos-dan-atasan-pria",
+      "aksesoris-fashion",
+      "tas-wanita",
+      "sepatu-wanita",
+      "sepatu-pria",
+      "jam-tangan",
+      "fashion-anak",
+      "busana-muslim",
+      "gamis",
+      "hijab",
+      "jilbab"
+    ],
+    "sub_niches": [
+      "toko hijab",
+      "brand fashion lokal",
+      "brand skincare",
+      "brand kosmetik",
+      "dropshipper baju",
+      "reseller fashion",
+      "brand pakaian muslim",
+      "konveksi",
+      "butik online",
+      "fashion thrift",
+      "preloved"
+    ],
+    "products": [
+      "baju",
+      "kemeja",
+      "kaos",
+      "celana",
+      "rok",
+      "dress",
+      "gamis",
+      "hijab",
+      "jilbab",
+      "mukena",
+      "sarung",
+      "sepatu",
+      "tas",
+      "jam tangan"
+    ],
+    "search_volume_band": "very_high",
+    "lead_quality": "⭐⭐⭐⭐⭐",
+    "pain_points": [
+      "foto produk kurang menarik",
+      "tidak punya strategi konten",
+      "ROAS Facebook/Instagram Ads rendah",
+      "followers sepi",
+      "tidak tahu Meta Pixel",
+      "competitor harga lebih murah tapi laku"
+    ],
+    "id": "fashion",
+    "existing_keyword_count": 0,
+    "total_existing_volume": 0,
+    "top_existing_keywords": []
+  },
+  "fnB": {
+    "label": "Food & Beverage / Kuliner",
+    "icon": "🍔",
+    "service_primary": "jasa-iklan-tiktok",
+    "service_secondary": [
+      "jasa-iklan-facebook",
+      "jasa-digital-marketing",
+      "jasa-iklan-instagram"
+    ],
+    "indonetwork_categories": [
+      "makanan-dan-minuman",
+      "makanan-ringan",
+      "kue-dan-roti",
+      "kopi-dan-teh",
+      "makanan-sehat",
+      "snack",
+      "kerupuk",
+      "bumbu-dan-bahan-masakan",
+      "minuman",
+      "jus",
+      "es-krim",
+      "catering",
+      "restoran",
+      "rumah-makan",
+      "warung",
+      "kafe",
+      "kantin"
+    ],
+    "sub_niches": [
+      "kafe / coffee shop",
+      "restoran",
+      "warung makan",
+      "catering kantor",
+      "snack kiloan",
+      "kue ulang tahun",
+      "roti & pastry",
+      "brand minuman kekinian",
+      "franchise F&B",
+      "brand makanan viral",
+      "frozen food",
+      "sambal kemasan"
+    ],
+    "products": [
+      "kopi",
+      "teh",
+      "jus",
+      "roti",
+      "kue",
+      "snack",
+      "kerupuk",
+      "sambal",
+      "bumbu",
+      "ayam",
+      "nasi box",
+      "catering"
+    ],
+    "search_volume_band": "very_high",
+    "lead_quality": "⭐⭐⭐⭐⭐",
+    "pain_points": [
+      "resto sepi pengunjung",
+      "GoFood/GrabFood order sepi",
+      "rating Google Maps rendah",
+      "konten TikTok kurang menarik",
+      "iklan F&B mahal tapi closing sedikit",
+      "tidak bisa viralkan menu baru"
+    ],
+    "id": "fnB",
+    "existing_keyword_count": 0,
+    "total_existing_volume": 0,
+    "top_existing_keywords": []
+  },
+  "kesehatan": {
+    "label": "Kesehatan / Klinik / Kecantikan",
+    "icon": "🏥",
+    "service_primary": "jasa-iklan-instagram",
+    "service_secondary": [
+      "jasa-iklan-facebook",
+      "jasa-kelola-instagram",
+      "jasa-pembuatan-landing-page"
+    ],
+    "indonetwork_categories": [
+      "alat-kesehatan",
+      "obat-obatan",
+      "suplemen-kesehatan",
+      "klinik",
+      "kecantikan",
+      "salon",
+      "spa",
+      "skincare",
+      "kosmetik",
+      "perawatan-kulit",
+      "dokter",
+      "klinik-gigi",
+      "klinik-kecantikan",
+      "rumah-sakit",
+      "alat-medis",
+      "peralatan-kesehatan"
+    ],
+    "sub_niches": [
+      "klinik kecantikan",
+      "klinik gigi",
+      "klinik estetika",
+      "botox & filler",
+      "skincare brand",
+      "salon rambut",
+      "barbershop",
+      "nail art",
+      "spa",
+      "dokter praktik",
+      "rumah sakit",
+      "bidan praktik",
+      "klinik hewan",
+      "brand obat herbal",
+      "suplemen fitness"
+    ],
+    "products": [
+      "skincare",
+      "serum",
+      "moisturizer",
+      "sunscreen",
+      "masker wajah",
+      "lipstik",
+      "foundation",
+      "alat medis",
+      "obat",
+      "vitamin"
+    ],
+    "search_volume_band": "high",
+    "lead_quality": "⭐⭐⭐⭐⭐",
+    "pain_points": [
+      "klinik sepi pasien",
+      "tidak percaya diri edukasi medis",
+      "budget iklan tinggi tapi closing sedikit",
+      "Meta Pixel kurang optimal",
+      "kompetitor punya lebih banyak review"
+    ],
+    "id": "kesehatan",
+    "existing_keyword_count": 0,
+    "total_existing_volume": 0,
+    "top_existing_keywords": []
+  },
+  "properti": {
+    "label": "Properti / Real Estate",
+    "icon": "🏠",
+    "service_primary": "jasa-iklan-google",
+    "service_secondary": [
+      "jasa-iklan-facebook",
+      "jasa-pembuatan-landing-page",
+      "jasa-pembuatan-website"
+    ],
+    "indonetwork_categories": [
+      "properti",
+      "perumahan",
+      "rumah-dijual",
+      "apartemen",
+      "villa",
+      "ruko",
+      "tanah",
+      "kavling",
+      "developer",
+      "real-estate",
+      "properti-komersial",
+      "gudang",
+      "pabrik",
+      "kantor"
+    ],
+    "sub_niches": [
+      "developer perumahan",
+      "agen properti",
+      "marketing properti",
+      "showrum",
+      "kantor pemasaran",
+      "properti komersial",
+      "kontraktor",
+      "arsitek",
+      "interior designer"
+    ],
+    "products": [
+      "rumah",
+      "apartemen",
+      "ruko",
+      "villa",
+      "tanah",
+      "kavling",
+      "ruang kantor",
+      "gudang"
+    ],
+    "search_volume_band": "very_high",
+    "lead_quality": "⭐⭐⭐⭐⭐",
+    "pain_points": [
+      "lead qualified susah",
+      "budget iklan tinggi tapi closing sedikit",
+      "kompetitor banyak",
+      "Meta Pixel tidak nyangkut",
+      "landing page konversi rendah"
+    ],
+    "id": "properti",
+    "existing_keyword_count": 12,
+    "total_existing_volume": 330,
+    "top_existing_keywords": [
+      "Jasa Web Developer",
+      "Jasa Developer Website",
+      "Real Estate Digital Marketing",
+      "Harga Jasa Web Developer",
+      "Harga Web Developer",
+      "Digital Marketing For Real Estate Developers",
+      "Real Estate Digital Marketing Agency",
+      "Real Estate Digital Marketing Services",
+      "Real Estate Marketing Firm",
+      "Real Estate Social Media Marketing Agency"
+    ]
+  },
+  "pendidikan": {
+    "label": "Pendidikan / Kursus / Bootcamp",
+    "icon": "🎓",
+    "service_primary": "jasa-iklan-facebook",
+    "service_secondary": [
+      "jasa-pembuatan-landing-page",
+      "jasa-iklan-tiktok",
+      "jasa-iklan-google"
+    ],
+    "indonetwork_categories": [
+      "pendidikan",
+      "kursus",
+      "pelatihan",
+      "bimbingan-belajar",
+      "bimbel",
+      "sekolah",
+      "universitas",
+      "bootcamp",
+      "edukasi",
+      "les-private",
+      "bahasa-inggris",
+      "komputer",
+      "desain"
+    ],
+    "sub_niches": [
+      "bootcamp programming",
+      "kursus bahasa Inggris",
+      "les privat",
+      "kursus online",
+      "webinar berbayar",
+      "training korporat",
+      "edukasi anak",
+      "PAUD/TK",
+      "bimbel masuk PTN"
+    ],
+    "products": [
+      "kelas online",
+      "bootcamp",
+      "kursus bahasa",
+      "les privat",
+      "webinar",
+      "sertifikasi"
+    ],
+    "search_volume_band": "high",
+    "lead_quality": "⭐⭐⭐⭐",
+    "pain_points": [
+      "cost per lead terlalu tinggi",
+      "penerimaan学员 sedikit",
+      "konten edukasi kurang menarik",
+      "Meta Pixel belum di-setup",
+      "kompetitor punya webinar funnel lebih baik"
+    ],
+    "id": "pendidikan",
+    "existing_keyword_count": 22,
+    "total_existing_volume": 5010,
+    "top_existing_keywords": [
+      "Desain Web",
+      "Desain Website",
+      "Jasa Desain Website",
+      "Jasa Desain Web",
+      "Harga Desain Website",
+      "Desain Tampilan Web",
+      "Desain Halaman Web",
+      "Desain Website Terbaik",
+      "Jasa Desain Website Profesional",
+      "Jasa Web Desain"
+    ]
+  },
+  "jasa_b2b": {
+    "label": "Jasa / B2B / Profesional",
+    "icon": "💼",
+    "service_primary": "jasa-iklan-google",
+    "service_secondary": [
+      "jasa-iklan-facebook",
+      "jasa-pembuatan-website",
+      "jasa-pembuatan-landing-page"
+    ],
+    "indonetwork_categories": [
+      "jasa",
+      "konsultan",
+      "layanan-profesional",
+      "konsultan-it",
+      "konsultan-pemasaran",
+      "konsultan-hukum",
+      "konsultan-bisnis",
+      "keuangan",
+      "akunting",
+      "audit",
+      "pajak",
+      "legal",
+      "periklanan",
+      "agensi"
+    ],
+    "sub_niches": [
+      "konsultan IT",
+      "konsultan hukum",
+      "konsultan pajak",
+      "konsultan HR",
+      "jasa software house",
+      "agensi digital",
+      "jasa audit",
+      "virtual assistant",
+      "freelance"
+    ],
+    "products": [
+      "konsultasi",
+      "software",
+      "aplikasi",
+      "layanan profesional",
+      "audit",
+      "legal opinion"
+    ],
+    "search_volume_band": "medium",
+    "lead_quality": "⭐⭐⭐⭐⭐",
+    "pain_points": [
+      "B2B lead susah dapat",
+      "decision maker susah di-target",
+      "tidak tahu Meta Pixel untuk B2B",
+      "tidak bisa nurture long funnel",
+      "tidak punya CRM"
+    ],
+    "id": "jasa_b2b",
+    "existing_keyword_count": 352,
+    "total_existing_volume": 42680,
+    "top_existing_keywords": [
+      "Jasa Pembuat Web",
+      "Jasa Web",
+      "Jasa Website",
+      "Jasa Digital Marketing",
+      "Jasa Buat Web",
+      "Jasa Pembuatan Website Profesional",
+      "Jasa Bikin Web",
+      "Jasa Landing Page",
+      "Jasa Iklan Google",
+      "Jasa Pembuat Website Murah"
+    ]
+  },
+  "manufaktur": {
+    "label": "Manufaktur / Distributor / B2B Wholesale",
+    "icon": "🏭",
+    "service_primary": "jasa-iklan-google",
+    "service_secondary": [
+      "jasa-pembuatan-website",
+      "jasa-pembuatan-landing-page",
+      "jasa-iklan-facebook"
+    ],
+    "indonetwork_categories": [
+      "manufaktur",
+      "pabrik",
+      "distributor",
+      "grosir",
+      "supplier",
+      "bahan-baku",
+      "produk-setengah-jadi",
+      "komponen"
+    ],
+    "sub_niches": [
+      "pabrik makanan",
+      "pabrik minuman",
+      "pabrik tekstil",
+      "pabrik plastik",
+      "pabrik logam",
+      "konveksi",
+      "distributor ATK",
+      "distributor bahan bangunan",
+      "eksportir",
+      "importir"
+    ],
+    "products": [
+      "bahan baku",
+      "produk jadi",
+      "komponen",
+      "paket grosir"
+    ],
+    "search_volume_band": "medium",
+    "lead_quality": "⭐⭐⭐⭐",
+    "pain_points": [
+      "B2B susah digital marketing",
+      "tidak tahu Google Ads untuk B2B",
+      "MOQ tinggi tapi closing susah",
+      "ekspor tidak ada yang handle",
+      "tidak ada inquiry form"
+    ],
+    "id": "manufaktur",
+    "existing_keyword_count": 0,
+    "total_existing_volume": 0,
+    "top_existing_keywords": []
+  },
+  "otomotif": {
+    "label": "Otomotif / Showroom / Dealer",
+    "icon": "�",
+    "service_primary": "jasa-iklan-facebook",
+    "service_secondary": [
+      "jasa-iklan-google",
+      "jasa-iklan-tiktok"
+    ],
+    "indonetwork_categories": [
+      "otomotif",
+      "mobil",
+      "motor",
+      "sparepart",
+      "bengkel",
+      "showroom",
+      "dealer",
+      "aksesoris-mobil",
+      "aksesoris-motor",
+      "ban",
+      "oli"
+    ],
+    "sub_niches": [
+      "showroom mobil baru",
+      "showroom mobil bekas",
+      "dealer motor",
+      "bengkel resmi",
+      "bengkel umum",
+      "sparepart shop",
+      "aksesoris mobil",
+      "modifikasi mobil"
+    ],
+    "products": [
+      "mobil",
+      "motor",
+      "sparepart",
+      "ban",
+      "oli",
+      "aksesoris"
+    ],
+    "search_volume_band": "high",
+    "lead_quality": "⭐⭐⭐",
+    "pain_points": [
+      "leads sepi",
+      "kompetitor besar",
+      "budget iklan tinggi",
+      "tidak bisa follow up leads tepat waktu",
+      "test drive booking rendah"
+    ],
+    "id": "otomotif",
+    "existing_keyword_count": 17,
+    "total_existing_volume": 440,
+    "top_existing_keywords": [
+      "Pengembangan Website",
+      "Membangun Website",
+      "Biaya Pengembangan Website",
+      "Jasa Pengembangan Website",
+      "Digital Marketing Company In Baner",
+      "Digital Marketing Company Local Mobile Vantage",
+      "Jasa Digital Marketing Bandung",
+      "Jasa Digital Marketing Palembang",
+      "Jasa Iklan Facebook Bandung",
+      "Jasa Iklan Facebook Palembang"
+    ]
+  },
+  "travel": {
+    "label": "Travel / Tourism / Hotel",
+    "icon": "✈️",
+    "service_primary": "jasa-iklan-tiktok",
+    "service_secondary": [
+      "jasa-iklan-facebook",
+      "jasa-iklan-google"
+    ],
+    "indonetwork_categories": [
+      "travel",
+      "tour",
+      "liburan",
+      "hotel",
+      "penginapan",
+      "villa",
+      "homestay",
+      "tour-operator",
+      "tiket-pesawat",
+      "tour-haji",
+      "tour-umrah"
+    ],
+    "sub_niches": [
+      "tour domestik",
+      "tour internasional",
+      "umrah & haji",
+      "homestay",
+      "villa",
+      "hotel butik",
+      "guest house",
+      "rental mobil",
+      "paket honeymoon"
+    ],
+    "products": [
+      "paket tour",
+      "tiket pesawat",
+      "hotel",
+      "villa",
+      "homestay",
+      "rental"
+    ],
+    "search_volume_band": "high",
+    "lead_quality": "⭐⭐⭐",
+    "pain_points": [
+      "pemesanan sepi",
+      "seasonal demand",
+      "kompetitor banyak",
+      "Meta Pixel untuk travel susah",
+      "ROAS TikTok rendah"
+    ],
+    "id": "travel",
+    "existing_keyword_count": 0,
+    "total_existing_volume": 0,
+    "top_existing_keywords": []
+  }
+}

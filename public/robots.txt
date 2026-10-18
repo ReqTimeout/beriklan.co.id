@@ -12,11 +12,19 @@ User-agent: ChatGPT-User
 Allow: /
 Disallow: /api/
 
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+
 User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 
 User-agent: anthropic-ai
+Allow: /
+Disallow: /api/
+
+User-agent: Claude-SearchBot
 Allow: /
 Disallow: /api/
 
@@ -57,12 +65,18 @@ Allow: /
 Disallow: /api/
 
 # Sitemaps & AI discovery endpoints
+# sitemap-index.xml = master index (static, services, city, pillar, harga, blog, pagination, tag)
+# sitemap-blog.xml = dynamic (D1, includes AI-published posts beyond static build)
+# news.xml = dynamic (worker, fresh posts < 36h)
+Sitemap: https://beriklan.co.id/sitemap.xml
 Sitemap: https://beriklan.co.id/sitemap-index.xml
 Sitemap: https://beriklan.co.id/sitemap-static.xml
-Sitemap: https://beriklan.co.id/sitemap-blog.xml
+Sitemap: https://beriklan.co.id/sitemap-services.xml
 Sitemap: https://beriklan.co.id/sitemap-city.xml
-Sitemap: https://beriklan.co.id/sitemap-tag.xml
 Sitemap: https://beriklan.co.id/sitemap-pillar.xml
+Sitemap: https://beriklan.co.id/sitemap-harga.xml
+Sitemap: https://beriklan.co.id/sitemap-blog.xml
+Sitemap: https://beriklan.co.id/news.xml
 
 # AI-friendly content index
 # llms.txt → ringkasan situs untuk AI

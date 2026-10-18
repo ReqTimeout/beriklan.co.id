@@ -1,0 +1,1028 @@
+{
+ "generated_at": "2026-09-30T03:35:11+0700",
+ "mode": "harvest",
+ "wave": 1,
+ "sub_niche": "kontraktor",
+ "endpoint": "suggestqueries.google.com/complete/search?client=firefox&hl=id&gl=id",
+ "counts": {
+  "exact": 21,
+  "derivative": 28
+ },
+ "exact_rate": 0.4286,
+ "importable_rate": 1.0,
+ "intent_distribution": {
+  "informational": 14,
+  "commercial": 27,
+  "transactional": 8
+ },
+ "commercial_transactional_rate": 0.7143,
+ "pruned_not_imported": [
+  {
+   "phrase": "iklan kontraktor bandung",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan kontraktor jakarta",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan kontraktor makassar",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan kontraktor medan",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "harga iklan kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "biaya iklan kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan facebook kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan google kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan tiktok kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan instagram kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "digital marketing kontraktor bandung",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "digital marketing kontraktor jakarta",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "digital marketing kontraktor makassar",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "digital marketing kontraktor medan",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "harga digital marketing kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "biaya digital marketing kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan renovasi rumah bandung",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan renovasi rumah jakarta",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan renovasi rumah makassar",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "iklan renovasi rumah medan",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "harga iklan renovasi rumah",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "biaya iklan renovasi rumah",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "promosi kontraktor bandung",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "promosi kontraktor jakarta",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "promosi kontraktor makassar",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "promosi kontraktor medan",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "harga promosi kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  },
+  {
+   "phrase": "biaya promosi kontraktor",
+   "status": "derivative",
+   "reason": "derivative-separate-file"
+  }
+ ],
+ "harvest_queries": [
+  {
+   "query": "iklan kontraktor",
+   "n": 8,
+   "suggestions": [
+    "iklan kontraktor",
+    "iklan kontraktor bangunan",
+    "iklan kontraktor rumah",
+    "iklan jasa kontraktor",
+    "contoh iklan kontraktor",
+    "contoh iklan kontraktor rumah",
+    "poster iklan kontraktor",
+    "kata kata iklan kontraktor"
+   ]
+  },
+  {
+   "query": "digital marketing kontraktor",
+   "n": 1,
+   "suggestions": [
+    "digital marketing kontraktor"
+   ]
+  },
+  {
+   "query": "marketing kontraktor",
+   "n": 10,
+   "suggestions": [
+    "marketing kontraktor",
+    "marketing kontraktor adalah",
+    "marketing proyek kontraktor",
+    "tugas marketing kontraktor",
+    "gaji marketing kontraktor",
+    "fee marketing kontraktor",
+    "lowongan marketing kontraktor",
+    "digital marketing kontraktor",
+    "cara marketing kontraktor",
+    "sales marketing kontraktor"
+   ]
+  },
+  {
+   "query": "promosi kontraktor",
+   "n": 4,
+   "suggestions": [
+    "promosi kontraktor",
+    "contoh promosi kontraktor",
+    "cara promosi kontraktor",
+    "kata kata promosi kontraktor"
+   ]
+  },
+  {
+   "query": "jasa iklan kontraktor",
+   "n": 2,
+   "suggestions": [
+    "iklan jasa kontraktor",
+    "contoh iklan jasa kontraktor"
+   ]
+  },
+  {
+   "query": "kontraktor marketing online",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "iklan jasa kontraktor",
+   "n": 2,
+   "suggestions": [
+    "iklan jasa kontraktor",
+    "contoh iklan jasa kontraktor"
+   ]
+  },
+  {
+   "query": "branding kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "media sosial kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "landing page kontraktor",
+   "n": 1,
+   "suggestions": [
+    "landing page kontraktor"
+   ]
+  },
+  {
+   "query": "seo kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "iklan renovasi rumah",
+   "n": 5,
+   "suggestions": [
+    "iklan renovasi rumah",
+    "iklan jasa renovasi rumah",
+    "contoh iklan renovasi rumah",
+    "kata kata iklan renovasi rumah",
+    "contoh iklan jasa renovasi rumah"
+   ]
+  },
+  {
+   "query": "digital marketing konstruksi",
+   "n": 1,
+   "suggestions": [
+    "digital marketing konstruksi"
+   ]
+  },
+  {
+   "query": "iklan untuk perusahaan konstruksi",
+   "n": 1,
+   "suggestions": [
+    "iklan perusahaan konstruksi"
+   ]
+  },
+  {
+   "query": "cara pemasaran jasa kontraktor",
+   "n": 1,
+   "suggestions": [
+    "cara pemasaran jasa kontraktor"
+   ]
+  },
+  {
+   "query": "agency iklan kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "jasa digital marketing konstruksi",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "tips iklan kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "konten sosmed kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "facebook ads kontraktor",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "strategi marketing jasa renovasi",
+   "n": 0,
+   "suggestions": []
+  },
+  {
+   "query": "iklan agar dapat proyek kontraktor",
+   "n": 0,
+   "suggestions": []
+  }
+ ],
+ "rows": [
+  {
+   "phrase": "iklan kontraktor",
+   "normalized": "iklan kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 8,
+   "suggestions": [
+    "iklan kontraktor",
+    "iklan kontraktor bangunan",
+    "iklan kontraktor rumah",
+    "iklan jasa kontraktor",
+    "contoh iklan kontraktor",
+    "contoh iklan kontraktor rumah",
+    "poster iklan kontraktor",
+    "kata kata iklan kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan kontraktor bangunan",
+   "normalized": "iklan kontraktor bangunan",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "iklan kontraktor bangunan"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan kontraktor rumah",
+   "normalized": "iklan kontraktor rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 2,
+   "suggestions": [
+    "iklan kontraktor rumah",
+    "contoh iklan kontraktor rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan jasa kontraktor",
+   "normalized": "iklan jasa kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 2,
+   "suggestions": [
+    "iklan jasa kontraktor",
+    "contoh iklan jasa kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "contoh iklan kontraktor",
+   "normalized": "contoh iklan kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 3,
+   "suggestions": [
+    "contoh iklan kontraktor",
+    "contoh iklan kontraktor rumah",
+    "contoh iklan jasa kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "contoh iklan kontraktor rumah",
+   "normalized": "contoh iklan kontraktor rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "contoh iklan kontraktor rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "digital marketing kontraktor",
+   "normalized": "digital marketing kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "digital marketing kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "marketing kontraktor",
+   "normalized": "marketing kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 10,
+   "suggestions": [
+    "marketing kontraktor",
+    "marketing kontraktor adalah",
+    "marketing proyek kontraktor",
+    "tugas marketing kontraktor",
+    "gaji marketing kontraktor",
+    "fee marketing kontraktor",
+    "lowongan marketing kontraktor",
+    "digital marketing kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "marketing kontraktor"
+  },
+  {
+   "phrase": "marketing proyek kontraktor",
+   "normalized": "marketing proyek kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "marketing proyek kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "marketing kontraktor"
+  },
+  {
+   "phrase": "cara marketing kontraktor",
+   "normalized": "cara marketing kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "cara marketing kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "marketing kontraktor"
+  },
+  {
+   "phrase": "promosi kontraktor",
+   "normalized": "promosi kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 4,
+   "suggestions": [
+    "promosi kontraktor",
+    "contoh promosi kontraktor",
+    "cara promosi kontraktor",
+    "kata kata promosi kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "contoh promosi kontraktor",
+   "normalized": "contoh promosi kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "contoh promosi kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "cara promosi kontraktor",
+   "normalized": "cara promosi kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "cara promosi kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "contoh iklan jasa kontraktor",
+   "normalized": "contoh iklan jasa kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "contoh iklan jasa kontraktor"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "jasa iklan kontraktor"
+  },
+  {
+   "phrase": "landing page kontraktor",
+   "normalized": "landing page kontraktor",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "landing page kontraktor"
+   ],
+   "service": "jasa-pembuatan-landing-page",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "landing page kontraktor"
+  },
+  {
+   "phrase": "iklan renovasi rumah",
+   "normalized": "iklan renovasi rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 5,
+   "suggestions": [
+    "iklan renovasi rumah",
+    "iklan jasa renovasi rumah",
+    "contoh iklan renovasi rumah",
+    "kata kata iklan renovasi rumah",
+    "contoh iklan jasa renovasi rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "iklan jasa renovasi rumah",
+   "normalized": "iklan jasa renovasi rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 2,
+   "suggestions": [
+    "iklan jasa renovasi rumah",
+    "contoh iklan jasa renovasi rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "contoh iklan renovasi rumah",
+   "normalized": "contoh iklan renovasi rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 2,
+   "suggestions": [
+    "contoh iklan renovasi rumah",
+    "contoh iklan jasa renovasi rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "contoh iklan jasa renovasi rumah",
+   "normalized": "contoh iklan jasa renovasi rumah",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "contoh iklan jasa renovasi rumah"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "commercial",
+   "formula": "suggest-harvest",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "digital marketing konstruksi",
+   "normalized": "digital marketing konstruksi",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "digital marketing konstruksi"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "digital marketing konstruksi"
+  },
+  {
+   "phrase": "iklan perusahaan konstruksi",
+   "normalized": "iklan perusahaan konstruksi",
+   "status": "exact",
+   "in_suggest": true,
+   "n_suggestions": 1,
+   "suggestions": [
+    "iklan perusahaan konstruksi"
+   ],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "informational",
+   "formula": "suggest-harvest",
+   "origin": "iklan untuk perusahaan konstruksi"
+  },
+  {
+   "phrase": "iklan kontraktor bandung",
+   "normalized": "iklan kontraktor bandung",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan kontraktor jakarta",
+   "normalized": "iklan kontraktor jakarta",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan kontraktor makassar",
+   "normalized": "iklan kontraktor makassar",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan kontraktor medan",
+   "normalized": "iklan kontraktor medan",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "harga iklan kontraktor",
+   "normalized": "harga iklan kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "biaya iklan kontraktor",
+   "normalized": "biaya iklan kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan facebook kontraktor",
+   "normalized": "iklan facebook kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-iklan-facebook",
+   "city": "",
+   "intent": "commercial",
+   "formula": "kanal",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan google kontraktor",
+   "normalized": "iklan google kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-iklan-google",
+   "city": "",
+   "intent": "commercial",
+   "formula": "kanal",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan tiktok kontraktor",
+   "normalized": "iklan tiktok kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-iklan-tiktok",
+   "city": "",
+   "intent": "commercial",
+   "formula": "kanal",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "iklan instagram kontraktor",
+   "normalized": "iklan instagram kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-iklan-instagram",
+   "city": "",
+   "intent": "commercial",
+   "formula": "kanal",
+   "origin": "iklan kontraktor"
+  },
+  {
+   "phrase": "digital marketing kontraktor bandung",
+   "normalized": "digital marketing kontraktor bandung",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "digital marketing kontraktor jakarta",
+   "normalized": "digital marketing kontraktor jakarta",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "digital marketing kontraktor makassar",
+   "normalized": "digital marketing kontraktor makassar",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "digital marketing kontraktor medan",
+   "normalized": "digital marketing kontraktor medan",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "harga digital marketing kontraktor",
+   "normalized": "harga digital marketing kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "biaya digital marketing kontraktor",
+   "normalized": "biaya digital marketing kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "digital marketing kontraktor"
+  },
+  {
+   "phrase": "iklan renovasi rumah bandung",
+   "normalized": "iklan renovasi rumah bandung",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "iklan renovasi rumah jakarta",
+   "normalized": "iklan renovasi rumah jakarta",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "iklan renovasi rumah makassar",
+   "normalized": "iklan renovasi rumah makassar",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "iklan renovasi rumah medan",
+   "normalized": "iklan renovasi rumah medan",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "harga iklan renovasi rumah",
+   "normalized": "harga iklan renovasi rumah",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "biaya iklan renovasi rumah",
+   "normalized": "biaya iklan renovasi rumah",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "iklan renovasi rumah"
+  },
+  {
+   "phrase": "promosi kontraktor bandung",
+   "normalized": "promosi kontraktor bandung",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "bandung",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "promosi kontraktor jakarta",
+   "normalized": "promosi kontraktor jakarta",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "jakarta",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "promosi kontraktor makassar",
+   "normalized": "promosi kontraktor makassar",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "makassar",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "promosi kontraktor medan",
+   "normalized": "promosi kontraktor medan",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "medan",
+   "intent": "commercial",
+   "formula": "kota",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "harga promosi kontraktor",
+   "normalized": "harga promosi kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "promosi kontraktor"
+  },
+  {
+   "phrase": "biaya promosi kontraktor",
+   "normalized": "biaya promosi kontraktor",
+   "status": "derivative",
+   "in_suggest": false,
+   "n_suggestions": 0,
+   "suggestions": [],
+   "service": "jasa-digital-marketing",
+   "city": "",
+   "intent": "transactional",
+   "formula": "biaya",
+   "origin": "promosi kontraktor"
+  }
+ ]
+}

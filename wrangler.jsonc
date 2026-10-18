@@ -19,7 +19,6 @@
     "binding": "AI"
   },
   "vars": {
-    "ADMIN_TOKEN": "beriklan-admin-2026"
   },
   "observability": {
     "enabled": true
@@ -35,12 +34,13 @@
     "run_worker_first": ["/*"]
   },
   "triggers": {
+    // 1 slot cron beriklanweb (2026-09-25): */15 dipindah ke time-gate di dalam
+    // scheduled() karena CF auto-disabled setelah 3× fail. Total crons:
+    //   beriklanweb: 1 (`0 * * * *`)
+    //   beriklanmy: 1 (`0 * * * *`)
+    //   total account: 2/5 — masih 3 slot kosong.
     "crons": [
-      "0 * * * *",
-      "*/15 * * * *",
-      "30 6 * * *",
-      "0 7 * * *",
-      "0 3 * * 1"
+      "0 * * * *"
     ]
   }
 }

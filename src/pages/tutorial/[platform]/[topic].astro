@@ -1,0 +1,379 @@
+---
+/**
+ * Topic Hub — Halaman agregasi artikel per topik
+ * ================================================
+ * URL: /tutorial/{platform}/{topic}/
+ *
+ * Tujuan SEO:
+ *   - Topical authority untuk query informational ("cara X", "apa itu Y")
+ *   - Internal linking massif ke service pages (lead-gen)
+ *   - Schema: CollectionPage + ItemList + BreadcrumbList
+ *   - AdSense: 3 placement optimal (top, mid, sidebar)
+ *   - Related service CTA di akhir halaman
+ *
+ * Strategi konten:
+ *   - 1 HUB per (platform × topik) → 30-50 hubs = 1500-2500 inbound links
+ *   - Setiap HUB link ke 5-15 artikel tutorial + 1 service page
+ */
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.svelte';
+import Footer from '../../../components/Footer.svelte';
+import StickyCTA from '../../../components/StickyCTA.svelte';
+import AdsenseSlot from '../../../components/AdsenseSlot.astro';
+import RelatedServices from '../../../components/RelatedServices.svelte';
+import { ChevronRight, BookOpen, Clock, Tag } from 'lucide-svelte';
+
+export async function getStaticPaths() {
+    const postsModule = await import('../../../data/posts.json');
+    const posts = postsModule.default || postsModule;
+
+    // Mapping platform → keyword detector
+    const PLATFORM_DETECTORS = {
+        'facebook-ads': ['facebook', 'fb ads', 'meta ads', 'meta pixel', 'audience network'],
+        'instagram-ads': ['instagram', 'ig ads', 'reels ads', 'stories ads'],
+        'tiktok-ads': ['tiktok', 'fyp', 'spark ads', 'tiktok pixel'],
+        'google-ads': ['google ads', 'google adwords', 'search ads', 'display ads', 'youtube ads'],
+        'youtube-ads': ['youtube', 'video ads', 'bumper ads'],
+        'digital-marketing': ['digital marketing', 'seo', 'content marketing', 'social media', 'marketing'],
+        'website': ['website', 'web design', 'landing page', 'wordpress', 'web development'],
+        'meta-pixel': ['meta pixel', 'facebook pixel', 'pixel api', 'conversion api'],
+    };
+
+    // Map keyword → topic (5 topic utama per platform)
+    const TOPIC_MAP = {
+        'cara-pasang': { slug: 'cara-pasang', label: 'Cara Pasang', intent: 'tutorial' },
+        'cara-optimasi': { slug: 'cara-optimasi', label: 'Cara Optimasi', intent: 'tutorial' },
+        'apa-itu': { slug: 'apa-itu', label: 'Apa Itu', intent: 'edukasi' },
+        'tips': { slug: 'tips', label: 'Tips & Trik', intent: 'tips' },
+        'panduan': { slug: 'panduan', label: 'Panduan', intent: 'panduan' },
+        'perbandingan': { slug: 'perbandingan', label: 'Perbandingan', intent: 'comparison' },
+    };
+
+    // Service page mapping
+    const SERVICE_MAP = {
+        'facebook-ads': 'jasa-iklan-facebook',
+        'instagram-ads': 'jasa-iklan-instagram',
+        'tiktok-ads': 'jasa-iklan-tiktok',
+        'google-ads': 'jasa-iklan-google',
+        'youtube-ads': 'jasa-iklan-youtube',
+        'digital-marketing': 'jasa-digital-marketing',
+        'website': 'jasa-pembuatan-website',
+        'meta-pixel': 'jasa-iklan-facebook',
+    };
+
+    const SERVICE_INFO = {
+        'jasa-iklan-facebook': { name: 'Jasa Iklan Facebook', slug: 'jasa-iklan-facebook' },
+        'jasa-iklan-instagram': { name: 'Jasa Iklan Instagram', slug: 'jasa-iklan-instagram' },
+        'jasa-iklan-tiktok': { name: 'Jasa Iklan TikTok', slug: 'jasa-iklan-tiktok' },
+        'jasa-iklan-google': { name: 'Jasa Iklan Google', slug: 'jasa-iklan-google' },
+        'jasa-iklan-youtube': { name: 'Jasa Iklan YouTube', slug: 'jasa-iklan-youtube' },
+        'jasa-digital-marketing': { name: 'Jasa Digital Marketing', slug: 'jasa-digital-marketing' },
+        'jasa-pembuatan-website': { name: 'Jasa Pembuatan Website', slug: 'jasa-pembuatan-website' },
+        'jasa-pembuatan-landing-page': { name: 'Jasa Landing Page', slug: 'jasa-pembuatan-landing-page' },
+        'jasa-kelola-instagram': { name: 'Jasa Kelola Instagram', slug: 'jasa-kelola-instagram' },
+        'jasa-kelola-tiktok': { name: 'Jasa Kelola TikTok', slug: 'jasa-kelola-tiktok' },
+    };
+
+    // Filter only informational posts
+    const informationalPosts = posts.filter(p => {
+        const kw = (p.keyword_normalized || p.title || '').toLowerCase();
+        return p.category === 'strategy' || kw.startsWith('cara ') || kw.startsWith('apa ') ||
+               kw.includes('tips ') || kw.includes('panduan ') || kw.startsWith('belajar ') ||
+               kw.startsWith('tutorial') || kw.startsWith('langkah');
+    });
+
+    // Group by (platform, topic)
+    const hubs = {};
+
+    for (const post of informationalPosts) {
+        const kw = (post.keyword_normalized || post.title || '').toLowerCase();
+
+        // Detect platform
+        let platform = null;
+        for (const [plat, detectors] of Object.entries(PLATFORM_DETECTORS)) {
+            if (detectors.some(d => kw.includes(d))) {
+                platform = plat;
+                break;
+            }
+        }
+        if (!platform) continue;
+
+        // Detect topic
+        let topic = 'cara-pasang'; // default
+        if (kw.startsWith('apa ')) topic = 'apa-itu';
+        else if (kw.startsWith('cara optimasi')) topic = 'cara-optimasi';
+        else if (kw.startsWith('tips') || kw.includes(' tips ')) topic = 'tips';
+        else if (kw.startsWith('panduan')) topic = 'panduan';
+        else if (kw.startsWith('cara ')) topic = 'cara-pasang';
+
+        const key = `${platform}__${topic}`;
+        if (!hubs[key]) {
+            hubs[key] = {
+                platform,
+                topic,
+                posts: [],
+            };
+        }
+        hubs[key].posts.push(post);
+    }
+
+    // Build static paths: only keep hubs with >=3 posts
+    const paths = [];
+    for (const [key, hub] of Object.entries(hubs)) {
+        if (hub.posts.length < 3) continue;
+
+        const serviceSlug = SERVICE_MAP[hub.platform];
+        const service = SERVICE_INFO[serviceSlug] || null;
+
+        paths.push({
+            params: {
+                platform: hub.platform,
+                topic: hub.topic,
+            },
+            props: {
+                platform: hub.platform,
+                topic: hub.topic,
+                posts: hub.posts.slice(0, 30), // cap to 30
+                service,
+                topicLabel: TOPIC_MAP[hub.topic]?.label || hub.topic,
+            },
+        });
+    }
+
+    return paths;
+}
+
+const { platform, topic, posts, service, topicLabel } = Astro.props;
+
+const PLATFORM_NAMES = {
+    'facebook-ads': 'Facebook Ads',
+    'instagram-ads': 'Instagram Ads',
+    'tiktok-ads': 'TikTok Ads',
+    'google-ads': 'Google Ads',
+    'youtube-ads': 'YouTube Ads',
+    'digital-marketing': 'Digital Marketing',
+    'website': 'Website',
+    'meta-pixel': 'Meta Pixel',
+};
+
+const platformName = PLATFORM_NAMES[platform] || platform;
+
+const pageTitle = `${topicLabel} ${platformName} — Tutorial Lengkap & Terbaru | Beriklan`;
+const pageDesc = `Kumpulan ${posts.length}+ artikel ${topicLabel.toLowerCase()} ${platformName} terlengkap. Pelajari strategi, tips, dan tutorial terbaru untuk hasil iklan maksimal.`;
+const canonical = `https://beriklan.co.id/tutorial/${platform}/${topic}/`;
+
+// Schema: CollectionPage + ItemList + Breadcrumb
+const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": `${topicLabel} ${platformName}`,
+    "description": pageDesc,
+    "url": canonical,
+    "isPartOf": {
+        "@type": "WebSite",
+        "name": "Beriklan.co.id",
+        "url": "https://beriklan.co.id/"
+    },
+    "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": posts.length,
+        "itemListElement": posts.slice(0, 10).map((p, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "url": `https://beriklan.co.id/blog/${p.slug}/`,
+            "name": p.title
+        }))
+    }
+};
+
+const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Beranda", "item": "https://beriklan.co.id/"},
+        {"@type": "ListItem", "position": 2, "name": "Tutorial", "item": "https://beriklan.co.id/tutorial/"},
+        {"@type": "ListItem", "position": 3, "name": platformName, "item": `https://beriklan.co.id/tutorial/${platform}/`},
+        {"@type": "ListItem", "position": 4, "name": topicLabel, "item": canonical},
+    ]
+};
+---
+
+<Layout
+    title={pageTitle}
+    description={pageDesc}
+    canonical={canonical}
+    ogType="website"
+>
+    <Navbar client:only="svelte" />
+    <StickyCTA client:only="svelte" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+    <!-- Hero -->
+    <header class="hero relative pt-28 md:pt-40 pb-12 md:pb-16 overflow-hidden bg-gradient-to-br from-white via-soft to-beige">
+        <div class="absolute inset-0 opacity-[0.4] pointer-events-none hero-grid"></div>
+        <div class="abs-blob abs-blob-1"></div>
+        <div class="abs-blob abs-blob-2"></div>
+        <div class="container mx-auto px-6 max-w-4xl relative z-10">
+            <!-- Breadcrumb -->
+            <nav class="flex items-center gap-2 text-sm text-muted mb-6 flex-wrap">
+                <a href="/" class="hover:text-accent">Beranda</a>
+                <ChevronRight class="w-3 h-3" />
+                <a href="/tutorial/" class="hover:text-accent">Tutorial</a>
+                <ChevronRight class="w-3 h-3" />
+                <a href={`/tutorial/${platform}/`} class="hover:text-accent">{platformName}</a>
+                <ChevronRight class="w-3 h-3" />
+                <span class="text-ink font-semibold">{topicLabel}</span>
+            </nav>
+
+            <div class="hero-eyebrow inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-ink font-semibold rounded-full text-xs tracking-wider uppercase shadow-sm mb-5">
+                <BookOpen class="w-3.5 h-3.5 text-accent" />
+                {posts.length} Artikel · Diperbarui {new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
+            </div>
+
+            <h1 class="font-display font-extrabold text-4xl md:text-5xl text-ink leading-[1.1] tracking-tight mb-5">
+                <span class="anim-fade-up">{topicLabel} {platformName}</span><br/>
+                <span class="anim-fade-up text-transparent bg-clip-text bg-gradient-to-r from-primary-2 to-accent" style="animation-delay: 80ms;">
+                    untuk Hasil Iklan Maksimal
+                </span>
+            </h1>
+
+            <p class="text-base md:text-lg text-muted leading-relaxed mb-7 max-w-2xl">
+                Kumpulan terlengkap artikel {topicLabel.toLowerCase()} {platformName} yang ditulis oleh tim Beriklan.
+                Mulai dari tutorial pemula hingga strategi lanjutan untuk UMKM dan bisnis menengah Indonesia.
+            </p>
+
+            {service && (
+                <div class="flex flex-wrap gap-3">
+                    <a
+                        href={`/${service.slug}/`}
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-white font-bold rounded-full hover:bg-orange-500 transition shadow-lg"
+                    >
+                        Lihat Layanan {service.name} →
+                    </a>
+                    <a
+                        href="/order/"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-ink text-ink font-bold rounded-full hover:bg-ink hover:text-white transition"
+                    >
+                        Konsultasi Gratis
+                    </a>
+                </div>
+            )}
+        </div>
+    </header>
+
+    <!-- Ads: top banner -->
+    <section class="container mx-auto px-6 max-w-4xl my-8">
+        <AdsenseSlot slot="in-article" format="horizontal" />
+    </section>
+
+    <!-- Articles Grid -->
+    <section class="py-12 md:py-16 bg-white">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <h2 class="text-2xl md:text-3xl font-display font-bold text-ink mb-8">
+                {posts.length} Artikel {topicLabel} {platformName}
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-5">
+                {posts.slice(0, 20).map((post, idx) => (
+                    <article class="bg-soft border border-gray-100 rounded-2xl p-5 hover:shadow-pop transition-all group">
+                        <a href={`/blog/${post.slug}/`} class="block">
+                            <div class="flex items-start gap-3 mb-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                    {idx + 1}
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-display font-bold text-base md:text-lg text-ink leading-snug group-hover:text-accent transition mb-2 line-clamp-2">
+                                        {post.title}
+                                    </h3>
+                                    <p class="text-sm text-muted line-clamp-2 mb-3">
+                                        {post.excerpt || post.keyword}
+                                    </p>
+                                    <div class="flex items-center gap-3 text-xs text-muted">
+                                        <span class="flex items-center gap-1">
+                                            <Clock class="w-3 h-3" />
+                                            {post.readTime || 5} min
+                                        </span>
+                                        {post.category && (
+                                            <span class="flex items-center gap-1">
+                                                <Tag class="w-3 h-3" />
+                                                {post.category}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                ))}
+            </div>
+
+            <!-- Mid-content Ad -->
+            <div class="my-10">
+                <AdsenseSlot slot="in-article" format="rectangle" />
+            </div>
+
+            <!-- Remaining posts -->
+            {posts.length > 20 && (
+                <div class="space-y-4 mt-10">
+                    <h3 class="text-xl font-display font-bold text-ink mb-4">Artikel Lainnya</h3>
+                    {posts.slice(20).map((post) => (
+                        <a
+                            href={`/blog/${post.slug}/`}
+                            class="block bg-white border border-gray-200 rounded-xl p-5 hover:border-accent hover:shadow-soft transition group"
+                        >
+                            <h4 class="font-display font-bold text-base text-ink group-hover:text-accent mb-2">
+                                {post.title}
+                            </h4>
+                            <p class="text-sm text-muted line-clamp-2">
+                                {post.excerpt || post.keyword}
+                            </p>
+                            <div class="flex items-center gap-3 text-xs text-muted mt-3">
+                                <span>{post.readTime || 5} min baca</span>
+                                <span>•</span>
+                                <span>{new Date(post.iso_date || post.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+    </section>
+
+    <!-- Service CTA Section -->
+    {service && (
+        <section class="py-16 bg-gradient-to-br from-primary to-primary-2 text-white">
+            <div class="container mx-auto px-6 max-w-4xl text-center">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Layanan Profesional</p>
+                <h2 class="text-3xl md:text-4xl font-display font-extrabold mb-4">
+                    Lebih Cepat dengan Tim {service.name} Beriklan
+                </h2>
+                <p class="text-base md:text-lg text-blue-100 leading-relaxed mb-7 max-w-2xl mx-auto">
+                    Pelajari sendiri butuh waktu berminggu-minggu. Tim kami帮你
+                    mengelola campaign dalam 1-3 hari kerja, dengan dashboard
+                    real-time dan laporan mingguan.
+                </p>
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <a
+                        href={`/${service.slug}/`}
+                        class="inline-flex items-center gap-2 px-7 py-3.5 bg-accent text-white font-bold rounded-full hover:bg-orange-500 transition shadow-lg"
+                    >
+                        Lihat Paket & Harga
+                    </a>
+                    <a
+                        href={`https://wa.me/62811919328?text=${encodeURIComponent(`Halo Beriklan, saya tertarik dengan ${service.name}. Mohon info lebih lanjut.`)}`}
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-primary font-bold rounded-full hover:bg-gray-100 transition"
+                    >
+                        Diskusi via WhatsApp
+                    </a>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <Footer />
+    <AdsenseSlot slot="anchor" />
+</Layout>

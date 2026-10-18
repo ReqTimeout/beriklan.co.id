@@ -513,6 +513,125 @@ Setiap post punya:
 
 ---
 
+### 9.1 Worker Blog Template — JANGAN ULANGI KESALAHAN INI (2026-08-27)
+
+**Aturan emas (WAJIB dipatuhi agent berikutnya):**
+
+`_getBlogTpl(env)` di `worker-entry.js` adalah pondasi render blog dinamis. Implementasi
+yang benar HARUS menangkap 3 hal dari homepage reference HTML:
+
+1. **`prefix`** = `html.substring(0, '</head>'.length + headEnd) + '\n<body ...>\n'`
+2. **`bodyPre`** = semua yang ada di body SEBELUM `<astro-island>` pertama. Ini berisi
+   - `<a ... cdn-cgi/content?id=...>` (Cloudflare email-decode)
+   - `<!-- GTM noscript -->`
+   - `<style>astro-island,astro-slot,astro-static-slot{display:contents}</style>`
+   - `<script>(()=>{...Astro.only...})()</script>` (wajib!)
+   - `<script>(()=>{var A=Object.defineP...)</script>` (controller hidrasi, wajib!)
+3. **`islands`** = regex `<astro-island[\s\S]*?<\/astro-island>` TAPI **DIFILTER** —
+   hanya chrome (Navbar/StickyCTA/FloatingWhatsApp/CookieBanner). JANGAN inject
+   HeroVisual/PainPoints/Services/Method/Stats/Testimonials/AuditTool/FaqAccordion
+   ke /blog/ atau /blog/<slug>/ — itu akan ngerusak layout blog dengan mockup dashboard.
+
+`_injectPageExtras(prefix, islands, bodyPre)` inject (1) AdSense head script kalau
+belum ada, (2) `bodyPre + islands` tepat setelah tag `<body ...>`.
+
+**Salah satu akan fatal:**
+
+- ❌ Skip `bodyPre` → islands tetap HTMLUnknownElement → navbar tidak pernah hydrate
+  → single post tampil tanpa navbar + ada `TagError: Y` dari parser.
+- ❌ Inject SEMUA islands (tanpa filter) → blog index muncul dashboard mockup,
+  PainPoints cards, dsb dari homepage — layout rusak total.
+- ❌ Pakai `/blog/` sebagai reference template (cyclic) → handler infinite loop.
+
+**Implementasi saat ini ada di** `worker-entry.js:14161-14192` (template), `:14158-14211`
+(helpers), `:14890-14990` (`renderBlogIndex`).
+
+**Verified routing (jangan ubah tanpa test):**
+- `/blog/`, `/blog/page/N/`, `/blog/category/<cat>/`, `/blog/category/<cat>/page/N/`
+  → `renderBlogIndex(env, pageNum, category)` (D1, 24/page).
+- `/blog/<slug>/` → `renderBlogPost(slug, env)` (D1, single).
+
+**Kategori/blog image syncronization:**
+Featured image DAN `posts_meta.category` PAKAI inference yang SAMA dari title.
+Logic ada di 2 tempat yang HARUS dijaga sinkron:
+- `web/src/utils/featured_image.js` (`inferServiceFromTitle`, `getFeaturedImage`)
+- `web/src/worker-entry.js` (`_inferSvcFromTitle`, `_featuredImageFor`)
+
+Kalau salah satu di-update, update yang lain. Aturan disusun paling spesifik →
+paling umum. **JANGAN** pakai rule generik `"ads" → google` (greedy — salah tangkap
+artikel Facebook/TikTok/Instagram ads → image jadi google).
+
+**Recategorize migration:** `handleAdminMigrate` punya statement UPDATE
+`posts_meta.category` berdasarkan title keyword (spesifik menang). Idempotent.
+Untuk cek distribusi sebelum/sesudah: `GET /api/admin/posts/categories?token=...`
+
+### 9.2 Featured image files — verifikasi konten, bukan nama (2026-08-27)
+
+**Lesson:** Nama file di `web/public/images/blog/*.webp` HARUS sesuai dengan konten
+gambar. Mapping di `SVC_IMG` / `SERVICE_IMAGES` hanya memakai nama file sebagai
+key — kalau konten tidak sesuai (file tertukar saat upload), gambar di artikel
+akan salah meskipun HTML `src` benar.
+
+**Verifikasi (2026-08-27):** Ditemukan 2 file konten-nya tertukar:
+- `jasapembuatanwebsite.webp` → isinya TikTok view live mockup
+- `jasaviewlivetiktok.webp` → isinya website/landing page mockup
+
+Fix: `mv` swap dua file + rebuild + wrangler deploy. Sekarang:
+- `jasapembuatanwebsite.webp` → landing page mockup ✅
+- `jasaviewlivetiktok.webp` → TikTok view live mockup ✅
+
+**Wajib saat nambah file image baru:**
+1. Buka file hasil export (drag ke image viewer / chat), konfirmasi konten-nya
+   sesuai nama yang akan dipakai.
+2. Test `http://localhost:4321/images/blog/<nama>.webp` di browser.
+3. Update `SVC_IMG` di `worker-entry.js` + `SERVICE_IMAGES` di
+   `utils/featured_image.js` (HARUS sinkron).
+4. Cleanup file `jasafacebokads.webp` (typo, tidak dipakai) — rename atau hapus
+   kalau sudah tidak dipakai.
+
+---
+
+## 🚀 News Sitemap + Multi-Channel Distribute (2026-08-27)
+
+**File:** `worker-entry.js` — handler `handleNewsSitemap`, `handleNewsPing`,
+`handleDistributeCron`. Endpoint + cron setting seeds.
+
+**`/news.xml`:** Google News sitemap format. Saat ini top 1000 freshest per file,
+pagination `?page=N` (13 halaman = 12.756 URL total). Include `<news:image>`,
+`<news:keywords>`, `<news:genres>Blog</news:genres>`. **BUKAN** untuk user
+(sitemap file, untuk crawler). Ada di `sitemap-index.xml`.
+
+**Cara pakai (WAJIB dilakukan manual sekali):**
+1. Login https://www.bing.com/webmasters → submit sitemap:
+   - `https://beriklan.co.id/news.xml`
+   - `https://beriklan.co.id/sitemap-blog.xml`
+   - `https://beriklan.co.id/sitemap-index.xml`
+2. (Opsional) https://publishercenter.google.com/?publication=CAowlLTKCw
+   → tambah news.xml sebagai feed. Blog marketing biasanya DITOLAK Google News
+   (butuh original reporting). Tapi news.xml tetap dipakai Bing dan sebagai
+   sinyal indexing untuk Google.
+
+**Auto-publish trigger:**
+- `h%2 === 0` di scheduled(): `/api/cron/news/ping` → IndexNow freshest 100.
+- `h%3 === 0` di scheduled(): `/api/cron/distribute` → IndexNow + webhook +
+  Telegram (kalau env secret di-set).
+- Manual: `GET /api/cron/news/ping?token=beriklan-admin-2026`,
+  `GET /api/cron/distribute?token=beriklan-admin-2026&limit=30`.
+
+**Env vars (opsional, untuk distribusi off-platform):**
+```
+DISTRIBUTE_WEBHOOK=https://maker.ifttt.com/trigger/.../with/key/...
+TELEGRAM_BOT_TOKEN=123456:ABC...
+TELEGRAM_CHANNEL_ID=@beriklan_blog
+INDEXNOW_KEY=2dac33f6303f4041b9ec7e2f2910ea80  (default sudah ada)
+```
+
+**Strategi lengkap (LENGKAP):** Lihat `TRAFFIC-BOOST-STRATEGY-2026-08-27.md` di
+root project — ada checklist 5-menit, urutan prioritas, target realistis
+30/60/90 hari.
+
+---
+
 ## 10. ANIMATIONS & MICRO-INTERACTIONS
 
 ### 10.1 Sistem Reveal (existing, di Layout.astro)

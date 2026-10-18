@@ -185,16 +185,17 @@ for (const [slug, info] of Object.entries(keywordMap)) {
 fs.writeFileSync(path.join(DIST, "sitemap-tag.xml"), sitemapXml(tagEntries));
 console.log(`[sitemap-tag] ${tagEntries.length} URLs (from ${Object.keys(keywordMap).length} keywords)`);
 
-// 6. Sitemap index
+// 6. Sitemap index (termasuk /news.xml yang di-serve Worker secara dinamis)
 const indexXml = sitemapIndex([
   { loc: `${SITE}/sitemap-static.xml`, lastmod: TODAY },
   { loc: `${SITE}/sitemap-pillar.xml`, lastmod: TODAY },
   { loc: `${SITE}/sitemap-city.xml`, lastmod: TODAY },
   { loc: `${SITE}/sitemap-tag.xml`, lastmod: TODAY },
   { loc: `${SITE}/sitemap-blog.xml`, lastmod: TODAY },
+  { loc: `${SITE}/news.xml`, lastmod: TODAY },
 ]);
 fs.writeFileSync(path.join(DIST, "sitemap-index.xml"), indexXml);
-console.log(`[sitemap-index] 5 sub-sitemaps`);
+console.log(`[sitemap-index] 6 sub-sitemaps`);
 
 // 6. Replace old sitemap
 const oldSitemap0 = path.join(DIST, "sitemap-0.xml");

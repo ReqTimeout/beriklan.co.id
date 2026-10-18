@@ -21,8 +21,8 @@ Reads dist/ to enumerate URLs (post-build). Idempotent.
 """
 import os, re, sys, json, datetime, glob
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WEB = os.path.join(ROOT, 'web')
+# Script lives in web/scripts/, so web root = parent of scripts dir
+WEB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST = os.path.join(WEB, 'dist')
 SITE = 'https://beriklan.co.id'
 
@@ -94,7 +94,9 @@ def is_service(u):
     return False
 
 def is_city(u):
-    # /jasa-*/[city]/  OR  /jasa-*/[city]/pilar/ (no - the pillar ends in /pilar/)
+    # /jasa-*/[city]/  OR  /jasa-view-live/[platform]/[city]/ (2-level)
+    if re.match(r'^/jasa-view-live/[\w-]+/[\w-]+/$', u):
+        return True
     if re.match(r'^/jasa-[\w-]+/[\w-]+/$', u):
         return True
     return False
@@ -213,6 +215,11 @@ def build_index_xml():
             parts.append(f'    <loc>{xml_escape(SITE + f"/sitemap-{k}.xml")}</loc>')
             parts.append(f'    <lastmod>{NOW}</lastmod>')
             parts.append('  </sitemap>')
+    # News sitemap — served by Worker (dynamic D1 query, top 10 fresh posts)
+    parts.append('  <sitemap>')
+    parts.append(f'    <loc>{xml_escape(SITE + "/news.xml")}</loc>')
+    parts.append(f'    <lastmod>{NOW}</lastmod>')
+    parts.append('  </sitemap>')
     parts.append('</sitemapindex>')
     return '\n'.join(parts) + '\n'
 

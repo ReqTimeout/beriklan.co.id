@@ -30,6 +30,9 @@ Keyword Beriklan.xlsx
 jasadigitalmarketing.WordPress.*.xml
 backup/
 *.bak
+*.bak-*
+*.broken-*
+imageartikel/
 
 # Generated SQL chunks (regenerate via scripts/db/gen_seed_chunks.py)
 scripts/db/chunks/

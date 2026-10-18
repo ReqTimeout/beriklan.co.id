@@ -2870,13 +2870,16 @@ async function handleAdminSyncPosts(request, env) {
     let enqueued = 0;
     if (d1Published > 0 && env.DB) {
       try {
-        const existing = await env.DB.prepare("SELECT url FROM pending_indexing").all();
-        const existingSet = new Set((existing.results || []).map(r => r.url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/")));
+        // F2.B (2026-10-18): dulu `SELECT url FROM pending_indexing` full-list 17.7k baris tiap
+        // run publish (~15×/hari ≈ 266k reads). Ganti point-query per draft (unique idx url),
+        // cek dua bentuk (apex + www) — semantik dedupe SAMA dengan normalisasi existingSet lama.
         for (const draft of safeDrafts) {
           const finalSlug = slugMap.get(draft.slug) || draft.slug;
           const url = `https://beriklan.co.id/blog/${finalSlug}/`;
-          if (existingSet.has(url)) continue;
+          const urlWww = url.replace("https://beriklan.co.id/", "https://www.beriklan.co.id/");
           try {
+            const hit = await env.DB.prepare("SELECT 1 AS x FROM pending_indexing WHERE url IN (?, ?) LIMIT 1").bind(url, urlWww).first();
+            if (hit) continue;
             await env.DB.prepare(
               "INSERT INTO pending_indexing (url, status, created_at) VALUES (?, 'pending', datetime('now'))"
             ).bind(url).run();
@@ -4318,6 +4321,19 @@ async function handleAdminMigrate(request, env) {
     // citySibling = city + service filter → butuh composite (city, service, iso_date).
     `CREATE INDEX IF NOT EXISTS idx_posts_meta_city_service_iso ON posts_meta(city, service, iso_date DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_posts_meta_iso_date ON posts_meta(iso_date DESC)`,
+    // ── F2 (2026-10-18) D1 read reduction ────────────────────────────────
+    // F2.A (sudah live): 3 index berikut dibuat/diverifikasi via EXPLAIN.
+    //   idx_pi_status_indexnow_id  → pending_indexing pending+indexnow_at IS NULL (stop di LIMIT,
+    //                                bukan walk 13.6k baris); dipakai Q3 (pending list) & Q7 (rotate).
+    //   idx_gd_status_committed_slug → covering index untuk sync-posts publish (Q1, −290k/hari).
+    //   idx_lead_contacts_source   → dedupe scraper per source_id.
+    `CREATE INDEX IF NOT EXISTS idx_pi_status_indexnow_id ON pending_indexing(status, indexnow_at, id)`,
+    `CREATE INDEX IF NOT EXISTS idx_gd_status_committed_slug ON generated_drafts(status, committed_at DESC, slug)`,
+    `CREATE INDEX IF NOT EXISTS idx_lead_contacts_source ON lead_contacts(source_id)`,
+    // F2.B: COUNT clicked/opened di dashboard email = full-scan 20k rows tiap load.
+    // Sparse index (mayoritas baris NULL) → count hanya scan baris non-NULL.
+    `CREATE INDEX IF NOT EXISTS idx_email_queue_clicked ON email_queue(clicked_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_email_queue_opened ON email_queue(opened_at)`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-gsc-loop', '0 */6 * * *', 1, 'Growth: query GSC ber-impresi tanpa halaman layak → keyword_queue (tiap 6 jam)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-enrich', '0 9 * * *', 1, 'Growth: enrich intro+FAQ artikel posisi 3-18 (harian)')`,
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('growth-ctr-fix', '0 9 * * *', 1, 'Growth: rewrite SERP title+meta untuk CTR rendah (harian)')`,
@@ -5805,12 +5821,13 @@ async function handleKeywordDashboard(request, env, ctx) {
       "Jasa Shopee Affiliate": ["shopee", "shopee-affiliate"],
       "Jasa Digital Marketing": ["digital-marketing", "digital marketing"]
     };
+    // F2.B (2026-10-18): dulu 9 COUNT LIKE '%p%' terpisah = 9× full-scan posts_meta per load
+    // dashboard (9 × 17.7k). Sekarang preload slug sekali + hitung di JS (semantik identik:
+    // LIKE case-insensitive untuk ASCII → lowercase dua sisi + includes).
+    const allSlugs = await env.DB.prepare("SELECT slug FROM posts_meta").all();
+    const slugList = (allSlugs.results || []).map(r => String(r.slug || "").toLowerCase());
     for (const [display, patterns] of Object.entries(svcMap)) {
-      const placeholders = patterns.map(() => "slug LIKE ? OR slug LIKE ?").join(" OR ");
-      const params = [];
-      patterns.forEach(p => { params.push("%" + p + "%"); params.push("%" + p + "%"); });
-      const c = await env.DB.prepare(`SELECT COUNT(*) as n FROM posts_meta WHERE ${placeholders}`).bind(...params).first();
-      data.postsMeta.byService[display] = c?.n || 0;
+      data.postsMeta.byService[display] = slugList.filter(s => patterns.some(p => s.includes(p))).length;
     }
   } catch (e) {}
 
@@ -9011,16 +9028,28 @@ async function handleWinnerEngine(request, env) {
     // Catatan baris keyword_queue: `id` boleh NULL (PRIMARY KEY TEXT tanpa NOT NULL) dan
     // satu keyword_normalized bisa punya >1 baris → dibaca beberapa baris, dipilih yang
     // status='pending' (hanya itu yang dilihat buffer generation).
+    // F2.B (2026-10-18): cek "dedicated post" TIDAK lagi pakai query LIKE '%tok%' per kandidat
+    // (leading wildcard = full-scan posts_meta 17.7k per item). Sekarang preload slug sekali
+    // lalu match di JS (semantik identik: LIKE case-insensitive ASCII → lowercase dua sisi).
     const reads = [];
+    const postMatches = [];
     for (const it of news) {
       const toks = it.tokens.length ? it.tokens : [String(it.keyword).toLowerCase().slice(0, 20)];
-      const like = toks.map((t) => `%${t}%`);
-      reads.push({ kind: "post", key: it.keyword, stmt: env.DB.prepare(`SELECT slug FROM posts_meta WHERE ${like.map(() => "slug LIKE ?").join(" AND ")} LIMIT 1`).bind(...like) });
       reads.push({ kind: "queue", key: it.keyword, stmt: env.DB.prepare("SELECT id, priority_score, status FROM keyword_queue WHERE keyword_normalized=? ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END LIMIT 3").bind(it.norm) });
+      postMatches.push({ key: it.keyword, toks: toks.map((t) => String(t).toLowerCase()), match: null });
+    }
+    if (postMatches.length) {
+      try {
+        const slugRows = await env.DB.prepare("SELECT slug FROM posts_meta").all();
+        const slugList = (slugRows.results || []).map((r) => String(r.slug || "").toLowerCase());
+        for (const p of postMatches) p.match = slugList.find((s) => p.toks.every((t) => s.includes(t))) || null;
+      } catch (e) {
+        errors.push({ stage: "post-slug-preload", error: String(e).slice(0, 200) });
+      }
     }
     let readResults = [];
     // D1 batch() = 1 subrequest untuk sekelompok statement; dipecah 20 supaya aman dari
-    // batas jumlah statement per batch (reads ≤ 20 × 2 = 40 statement tanpa dipecah).
+    // batas jumlah statement per batch (reads = 1 queue-stmt/item; post-match dihitung di JS).
     // PENTING (dibuktikan live 29 Sep 20:10 UTC): `batch()` mengembalikan ARRAY D1Result
     //   (bukan `{results}`) — kode lama menulis `(await batch()).results || []` sehingga
     //   readResults selalu kosong → cabang "promote" dan "dedicated-post-exists" mati dan
@@ -9031,6 +9060,7 @@ async function handleWinnerEngine(request, env) {
     }
     const metaReads = new Map();
     reads.forEach((r, i) => metaReads.set(`${r.kind}:${r.key}`, readResults[i] || null));
+    for (const p of postMatches) metaReads.set(`post:${p.key}`, p.match ? { results: [{ slug: p.match }] } : { results: [] });
 
     // Tulis (batch_chunk 20 statement/subrequest): insert OR promote + growth_log.
     const writes = [];
@@ -15452,10 +15482,45 @@ async function handlePostsIndex(request, env, ctx) {
 }
 
 // ─── Dynamic sitemap-blog.xml ───────────────────────────────────
+// F2.B (2026-10-18): R2 snapshot baris sitemap. Dulu tiap edge-cache MISS (39–59×/hari,
+// crawler + ping) men-scan SELURUH posts_meta (17.7k) + generated_drafts committed (14k)
+// ≈ 1.1M reads/hari. Snapshot di R2 (TTL 3 jam, stale-while-revalidate) → rebuild tiap 3 jam.
+const SITEMAP_SNAP_KEY = "coid/cache/sitemap_blog_rows_v1.json";
+const SITEMAP_SNAP_TTL_MS = 3 * 3600 * 1000;
+async function _blogSitemapRows(env, ctx) {
+  let snap = null;
+  try {
+    if (env.QUEUE) {
+      const obj = await env.QUEUE.get(SITEMAP_SNAP_KEY);
+      if (obj) snap = await obj.json();
+    }
+  } catch {}
+  const isOk = (s) => s && Array.isArray(s.posts) && Array.isArray(s.drafts);
+  if (isOk(snap) && (Date.now() - (snap.ts || 0) < SITEMAP_SNAP_TTL_MS)) return snap;
+  const rebuild = async () => {
+    const [posts, drafts] = await Promise.all([
+      env.DB.prepare("SELECT slug, iso_date FROM posts_meta ORDER BY iso_date DESC").all(),
+      env.DB.prepare("SELECT slug, committed_at FROM generated_drafts WHERE status='committed'").all(),
+    ]);
+    const next = {
+      ts: Date.now(),
+      posts: (posts.results || []).map((r) => [r.slug, r.iso_date]),
+      drafts: (drafts.results || []).map((r) => [r.slug, r.committed_at]),
+    };
+    try { if (env.QUEUE) await env.QUEUE.put(SITEMAP_SNAP_KEY, JSON.stringify(next)); } catch {}
+    return next;
+  };
+  if (isOk(snap)) {
+    // Stale: serve cepat, rebuild di background.
+    if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(rebuild().catch(() => {}));
+    return snap;
+  }
+  return await rebuild();
+}
 async function handleBlogSitemap(request, env, ctx) {
   if (!env.DB) return new Response("DB unavailable", { status: 503 });
-  // Edge cache TTL 1 jam — hemat 2 full-scan D1 query per request (posts_meta + generated_drafts).
-  // Googlebot/Bing sering fetch sitemap-blog.xml setelah ping sitemap → HIT tanpa sentuh D1.
+  // Edge cache TTL 1 jam + R2 snapshot (TTL 3 jam) — Googlebot/Bing sering fetch
+  // sitemap-blog.xml setelah ping sitemap → HIT tanpa sentuh D1.
   const cache = caches.default;
   const cacheKey = new Request("https://beriklan.co.id/sitemap-blog.xml", request);
   try {
@@ -15468,18 +15533,19 @@ async function handleBlogSitemap(request, env, ctx) {
     }
   } catch {}
   try {
-    const posts = await env.DB.prepare("SELECT slug, iso_date FROM posts_meta ORDER BY iso_date DESC").all();
-    const drafts = await env.DB.prepare("SELECT slug, committed_at FROM generated_drafts WHERE status='committed'").all();
+    const snap = await _blogSitemapRows(env, ctx);
     const urls = [];
     const isJunkSlug = (s) => /^(seed|exp)-/.test(s || '');
-    for (const p of (posts.results || [])) {
-      if (isJunkSlug(p.slug)) continue; // artifact keyword_queue.id — URL /blog/seed-xxx/ 404/duplikat
-      urls.push({ loc: p.slug, lastmod: p.iso_date });
+    for (const [slug, iso] of snap.posts) {
+      if (isJunkSlug(slug)) continue; // artifact keyword_queue.id — URL /blog/seed-xxx/ 404/duplikat
+      urls.push({ loc: slug, lastmod: iso });
     }
-    for (const d of (drafts.results || [])) {
-      if (isJunkSlug(d.slug)) continue;
-      if (!urls.find(u => u.loc === d.slug)) {
-        urls.push({ loc: d.slug, lastmod: d.committed_at });
+    const seen = new Set(urls.map(u => u.loc));
+    for (const [slug, committedAt] of snap.drafts) {
+      if (isJunkSlug(slug)) continue;
+      if (!seen.has(slug)) {
+        seen.add(slug);
+        urls.push({ loc: slug, lastmod: committedAt });
       }
     }
     urls.sort((a, b) => (b.lastmod || '').localeCompare(a.lastmod || ''));

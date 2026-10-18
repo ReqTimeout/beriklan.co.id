@@ -1210,6 +1210,106 @@ indexing → growth loop, AI fallback (Zen + Groq), endpoint API, deploy manual,
 kuota penting (Resend 100/hari, GSC Indexing 200/hari, index-verify 300/hari),
 gotcha, checklist replikasi. Baca dulu sebelum setup domain baru.
 
+## ⚡ EDGE CACHE & STATIC FALLBACK (beriklanweb)
+
+Worker co.id (`web/src/worker-entry.js`) meng-cache response dinamis di edge
+(Cache API) dengan header `X-Cache`. `run_worker_first: ["/*"]` — worker jalan
+di SEMUA path (beda dengan my yang per-path).
+
+| Endpoint | Cache key | Header |
+|---|---|---|
+| `/blog/<slug>/` (D1 render) | `https://beriklan.co.id/blog/<slug>/` | `X-Cache: HIT \| MISS` |
+| `/data/posts-index.json` | URL penuh | `X-Cache: HIT \| MISS \| MISS-FALLBACK` |
+| `/sitemap-blog.xml` | URL | `X-Cache: HIT \| MISS` |
+| `/news.xml` | URL | `X-Cache: HIT \| MISS-ERROR` |
+
+Lokasi kode: blog post ~L394–425, fallback ~L493–510, error ~L533–549,
+posts-index ~L13802–13844, sitemap-blog ~L13862–13901, news.xml ~L13923–13970.
+
+**Static fallback (by design):** D1 error/quota lock → catch → serve static
+`dist/` → slug D1 yang tidak ada di dist jadi 404. Pulih otomatis saat D1 kembali.
+
+**Testing gotcha:** HEAD (`curl -I`) bypass cache logic GET-only — selalu tes
+**GET** `curl -s -D - -o /dev/null <url>` dua kali (MISS → HIT).
+
+**Gejala "X-Cache hilang di semua endpoint"** = hampir pasti D1 quota lock
+(lihat § D1 QUOTA di bawah) — fallback terjadi sebelum cache write. Jangan
+dianggap bug cache; verifikasi via endpoint admin (balas `D1_ERROR: …exceeded
+D1's free tier daily row read limit…`). Terverifikasi live 2 Sep 2026.
+
+## 🗄️ D1 QUOTA OPS (KRITIS — account-wide)
+
+- Free tier D1 = **5M rows read/hari per ACCOUNT** (bukan per DB), dibagi 7 DB
+  (co.id `beriklan-seo` + my `beriklan-my-seo` + lainnya). Reset **00:00 UTC**.
+- Error 7500 / "exceeded D1's free tier daily row read limit" → semua handler D1
+  jatuh ke static fallback; cron bisa jadi zombie 'running' → 'timeout' 2 jam.
+- **Jangan "perbaiki" saat lock** — jangan revert/reset. Tunggu reset 00:00 UTC.
+
+### Insiden Sep 2 2026 (fixed — jangan diulang)
+Query related-posts blog (`posts_meta WHERE service=? / city=? ORDER BY iso_date
+DESC`) tanpa index → SCAN full-table tiap request → **166M rows/hari = 32× kuota**
+→ error 7500 → cron hang jam kerja WIB (02:00–09:59 UTC).
+
+**Fix permanen (migration array `worker-entry.js` + live DB):**
+- `idx_posts_meta_service_iso (service, iso_date DESC)`
+- `idx_posts_meta_city_iso (city, iso_date DESC)`
+- `idx_email_queue_status_sent (email_queue: status, sent_at)`
+
+**Verified:** EXPLAIN QUERY PLAN = SEARCH; D1 insights post-fix: query service
+= 3 rows/run, city = 417 rows/run (dari ~19.173 rows/run — hemat ~6.000×).
+Proyeksi total ~0,8M rows/hari.
+
+### Aturan query baru (WAJIB)
+1. Sebelum deploy query D1 baru: `EXPLAIN QUERY PLAN` — hasil HARUS **SEARCH**,
+   bukan SCAN. Full scan di endpoint high-traffic = insiden kuota berikutnya.
+2. Cek `wrangler d1 insights beriklan-seo --time-period 1h --sort-by reads
+   --limit 5 --json` setelah deploy (output: `avgRowsRead`/`totalRowsRead`/
+   `queryEfficiency`; TIDAK ada flag `--remote`).
+3. Kolom `cron_runs.started_at` format `YYYY-MM-DD HH:MM:SS` (spasi, bukan ISO
+   'T') — filter `>= '2026-09-02T00:00:00'` return kosong.
+
+## ✅ VERIFICATION RUNBOOK (co.id)
+
+```bash
+# 1. Worker hidup + cache (GET ×2, JANGAN HEAD)
+curl -s -D - -o /dev/null "https://beriklan.co.id/data/posts-index.json" | grep -i x-cache
+# sehat: MISS → HIT; quota lock: tidak ada X-Cache (fallback static)
+
+# 2. Blog slug D1 (ambil slug dari ekor sitemap-blog.xml)
+curl -s "https://beriklan.co.id/sitemap-blog.xml" | tail -c 400   # cari <loc>
+curl -s -o /dev/null -w "%{http_code}\n" "https://beriklan.co.id/blog/<slug>/"
+
+# 3. Sitemap & news
+for p in sitemap.xml sitemap-blog.xml news.xml; do
+  curl -s -o /dev/null -w "$p → %{http_code}\n" "https://beriklan.co.id/$p"
+done
+
+# 4. Cron heartbeat manual (aman, idempotent per time-gate)
+curl -s "https://beriklan.co.id/api/cron/hourly?token=beriklan-admin-2026" | head -c 500
+
+# 5. D1 sehat? (kalau D1_ERROR → quota lock, tunggu 00:00 UTC)
+curl -s "https://beriklan.co.id/api/admin/email?token=beriklan-admin-2026&tab=overview" | head -c 300
+```
+
+## ↩️ ROLLBACK RUNBOOK (co.id)
+
+```bash
+# Sebelum perubahan live: catat versi stabil
+cd web && npx wrangler deployments list
+
+# Produksi rusak → rollback SEKARANG (jangan "perbaiki maju")
+npx wrangler rollback <version-id>
+# lalu jalankan Verification Runbook di atas
+```
+
+- Rollback worker tidak mengubah static dist/ (fallback tetap build terakhir).
+- **ASSET DESYNC** (recurring): `/` & static 404 tapi `/data/posts-index.json`,
+  `/blog/<slug>/`, `/api/*` = 200 → BUKAN salah code/DNS. Fix: `cd web && npx
+  wrangler deploy` (re-sync asset manifest), lalu loop `curl -sI` verify
+  (jangan pakai variabel `$path` — reserved zsh). Detail: DEPLOY_OPERATIONS.md.
+- Rollback TIDAK me-reset cron schedules (verified 2026-09-02: live schedules
+  tetap 2 crons setelah deploy).
+
 ---
 
 **Versi dokumen:** 2.1

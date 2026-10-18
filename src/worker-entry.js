@@ -8,11 +8,118 @@
 import { checkPolicyViolation } from "./policy_filter.js";
 import { matchRedirect } from "./redirects.generated.mjs";
 
+// §T3 (2026-09-30): satu sumber alamat owner untuk SEMUA laporan/alert automation
+// (auto-pause alert, daily SEO health, sync-posts alert, winner report).
+// Sebelumnya hardcoded 4× — kalau owner pindah email, 4 tempat harus diubah.
+const OWNER_EMAIL = "aramadhi92@gmail.com";
+
+// ─── §T5.1 AI Crawler Tracker (Fase 7.1) — "ukur dulu, baru klaim" ────────
+// Catatan: kolom `ua` disimpan terpotong 300 char; satu baris per (bot, day, slug|path).
+// Daftar UA mengikuti yang benar-benar muncul di log industri 2026 + robots.txt yang
+// sudah mengizinkan mereka (§13 audit): GPTBot/OpenAI search+chat, Anthropic, Perplexity,
+// Google-Extended (data center training), Meta, Apple, Amazon, Cohere, Common Crawl.
+const AI_BOT_RE = /(GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-Web|Claude-SearchBot|PerplexityBot|Perplexity-User|Google-Extended|meta-externalagent|Applebot-Extended|Amazonbot|bytespider|CCBot|cohere-ai|YouBot|K5Render|OpenAI)\b/i;
+const AI_BOT_FETCHER_RE = /^\/(api|_next|\.well-known|cdn-cgi)\//i;
+// Flag per isolate: DDL idempoten cukup 1× per warm isolate (pola yang sama dengan
+// ensureGrowthSchema). TIDAK menaikkan MIGRATION_VERSION — array migrate berisi
+// UPDATE ... LIKE full-scan (745k reads/run) dan re-run berat itu bukan tujuan task ini.
+let _aiCrawlerSchemaReady = false;
+
+async function _logAiCrawler(env, ua, path) {
+  try {
+    const bot = (AI_BOT_RE.exec(ua) || [])[1] || "unknown-bot";
+    const slugM = /^\/blog\/([^/?#]+)/i.exec(path);
+    const slug = slugM ? decodeURIComponent(slugM[1]).toLowerCase().replace(/\/$/, "") : null;
+    const day = new Date().toISOString().slice(0, 10);
+    if (!_aiCrawlerSchemaReady) {
+      await env.DB.prepare(`CREATE TABLE IF NOT EXISTS ai_crawler_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bot TEXT NOT NULL, path TEXT NOT NULL, slug TEXT,
+        ua TEXT, day TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now'))
+      )`).run();
+      await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_ai_crawler_day_bot ON ai_crawler_log(day, bot)`).run();
+      await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_ai_crawler_slug ON ai_crawler_log(slug, day)`).run();
+      _aiCrawlerSchemaReady = true;
+    }
+    // Hemat write: satu baris per (bot, hari, halaman). Query crawler AI bisa ratusan
+    // request/jam; tanpa dedupe tabel ini membengkak dan memakan kuota write D1.
+    const dup = slug
+      ? await env.DB.prepare("SELECT 1 AS x FROM ai_crawler_log WHERE bot=? AND day=? AND slug=? LIMIT 1").bind(bot, day, slug).first()
+      : await env.DB.prepare("SELECT 1 AS x FROM ai_crawler_log WHERE bot=? AND day=? AND path=? AND slug IS NULL LIMIT 1").bind(bot, day, path).first();
+    if (dup) return { deduped: true, bot, slug, day };
+    await env.DB.prepare("INSERT INTO ai_crawler_log (bot, path, slug, ua, day) VALUES (?, ?, ?, ?, ?)")
+      .bind(bot, path, slug, String(ua).slice(0, 300), day).run();
+    return { logged: true, bot, slug, day };
+  } catch {
+    _aiCrawlerSchemaReady = false;   // DDL gagal (mis. D1 lock) → coba lagi request berikutnya
+    return { error: true };
+  }
+}
+
+// GET /api/admin/ai-crawlers?token=…&days=14[&format=csv]
+// §T5.1 laporan crawler AI. Semua query dibatasi window hari (default 14, maks 90)
+// dan memakai index idx_ai_crawler_day_bot / idx_ai_crawler_slug supaya murah.
+async function handleAdminAiCrawlers(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not available" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  const days = Math.max(1, Math.min(90, parseInt(url.searchParams.get("days") || "14", 10) || 14));
+  const win = `-${days} days`;
+  try {
+    const [bots, daily, articles, totals] = await Promise.all([
+      env.DB.prepare(`SELECT bot, COUNT(*) pages, COUNT(DISTINCT slug) unique_articles, MIN(day) first_day, MAX(day) last_day FROM ai_crawler_log WHERE day >= date('now', ?) GROUP BY bot ORDER BY pages DESC`).bind(win).all(),
+      env.DB.prepare(`SELECT day, COUNT(*) hits, COUNT(DISTINCT bot) bots FROM ai_crawler_log WHERE day >= date('now', ?) GROUP BY day ORDER BY day DESC LIMIT 31`).bind(win).all(),
+      env.DB.prepare(`SELECT slug, COUNT(DISTINCT bot) bots, COUNT(*) hits, MAX(day) last_seen FROM ai_crawler_log WHERE day >= date('now', ?) AND slug IS NOT NULL GROUP BY slug ORDER BY bots DESC, hits DESC LIMIT 20`).bind(win).all(),
+      env.DB.prepare(`SELECT COUNT(DISTINCT slug) unique_articles_seen, COUNT(*) rows_total FROM ai_crawler_log WHERE day >= date('now', ?)`).bind(win).first(),
+    ]);
+    const payload = {
+      ok: true,
+      window_days: days,
+      generated_at: new Date().toISOString(),
+      summary: {
+        distinct_bots: (bots.results || []).length,
+        unique_articles_seen: totals?.unique_articles_seen || 0,
+        logged_rows: totals?.rows_total || 0,
+      },
+      by_bot: bots.results || [],
+      by_day: (daily.results || []).slice().reverse(),
+      top_articles: articles.results || [],
+    };
+    if (url.searchParams.get("format") === "csv") {
+      const esc = (v) => '"' + String(v === null || v === undefined ? "" : v).replace(/"/g, '""') + '"';
+      const lines = ["bot,pages,unique_articles,first_day,last_day"]
+        .concat(payload.by_bot.map(r => [r.bot, r.pages, r.unique_articles, r.first_day, r.last_day].map(esc).join(",")));
+      return new Response(lines.join("\n"), { headers: { "Content-Type": "text/csv; charset=utf-8" } });
+    }
+    return new Response(JSON.stringify(payload, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    // Tabel baru dibuat lazy saat crawler AI pertama datang. Belum ada tabel ≠ error
+    // sistem → balas 200 dengan hasil kosong agar monitoring tidak alert palsu.
+    const msg = String((e && e.message) || e);
+    const empty = msg.indexOf("no such table") >= 0;
+    return new Response(JSON.stringify({
+      ok: true, window_days: days, distinct_bots: 0, by_bot: [], by_day: [], top_articles: [],
+      note: empty ? "tabel ai_crawler_log belum ada — belum pernah ada crawler AI yang lewat" : msg.slice(0, 200),
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  }
+}
+
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.toLowerCase();
     const hostname = url.hostname || request.headers.get("Host") || "";
+
+    // §T5.1 pencatat crawler AI. Biaya untuk trafik normal = 1 regex test pada string
+    // UA (short-circuit: hanya dieksekusi bila UA mengandung "bot"). Kerja tambahan
+    // (SELECT + mungkin INSERT) jalan non-blocking lewat ctx.waitUntil.
+    const _ua = request.headers.get("User-Agent") || "";
+    if (env.DB && _ua && /bot|gpt|claude|perplexity|cohere|amazon/i.test(_ua) &&
+        AI_BOT_RE.test(_ua) && !AI_BOT_FETCHER_RE.test(path)) {
+      ctx.waitUntil(_logAiCrawler(env, _ua, path));
+    }
 
     // scrape.beriklan.co.id — consumer-facing scraping trial
     if (hostname.startsWith("scrape.beriklan.co.id")) {
@@ -203,6 +310,12 @@ export default {
     if (path === "/api/cron/growth/freshness" || path === "/api/cron/growth/freshness/") {
       return await handleGrowthFreshness(request, env);
     }
+    if (path === "/api/cron/winner-engine" || path === "/api/cron/winner-engine/") {
+      return await handleWinnerEngine(request, env);
+    }
+    if (path === "/api/cron/winner-report" || path === "/api/cron/winner-report/") {
+      return await handleWinnerWeeklyReport(request, env);
+    }
     if (path === "/api/admin/growth-log" || path === "/api/admin/growth-log/") {
       return await handleGrowthLogView(request, env);
     }
@@ -301,6 +414,9 @@ export default {
       }
       return await handleAdminMigrate(request, env);
     }
+    if (path === "/api/admin/backfill-intent" || path === "/api/admin/backfill-intent/") {
+      return await handleAdminBackfillIntent(request, env);
+    }
     if (path === "/api/admin/keys" || path === "/api/admin/keys/") {
       // P0.3 API Keys management: 30 req/jam per IP
       const rl = await checkRateLimit(env, request.headers.get("CF-Connecting-IP"), "/api/admin/keys", 30, 3600);
@@ -313,7 +429,7 @@ export default {
       return await handleKeywordList(request, env);
     }
     if (path === "/api/admin/keywords" || path === "/api/admin/keywords/") {
-      return await handleKeywordDashboard(request, env);
+      return await handleKeywordDashboard(request, env, ctx);
     }
     if (path === "/api/admin/keywords/seed" || path === "/api/admin/keywords/seed/") {
       return await handleAdminSeedKeywords(request, env);
@@ -323,6 +439,15 @@ export default {
     }
     if (path === "/api/admin/keywords/import" || path === "/api/admin/keywords/import/") {
       return await handleAdminKeywordsImport(request, env);
+    }
+    if (path === "/api/admin/r2/backfill" || path === "/api/admin/r2/backfill/") {
+      return await handleAdminR2Backfill(request, env);
+    }
+    if (path === "/api/admin/r2/status" || path === "/api/admin/r2/status/") {
+      return await handleAdminR2Status(request, env);
+    }
+    if (path === "/api/admin/ai-crawlers" || path === "/api/admin/ai-crawlers/") {
+      return await handleAdminAiCrawlers(request, env);
     }
     if (path === "/api/admin" || path === "/api/admin/") {
       // P0.4 Admin Dashboard HTML
@@ -403,17 +528,28 @@ export default {
         }
       } catch {}
       let dynamic = null;
+      let dynamicSource = null; // "d1" | "r2" | null
       try {
         const exists = await env.DB.prepare(
           "SELECT 1 FROM generated_drafts WHERE slug=? UNION ALL SELECT 1 FROM posts_meta WHERE slug=? LIMIT 1"
         ).bind(slug, slug).first();
         if (exists) {
           dynamic = await renderBlogPost(slug, env);
+          if (dynamic) dynamicSource = "d1";
         }
       } catch (e) {
-        // D1 unavailable (e.g. daily row-read quota 7500). Fall through to static
-        // asset so the 827 Astro-built slugs still serve. D1-only slugs 404 today.
+        // D1 unavailable (e.g. daily row-read quota 7500). Fall through to R2/static.
         dynamic = null;
+      }
+      // Fase 3.4: R2 fallback — when D1 doesn't have the slug OR D1 unavailable.
+      // Kill-switch: `npx wrangler secret put USE_R2 0` untuk force-disable.
+      if (!dynamic && env.QUEUE && env.USE_R2 !== '0') {
+        try {
+          dynamic = await _renderBlogFromR2(slug, env);
+          if (dynamic) dynamicSource = "r2";
+        } catch (e) {
+          dynamic = null;
+        }
       }
       if (dynamic) {
         try {
@@ -421,10 +557,12 @@ export default {
           toCache.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
           toCache.headers.set("CDN-Cache-Control", "public, max-age=3600");
           toCache.headers.set("X-Cache", "MISS");
+          if (dynamicSource) toCache.headers.set("X-Source", dynamicSource);
           ctx.waitUntil(cache.put(cacheKey, toCache));
           dynamic.headers.set("X-Cache", "MISS");
           dynamic.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
           dynamic.headers.set("CDN-Cache-Control", "public, max-age=3600");
+          if (dynamicSource) dynamic.headers.set("X-Source", dynamicSource);
         } catch {}
         return dynamic;
       }
@@ -558,6 +696,49 @@ export default {
   async scheduled(event, env, ctx) {
     const cron = event.cron;
     const fakeReq = (path) => new Request(`https://beriklan.co.id${path}`, { method: "GET" });
+    const TOKEN = env.ADMIN_TOKEN;
+
+    // §8.2 — PROXY D1 READ METER + AUTO-PAUSE BUDGET (dipulihkan 2026-10-18 dari bundle live
+    // deploy 16 Okt; sebelumnya kode ini HANYA ada di produksi, tidak di repo).
+    // Unit = baris terpindai (meta.rows_read D1), bukan tagihan resmi; dipakai sync-posts
+    // untuk auto-pause sebelum kuota D1 free tier 5M/hari (account-wide) jebol.
+    // Ambang di cron_settings: d1_autopause_threshold (default 5e8).
+    let d1RowsRead = 0;
+    const addD1Meter = (res) => {
+      try {
+        const rr = res?.meta?.rows_read;
+        if (typeof rr === "number" && rr > 0) {
+          d1RowsRead += rr;
+          return;
+        }
+        let u = (res && res.results && res.results.length) || 0;
+        if (res && res.meta && typeof res.meta.changes === "number") u += res.meta.changes;
+        d1RowsRead += u;
+      } catch {}
+    };
+    if (env.DB) {
+      const wrapStmt = (st) => new Proxy(st, {
+        get: (sp, pp) => {
+          if (pp === "bind") return (...ba) => wrapStmt(sp.bind(...ba));
+          if (pp === "all" || pp === "first" || pp === "run" || pp === "raw")
+            return async (...ba) => {
+              const res = await sp[pp](...ba);
+              if (pp === "first") addD1Meter(res ? { results: [res] } : { results: [] });
+              else addD1Meter(res);
+              return res;
+            };
+          const v = Reflect.get(sp, pp);
+          return typeof v === "function" ? v.bind(sp) : v;
+        },
+      });
+      env.DB = new Proxy(env.DB, {
+        get: (t, p) => {
+          if (p === "prepare") return (...a) => wrapStmt(t.prepare(...a));
+          const v = Reflect.get(t, p);
+          return typeof v === "function" ? v.bind(t) : v;
+        },
+      });
+    }
 
     const run = async (label, handler, path, cronName) => {
       const t0 = Date.now();
@@ -634,6 +815,22 @@ export default {
         } catch {}
       }
 
+      // §8.2 — simpan delta meter proxy ke cron_settings `d1_read_meter_<UTC date>`.
+      // Satu delta per job run; di-reset setelah persist supaya tidak dobel antar-job.
+      if (env.DB) {
+        try {
+          const meterName = "d1_read_meter_" + new Date().toISOString().slice(0, 10);
+          const cur = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name=?").bind(meterName).first();
+          const curVal = parseInt((cur && cur.cron) || "0", 10) || 0;
+          if (d1RowsRead > 0 || cur === null) {
+            const newVal = String(curVal + d1RowsRead);
+            if (cur) await env.DB.prepare("UPDATE cron_settings SET cron=? WHERE name=?").bind(newVal, meterName).run();
+            else await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES (?, ?, 1, '§8.2 PROXY D1 read meter (auto per hari)')").bind(meterName, newVal).run();
+          }
+        } catch {}
+        d1RowsRead = 0;
+      }
+
       // AUTO-RETRY: kalau gagal, masukkan retry queue
       if (status === "failed" && cronName && env.DB) {
         try {
@@ -646,7 +843,7 @@ export default {
           if (allFailed) {
             console.error(`[scheduled:${label}] AUTO-PAUSE: 3 consecutive failures`);
             await env.DB.prepare(
-              "UPDATE cron_settings SET enabled = 0 WHERE name = ?"
+              "UPDATE cron_settings SET enabled = 0, label = CASE WHEN label LIKE 'AUTO-PAUSED%' THEN label ELSE 'AUTO-PAUSED' END WHERE name = ?"
             ).bind(cronName).run();
             // Add to retry queue dengan backoff
             await env.DB.prepare(
@@ -673,11 +870,11 @@ export default {
 </table>
 <h3 style="color:#0f1e3d;margin:20px 0 8px;">Action Required</h3>
 <p style="color:#475569;line-height:1.6;">1. Cek error di log (tab Cron dashboard)<br>2. Fix root cause (API key, rate limit, dll)<br>3. Re-enable cron manual di dashboard setelah yakin aman</p>
-<p style="margin-top:24px;"><a href="https://beriklan.co.id/api/admin?token=beriklan-admin-2026" style="background:#0f1e3d;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Buka Dashboard Admin →</a></p>
+<p style="margin-top:24px;"><a href="https://beriklan.co.id/api/admin?token=" + TOKEN style="background:#0f1e3d;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Buka Dashboard Admin →</a></p>
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
 <p style="font-size:11px;color:#9ca3af;">Email ini auto-generated dari Beriklan.co.id monitoring system. Dikirim otomatis saat cron job gagal 3x berturut-turut.</p>
 </body></html>`;
-                await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan cron ${cronName} auto-paused (3 consecutive failures)`, alertHtml, "alert-" + Date.now());
+                await sendEmailViaResend(env, OWNER_EMAIL, `[ALERT] Beriklan cron ${cronName} auto-paused (3 consecutive failures)`, alertHtml, "alert-" + Date.now());
                 console.log(`[scheduled:${label}] Alert email sent to aramadhi92@gmail.com`);
               }
             } catch (alertErr) {
@@ -718,17 +915,23 @@ export default {
     console.log("[scheduled] cron:", cron);
 
     const cronMap = {
-      "*/15 * * * *":  { cronName: "email-send", handler: handleCronSendEmail, path: "/api/cron/email/send?token=beriklan-admin-2026" },
-      "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: "/api/cron/scrape/indonetwork?token=beriklan-admin-2026" },
-      "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: "/api/cron/scrape/google-places?token=beriklan-admin-2026" },
-      "0 3 * * 1":     { cronName: "snippet-optimize", handler: handleSnippetOptimizer, path: "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3" },
+      "30 6 * * *":    { cronName: "scrape-indonetwork", handler: handleScrapeIndonetwork, path: `/api/cron/scrape/indonetwork?token=${TOKEN}` },
+      "0 7 * * *":     { cronName: "scrape-google-places", handler: handleScrapeGooglePlaces, path: `/api/cron/scrape/google-places?token=${TOKEN}` },
+      "0 3 * * 1":     { cronName: "snippet-optimize", handler: handleSnippetOptimizer, path: `/api/cron/snippet-optimize?token=${TOKEN}&count=3` },
     };
 
     if (cron === "0 * * * *") {
       // ── Hourly tasks (every hour) ──
-      ctx.waitUntil(run("hourly", handleHourlyGenerate, "/api/cron/hourly-generate?token=beriklan-admin-2026&count=1&mode=draft", "hourly"));
-      ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, "/api/admin/sync/posts?token=beriklan-admin-2026", "sync-posts"));
-      ctx.waitUntil(run("indexnow", handleIndexNowCron, "/api/cron/indexnow?token=beriklan-admin-2026&count=50", "indexnow"));
+      ctx.waitUntil(run("hourly", handleHourlyGenerate, `/api/cron/hourly-generate?token=${TOKEN}&count=1&mode=draft`, "hourly"));
+      ctx.waitUntil(run("sync-posts", handleAdminSyncPosts, `/api/admin/sync/posts?token=${TOKEN}`, "sync-posts"));
+      ctx.waitUntil(run("indexnow", handleIndexNowCron, `/api/cron/indexnow?token=${TOKEN}&count=100`, "indexnow"));
+      // ── Email-send dipindah ke hourly + time-gate (m%15===0): hilangkan dependency
+      //    pada slot cron `*/15 * * * *` (CF auto-disabled setelah 3× fail 04:15-04:45,
+      //    tidak recover meski wrangler triggers deploy bilang sudah attached).
+      const m = new Date().getUTCMinutes();
+      if (m % 15 === 0) {
+        ctx.waitUntil(run("email-send", handleCronSendEmail, `/api/cron/email/send?token=${TOKEN}`, "email-send"));
+      }
 
       const h = new Date().getUTCHours();
       const d = new Date().getUTCDate();
@@ -736,45 +939,176 @@ export default {
       // ── Every hour: GSC Indexing submit (pakai quota 200/hari secara maksimal,
       //    bukan 4×/hari seperti sebelumnya). count=50 karena Workers Free = 50
       //    subrequests per invocation; 50/jam × 24 = 200 quota/hari tercapai. ──
-      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, "/api/cron/gsc-indexing?token=beriklan-admin-2026&count=50", "gsc-indexing"));
+      ctx.waitUntil(run("gsc-indexing", handleGscIndexing, `/api/cron/gsc-indexing?token=${TOKEN}&count=50`, "gsc-indexing"));
       // Sitemap GSC submission tiap jam → Google selalu tahu sitemap-blog fresh
-      ctx.waitUntil(run("sitemap-ping", handlePingSitemap, "/api/ping-sitemap?token=beriklan-admin-2026", "gsc-indexing"));
+      ctx.waitUntil(run("sitemap-ping", handlePingSitemap, `/api/ping-sitemap?token=${TOKEN}`, "gsc-indexing"));
       // ── Every 6 hours (0,6,12,18 UTC) ──
       if (h % 6 === 0) {
-        ctx.waitUntil(run("index-verify", handleIndexVerify, "/api/cron/index-verify?token=beriklan-admin-2026&count=50", "index-verify"));
-        ctx.waitUntil(run("trending-fetch", handleTrendingCron, "/api/cron/trending?token=beriklan-admin-2026", "gsc-indexing"));
-        ctx.waitUntil(run("rank-sync", handleRankSync, "/api/cron/rank-sync?token=beriklan-admin-2026&days=5", "gsc-indexing"));
-        ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, "/api/admin/cleanup-indexing?token=beriklan-admin-2026", "gsc-indexing"));
+        ctx.waitUntil(run("index-verify", handleIndexVerify, `/api/cron/index-verify?token=${TOKEN}&count=50`, "index-verify"));
+        ctx.waitUntil(run("trending-fetch", handleTrendingCron, `/api/cron/trending?token=${TOKEN}`, "gsc-indexing"));
+        ctx.waitUntil(run("rank-sync", handleRankSync, `/api/cron/rank-sync?token=${TOKEN}&days=5`, "gsc-indexing"));
+        ctx.waitUntil(run("pending-cleanup", handlePendingIndexingCleanup, `/api/admin/cleanup-indexing?token=${TOKEN}`, "gsc-indexing"));
         // Growth: tangkap query GSC ber-impresi tanpa halaman layak → keyword_queue
-        ctx.waitUntil(run("growth-gsc-loop", handleGrowthGscLoop, "/api/cron/growth/gsc-loop?token=beriklan-admin-2026&days=14&minImp=20&maxQueue=10", "growth-gsc-loop"));
-        ctx.waitUntil(run("trending-generate", handleTrendingGenerate, "/api/cron/trending-generate?token=beriklan-admin-2026&count=1", "trending-generate"));
-        ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, "/api/cron/snippet-optimize?token=beriklan-admin-2026&count=3", "snippet-optimize"));
-        ctx.waitUntil(run("lead-pipeline", handleLeadPipeline, "/api/cron/leads/process?token=beriklan-admin-2026&limit=100&ai=10&campaign=1", "lead-pipeline"));
+        ctx.waitUntil(run("growth-gsc-loop", handleGrowthGscLoop, `/api/cron/growth/gsc-loop?token=${TOKEN}&days=14&minImp=10&maxQueue=15`, "growth-gsc-loop"));
+        ctx.waitUntil(run("trending-generate", handleTrendingGenerate, `/api/cron/trending-generate?token=${TOKEN}&count=1`, "trending-generate"));
+        ctx.waitUntil(run("snippet-optimize", handleSnippetOptimizer, `/api/cron/snippet-optimize?token=${TOKEN}&count=3`, "snippet-optimize"));
+        ctx.waitUntil(run("lead-pipeline", handleLeadPipeline, `/api/cron/leads/process?token=${TOKEN}&limit=100&ai=10&campaign=1`, "lead-pipeline"));
       }
       // ── Growth harian 09:00 UTC: enrich posisi 3-18 + CTR fix ──
       if (h === 9) {
-        ctx.waitUntil(run("growth-enrich", handleGrowthEnrich, "/api/cron/growth/enrich?token=beriklan-admin-2026&count=3", "growth-enrich"));
-        ctx.waitUntil(run("growth-ctr-fix", handleGrowthCtrFix, "/api/cron/growth/ctr-fix?token=beriklan-admin-2026&count=3", "growth-ctr-fix"));
+        // thresholds diturunkan 2026-09-25 (www GSC data tipis):
+        // minImp 5 untuk enrich (default 10), 5 untuk ctr-fix (default 50).
+        // query branded "beriklan" ikut ter-optimasi — bagus untuk SERP presence.
+        ctx.waitUntil(run("growth-enrich", handleGrowthEnrich, `/api/cron/growth/enrich?token=${TOKEN}&count=3&minImp=5`, "growth-enrich"));
+        ctx.waitUntil(run("growth-ctr-fix", handleGrowthCtrFix, `/api/cron/growth/ctr-fix?token=${TOKEN}&count=3&minImp=5`, "growth-ctr-fix"));
+      }
+      // ── Winner engine harian 10:00 UTC (§T3, dipasang 2026-09-30) ──
+      //   1 jam SETELAH gate 09:00 (enrich/ctr-fix) supaya tidak berebut budget invocation.
+      //   Bukan slot cron baru — satu-satunya slot CF `0 * * * *` tetap utuh.
+      if (h === 10) {
+        ctx.waitUntil(run("winner-engine", handleWinnerEngine, `/api/cron/winner-engine?token=${TOKEN}&days=28&minImp=10&maxNew=10`, "winner-engine"));
+        // Laporan mingguan TOP-50 ke owner: Rabu 10:00 UTC (dow 3)
+        if (dow === 3) {
+          ctx.waitUntil(run("winner-weekly", handleWinnerWeeklyReport, `/api/cron/winner-report?token=${TOKEN}&days=28`, "winner-weekly"));
+        }
       }
       // ── Priority rebalance harian 03:00 UTC: re-score keyword_queue (city+industri → prio 90, view-live → 25)
       if (h === 3) {
-        ctx.waitUntil(run("priority-rebalance", handlePriorityRebalance, "/api/cron/priority-rebalance?token=beriklan-admin-2026", "priority-rebalance"));
+        ctx.waitUntil(run("priority-rebalance", handlePriorityRebalance, `/api/cron/priority-rebalance?token=${TOKEN}`, "priority-rebalance"));
       }
-      // ── Growth mingguan Senin 02:00 UTC: refresh jujur artikel lama ──
-      if (dow === 1 && h === 2) {
-        ctx.waitUntil(run("growth-freshness", handleGrowthFreshness, "/api/cron/growth/freshness?token=beriklan-admin-2026&count=2", "growth-freshness"));
+      // ── SELF-HEAL 00:00 UTC (2026-09-03): jalan tepat setelah D1 quota reset.
+      //    D1 free tier share account-wide 5M/hari — kalau terbakar sampai lock,
+      //    cron_runs failed 3× → auto-pause PERMANEN (tidak ada auto-resume) dan
+      //    index migration tidak pernah terpasang (handleAdminMigrate manual-only).
+      //    Blok ini: (1) auto-migrate idempotent, (2) resume cron yang di-pause
+      //    karena D1 lock saja (bukan yang manual), (3) bersihkan retry queue lock.
+      //    2026-09-04: + (4) daily SEO health report email — visibility otomatis.
+      if (h === 0) {
+        ctx.waitUntil((async () => {
+          try {
+            const migReq = new Request("https://beriklan.co.id/api/admin/migrate?token=" + env.ADMIN_TOKEN, { method: "GET" });
+            const migRes = await handleAdminMigrate(migReq, env);
+            const migData = await migRes.json().catch(() => ({}));
+            console.log("[self-heal] migrate:", JSON.stringify(migData).slice(0, 300));
+          } catch (e) {
+            console.error("[self-heal] migrate error:", String(e).slice(0, 200));
+          }
+          try {
+            const paused = await env.DB.prepare(
+              "SELECT name, label FROM cron_settings WHERE enabled = 0 AND (label LIKE 'AUTO-PAUSED%' OR label LIKE '%D1%' OR label LIKE '%7500%')"
+            ).all();
+            const rows = paused.results || [];
+            if (rows.length) {
+              for (const r of rows) {
+                await env.DB.prepare("UPDATE cron_settings SET enabled = 1, label = 'Auto-resumed setelah D1 reset (00:00 UTC)' WHERE name = ?").bind(r.name).run();
+                console.log("[self-heal] resumed cron:", r.name);
+              }
+              await env.DB.prepare("UPDATE cron_retry_queue SET status = 'done' WHERE status = 'pending' AND last_error LIKE '%D1%'").run();
+            } else {
+              console.log("[self-heal] tidak ada cron paused oleh D1 lock — skip resume");
+            }
+          } catch (e) {
+            console.error("[self-heal] resume error:", String(e).slice(0, 200));
+          }
+          // ── (4) Daily SEO health report — kirim ke owner biar status automation
+          //    selalu terlihat (1 email/hari, jalan setelah Resend reset 00:00 UTC).
+          try {
+            if (env.RESEND_API_KEY && env.DB) {
+              const stats = {};
+              try {
+                const r24 = await env.DB.prepare(
+                  "SELECT cron_name, status, COUNT(*) n FROM cron_runs WHERE started_at >= datetime('now','-24 hours') GROUP BY cron_name, status"
+                ).all();
+                stats.cron_24h = (r24.results || []).map(x => `${x.cron_name}:${x.status}:${x.n}`);
+              } catch {}
+              try {
+                const pend = await env.DB.prepare("SELECT COUNT(*) n FROM pending_indexing WHERE status='pending'").first();
+                stats.pending_indexing = pend?.n ?? 0;
+              } catch {}
+              try {
+                const pub = await env.DB.prepare("SELECT COUNT(*) n FROM generated_drafts WHERE status='committed' AND committed_at >= datetime('now','-24 hours')").first();
+                stats.published_24h = pub?.n ?? 0;
+              } catch {}
+              // §T5.1 visibilitas crawler AI 7 hari (0 kalau tabel belum ada).
+              try {
+                const ac = await env.DB.prepare("SELECT COUNT(DISTINCT bot) b, COUNT(*) n, COUNT(DISTINCT slug) s FROM ai_crawler_log WHERE day >= date('now','-6 days')").first();
+                stats.ai_bots = ac?.b ?? 0; stats.ai_pages = ac?.n ?? 0; stats.ai_articles = ac?.s ?? 0;
+              } catch { stats.ai_bots = 0; stats.ai_pages = 0; stats.ai_articles = 0; }
+              // §8.2 + monitoring harian (dipulihkan 2026-10-18 dari bundle live):
+              // cap publish vs limit, meter D1 kemarin, drift R2 vs D1, aksi winner, probe soft-404.
+              let capTxt = "?/?";
+              try {
+                const dl8 = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_daily_limit'").first();
+                capTxt = `${stats.published_24h ?? '?'}/${(dl8 && dl8.cron) || '15'}`;
+              } catch {}
+              try {
+                const yst = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+                const m8 = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name=?").bind("d1_read_meter_" + yst).first();
+                stats.d1_meter_yesterday = parseInt((m8 && m8.cron) || "0", 10);
+              } catch { stats.d1_meter_yesterday = 0; }
+              try {
+                let cursor8;
+                let total8 = 0;
+                do {
+                  const l8 = await env.QUEUE.list({ prefix: "coid/blog/", limit: 1000, cursor: cursor8 });
+                  const keys8 = l8.keys || l8.objects || []; // R2 list() mengembalikan objects, KV mengembalikan keys — toleransi keduanya
+                  total8 += keys8.length;
+                  cursor8 = l8.truncated ? l8.cursor : undefined;
+                } while (cursor8);
+                const pm8 = await env.DB.prepare("SELECT COUNT(*) n FROM posts_meta").first();
+                stats.r2_objects = total8;
+                stats.d1_articles = (pm8 && pm8.n) || 0;
+              } catch { stats.r2_objects = -1; stats.d1_articles = -1; }
+              try {
+                const w8 = await env.DB.prepare("SELECT COUNT(*) n FROM growth_log WHERE action LIKE 'winner%' AND created_at >= datetime('now','-24 hours')").first();
+                stats.winner_24h = (w8 && w8.n) || 0;
+              } catch { stats.winner_24h = 0; }
+              try {
+                const probe8 = await fetch(`https://beriklan.co.id/blog/tidak-ada-${Date.now().toString(36)}/`, { redirect: "manual" });
+                stats.soft404 = probe8.status === 404 ? "ok (404)" : `ANOMALI (${probe8.status})`;
+              } catch { stats.soft404 = "probe gagal"; }
+              const okCount = (stats.cron_24h || []).filter(x => x.includes(':ok:')).length;
+              const failCount = (stats.cron_24h || []).filter(x => x.includes(':failed:')).length;
+              const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto">
+<div style="background:#0f1e3d;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0"><h2 style="margin:0">📡 Beriklan.co.id — Daily SEO Health</h2></div>
+<div style="border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;padding:20px">
+<p><strong>${new Date().toISOString().slice(0, 10)}</strong></p>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<tr><td style="padding:6px 0;color:#6b7280">Publish 24 jam terakhir</td><td style="padding:6px 0"><strong>${stats.published_24h ?? '?'}</strong> artikel</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Antrian indexing pending</td><td style="padding:6px 0"><strong>${stats.pending_indexing ?? '?'}</strong> URL</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Cron OK / FAILED (24 jam)</td><td style="padding:6px 0"><strong style="color:${failCount > 0 ? '#dc2626' : '#10b981'}">${okCount} / ${failCount}</strong> job</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Crawler AI 7 hari</td><td style="padding:6px 0"><strong>${stats.ai_bots ?? 0}</strong> bot · ${stats.ai_pages ?? 0} halaman · ${stats.ai_articles ?? 0} artikel unik</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Publish vs cap harian</td><td style="padding:6px 0"><strong>${capTxt}</strong></td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Meter baca D1 kemarin (proksi)</td><td style="padding:6px 0"><strong>${(stats.d1_meter_yesterday ?? 0).toLocaleString("id-ID")}</strong> unit${stats.d1_meter_yesterday > 3000000 ? " ⚠️ &gt;3M" : ""}</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">R2 vs artikel D1</td><td style="padding:6px 0"><strong>${stats.r2_objects >= 0 ? stats.r2_objects.toLocaleString("id-ID") : "?"}</strong> / <strong>${stats.d1_articles.toLocaleString("id-ID")}</strong>${stats.r2_objects >= 0 && stats.d1_articles - stats.r2_objects > 50 ? " ⚠️ drift" : ""}</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Aksi winner 24 jam</td><td style="padding:6px 0"><strong>${stats.winner_24h ?? 0}</strong> entri growth_log</td></tr>
+<tr><td style="padding:6px 0;color:#6b7280">Probe soft-404</td><td style="padding:6px 0"><strong style="color:${String(stats.soft404).startsWith("ok") ? "#10b981" : "#dc2626"}">${stats.soft404 ?? "?"}</strong></td></tr>
+</table>
+<p style="font-size:12px;color:#9ca3af;margin-top:16px">Auto-generated 00:00 UTC oleh self-heal worker. Failed > 0 berarti ada job yang perlu dicek: /api/admin?token=… (tab Cron).</p>
+</div></body></html>`;
+              await sendEmailViaResend(env, OWNER_EMAIL, `[Beriklan] Daily SEO Health — ${new Date().toISOString().slice(0,10)} (publish ${stats.published_24h ?? '?'}, cron fail ${failCount})`, html, "daily-seo-health-" + Date.now());
+              console.log("[self-heal] daily SEO health email sent");
+            }
+          } catch (e) {
+            console.error("[self-heal] health email error:", String(e).slice(0, 200));
+          }
+        })());
+      }
+      // ── Growth freshness harian 04:00 UTC (sejak deploy 16 Okt; sebelumnya Senin 02:00) ──
+      if (h === 4) {
+        ctx.waitUntil(run("growth-freshness", handleGrowthFreshness, `/api/cron/growth/freshness?token=${TOKEN}&count=2`, "growth-freshness"));
       }
       // ── 1st of month at 00:00 UTC ──
       if (d === 1 && h === 0) {
-        ctx.waitUntil(run("content-refresh", handleRefreshContent, "/api/cron/refresh?token=beriklan-admin-2026&count=3", "content-refresh"));
+        ctx.waitUntil(run("content-refresh", handleRefreshContent, `/api/cron/refresh?token=${TOKEN}&count=3`, "content-refresh"));
       }
       // ── Lead scrape harian (dulu slot sendiri 30 6 / 0 7 UTC; konsolidasi ke hourly
       //    supaya slot cron account cukup untuk beriklan.my) ──
       if (h === 6) {
-        ctx.waitUntil(run("scrape-indonetwork", handleScrapeIndonetwork, "/api/cron/scrape/indonetwork?token=beriklan-admin-2026", "scrape-indonetwork"));
+        ctx.waitUntil(run("scrape-indonetwork", handleScrapeIndonetwork, `/api/cron/scrape/indonetwork?token=${TOKEN}`, "scrape-indonetwork"));
       }
       if (h === 7) {
-        ctx.waitUntil(run("scrape-google-places", handleScrapeGooglePlaces, "/api/cron/scrape/google-places?token=beriklan-admin-2026", "scrape-google-places"));
+        ctx.waitUntil(run("scrape-google-places", handleScrapeGooglePlaces, `/api/cron/scrape/google-places?token=${TOKEN}`, "scrape-google-places"));
       }
     } else {
       const c = cronMap[cron];
@@ -1245,10 +1579,28 @@ async function handleAdminDraftsCommit(request, env) {
   let failed = 0;
 
   try {
+    // 0. Daily publish cap guard (fix 1.16, 2026-09-25): endpoint manual ini
+    //    sebelumnya bypass cap (LIMIT 50 tanpa cek publish_daily_limit) —
+    //    forensik 25 Sep: 32 publish vs cap 15. Samakan dengan handleAdminSyncPosts.
+    const todayStrCap = new Date().toISOString().slice(0, 10);
+    const pubCapR = await env.DB.prepare(
+      "SELECT COUNT(*) as n FROM generated_drafts WHERE status='committed' AND committed_at >= ?"
+    ).bind(todayStrCap).first();
+    const publishedTodayCap = pubCapR?.n || 0;
+    let dailyLimitCap = 150;
+    try {
+      const dlCap = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='publish_daily_limit'").first();
+      if (dlCap?.cron && parseInt(dlCap.cron, 10) > 0) dailyLimitCap = parseInt(dlCap.cron, 10);
+    } catch {}
+    const remainingTodayCap = Math.max(0, dailyLimitCap - publishedTodayCap);
+    if (remainingTodayCap <= 0) {
+      return new Response(JSON.stringify({ ok: true, message: "daily limit reached", committed: 0, published_today: publishedTodayCap, daily_limit: dailyLimitCap }), { headers: { "Content-Type": "application/json" } });
+    }
+
     // 1. Fetch all pending drafts
     const pending = await env.DB.prepare(
-      "SELECT id, slug, title, content, service, city, source FROM generated_drafts WHERE status IN ('draft', 'pending') ORDER BY id LIMIT 50"
-    ).all();
+      "SELECT id, slug, title, content, service, city, source FROM generated_drafts WHERE status IN ('draft', 'pending') ORDER BY id LIMIT ?"
+    ).bind(Math.min(50, remainingTodayCap)).all();
     const drafts = pending.results || [];
 
     if (drafts.length === 0) {
@@ -1550,18 +1902,25 @@ async function handleEmailMetrics(request, env) {
 
   try {
     // Aggregate by campaign
-    const campaigns = await env.DB.prepare(`
-      SELECT 
-        c.id, c.name, c.subject, c.status, c.created_at,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id) as total,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='sent') as sent,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') as pending,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='failed') as failed,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND opened_at IS NOT NULL) as opened,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND clicked_at IS NOT NULL) as clicked
+    // D1 quota fix (2026-09-05): 6 correlated COUNT per campaign → full scan email_queue
+    // tiap panggilan. Rewrite: 1× GROUP BY pre-aggregate (SEARCH via idx status).
+    const agg = await env.DB.prepare(`
+      SELECT campaign_id,
+        COUNT(*) as total,
+        SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent,
+        SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
+        SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened,
+        SUM(CASE WHEN clicked_at IS NOT NULL THEN 1 ELSE 0 END) as clicked
+      FROM email_queue GROUP BY campaign_id
+    `).all();
+    const aggMap = new Map((agg.results || []).map(a => [a.campaign_id, a]));
+    const campRows = await env.DB.prepare(`
+      SELECT c.id, c.name, c.subject, c.status, c.created_at
       FROM campaigns c
       ORDER BY c.id DESC LIMIT 20
     `).all();
+    const campaigns = { results: (campRows.results || []).map(c => ({ ...c, ...(aggMap.get(c.id) || { total: 0, sent: 0, pending: 0, failed: 0, opened: 0, clicked: 0 }) })) };
 
     const dailySent = await getDailyEmailCount(env);
     const isHtml = url.searchParams.get("format") !== "json";
@@ -2090,6 +2449,33 @@ async function handleAdminSyncPosts(request, env) {
       if (bs?.cron && parseInt(bs.cron, 10) > 0) batchSize = Math.min(parseInt(bs.cron, 10), remainingToday);
     } catch {}
 
+    // §8.2 — GATE BUDGET BACA D1 (dipulihkan 2026-10-18 dari bundle live).
+    // Kalau meter proxy hari ini > ambang, pause publish + alert email; self-heal
+    // 00:00 UTC yang me-resume (label 'AUTO-PAUSED: D1 budget (8.2)' cocok filter resume).
+    try {
+      const meterR = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name=?").bind("d1_read_meter_" + new Date().toISOString().slice(0, 10)).first();
+      const approxRead = parseInt((meterR && meterR.cron) || "0", 10) || 0;
+      let pauseThreshold = 500000000;
+      try {
+        const thR = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='d1_autopause_threshold'").first();
+        const thV = parseInt((thR && thR.cron) || "0", 10);
+        if (thV > 0) pauseThreshold = thV;
+      } catch {}
+      if (approxRead > pauseThreshold) {
+        await env.DB.prepare("UPDATE cron_settings SET enabled=0, label='AUTO-PAUSED: D1 budget (8.2)' WHERE name='sync-posts'").run();
+        if (env.RESEND_API_KEY) {
+          try {
+            await sendEmailViaResend(env, OWNER_EMAIL,
+              `[Beriklan] ⚠️ publish AUTO-PAUSED — D1 meter proksi ${approxRead}`,
+              `<p>Meter baca D1 hari ini tembus ${pauseThreshold} unit (proksi §8.2, terkalibrasi ulang 1 Okt: unit = baris terpindai, bukan tagihan resmi). Cron <code>sync-posts</code> di-pause; self-heal 00:00 UTC resume. Ubah ambang via cron_settings name='d1_autopause_threshold'. Cek meter: name LIKE 'd1_read_meter_%'.</p>`,
+              "d1-autopause-" + new Date().toISOString().slice(0, 10)
+            );
+          } catch {}
+        }
+        return new Response(JSON.stringify({ ok: true, auto_paused: true, approx_rows_read_proxy: approxRead, published: 0, note: "8.2 auto-paused: D1 read budget" }), { headers: { "Content-Type": "application/json" } });
+      }
+    } catch {}
+
     // 1. Get drafts to publish (status='draft', limit = batchSize).
     //    Prioritaskan low-competition dulu: long-tail keyword (judul > 4 kata) adalah
     //    query paling mudah dimenangkan; kota-spesifik (city != '') juga low-competition.
@@ -2128,8 +2514,43 @@ async function handleAdminSyncPosts(request, env) {
          LIMIT ?`
       ).bind(batchSize).all();
     }
-    const drafts = draftsToPublish.results || [];
+    let drafts = draftsToPublish.results || [];
+    let vpsMode = false, vpsAcked = 0;
 
+    // B-VPS. Hybrid pull (2026-09-15): aktif hanya jika `pipeline_source=vps` di
+    // cron_settings (idempotent flag). Default 'd1' = tidak ada efek runtime.
+    // Saat aktif: tarik artikel jadi dari VPS (factory co.id/.my) sebelum D1.
+    // Ack idempotent (slug primary-key) → double-run aman.
+    try {
+      const ps = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='pipeline_source'").first();
+      if ((ps?.cron || 'd1') === 'vps' && env.PIPELINE_API_URL) {
+        const pullUrl = `${env.PIPELINE_API_URL.replace(/\/$/, '')}/v1/publish-ready?domain=coid&limit=${batchSize}`;
+        const ctrl = new AbortController(); const tmr = setTimeout(() => ctrl.abort(), 18000);
+        let pullResp;
+        try {
+          pullResp = await fetch(pullUrl, { headers: { 'Authorization': `Bearer ${env.PIPELINE_TOKEN || ''}`, 'User-Agent': 'BeriklanEdge/1.0' }, signal: ctrl.signal });
+        } finally { clearTimeout(tmr); }
+        if (pullResp.ok) {
+          const pullJson = await pullResp.json();
+          const items = Array.isArray(pullJson?.items) ? pullJson.items : [];
+          if (items.length) {
+            drafts = items.map(x => ({ slug: x.slug, title: x.title, content: x.content, service: x.service || '', city: x.city || '', language: x.language || 'id' }));
+            vpsMode = true;
+            // Ack: tandai 'handed' di VPS agar tidak dipull ulang.
+            const ackUrl = `${env.PIPELINE_API_URL.replace(/\/$/, '')}/v1/publish-ack?domain=coid`;
+            const ackBody = JSON.stringify({ slugs: drafts.map(d => d.slug) });
+            try {
+              const ackCtl = new AbortController(); const ackTmr = setTimeout(() => ackCtl.abort(), 10000);
+              const ackResp = await fetch(ackUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${env.PIPELINE_TOKEN || ''}`, 'Content-Type': 'application/json', 'User-Agent': 'BeriklanEdge/1.0' }, body: ackBody, signal: ackCtl.signal });
+              clearTimeout(ackTmr);
+              if (ackResp.ok) { const aj = await ackResp.json(); vpsAcked = aj.acked || 0; }
+            } catch {}
+          }
+        }
+      }
+    } catch (e) { console.log('[sync-posts vps-pull]', String(e).slice(0, 150)); }
+    let ps;
+    try { ps = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='pipeline_source'").first(); } catch { ps = null; }
     if (drafts.length === 0) {
       return new Response(JSON.stringify({
         ok: true,
@@ -2286,9 +2707,22 @@ async function handleAdminSyncPosts(request, env) {
         let finalSlug = draft.slug;
         if (/^(seed|exp)-/.test(finalSlug)) {
           const fromTitle = (draft.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "artikel";
-          const kwRow = await env.DB.prepare(
-            "SELECT keyword FROM keyword_queue WHERE article_slug=? OR keyword_normalized=? LIMIT 1"
-          ).bind(draft.slug, fromTitle.replace(/-/g, " ")).first();
+          // Two-stage lookup (2026-09-15): OR lintas kolom (indexed + non-indexed)
+          // memaksa full-scan keyword_queue 391k rows. Stage 1 = index seek
+          // (idx_q_article_slug), stage 2 hanya jika miss (jarang: slug legacy seed-/exp-).
+          let kwRow = null;
+          try {
+            kwRow = await env.DB.prepare(
+              "SELECT keyword FROM keyword_queue WHERE article_slug=? LIMIT 1"
+            ).bind(draft.slug).first();
+          } catch {}
+          if (!kwRow?.keyword) {
+            try {
+              kwRow = await env.DB.prepare(
+                "SELECT keyword FROM keyword_queue WHERE keyword_normalized=? LIMIT 1"
+              ).bind(fromTitle.replace(/-/g, " ")).first();
+            } catch {}
+          }
           let derived = fromTitle;
           if (kwRow?.keyword) {
             derived = (kwRow.keyword || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || fromTitle;
@@ -2340,6 +2774,51 @@ async function handleAdminSyncPosts(request, env) {
         await env.DB.prepare(
           "UPDATE generated_drafts SET status='committed', committed_at=datetime('now') WHERE slug=?"
         ).bind(draft.slug).run();
+        // Fase 2.7 dual-write: also enqueue into PG coid.publish_outbox via pipeline.
+        // D1 stays source of truth — VPS pull is gated by cron_settings.pipeline_source='vps' (Fase 2.8).
+        // FIX 2.7b (2026-09-30): gerbang LAMA memakai flag GLOBAL `pipeline_source='vps'`, padahal
+        //   artikel yang dipublish sering TETAP berasal dari buffer D1 (pull VPS mengembalikan 0 item).
+        //   Akibat sejak 25 Sep: dual-write tidak pernah jalan → PG stagnan. Bukti audit 30 Sep:
+        //   coid.publish_outbox max(created_at)=2026-09-25 02:00 UTC, coid.posts_meta max(iso_date)=
+        //   2026-09-24 15:00, 0 baris generated_drafts dengan committed_at >= 2026-09-26, sementara D1
+        //   publish 15/hari (26-29 Sep = 60 artikel hilang dari salinan PG).
+        //   Gerbang BENAR = per-run: skip hanya kalau artikel THIS run memang dipull dari outbox
+        //   (`vpsMode` di-set true hanya bila pull mengembalikan >0 item, line ~2281-2283).
+        //   Hemat juga: 1 query cron_settings per publish hilang. ON CONFLICT DO NOTHING tetap idempoten.
+        if (!vpsMode && env.PIPELINE_API_URL && env.PIPELINE_TOKEN) {
+          try {
+            const enqUrl = `${env.PIPELINE_API_URL.replace(/\/$/, '')}/v1/publish-enqueue?domain=coid`;
+            const enqBody = JSON.stringify({
+              slug: finalSlug,
+              title: postTitle,
+              content: postContent,
+              service: draft.service || "",
+              city: draft.city || "",
+              language: "id",
+            });
+            const enqCtrl = new AbortController();
+            const enqTimer = setTimeout(() => enqCtrl.abort(), 8000);
+            const enqResp = await fetch(enqUrl, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${env.PIPELINE_TOKEN}`,
+                "Content-Type": "application/json",
+                "User-Agent": "BeriklanEdge/1.0",
+              },
+              body: enqBody,
+              signal: enqCtrl.signal,
+            });
+            clearTimeout(enqTimer);
+            if (!enqResp.ok) {
+              console.error("[sync-posts] pg dual-write non-2xx", finalSlug, enqResp.status, (await enqResp.text()).slice(0, 120));
+            } else {
+              const enqJson = await enqResp.json().catch(() => ({}));
+              console.log("[sync-posts] pg dual-write ok", finalSlug, enqJson.enqueued ? "new" : "exists");
+            }
+          } catch (e) {
+            console.error("[sync-posts] pg dual-write failed", finalSlug, String(e).slice(0, 120));
+          }
+        }
         // Advance keyword_queue → published (by article_slug or keyword≈title/slug)
         await env.DB.prepare(
           "UPDATE keyword_queue SET status='published', article_slug=?, published_at=COALESCE(published_at, datetime('now')) WHERE article_slug=? OR keyword_normalized=?"
@@ -2442,7 +2921,7 @@ async function handleAdminSyncPosts(request, env) {
  </table>
  <p style="margin-top:24px;font-size:12px;color:#6b7280;">Dikirim otomatis oleh cron sync-posts di beriklan.co.id.</p>
  </body></html>`;
-          await sendEmailViaResend(env, "aramadhi92@gmail.com", `[ALERT] Beriklan sync-posts ${d1Published === 0 && totalDrafts > 0 ? "0 published" : "failed"}, pending: ${totalDrafts}`, alertHtml, "alert-syncposts-" + Date.now());
+          await sendEmailViaResend(env, OWNER_EMAIL, `[ALERT] Beriklan sync-posts ${d1Published === 0 && totalDrafts > 0 ? "0 published" : "failed"}, pending: ${totalDrafts}`, alertHtml, "alert-syncposts-" + Date.now());
        }
      } catch (alertErr) {
        console.error("[sync-posts] alert email error:", String(alertErr).slice(0, 200));
@@ -2470,6 +2949,8 @@ async function handleAdminSyncPosts(request, env) {
         remaining_today: Math.max(0, dailyLimit - publishedToday - d1Published),
         total_drafts_pending: Math.max(0, totalDrafts - d1Published),
         total_rejected: rejected,
+        pipeline_source: vpsMode ? 'vps' : (ps?.cron || 'd1'),
+        vps_acked: vpsAcked,
         elapsed_ms: Date.now() - t0,
       }, null, 2), { headers: { "Content-Type": "application/json" } });
    } catch (e) {
@@ -2487,7 +2968,7 @@ async function handleTestAlert(request, env) {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
   if (!env.RESEND_API_KEY) return new Response(JSON.stringify({ ok: false, error: "RESEND_API_KEY not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
 
-  const toEmail = url.searchParams.get("to") || "aramadhi92@gmail.com";
+  const toEmail = url.searchParams.get("to") || OWNER_EMAIL;
   const subject = "[ALERT TEST] Beriklan.co.id — Cron monitoring aktif";
   const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto;background:#f9fafb;">
 <div style="background:#fff;padding:32px;border-radius:12px;border:1px solid #e5e7eb;">
@@ -2697,6 +3178,197 @@ async function handleEmailQueueReset(request, env) {
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 500 });
   }
+}
+
+// ─── Fase 3: R2 Backfill (worker-side, batches from local script) ──
+// POST /api/admin/r2/backfill?token=...&domain=coid&dry=1[&source=d1&offset=0&limit=100]
+// Two modes:
+//   1) Body batch: { items: [{slug, title, content, service, city, category, iso_date, readTime, excerpt, tags, featured}] }
+//   2) source=d1:   read from D1 posts_meta+posts_content (keyset paginated by slug)
+//      params: source=d1, offset=<slug-start>, limit=<1-200>
+// - dry=1 → validasi + count, no R2 write
+// - dry=0 → PUT each item to R2 prefix `<domain>/blog/<slug>.json` via env.QUEUE binding
+async function handleAdminR2Backfill(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  const domain = (url.searchParams.get("domain") || "coid").toLowerCase();
+  if (!["coid", "comy"].includes(domain)) return new Response("bad domain", { status: 400 });
+  const dry = url.searchParams.get("dry") === "1" || url.searchParams.get("dry") === "true";
+  const source = (url.searchParams.get("source") || "body").toLowerCase();
+
+  if (!env.QUEUE) return new Response(JSON.stringify({ ok: false, error: "R2 binding (QUEUE) not set" }), { status: 503 });
+
+  let items = [];
+  if (source === "d1") {
+    // Read from D1 posts_meta + posts_content via keyset pagination by slug
+    const offset = url.searchParams.get("offset") || "";
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "100", 10), 200);
+    try {
+      // For co.id / comy: same D1 (beriklan-seo). If needed later, separate by domain.
+      const sql = offset
+        ? `SELECT m.slug, m.title, m.excerpt, m.service, m.city, m.category, m.iso_date, m.readTime, m.tags, m.featured, c.content
+           FROM posts_meta m LEFT JOIN posts_content c ON c.slug = m.slug
+           WHERE m.slug > ? ORDER BY m.slug ASC LIMIT ?`
+        : `SELECT m.slug, m.title, m.excerpt, m.service, m.city, m.category, m.iso_date, m.readTime, m.tags, m.featured, c.content
+           FROM posts_meta m LEFT JOIN posts_content c ON c.slug = m.slug
+           ORDER BY m.slug ASC LIMIT ?`;
+      const stmt = offset
+        ? env.DB.prepare(sql).bind(offset, limit)
+        : env.DB.prepare(sql).bind(limit);
+      const res = await stmt.all();
+      items = (res.results || []).map(r => ({
+        slug: r.slug,
+        title: r.title,
+        content: r.content || "",
+        excerpt: r.excerpt || "",
+        service: r.service || "",
+        city: r.city || "",
+        category: r.category || "",
+        iso_date: r.iso_date || "",
+        readTime: r.readTime || "",
+        tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+        featured: !!r.featured,
+      }));
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "d1 read failed: " + String(e).slice(0, 150) }), { status: 500 });
+    }
+  } else {
+    let body;
+    try { body = await request.json(); } catch { return new Response(JSON.stringify({ ok: false, error: "bad json" }), { status: 400 }); }
+    items = Array.isArray(body?.items) ? body.items : [];
+  }
+  if (items.length === 0) return new Response(JSON.stringify({ ok: false, error: "no items" }), { status: 400 });
+
+  const prefix = `${domain}/blog/`;
+  const t0 = Date.now();
+  let written = 0, failed = 0, bytesTotal = 0, skipped = 0;
+  const failures = [];
+  let lastSlug = "";
+
+  // Build all payloads + plan (parallel PUTs)
+  const tasks = []; // {slug, key, body_str}
+  for (const it of items) {
+    const slug = String(it.slug || "").trim();
+    if (!slug || slug.length > 200) { failed++; failures.push({ slug, err: "bad slug" }); continue; }
+    lastSlug = slug;
+    const payload = {
+      slug,
+      title: String(it.title || ""),
+      content: String(it.content || ""),
+      excerpt: String(it.excerpt || ""),
+      meta: {
+        service: String(it.service || ""),
+        city: String(it.city || ""),
+        category: String(it.category || ""),
+        iso_date: String(it.iso_date || ""),
+        readTime: String(it.readTime || ""),
+        tags: Array.isArray(it.tags) ? it.tags : [],
+        featured: !!it.featured,
+      },
+      synced_at: new Date().toISOString(),
+    };
+    const body_str = JSON.stringify(payload);
+    const key = `${prefix}${slug}.json`;
+    tasks.push({ slug, key, body_str });
+    bytesTotal += body_str.length;
+  }
+
+  if (!dry && tasks.length > 0) {
+    // Parallel R2 PUTs with concurrency cap to avoid CPU spikes
+    const CONC = 8;
+    let cursor = 0;
+    const worker = async () => {
+      while (cursor < tasks.length) {
+        const i = cursor++;
+        const t = tasks[i];
+        try {
+          await env.QUEUE.put(t.key, t.body_str, {
+            httpMetadata: { contentType: "application/json" },
+            customMetadata: { domain, slug: t.slug, version: "3.0" },
+          });
+          written++;
+        } catch (e) {
+          failed++;
+          if (failures.length < 10) failures.push({ slug: t.slug, err: String(e).slice(0, 100) });
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONC, tasks.length) }, worker));
+  } else if (dry) {
+    written = tasks.length;
+  }
+
+  return new Response(JSON.stringify({
+    ok: true,
+    domain,
+    dry,
+    source,
+    received: items.length,
+    written,
+    failed,
+    skipped,
+    bytes_total: bytesTotal,
+    avg_bytes: written ? Math.round(bytesTotal / written) : 0,
+    elapsed_ms: Date.now() - t0,
+    next_offset: items.length > 0 ? lastSlug : null,
+    failures: failures.slice(0, 10),
+  }), { headers: { "Content-Type": "application/json" } });
+}
+
+// GET /api/admin/r2/status?token=...&sample=5
+// Reports D1 posts_meta count + R2 blog object count (betul-betul list() bucket),
+// delta D1-R2, dan sample acak slug untuk cek keberadaan di R2.
+async function handleAdminR2Status(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
+  const sampleN = Math.min(parseInt(url.searchParams.get("sample") || "5") || 5, 25);
+
+  let d1Count = 0;
+  try {
+    const r = await env.DB.prepare("SELECT COUNT(*) AS n FROM posts_meta").first();
+    d1Count = r?.n || 0;
+  } catch (e) { /* ignore */ }
+
+  if (!env.QUEUE) {
+    return new Response(JSON.stringify({ ok: false, error: "QUEUE binding missing" }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+  let r2Count = 0;
+  let cursor;
+  try {
+    do {
+      const l = await env.QUEUE.list({ prefix: "coid/blog/", limit: 1000, cursor });
+      r2Count += l.objects.length;
+      cursor = l.truncated ? l.cursor : undefined;
+    } while (cursor);
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: "r2 list failed: " + String(e).slice(0, 160) }), { status: 502, headers: { "Content-Type": "application/json" } });
+  }
+  const sample = [];
+  try {
+    const rows = await env.DB.prepare("SELECT slug FROM posts_meta ORDER BY RANDOM() LIMIT ?").bind(sampleN).all();
+    for (const row of rows.results || []) {
+      const obj = await env.QUEUE.get(`coid/blog/${row.slug}.json`);
+      sample.push({ slug: row.slug, in_r2: !!obj });
+    }
+  } catch (e) {
+    sample.push({ error: String(e).slice(0, 120) });
+  }
+  const missing = sample.filter((s) => s.in_r2 === false).length;
+  return new Response(JSON.stringify({
+    ok: true,
+    d1_posts_meta_count: d1Count,
+    r2_object_count: r2Count,
+    // dihitung SUNGGUHAN via list() bucket, bukan salinan D1
+    delta_d1_minus_r2: d1Count - r2Count,
+    sample_checked: sample.length,
+    sample_missing: missing,
+    sample,
+    note: "If sample_missing > 0 or delta is large, run /api/admin/r2/backfill (idempotent).",
+    checked_at: new Date().toISOString(),
+  }), { headers: { "Content-Type": "application/json" } });
 }
 
 // ─── Newsletter Subscribe (P2.6) ─────────────────────────────────
@@ -3258,6 +3930,58 @@ async function handleAdminWa(request, env) {
 }
 
 // ─── P0.5 Admin: Run D1 migrations ──────────────────────────────────
+// ─── Backfill intent/priority_score BATCH (2026-09-05) ─────────────────────
+// Pengganti 2 UPDATE raksasa yang dulu ada di migration array (burn 5M reads
+// sekali jalan → D1 lock). Batch kecil + idempotent + auto-stop. Panggil:
+//   /api/admin/backfill-intent?token=…&batch=500  (ulangi sampai remaining=0)
+async function handleAdminBackfillIntent(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not available" }), { status: 503 });
+  const batch = Math.max(1, Math.min(parseInt(url.searchParams.get("batch") || "500", 10), 2000));
+  const t0 = Date.now();
+  const stats = { scanned: 0, updated_by_slug: 0, updated_by_norm: 0, remaining: 0, rows_read_estimate: 0 };
+  try {
+    // Ambil batch draft yang intent-nya masih NULL (kolom ada setelah migrate)
+    const rows = (await env.DB.prepare(
+      "SELECT slug FROM generated_drafts WHERE intent IS NULL LIMIT ?"
+    ).bind(batch).all()).results || [];
+    stats.scanned = rows.length;
+    for (const r of rows) {
+      try {
+        // 1) via article_slug (index idx_q_article_slug)
+        const k1 = await env.DB.prepare(
+          "SELECT intent, priority_score FROM keyword_queue WHERE article_slug = ? AND intent IS NOT NULL LIMIT 1"
+        ).bind(r.slug).first();
+        if (k1) {
+          await env.DB.prepare("UPDATE generated_drafts SET intent=?, priority_score=? WHERE slug=?").bind(k1.intent, k1.priority_score ?? 50, r.slug).run();
+          stats.updated_by_slug++;
+          continue;
+        }
+        // 2) via keyword_normalized = slug tanpa strip (index idx_q_keyword)
+        const norm = r.slug.replace(/-/g, " ");
+        const k2 = await env.DB.prepare(
+          "SELECT intent, priority_score FROM keyword_queue WHERE keyword_normalized = ? LIMIT 1"
+        ).bind(norm).first();
+        if (k2) {
+          await env.DB.prepare("UPDATE generated_drafts SET intent=?, priority_score=? WHERE slug=?").bind(k2.intent || "commercial", k2.priority_score ?? 50, r.slug).run();
+          stats.updated_by_norm++;
+        } else {
+          // tidak match → set default supaya tidak di-scan ulang besok
+          await env.DB.prepare("UPDATE generated_drafts SET intent='commercial', priority_score=50 WHERE slug=?").bind(r.slug).run();
+        }
+      } catch (e) { /* lanjut batch berikutnya */ }
+    }
+    const rem = await env.DB.prepare("SELECT COUNT(*) n FROM generated_drafts WHERE intent IS NULL").first();
+    stats.remaining = rem?.n ?? -1;
+    stats.elapsed_ms = Date.now() - t0;
+    return new Response(JSON.stringify({ ok: true, stats }, null, 2), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), stats }, null, 2), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
 async function handleAdminMigrate(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
@@ -3266,6 +3990,22 @@ async function handleAdminMigrate(request, env) {
   }
   if (!env.DB) {
     return new Response(JSON.stringify({ ok: false, error: "DB binding not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
+  // ── VERSION-GUARD (2026-09-04): migration array mengandung UPDATE...LIKE full-scan
+  // (15.5k rows, 745k reads/run). Dipanggil 48×/hari oleh monitor eksternal =
+  // ~5M reads/hari = D1 lock berulang TIAP HARI. Setelah versi tercatat di
+  // schema_meta, migrate hanya jalan 1× per versi. ?force=1 untuk bypass.
+  const MIGRATION_VERSION = "2026-09-15-write-v5";
+  try {
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS schema_meta (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
+    const flag = await env.DB.prepare("SELECT value FROM schema_meta WHERE key='migration_version'").first();
+    if (flag && flag.value === MIGRATION_VERSION && url.searchParams.get("force") !== "1") {
+      return new Response(JSON.stringify({ ok: true, skipped: true, version: MIGRATION_VERSION, note: "migration sudah pernah jalan — version guard aktif. ?force=1 untuk ulang." }), { headers: { "Content-Type": "application/json" } });
+    }
+  } catch (e) {
+    // Kalau guard gagal (mis. saat D1 lock), JANGAN lanjut migrate berat — return early.
+    return new Response(JSON.stringify({ ok: false, error: "guard check failed: " + String(e).slice(0, 150), hint: "coba lagi setelah D1 pulih" }), { status: 503, headers: { "Content-Type": "application/json" } });
   }
 
   // Migration 0008: rate_limits + 0009: api_keys
@@ -3436,6 +4176,10 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_lead_contacts_list ON lead_contacts (list_id)`,
     `CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue (status)`,
     `CREATE INDEX IF NOT EXISTS idx_email_queue_campaign ON email_queue (campaign_id)`,
+    // D1 quota fix (2026-09-10): email-send per-campaign fetch
+    // (WHERE status='pending' AND campaign_id=? ORDER BY id LIMIT n) scan ~4k rows/run
+    // ×96 runs/hari = potensi 400k/hari. Composite index → range scan hanya batch.
+    `CREATE INDEX IF NOT EXISTS idx_email_queue_status_campaign ON email_queue (status, campaign_id, id)`,
     `CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns (status)`,
     `CREATE INDEX IF NOT EXISTS idx_lead_contacts_email ON lead_contacts (email)`,
     // Lead Pipeline — auto client acquisition per service
@@ -3462,6 +4206,10 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_status ON lead_pipeline (status)`,
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_service ON lead_pipeline (service)`,
     `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_email ON lead_pipeline (email)`,
+    // D1 quota fix (2026-09-10): lead-pipeline per-service UPDATE
+    // (WHERE service=? AND status='matched') scan ~11k rows/run ×36 exec/hari
+    // = 411k reads/hari. Composite index → range scan hanya baris matched.
+    `CREATE INDEX IF NOT EXISTS idx_lead_pipeline_service_status ON lead_pipeline (service, status)`,
     // WA Click Tracker + Auto Follow-up
     `CREATE TABLE IF NOT EXISTS wa_clicks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3520,11 +4268,12 @@ async function handleAdminMigrate(request, env) {
     `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('lead-pipeline', '0 */6 * * *', 1, 'Akuisisi klien: match lead ke layanan + kirim (tiap 6 jam)')`,
     // Fix Google Places scraper: source_id column (dipakai untuk dedupe)
     `ALTER TABLE lead_contacts ADD COLUMN source_id TEXT`,
-    // Publish pacing (ramp-up 600/hari, batch 25) — tune tanpa deploy. Nilai di kolom `cron` = angka.
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '600', 1, 'Publish harian maksimum (ramp-up 600/hari)')`,
-    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '25', 1, 'Publish per sync-posts run (25)')`,
-    `UPDATE cron_settings SET cron = '600', label = 'Publish harian maksimum (ramp-up 600/hari)' WHERE name = 'publish_daily_limit'`,
-    `UPDATE cron_settings SET cron = '25', label = 'Publish per sync-posts run (25)' WHERE name = 'publish_batch_size'`,
+    // Publish pacing (cap 15/hari, batch 5) — tune tanpa deploy. Nilai di kolom `cron` = angka.
+    // 2026-09-24: turun cap dari 600→15 & batch dari 25→5 (kualitas di atas volume, sesuai keputusan user).
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_daily_limit', '15', 1, 'Publish harian maksimum (cap 15/hari, kualitas di atas volume)')`,
+    `INSERT OR IGNORE INTO cron_settings (name, cron, enabled, label) VALUES ('publish_batch_size', '5', 1, 'Publish per sync-posts run (5)')`,
+    `UPDATE cron_settings SET cron = '15', label = 'Publish harian maksimum (cap 15/hari, kualitas di atas volume)' WHERE name = 'publish_daily_limit'`,
+    `UPDATE cron_settings SET cron = '5', label = 'Publish per sync-posts run (5)' WHERE name = 'publish_batch_size'`,
     // ── Growth system (GSC feedback loop): schema + cron seeds ──
     `CREATE TABLE IF NOT EXISTS growth_log (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3553,9 +4302,16 @@ async function handleAdminMigrate(request, env) {
     `CREATE INDEX IF NOT EXISTS idx_posts_meta_service_iso ON posts_meta(service, iso_date DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_posts_meta_city_iso ON posts_meta(city, iso_date DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_email_queue_status_sent ON email_queue(status, sent_at)`,
+    // D1 quota fix round 3 (2026-09-05): email dashboard overview query — correlated
+    // COUNT subquery scan email_queue per campaign. Index campaign_id + rewrite query.
+    `CREATE INDEX IF NOT EXISTS idx_email_queue_campaign ON email_queue(campaign_id)`,
     // D1 quota round 2 (2026-09-02): COUNT generated_drafts WHERE status='draft' full-scanned
     // ~14k rows per run × 4.5/h = ~1.5M/day. Index makes it an index-only count of ~380 drafts.
     `CREATE INDEX IF NOT EXISTS idx_generated_drafts_status ON generated_drafts(status)`,
+    // Composite (status, committed_at DESC) for sitemap-blog + handlePostsIndex hot paths.
+    // Tanpa composite, SELECT WHERE status='committed' ORDER BY committed_at DESC = full-table
+    // scan 14.877 rows × 75 runs/24h = 1.1M reads. Composite = search only matching rows.
+    `CREATE INDEX IF NOT EXISTS idx_generated_drafts_status_committed ON generated_drafts(status, committed_at)`,
     // Infra for upcoming pending_indexing query rewrite (OR-LIKE prevents index use today).
     `CREATE INDEX IF NOT EXISTS idx_pending_indexing_status ON pending_indexing(status)`,
     // Smooth-free round 3 (2026-09-02): cache blog post 1 jam + fix citySibling 410/run.
@@ -3570,23 +4326,28 @@ async function handleAdminMigrate(request, env) {
     // Tanpa index, 3 UPDATE scan 391k baris ×3 = 1.17M reads/run. Dengan index → jauh lebih murah.
     `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status ON keyword_queue(status)`,
     `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status_service ON keyword_queue(status, service)`,
+    `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status_servcity ON keyword_queue(status, service, city)`,
     `CREATE INDEX IF NOT EXISTS idx_keyword_queue_status_priority ON keyword_queue(status, priority_score)`,
+    // 2026-09-15 write-quota fix: buffer kandidat hourly (≤1200 rows). Baca dari
+    // hourly_candidates (indexed) tiap jam, refill dari keyword_queue ±1×/2 minggu.
+    `CREATE TABLE IF NOT EXISTS hourly_candidates (
+      bid INTEGER PRIMARY KEY AUTOINCREMENT,
+      service TEXT, keyword TEXT, keyword_normalized TEXT, city TEXT,
+      priority_score INTEGER DEFAULT 0, intent TEXT, article_slug TEXT,
+      picked INTEGER DEFAULT 0, added_at TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_hc_pick ON hourly_candidates (picked, service, priority_score)`,
     // intent + priority_score di generated_drafts (untuk ORDER BY publish intent+city cascade).
     // Backfill dari keyword_queue via article_slug (draft yg di-generate dari keyword).
     // Index article_slug WAJIB: tanpa ini correlated subquery scan 391k baris/draft → CPU limit D1.
+    // ── D1 quota fix (2026-09-05, KRITIS): kedua UPDATE backfill di bawah DIKELUARKAN dari
+    //    migration array. 65.337 draft × 2 UPDATE correlated-subquery dalam SATU statement =
+    //    jutaan reads sekaligus → terbakar habis 5M kuota D1 dalam 1 run self-heal 00:00 UTC
+    //    (insiden lock berulang 3 hari). Backfill dipindah ke endpoint batch manual:
+    //    /api/admin/backfill-intent?token=…&batch=500 (idempotent, berhenti di 0 sisa).
     `CREATE INDEX IF NOT EXISTS idx_q_article_slug ON keyword_queue(article_slug)`,
     `ALTER TABLE generated_drafts ADD COLUMN intent TEXT`,
     `ALTER TABLE generated_drafts ADD COLUMN priority_score INTEGER DEFAULT 50`,
-    `UPDATE generated_drafts SET
-       intent = (SELECT k.intent FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug AND k.intent IS NOT NULL LIMIT 1),
-       priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug LIMIT 1)
-     WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.article_slug = generated_drafts.slug)`,
-    // Backfill R2-queue drafts (article_slug masih kosong): slug draft = keyword slugified,
-    // jadi keyword_normalized = replace(slug, '-', ' '). Pakai idx_q_keyword (index lookup, bukan scan).
-    `UPDATE generated_drafts SET
-       intent = (SELECT k.intent FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') AND k.intent IS NOT NULL LIMIT 1),
-       priority_score = (SELECT k.priority_score FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' ') LIMIT 1)
-     WHERE EXISTS (SELECT 1 FROM keyword_queue k WHERE k.keyword_normalized = replace(generated_drafts.slug, '-', ' '))`,
      `ALTER TABLE cron_settings ADD COLUMN value TEXT DEFAULT ''`,
     // P0: normalize pending_indexing legacy www → apex (idempotent, run tiap migrate)
     `UPDATE pending_indexing SET url = replace(url, 'https://www.beriklan.co.id/', 'https://beriklan.co.id/') WHERE url LIKE 'https://www.beriklan.co.id/%'`,
@@ -3596,16 +4357,12 @@ async function handleAdminMigrate(request, env) {
      `DELETE FROM generated_drafts WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
      `DELETE FROM posts_meta WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
      `DELETE FROM posts_content WHERE slug LIKE 'seed-%' OR slug LIKE 'exp-%'`,
-     // Perbaiki nomor WhatsApp di konten yang sudah tersimpan (artefak placeholder AI).
-     // Nomor benar: 62811919328 / +62 811-919-328. REPLACE string-idempotent, aman ulang.
-     `UPDATE posts_content SET content = replace(content, 'wa.me/6281234567890', 'wa.me/62811919328') WHERE content LIKE '%6281234567890%'`,
-     `UPDATE posts_content SET content = replace(content, 'send?phone=6281234567890', 'send?phone=62811919328') WHERE content LIKE '%6281234567890%'`,
-     `UPDATE posts_content SET content = replace(content, '0812-3456-7890', '+62 811-919-328') WHERE content LIKE '%0812-3456-7890%'`,
-     `UPDATE posts_content SET content = replace(content, '628119193288', '62811919328') WHERE content LIKE '%628119193288%'`,
-     `UPDATE posts_content SET content = replace(content, '081234567890', '62811919328') WHERE content LIKE '%081234567890%'`,
-     `UPDATE generated_drafts SET content = replace(content, 'wa.me/6281234567890', 'wa.me/62811919328') WHERE content LIKE '%6281234567890%'`,
-     `UPDATE generated_drafts SET content = replace(content, '0812-3456-7890', '+62 811-919-328') WHERE content LIKE '%0812-3456-7890%'`,
-     `UPDATE generated_drafts SET content = replace(content, '628119193288', '62811919328') WHERE content LIKE '%628119193288%'`,
+    // ── D1 quota fix (2026-09-05): 8 UPDATE posts_content/generated_drafts REPLACE
+    //    dengan LIKE full-scan 15.5k rows × 8 = 745k reads/setiap full-migrate —
+    //    DIKELUARKAN dari migration array. Konten sudah dibersihkan (replacement
+    //    idempotent pernah jalan). Nomor WA baru divalidasi di sanitizeWaNumber()
+    //    saat publish, bukan di migrate. Jalur manual kalau perlu ulang:
+    //    /api/admin/backfill-intent?token=…&mode=wa  (lihat handler).
     // scrape.beriklan.co.id — consumer trial system
     `CREATE TABLE IF NOT EXISTS scrape_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3658,6 +4415,10 @@ async function handleAdminMigrate(request, env) {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_cron_runs_name ON cron_runs (cron_name, started_at DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_cron_runs_status ON cron_runs (status)`,
+    // D1 quota fix (2026-09-10): cek retry/auto-pause (WHERE cron_name=? ORDER BY id
+    // DESC LIMIT 3) tidak bisa pakai index (cron_name, started_at) untuk ordering →
+    // scan ~134 rows/cek × ratusan cek/hari. Composite (cron_name, id) → 3 rows.
+    `CREATE INDEX IF NOT EXISTS idx_cron_runs_name_id ON cron_runs (cron_name, id DESC)`,
     `CREATE TABLE IF NOT EXISTS cron_retry_queue (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       cron_name TEXT NOT NULL,
@@ -3669,6 +4430,19 @@ async function handleAdminMigrate(request, env) {
       status TEXT DEFAULT 'pending'
     )`,
     `CREATE INDEX IF NOT EXISTS idx_cron_retry_pending ON cron_retry_queue (status, next_retry_at)`,
+    // §T5.1 (2026-09-30) AI crawler visibility. DDL ini juga dibuat lazy per-isolate
+    // di _logAiCrawler() — entri di sini untuk kelengkapan fresh-DB / ?force=1.
+    `CREATE TABLE IF NOT EXISTS ai_crawler_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bot TEXT NOT NULL,
+      path TEXT NOT NULL,
+      slug TEXT,
+      ua TEXT,
+      day TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_ai_crawler_day_bot ON ai_crawler_log (day, bot)`,
+    `CREATE INDEX IF NOT EXISTS idx_ai_crawler_slug ON ai_crawler_log (slug, day)`,
   ];
 
   const results = [];
@@ -3698,6 +4472,15 @@ async function handleAdminMigrate(request, env) {
     } catch (e) {
       results.push({ ok: false, action: "rate_limits clear failed", error: e.message });
     }
+  }
+
+  // VERSION-GUARD: catat versi migration yang sudah jalan → pemanggilan berikutnya
+  // di-skip (murah: 1 row read), sampai MIGRATION_VERSION berubah di kode.
+  try {
+    await env.DB.prepare("INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('migration_version', ?)").bind(MIGRATION_VERSION).run();
+    results.push({ ok: true, action: "version flag set: " + MIGRATION_VERSION });
+  } catch (e) {
+    results.push({ ok: false, action: "version flag failed", error: e.message });
   }
 
   return new Response(JSON.stringify({ ok: true, migrations: results, verify }, null, 2), { headers: { "Content-Type": "application/json" } });
@@ -4037,6 +4820,26 @@ async function handleAdminDashboard(request, env) {
     stats.funnel = { error: e.message };
   }
 
+  // 8. §T5.1 Crawler AI 7 hari. Tabel boleh belum ada (belum pernah ada crawler
+  // AI yang lewat) — itu dicatat sebagai { error: 'no such table' }, bukan 500.
+  try {
+    const byBot = await env.DB.prepare(
+      "SELECT bot, COUNT(*) pages, COUNT(DISTINCT day) days, MAX(day) last_day FROM ai_crawler_log WHERE day >= date('now','-6 days') GROUP BY bot ORDER BY pages DESC"
+    ).all();
+    const bySlug = await env.DB.prepare(
+      "SELECT slug, COUNT(DISTINCT bot) bots FROM ai_crawler_log WHERE day >= date('now','-6 days') AND slug IS NOT NULL GROUP BY slug ORDER BY bots DESC, slug LIMIT 10"
+    ).all();
+    const rows = byBot.results || [];
+    stats.ai_crawlers = {
+      window_days: 7,
+      bots: rows,
+      top_slugs: bySlug.results || [],
+      total_pages: rows.reduce((a, r) => a + (r.pages || 0), 0),
+    };
+  } catch (e) {
+    stats.ai_crawlers = { error: String((e && e.message) || e).slice(0, 120), bots: [], top_slugs: [], total_pages: 0 };
+  }
+
   // If ?format=json → return JSON
   if (url.searchParams.get("format") === "json") {
     return new Response(JSON.stringify(stats, null, 2), { headers: { "Content-Type": "application/json" } });
@@ -4104,6 +4907,23 @@ function renderDashboard(stats, token) {
     ${frow('Terindex Google', f.indexed, '#10b981')}
     ${frow('Antri re-submit (belum terindex)', f.queued_resubmit, '#dc2626')}
     <p style="font-size:11px;color:#999;margin-top:8px;">Loop otomatis: index-verify (tiap 6 jam) cek URL yang di-submit ≥ 2 hari → belum terindex di-reset agar di-submit ulang oleh gsc-indexing.</p>
+  </div>`;
+
+  // §T5.1 kartu crawler AI — data real dari ai_crawler_log (1 baris per bot/hari/halaman).
+  const ac = stats.ai_crawlers || {};
+  const acBody = (ac.bots || []).slice(0, 8).map(b => `
+    <tr><td><strong>${b.bot}</strong></td><td>${(b.pages || 0).toLocaleString('id-ID')}</td><td>${b.days || 0} hari</td><td>${b.last_day || '-'}</td></tr>
+  `).join('');
+  const acTop = (ac.top_slugs || []).slice(0, 5).map(s => `${s.slug} <span class="badge ${s.bots >= 3 ? 'green' : 'yellow'}">${s.bots} bot</span>`).join(' · ');
+  const aiCrawlerCard = `
+  <div class="card">
+    <div class="card-head">
+      <h2>🤖 Crawler AI (7 hari)</h2>
+      <small class="muted">${ac.error ? 'tabel belum terisi' : ((ac.bots || []).length + ' bot · ' + (ac.total_pages || 0) + ' halaman unik')}</small>
+    </div>
+    ${acBody ? `<table><thead><tr><th>Bot</th><th>Halaman</th><th>Aktif</th><th>Terakhir</th></tr></thead><tbody>${acBody}</tbody></table>` : `<p style="font-size:12px;color:#666;">${ac.error ? 'Belum ada tabel ai_crawler_log (' + ac.error + ')' : 'Belum ada crawler AI tercatat dalam 7 hari.'}</p>`}
+    ${acTop ? `<p style="font-size:11px;color:#666;margin-top:8px;">Paling banyak dilirik: ${acTop}</p>` : ''}
+    <p style="font-size:11px;color:#999;margin-top:8px;">Pencatat jalan non-blocking di fetch handler. Laporan penuh (per-hari + top artikel): <a href="/api/admin/ai-crawlers?token=${token}&days=30">/api/admin/ai-crawlers</a></p>
   </div>`;
 
   return `<!DOCTYPE html>
@@ -4177,6 +4997,7 @@ function renderDashboard(stats, token) {
 
   ${funnelAlerts}
   ${funnelCard}
+  ${aiCrawlerCard}
 
   <!-- Top KPI Grid -->
   <div class="grid">
@@ -4280,20 +5101,27 @@ function getGroqKeys(env) {
   return keys;
 }
 
-// AI Model registry — diverifikasi 2026-08-30 via opencode.ai/docs/zen + live ai-test.
-// REMOVED: x-preview-f-free, hy3-free (401 "Model not supported" — sudah dihapus Zen).
-// ADDED: ling-3.0-flash-fin-free (free tier baru, terverifikasi docs Zen 30 Agu 2026).
-// Nemotron = NVIDIA trial (fast/lightning, slow/ultra). 429 = rate-limit sementara, model tetap valid.
-// Prioritas: Zen free models (zero cost) → Groq fallback (cheap pay-per-token).
-const ZEN_FREE_MODELS = [
-  "big-pickle",                // stealth, free
-  "mimo-v2.5-free",            // stealth, free
-  "ling-3.0-flash-fin-free",   // stealth, free (baru 2026-08-30)
-  "nemotron-3.5-lightning-free",// NVIDIA trial, fast
-  "nemotron-3-ultra-free",     // NVIDIA trial, slow but capable
-];
+// AI Model registry — diverifikasi 2026-09-24 via /api/admin/ai-test?models=1 + live probe.
+// 2026-09-24 update (Fase 1.15): OpenCode Zen free tier dimatikan — SEMUA 5 model Zen
+// (big-pickle, mimo-v2.5-free, ling-3.0-flash-fin-free, nemotron-3.5-lightning-free,
+// nemotron-3-ultra-free) mengembalikan 403 "FreeTierError". Kalau tetap dipakai, setiap
+// AI call retry 5× ke Zen sebelum jatuh ke Groq — boros ~3-5s latency per call.
+// List dikosongkan; restore per item kalau OpenCode buka kembali free tier (cek via
+// opencode.ai/zen → Pricing → Free Models).
+// Historical Zen (nonaktif 2026-09-24, jangan dipakai sebelum diverifikasi hidup lagi):
+//   "big-pickle", "mimo-v2.5-free", "ling-3.0-flash-fin-free",
+//   "nemotron-3.5-lightning-free", "nemotron-3-ultra-free".
+const ZEN_FREE_MODELS = [];
 const ZEN_ENDPOINT = "https://opencode.ai/zen/v1/chat/completions";
-const GROQ_CHAT_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.6-27b"];
+// 2026-09-24 (Fase 1.15): Groq live list verifikasi via /api/admin/ai-test?models=1 =
+//   ["allam-2-7b", "canopylabs/orpheus-arabic-saudi", "canopylabs/orpheus-v1-english",
+//    "meta-llama/llama-prompt-guard-2-22m", "meta-llama/llama-prompt-guard-2-86m",
+//    "openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b",
+//    "qwen/qwen3.8-27b", "whisper-large-v3", "whisper-large-v3-turbo"].
+// Text-gen live: "openai/gpt-oss-20b" (default via GROQ_CHAT_MODELS[0]), "openai/gpt-oss-120b",
+// "qwen/qwen3.8-27b". Audio/guard/whisper di luar scope.
+// REPLACED: "qwen/qwen3.6-27b" → "qwen/qwen3.8-27b" (model lama mati 2026-09-24).
+const GROQ_CHAT_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
 async function handlePostsDashboard(request, env) {
@@ -4566,6 +5394,82 @@ document.querySelectorAll("form[method=POST]").forEach(f => {
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
+// ─── §T5.2 blok "Panduan per Industri" untuk llms.txt / llms-full.txt ────────
+// Industri aktif dibaca dari cron_settings.name='industry_wave_state' — kolom `cron`
+// berisi daftar terpisah koma, tiap entri opsional "slug|Label tampil|pola1;pola2".
+// Wave berikutnya cukup UPDATE row itu, TIDAK perlu edit kode.
+// Biaya baca dijaga: SATU query LIKE untuk semua pola (LIKE tidak memakai index →
+// full-scan; N industri = N scan kalau tidak digabung) + memo 6 jam per isolate.
+const LLMS_INDUSTRIES_TTL_MS = 6 * 60 * 60 * 1000;
+let _llmsIndustryMemo = { at: 0, text: "" };
+
+function _industryLabel(term) {
+  return term.split(" ").map(w => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(" ");
+}
+
+function _safeTerm(s) {
+  const t = String(s || "").replace(/-/g, " ").trim().toLowerCase();
+  return t.length >= 3 && t.length <= 40 && /^[a-z0-9 ]+$/.test(t) ? t : null;
+}
+
+async function _llmsIndustryBlock(env) {
+  if (_llmsIndustryMemo.text && Date.now() - _llmsIndustryMemo.at < LLMS_INDUSTRIES_TTL_MS) {
+    return _llmsIndustryMemo.text;
+  }
+  let entries = [];
+  try {
+    const r = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='industry_wave_state'").first();
+    entries = String(r?.cron || "").split(",").map(s => s.trim()).filter(Boolean);
+  } catch {}
+  if (!entries.length) entries = ["kontraktor"];   // wave-1 (T4): kontraktor & jasa bangunan
+  entries = entries.slice(0, 6);
+  const inds = entries.map(e => {
+    const parts = e.split("|");
+    const term = _safeTerm(parts[0]);
+    if (!term) return null;
+    const extra = (parts[2] || "").split(";").map(_safeTerm).filter(Boolean).slice(0, 3);
+    return { term, extra, label: String(parts[1] || _industryLabel(term)).replace(/[\[\]]/g, "").trim() };
+  }).filter(Boolean);
+
+  const lines = ["## Panduan per Industri", ""];
+  if (!inds.length) {
+    lines.push("_Belum ada industri aktif tercatat di industry_wave_state._");
+  } else {
+    const pats = [];
+    for (const i of inds) pats.push(i.term, ...i.extra);
+    const conds = pats.map(() => "(title LIKE ? OR slug LIKE ?)").join(" OR ");
+    const binds = [];
+    for (const p of pats) binds.push("%" + p + "%", "%" + p + "%");
+    let rows = [];
+    try {
+      const r = await env.DB.prepare(
+        `SELECT slug, title FROM posts_meta WHERE ${conds} ORDER BY iso_date DESC LIMIT 120`
+      ).bind(...binds).all();
+      rows = r.results || [];
+    } catch {}
+    for (const i of inds) {
+      const mine = rows.filter(p => {
+        const t = String(p.title || "").toLowerCase();
+        const s = String(p.slug || "").toLowerCase();
+        return [i.term, ...i.extra].some(pat => t.indexOf(pat) >= 0 || s.indexOf(pat) >= 0);
+      }).slice(0, 5);
+      lines.push("### " + i.label);
+      if (mine.length) {
+        for (const p of mine) {
+          lines.push(`- [${String(p.title || p.slug).replace(/[\[\]]/g, "")}](https://beriklan.co.id/blog/${p.slug}/)`);
+        }
+      } else {
+        // Jujur: jangan berpura-pura ada konten yang belum terbit.
+        lines.push("_Panduan untuk industri ini sedang kami susun — belum ada artikel terbit._");
+      }
+      lines.push("");
+    }
+  }
+  const text = lines.join("\n").trim();
+  _llmsIndustryMemo = { at: Date.now(), text };
+  return text;
+}
+
 // ─── /llms.txt — AI search discovery (ChatGPT Search, Perplexity, Gemini, dll) ───────
 //   Format llmstxt.org: markdown ringkas berisi peta konten agar AI crawler cepat
 //   memahami situs tanpa crawl penuh. Di-cache 6 jam di edge.
@@ -4580,11 +5484,16 @@ async function handleLlmsTxt(request, env) {
       .join("\n");
   } catch {}
 
+  const industryBlock = await _llmsIndustryBlock(env);
+  const lastUpdated = new Date().toISOString().slice(0, 10);
+
   const body = `# Beriklan.co.id
 
 > Agency performance marketing Indonesia berbasis Bandung sejak 2016. Mengelola campaign iklan Meta (Facebook/Instagram), Google Ads, TikTok Ads, YouTube Ads, dan pembuatan landing page untuk UMKM & bisnis menengah Indonesia. Konsultasi via WhatsApp, laporan mingguan, dashboard real-time.
 
 Kontak: WhatsApp +62 811-919-328 · https://beriklan.co.id/order/
+
+**Last-Updated:** ${lastUpdated}
 
 ## Layanan Utama
 
@@ -4598,6 +5507,8 @@ Kontak: WhatsApp +62 811-919-328 · https://beriklan.co.id/order/
 - [Jasa Kelola TikTok](https://beriklan.co.id/jasa-kelola-tiktok/): Konten video rutin
 - [Jasa Pembuatan Website](https://beriklan.co.id/jasa-pembuatan-website/): Website profesional custom & CMS
 - [Jasa Pembuatan Landing Page](https://beriklan.co.id/jasa-pembuatan-landing-page/): Landing page + Google Ads paket konversi
+
+${industryBlock}
 
 ## FAQ untuk AI Overview (AEO)
 
@@ -4623,9 +5534,11 @@ A: WhatsApp +62 811-919-328 (respon 1 jam jam kerja 09:00-17:00 WIB). Sesi konsu
 
 - [Blog Digital Marketing](https://beriklan.co.id/blog/): Tips, panduan & studi kasus digital marketing Indonesia
 - [Sitemap](https://beriklan.co.id/sitemap-index.xml): Daftar lengkap semua halaman
+- [Sitemap blog](https://beriklan.co.id/sitemap-blog.xml): Daftar semua artikel blog (URL + tanggal)
+- [News sitemap](https://beriklan.co.id/news.xml): 100 artikel paling terbaru (berita/perbaruan)
 
 ## Extended Index (AI Crawlers)
-- [llms-full.txt](https://beriklan.co.id/llms-full.txt): 100 artikel terbaru + service table + FAQ lengkap
+- [llms-full.txt](https://beriklan.co.id/llms-full.txt): 300 artikel terbaru + service table + FAQ lengkap
 
 ## Artikel Terbaru
 
@@ -4698,13 +5611,20 @@ A: Via WhatsApp +62 811-919-328. Respon dalam 1 jam (jam kerja 09:00-17:00 WIB).
 
 `;
 
-  // Append: 100 recent blog posts with excerpt + tags + service + city
+  // Append: 300 recent blog posts with excerpt + tags + service + city
+  // (§T5.2: 100 → 300 supaya AI crawler melihat lebih banyak konten terindex;
+  // query tetap murah karena iso_date punya index + LIMIT, dan guard di bawah
+  // memastikan file tidak pernah melewati 1 MB.)
   try {
+    const industryBlock = await _llmsIndustryBlock(env);
+    body += industryBlock + "\n\n";
     const r = await env.DB.prepare(
-      "SELECT slug, title, excerpt, category, tags, service, city FROM posts_meta ORDER BY iso_date DESC LIMIT 100"
+      "SELECT slug, title, excerpt, category, tags, service, city FROM posts_meta ORDER BY iso_date DESC LIMIT 300"
     ).all();
-    body += `## 100 Artikel Blog Terbaru\n\n`;
+    body += `## 300 Artikel Blog Terbaru\n\n`;
+    let truncated = false;
     for (const p of (r.results || [])) {
+      if (body.length > 920000) { truncated = true; break; }
       const tags = (() => { try { return JSON.parse(p.tags || "[]"); } catch { return []; } })();
       body += `### ${(p.title || p.slug).replace(/[\[\]]/g, "")}\n`;
       body += `URL: https://beriklan.co.id/blog/${p.slug}/\n`;
@@ -4715,6 +5635,7 @@ A: Via WhatsApp +62 811-919-328. Respon dalam 1 jam (jam kerja 09:00-17:00 WIB).
       if (p.excerpt) body += `Ringkasan: ${String(p.excerpt).slice(0, 200).replace(/[\[\]\n]/g, " ")}\n`;
       body += `\n`;
     }
+    if (truncated) body += `\n_Daftar dipotong di sini agar file tetap < 1 MB. Daftar lengkap: /sitemap-blog.xml_\n`;
   } catch (e) {
     body += `\n_Gagal memuat artikel: ${String(e).slice(0, 100)}_\n`;
   }
@@ -4794,7 +5715,7 @@ async function handleKeywordList(request, env) {
   }
 }
 
-async function handleKeywordDashboard(request, env) {
+async function handleKeywordDashboard(request, env, ctx) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) {
@@ -5053,10 +5974,35 @@ async function handleKeywordDashboard(request, env) {
   const generationEtaDays = generationPerDay > 0 ? Math.ceil(queuePending / generationPerDay) : null;
   // ETA realistis: hanya keyword prioritas tinggi (>=70) yang benar-benar akan di-generate.
   // Mayoritas 391k queue adalah ekspansi low-value yang tidak akan pernah diproses.
+  // D1 quota fix (2026-09-25): cache COUNT ini 1 jam di cron_settings (encode timestamp
+  // di value field sebagai "count|epoch_ms" karena tabel cron_settings belum punya
+  // kolom updated_at). Tanpa cache: tiap hit dashboard baca 20.6k rows — projected
+  // 1.8M rows/day. Dengan cache: 1 hit/jam × 20.6k = 484k rows/day (~73% saving).
   let highPriorityPending = null;
   try {
-    const hp = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending' AND priority_score >= 70").first();
-    highPriorityPending = hp?.n || 0;
+    const cached = await env.DB.prepare(
+      "SELECT value FROM cron_settings WHERE name='high_priority_pending_cache'"
+    ).first();
+    const raw = cached?.value || "";
+    const parts = raw.split("|");
+    const cachedVal = parts[0] ? parseInt(parts[0], 10) : null;
+    const cachedAt = parts[1] ? parseInt(parts[1], 10) : 0;
+    const isFresh = cachedVal !== null && !isNaN(cachedVal) && (Date.now() - cachedAt) < 3600_000;
+    if (isFresh) {
+      highPriorityPending = cachedVal;
+    } else {
+      const hp = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending' AND priority_score >= 70").first();
+      highPriorityPending = hp?.n || 0;
+      // Fire-and-forget cache write (1 jam TTL)
+      try {
+        const cachedStr = String(highPriorityPending) + "|" + String(Date.now());
+        const write = env.DB.prepare(
+          "INSERT INTO cron_settings (name, cron, value, enabled, label) VALUES ('high_priority_pending_cache', 'cache', ?, 0, 'high priority pending count (auto, 1h TTL — D1 quota fix)') ON CONFLICT(name) DO UPDATE SET value=excluded.value"
+        ).bind(cachedStr);
+        if (ctx && ctx.waitUntil) ctx.waitUntil(write.run());
+        else await write.run();
+      } catch {}
+    }
   } catch (e) {}
   const highPriorityEtaDays = generationPerDay > 0 && highPriorityPending !== null ? Math.ceil(highPriorityPending / generationPerDay) : null;
   const generationSuccess = data.generation.requested24h > 0
@@ -6787,14 +7733,57 @@ async function handleIndexNowCron(request, env) {
   const submitted = [];
 
   // 1. Fetch pending URLs (any not-yet-submitted via IndexNow)
+  //    Fix A (2026-09-24): OR diganti 2 query index-perfect (SEARCH, no temp B-tree).
+  //    Subquery A pakai idx_pending_indexing_status (= 'pending'),
+  //    Subquery B pakai idx_pending_indexnow (indexnow_at IS NULL).
+  //    Semangat sama (UNION): pending + submitted/gsc_submitted yg belum pernah di-IndexNow-kan.
+  //    Dedup in-JS (status exclusive di pipeline, overlap tidak mungkin).
+  //
+  //    FIX 4.2b (2026-09-29) — INDEXNOW QUEUE STARVATION. Subquery A lama TIDAK memfilter
+  //    `indexnow_at`, sedangkan UPDATE penandaannya berbuntut `AND indexnow_at IS NULL`
+  //    (no-op untuk baris yang sudah di-mark). Akibatnya 50 baris id terkecil yang sama
+  //    (`digital-consultant-makassar`, `-palembang`, `digital-marketing-agency-batam`, …,
+  //    sudah di-IndexNow 30 Agu – 1 Sep) dipilih SETIAP JAM selamanya dan sisanya tidak
+  //    pernah dikirim. Bukti produksi 29 Sep 19:0x UTC:
+  //      cron_runs indexnow 3 hari = 69× status='ok' dengan output `"submitted":50` dan
+  //      `submitted_urls` identik antar-run; pending_indexing status='pending' =
+  //      16.955 baris tapi hanya 56 yang punya indexnow_at dan MAX(indexnow_at)='2026-09-25
+  //      11:01:09'; 12 artikel terbaru (iso_date DESC) semuanya indexnow_at=NULL.
+  //    Pola benar ditiru dari handleGscIndexing (queue ~line 9961): filter rotasi di SELECT
+  //    + UPDATE tanpa guard, supaya antrian maju dan URL lama di-submit ulang berkala.
   let urls = [];
   try {
-    const r = await env.DB.prepare(
+    const seenIds = new Set();
+    const merged = [];
+    // A. Belum pernah di-IndexNow sama sekali (prioritas tertinggi) — idx_pending_indexing_status.
+    //    id DESC: artikel TERBARU duluan. Kapasitas 50/jam (1.200/hari) jauh di atas laju
+    //    artikel baru (≤15/hari), jadi backlog 16,9 rb tetap terkurangi ±1.185/hari (±14 hari
+    //    satu putaran penuh) sambil URL baru terkirim dalam ≤1 jam sejak terbit.
+    const rA = await env.DB.prepare(
       `SELECT id, url FROM pending_indexing
-       WHERE status='pending' OR (status IN ('submitted','gsc_submitted') AND indexnow_at IS NULL)
-       ORDER BY rowid ASC LIMIT ?`
+       WHERE status='pending' AND indexnow_at IS NULL
+       ORDER BY id DESC LIMIT ?`
     ).bind(count).all();
-    urls = (r.results || []).map(row => ({
+    for (const row of rA.results || []) if (!seenIds.has(row.id)) { seenIds.add(row.id); merged.push(row); }
+    // A2. Rotasi: yang sudah >14 hari sejak submit terakhir (idx_pending_indexnow, urut tertua).
+    if (merged.length < count) {
+      const rA2 = await env.DB.prepare(
+        `SELECT id, url FROM pending_indexing
+         WHERE status='pending' AND indexnow_at <= datetime('now', '-14 days')
+         ORDER BY indexnow_at ASC LIMIT ?`
+      ).bind(count - merged.length).all();
+      for (const row of rA2.results || []) if (!seenIds.has(row.id)) { seenIds.add(row.id); merged.push(row); }
+    }
+    // B. status submitted/gsc_submitted yang belum pernah di-IndexNow-kan.
+    if (merged.length < count) {
+      const rB = await env.DB.prepare(
+        `SELECT id, url FROM pending_indexing
+         WHERE status IN ('submitted','gsc_submitted') AND indexnow_at IS NULL
+         ORDER BY id ASC LIMIT ?`
+      ).bind(count - merged.length).all();
+      for (const row of rB.results || []) if (!seenIds.has(row.id)) { seenIds.add(row.id); merged.push(row); }
+    }
+    urls = merged.slice(0, count).map(row => ({
       id: row.id,
       url: row.url.replace("https://www.beriklan.co.id", "https://beriklan.co.id"),
     }));
@@ -6855,8 +7844,11 @@ async function handleIndexNowCron(request, env) {
   if (totalEngines > 0) {
     try {
       for (const u of urls) {
+        // 4.2b: guard `indexnow_at IS NULL` DIHAPUS — baris hasil rotasi (A2) harus boleh
+        //   di-refresh timestamp-nya, kalau tidak dia selamanya jadi yang tertua dan
+        //   dipilih ulang tiap jam (bug starvation yang sama, versi rotasi).
         await env.DB.prepare(
-          `UPDATE pending_indexing SET indexnow_at = datetime('now') WHERE id=? AND indexnow_at IS NULL`
+          `UPDATE pending_indexing SET indexnow_at = datetime('now') WHERE id=?`
         ).bind(u.id).run();
         submitted.push(u.url);
       }
@@ -7035,7 +8027,11 @@ async function handleRankSync(request, env) {
         `INSERT INTO keyword_ranks (keyword, page_url, position, clicks, impressions, ctr, date)
          VALUES (?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(keyword, page_url, date) DO UPDATE SET
-           position=excluded.position, clicks=excluded.clicks, impressions=excluded.impressions, ctr=excluded.ctr`
+           position=excluded.position, clicks=excluded.clicks, impressions=excluded.impressions, ctr=excluded.ctr
+         WHERE keyword_ranks.position IS NOT excluded.position
+            OR keyword_ranks.clicks IS NOT excluded.clicks
+            OR keyword_ranks.impressions IS NOT excluded.impressions
+            OR keyword_ranks.ctr IS NOT excluded.ctr`
       ).bind(keyword, pageUrl, position, clicks, impressions, ctr, date).run();
       inserted++;
     } catch (e) {
@@ -7320,6 +8316,21 @@ async function generateWithZenOrGroq(prompt, env, maxTokens = 600) {
 // tanpa build/deploy. Static asset hanya fallback kalau slug tidak ada di D1.
 
 async function ensureGrowthSchema(env) {
+  // §T3 optimasi (2026-09-30): 11 pernyataan DDL di bawah bersifat idempoten TAPI setiap
+  //   panggilan = 1 subrequest D1, dan SEMUA handler growth memanggil ini (enrich,
+  //   ctr-fix, freshness, gsc-loop, dashboard, winner-engine). Probe 2 subrequest menggantikan
+  //   11 subrequest pada happy path; begitu tabel + kelima kolom posts_meta terbukti ada,
+  //   DDL dilewati. Kalau probe gagal (kolom/tabel belum ada) → jalankan DDL lengkap
+  //   seperti sebelumnya, jadi migrasi otomatis tidak pernah dilewati.
+  try {
+    const t = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('growth_log','keyword_ranks')").all();
+    if ((t.results || []).length === 2) {
+      // Yang diuji di sini ADALAH probe tidak melempar (kolom hilang → D1 error → catch → DDL
+      //   lengkap). `LIMIT 0` memang tidak pernah mengembalikan baris, jadi isinya diabaikan.
+      await env.DB.prepare("SELECT enriched_at, ctr_fixed_at, refreshed_at, seo_title, seo_description FROM posts_meta LIMIT 0").all();
+      return;
+    }
+  } catch { /* tabel/kolom belum lengkap → lanjut DDL idempoten di bawah */ }
   const stmts = [
     `CREATE TABLE IF NOT EXISTS growth_log (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -7349,19 +8360,23 @@ function growthSlugFromUrl(pageUrl) {
   return bm ? decodeURIComponent(bm[1]) : "";
 }
 
+function _growthLogStmt(env, row) {
+  return env.DB.prepare(
+    `INSERT INTO growth_log (action, slug, keyword, position, ctr, impressions, static_page, before_json, after_json, ai_model, error)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+  ).bind(
+    row.action || "", row.slug || null, row.keyword || null,
+    row.position ?? null, row.ctr ?? null, row.impressions ?? null,
+    row.static_page ? 1 : 0,
+    row.before_json ? String(row.before_json).slice(0, 2000) : null,
+    row.after_json ? String(row.after_json).slice(0, 2000) : null,
+    row.ai_model || null, row.error || null
+  );
+}
+
 async function growthLogInsert(env, row) {
   try {
-    await env.DB.prepare(
-      `INSERT INTO growth_log (action, slug, keyword, position, ctr, impressions, static_page, before_json, after_json, ai_model, error)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-    ).bind(
-      row.action || "", row.slug || null, row.keyword || null,
-      row.position ?? null, row.ctr ?? null, row.impressions ?? null,
-      row.static_page ? 1 : 0,
-      row.before_json ? String(row.before_json).slice(0, 2000) : null,
-      row.after_json ? String(row.after_json).slice(0, 2000) : null,
-      row.ai_model || null, row.error || null
-    ).run();
+    await _growthLogStmt(env, row).run();
   } catch {}
 }
 
@@ -7594,18 +8609,40 @@ async function handleGrowthEnrich(request, env) {
   const minImp = Math.max(1, parseInt(url.searchParams.get("minImp") || "10", 10) || 10);
   const posMin = Math.max(1, Math.min(parseInt(url.searchParams.get("posMin") || "3", 10) || 3, 50));
   const posMax = Math.max(posMin, Math.min(parseInt(url.searchParams.get("posMax") || "18", 10) || 18, 100));
+  // FIX 4.3a (2026-09-29): jendela agregasi hari (bukan snapshot 1 hari). Param `days`, default 28.
+  const days = Math.max(1, Math.min(parseInt(url.searchParams.get("days") || "28", 10) || 28, 90));
   const t0 = Date.now();
   const log = []; const errors = []; const optimized = [];
 
   try {
     await ensureGrowthSchema(env);
+    // FIX 4.3a — ENRICH CANDIDATE STARVATION. Query LAMA mengambil HANYA baris tanggal
+    //   TERBARU per (keyword, page_url) (`JOIN (… MAX(date) …) latest`) lalu menyaring
+    //   impressions/position dari satu baris harian itu. rank-sync menulis per-hari, sehingga
+    //   keyword dengan 150 impresi/28 hari tapi 3 impresi di hari terakhir GUGUR.
+    //   Bukti produksi 29 Sep 19:2x UTC (cron_runs growth-enrich 2026-09-29 09:01:09,
+    //   growth-ctr-fix 09:01:08 keduanya status=ok):
+    //     enrich → `{"message":"no enrich candidates","optimized":0,"candidates":0}`;
+    //     ctr-fix → `{"message":"no ctr-fix candidates","fixed":0,"candidates":0,minImp:5,maxCtr:0.02}`.
+    //   Hitung langsung di D1 (window 28 hari, DATE('now','-28 days')):
+    //     lama (baris hari terbaru saja): kandidat lolos semua filter = 1 (ctr-fix) / 0 (enrich)
+    //     baru (agregat 28 hari): pool imp≥5 = 570 pasangan, 453 punya halaman live,
+    //           enrich pos 3-18 = 39 (37 tanpa cooldown), ctr-fix pos≤30 & CTR≤2% = 96.
+    //   growth_log terakhir: ctr-fix 27 Sep, enrich 27 Sep → job jalan tapi 0 aksi.
+    //   Aggregate = perilaku yang benar; ambang (minImp/pos) TIDAK diturunkan.
     const cands = await env.DB.prepare(`
       SELECT kr.keyword, kr.page_url, kr.position, kr.impressions, kr.ctr, kr.date,
              pm.slug, pm.title, pm.enriched_at
-      FROM keyword_ranks kr
-      JOIN (
-        SELECT keyword, page_url, MAX(date) AS md FROM keyword_ranks GROUP BY keyword, page_url
-      ) latest ON kr.keyword = latest.keyword AND kr.page_url = latest.page_url AND kr.date = latest.md
+      FROM (
+        SELECT keyword, page_url,
+               SUM(impressions) AS impressions,
+               AVG(position) AS position,
+               CAST(SUM(clicks) AS REAL) / NULLIF(SUM(impressions), 0) AS ctr,
+               MAX(date) AS date
+        FROM keyword_ranks
+        WHERE date >= date('now', ?)
+        GROUP BY keyword, page_url
+      ) kr
       JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL}
       WHERE kr.position BETWEEN ? AND ?
         AND kr.impressions >= ?
@@ -7613,9 +8650,9 @@ async function handleGrowthEnrich(request, env) {
         AND (pm.enriched_at IS NULL OR pm.enriched_at < datetime('now', '-21 days'))
       ORDER BY kr.impressions DESC
       LIMIT ?
-    `).bind(posMin, posMax, minImp, count).all();
+    `).bind(`-${days} days`, posMin, posMax, minImp, count).all();
     const rows = cands.results || [];
-    log.push({ stage: "candidates", count: rows.length });
+    log.push({ stage: "candidates", count: rows.length, days });
     if (!rows.length) {
       return new Response(JSON.stringify({ ok: true, message: "no enrich candidates", optimized: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
     }
@@ -7675,9 +8712,13 @@ Aturan wajib:
 
         await env.DB.prepare("UPDATE posts_content SET content=? WHERE slug=?").bind(content, slug).run();
         await env.DB.prepare("UPDATE posts_meta SET enriched_at=datetime('now') WHERE slug=?").bind(slug).run();
-        await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, position: cand.position, impressions: cand.impressions, ai_model: aiModel, before_json: JSON.stringify({ intro_len: (c?.content || "").length }), after_json: JSON.stringify({ intro: j.intro.slice(0, 200), faqs: faqs.length }) });
+        // T2 write-back (2026-09-29): konten + intro berubah → segarkan objek R2 slug ini.
+        //   Status disimpan di after_json (growth_log tidak punya kolom khusus) dan di respons,
+        //   kegagalan R2 TIDAK membatalkan run.
+        const r2syncEnrich = await _syncPostToR2(slug, env);
+        await growthLogInsert(env, { action: "enrich", slug, keyword: cand.keyword, position: cand.position, impressions: cand.impressions, ai_model: aiModel, before_json: JSON.stringify({ intro_len: (c?.content || "").length }), after_json: JSON.stringify({ intro: j.intro.slice(0, 200), faqs: faqs.length, r2_sync: r2syncEnrich }) });
         await growthPing(env, slug, errors);
-        optimized.push({ slug, keyword: cand.keyword, position: cand.position, imps: cand.impressions, faqs: faqs.length, model: aiModel });
+        optimized.push({ slug, keyword: cand.keyword, position: cand.position, imps: cand.impressions, faqs: faqs.length, model: aiModel, r2_sync: r2syncEnrich });
         log.push({ stage: "enriched", slug, keyword: cand.keyword });
       } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
     }
@@ -7699,20 +8740,34 @@ async function handleGrowthCtrFix(request, env) {
   if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
 
   const count = Math.max(1, Math.min(parseInt(url.searchParams.get("count") || "3", 10) || 3, 5));
-  const minImp = Math.max(10, parseInt(url.searchParams.get("minImp") || "50", 10) || 50);
+  const minImp = Math.max(1, parseInt(url.searchParams.get("minImp") || "5", 10) || 5);
   const maxCtr = Math.min(0.1, Math.max(0.001, parseFloat(url.searchParams.get("maxCtr") || "0.02") || 0.02));
+  // FIX 4.3a (2026-09-29): sama seperti handleGrowthEnrich — nilai CTR/position dibaca dari
+  //   AGREGAT jendela (default 28 hari), bukan baris tanggal terbaru saja.
+  const days = Math.max(1, Math.min(parseInt(url.searchParams.get("days") || "28", 10) || 28, 90));
   const t0 = Date.now();
   const log = []; const errors = []; const fixed = [];
 
   try {
     await ensureGrowthSchema(env);
+    // FIX 4.3a — CTR-FIX CANDIDATE STARVATION (lihat komentar panjang di handleGrowthEnrich).
+    //   Bukti: cron_runs growth-ctr-fix 2026-09-29 09:01:08 status=ok →
+    //   `{"message":"no ctr-fix candidates","fixed":0,"log":[{"stage":"candidates","count":0,"minImp":5,"maxCtr":0.02}]}`
+    //   padahal agregat 28 hari di D1 (diuji langsung, 29 Sep 19:3x UTC) punya 96 pasangan
+    //   lolos filter (imp≥5, CTR≤2%, pos≤30, halaman live, tanpa cooldown) → pool nyata,
+    //   query snapshot-harian yang buta. Ambang TIDAK diubah, hanya cara agregasi.
     const cands = await env.DB.prepare(`
       SELECT kr.keyword, kr.page_url, kr.position, kr.impressions, kr.ctr,
              pm.slug, pm.title, pm.excerpt, pm.seo_title, pm.seo_description, pm.ctr_fixed_at
-      FROM keyword_ranks kr
-      JOIN (
-        SELECT keyword, page_url, MAX(date) AS md FROM keyword_ranks GROUP BY keyword, page_url
-      ) latest ON kr.keyword = latest.keyword AND kr.page_url = latest.page_url AND kr.date = latest.md
+      FROM (
+        SELECT keyword, page_url,
+               SUM(impressions) AS impressions,
+               AVG(position) AS position,
+               CAST(SUM(clicks) AS REAL) / NULLIF(SUM(impressions), 0) AS ctr
+        FROM keyword_ranks
+        WHERE date >= date('now', ?)
+        GROUP BY keyword, page_url
+      ) kr
       JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL}
       WHERE kr.impressions >= ?
         AND kr.ctr <= ?
@@ -7721,9 +8776,9 @@ async function handleGrowthCtrFix(request, env) {
         AND (pm.ctr_fixed_at IS NULL OR pm.ctr_fixed_at < datetime('now', '-30 days'))
       ORDER BY kr.impressions DESC
       LIMIT ?
-    `).bind(minImp, maxCtr, count).all();
+    `).bind(`-${days} days`, minImp, maxCtr, count).all();
     const rows = cands.results || [];
-    log.push({ stage: "candidates", count: rows.length, minImp, maxCtr });
+    log.push({ stage: "candidates", count: rows.length, minImp, maxCtr, days });
     if (!rows.length) {
       return new Response(JSON.stringify({ ok: true, message: "no ctr-fix candidates", fixed: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
     }
@@ -7765,15 +8820,353 @@ Aturan wajib:
         await env.DB.prepare(
           "UPDATE posts_meta SET seo_title=?, seo_description=?, ctr_fixed_at=datetime('now') WHERE slug=?"
         ).bind(newTitle, newDesc, slug).run();
-        await growthLogInsert(env, { action: "ctr-fix", slug, keyword: cand.keyword, position: cand.position, ctr: cand.ctr, impressions: cand.impressions, before_json: JSON.stringify(before), after_json: JSON.stringify({ title: newTitle, desc: newDesc, reason: j.reason || "" }), ai_model: aiModel });
+        // T2 write-back (2026-09-29): SERP title/description berubah di posts_meta → objek R2
+        //   harus ikut diperbarui (helper membaca ulang D1, jadi payload berisi seo_* yang baru).
+        const r2syncCtr = await _syncPostToR2(slug, env);
+        await growthLogInsert(env, { action: "ctr-fix", slug, keyword: cand.keyword, position: cand.position, ctr: cand.ctr, impressions: cand.impressions, before_json: JSON.stringify(before), after_json: JSON.stringify({ title: newTitle, desc: newDesc, reason: j.reason || "", r2_sync: r2syncCtr }), ai_model: aiModel });
         await growthPing(env, slug, errors);
-        fixed.push({ slug, keyword: cand.keyword, imps: cand.impressions, ctr: cand.ctr, new_title: newTitle });
+        fixed.push({ slug, keyword: cand.keyword, imps: cand.impressions, ctr: cand.ctr, new_title: newTitle, r2_sync: r2syncCtr });
       } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
     }
 
     return new Response(JSON.stringify({ ok: true, action: "ctr-fix", candidates: rows.length, fixed: fixed.length, fixed_list: fixed, elapsed_ms: Date.now() - t0, log, errors }), { headers: { "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ── 3b. WINNER KEYWORD ENGINE (§T3 — 2026-09-30) ──────────────────────────
+//
+// Filosofi: berhenti menebak keyword. Google SUDAH memberi tahu query apa yang
+// menampilkan kita (tabel `keyword_ranks`, diisi handleRankSync tiap 6 jam). Mesin ini
+// mengubah data itu jadi aksi SETIAP HARI — target: winning keyword di semua industri.
+//
+//   GET /api/cron/winner-engine?token=...&days=28&minImp=10&maxNew=10&dry=1
+//   GET /api/cron/winner-report?token=...&days=28      → email TOP-50 (Rabu 10:00 UTC)
+//
+// Klasifikasi (satu query = satu aksi; halaman representative = impresi terbesar):
+//   (a) halaman blog relevan & pos 4–10   → 'winner-rewrite' (eksekutor: gate growth-ctr-fix 09:00 UTC)
+//   (b) halaman blog relevan & pos 11–15  → 'winner-enrich'  (eksekutor: gate growth-enrich 09:00 UTC)
+//   (c) tanpa halaman relevan (atau pos 16–25 yang cuma cocok generik)
+//                                         → 'winner-new' → keyword_queue INSERT/promote prio 96
+//
+// KENAPA (a)/(b) TIDAK memanggil handleGrowthCtrFix/Enrich dari dalam sini:
+//   satu scheduled() event = SATU invocation; semua ctx.waitUntil berbagi budget waktu &
+//   subrequest. Bukti cron_runs 29 Sep: jam dengan 11 job (h%6===0 → 12:01 & 18:01 UTC)
+//   SELALU menyisakan 4 baris 'running' yang lalu ditandai 'timeout' self-heal (indexnow,
+//   gsc-indexing ×2, lead-pipeline) = invocation dipotong sebelum semua waitUntil selesai.
+//   Menambah 2 panggilan AI (±40 subrequest) di jam 10 hanya memindahkan kegagalan ke jalur
+//   indexasi. Gate 09:00 UTC yang sudah ada membaca POOL AGREGAT YANG SAMA dan mengurutkan
+//   `impressions DESC`, jadi kandidat winner otomatis antre paling depan di eksekutor —
+//   tanpa duplikasi logika AI. Winner-engine sendiri cuma ±5 subrequest (tanpa AI).
+//
+// KENAPA priority 96, bukan 85 seperti teks plan §T3 (verifikasi yang diminta plan):
+//   `handlePriorityRebalance` TIDAK me-reset priority source manapun (ia hanya promote ke 90
+//   dan demote layanan view-live/marketplace ke 25) → pengecualian source tidak diperlukan.
+//   Tapi 85 tetap ACTION KOSONG: D1 29 Sep 19:5x UTC menunjukkan 20.486 baris pending
+//   `priority_score = 90` dan buffer `hourly_candidates` hanya mengambil TOP 120 PER SERVICE
+//   (line ~9350 `ORDER BY priority_score DESC LIMIT 120`), sementara tiap layanan inti punya
+//   >1.000 baris prio-90 → sisipan 85 tidak akan pernah terpilih untuk digenerate. 96 berada
+//   di atas cap rebalance (90) dan cap gsc-loop (`Math.min(95, …)`) → dijamin masuk buffer.
+//
+// KENAPA minImp default 10, bukan 30 seperti teks plan: pool NYATA keyword_ranks 28 hari
+//   (apex/www saja, pos 4–25, diukur di D1 29 Sep 20:0x UTC) = 32 query di ≥10 impresi,
+//   22 di ≥15 · 13 di ≥20 · HANYA 7 di ≥30 · 2 di ≥50. Data tipis (pelajaran 4.0d) — dengan
+//   30 acceptance "≥10 aksi/hari" tidak mungkin tercapai. Arah plan sendiri: "threshold rendah
+//   dulu, naikkan setelah 2 minggu" → naikkan lewat parameter ?minImp=, tanpa deploy.
+const WINNER_PRIORITY = 96;
+// Sinkron dengan CORE_SERVICES di handleHourlyGenerate (line ~9269) — layanan yang benar-benar
+// dibaca buffer generation. Keyword winner di luar daftar ini tidak akan pernah terbit.
+const WINNER_CORE_SERVICES = [
+  "jasa-iklan-facebook", "jasa-iklan-instagram", "jasa-iklan-google", "jasa-iklan-tiktok",
+  "jasa-iklan-youtube", "jasa-digital-marketing", "jasa-pembuatan-website",
+  "jasa-pembuatan-landing-page", "jasa-kelola-instagram", "jasa-kelola-tiktok",
+];
+const WINNER_STOPWORDS = /^(jasa|dan|atau|yang|di|ke|untuk|dengan|pada|dari|harga|biaya|paket|cara|apa|kan|terbaik|murah|profesional|termurah|2026|the|a|in|of|to|for)$/;
+
+// Token paling "khas" dari sebuah query (buang stopword, ambil yang terpanjang) — dipakai
+// untuk menilai apakah sudah ada artikel yang benar-benar DIDEDIKASIKAN untuk query itu.
+function _winnerTokens(kw) {
+  return String(kw || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+    .filter((t) => t.length >= 4 && !WINNER_STOPWORDS.test(t))
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 2);
+}
+
+// Kandidat = AGREGAT jendela N hari (bukan snapshot 1 hari — pelajaran bug 4.3a), diurut
+// impresi terbesar. LEFT JOIN posts_meta: query yang halamannya tidak dikenal tetap masuk
+// (calon 'winner-new'). Dua filter domain yang WAJIB (dibuktikan di D1 29 Sep 20:0x UTC,
+// keyword_ranks 28 hari): `page_url` apex/www saja — 634 baris (143 query) ternyata milik
+// subdomain id.beriklan.co.id (iklan baris: "kost mpm 8", "sewa forklift tanah abang") dan
+// 125 baris dari luar → tanpa filter, query sampahan itu akan di-INSERT ke keyword_queue.
+// Kedua `pm.slug = GROWTH_SLUG_SQL` juga butuh `page_url LIKE '%/blog/%'`, karena helper itu
+// menghasilkan string untuk halaman layanan (/jasa-iklan-facebook/ → 'jasa-iklan-facebook')
+// yang bisa kebetulan sama dengan slug blog.
+async function _winnerCandidates(env, days, minImp, limit) {
+  const r = await env.DB.prepare(`
+    SELECT kr.keyword, kr.page_url, kr.impressions, kr.clicks, kr.position, kr.ctr,
+           pm.slug, pm.title, pm.service
+    FROM (
+      SELECT keyword, page_url,
+             SUM(impressions) AS impressions,
+             SUM(clicks) AS clicks,
+             AVG(position) AS position,
+             CAST(SUM(clicks) AS REAL) / NULLIF(SUM(impressions), 0) AS ctr
+      FROM keyword_ranks
+      WHERE date >= date('now', ?)
+        AND keyword NOT LIKE '%beriklan%'
+        AND (page_url LIKE 'https://beriklan.co.id/%' OR page_url LIKE 'https://www.beriklan.co.id/%')
+      GROUP BY keyword, page_url
+      HAVING SUM(impressions) >= ? AND AVG(position) BETWEEN 4 AND 25
+    ) kr
+    LEFT JOIN posts_meta pm ON pm.slug = ${GROWTH_SLUG_SQL} AND kr.page_url LIKE '%/blog/%'
+    ORDER BY kr.impressions DESC
+    LIMIT ?
+  `).bind(`-${days} days`, minImp, limit).all();
+  return r.results || [];
+}
+
+// Kelompokkan per query → 1 aksi, lalu batasi per industri supaya TOP tidak menumpuk di
+// satu layanan (acceptance §T3: ≥4 industri berbeda di laporan mingguan pertama).
+// Query yang halaman terbaiknya = HALAMAN LAYANAN (bukan blog) dianggap sudah terjawab oleh
+// money page → tidak dapat aksi & tidak masuk antrian artikel (dihitung sebagai `covered`).
+function _winnerPlan(rows, perIndustry, maxActions) {
+  const byKeyword = new Map();
+  for (const r of rows) {
+    const k = String(r.keyword || "").trim();
+    if (!k || k.length < 5) continue;
+    const isBlog = /\/blog\//.test(String(r.page_url || ""));
+    const key = k.toLowerCase();
+    const cur = byKeyword.get(key);
+    if (!cur || (isBlog && !cur.isBlogPage)) {
+      // halaman representative = baris impressions terbesar; tapi halaman blog SELALU
+      // diutamakan di atas halaman layanan supaya aksi (rewrite/enrich) jatuh ke konten.
+      byKeyword.set(key, { keyword: k, isBlogPage: isBlog, imps: r.impressions || 0, clicks: r.clicks || 0, pos: r.position || 0, ctr: r.ctr || 0, slug: r.slug || "", title: r.title || "", pageUrl: r.page_url || "", service: r.service || "", pages: 1 });
+    } else cur.pages++;
+  }
+  const items = [...byKeyword.values()];
+  for (const it of items) {
+    const toks = _winnerTokens(it.keyword);
+    const hay = `${it.slug} ${it.title}`.toLowerCase();
+    it.tokens = toks;
+    it.tokenOverlap = toks.filter((t) => hay.includes(t)).length;
+    it.hasBlogPage = !!it.slug;
+    // "dedicated" = halaman blog yang benar-benar membahas query (≥2 token khas ketemu di
+    // slug/judul). Halaman yang cuma cocok 0-1 token dianggap bukan jawaban query → new.
+    it.norm = String(it.keyword).toLowerCase().replace(/[^a-z0-9\s]/g, "").trim().replace(/\s+/g, " ").slice(0, 120);
+    it.industry = growthServiceFromQuery(it.keyword) || it.service || "(umum)";
+    it.dedicated = it.hasBlogPage && it.tokenOverlap >= 2; // halaman yang benar-benar menjawab query
+    if (!it.hasBlogPage) it.band = "winner-new";                     // tidak ada halaman blog sama sekali
+    else if (it.dedicated) it.band = it.pos <= 10 ? "winner-rewrite" : "winner-enrich"; // halaman khusus SUDAH ada → perbaiki halaman itu, jangan bikin antrian duplikat
+    else if (it.pos <= 15) it.band = "winner-enrich";                  // pencocokan lemah tapi sudah dekat → perkuat dulu (murah)
+    else it.band = "winner-new";                                      // pos 16–25 dengan halaman generik → artikel khusus
+  }
+  const perIndCount = new Map();
+  const plan = [];
+  const capped = [];
+  const covered = [];
+  for (const it of items) { // `items` sudah terurut impressions DESC (source SQL)
+    if (!it.isBlogPage && !it.slug) { covered.push({ keyword: it.keyword, page: it.pageUrl }); continue; }
+    const n = perIndCount.get(it.industry) || 0;
+    if (n >= perIndustry) { capped.push({ keyword: it.keyword, industry: it.industry }); continue; }
+    if (plan.length >= maxActions) { capped.push({ keyword: it.keyword, industry: it.industry, reason: "maxActions" }); continue; }
+    perIndCount.set(it.industry, n + 1);
+    plan.push(it);
+  }
+  return { plan, capped, covered, industries: [...perIndCount.entries()].map(([k, n]) => ({ industry: k, n })).sort((a, b) => b.n - a.n) };
+}
+
+// ── Endpoint harian 10:00 UTC ──
+async function handleWinnerEngine(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  const days = Math.max(7, Math.min(parseInt(url.searchParams.get("days") || "28", 10) || 28, 90));
+  const minImp = Math.max(5, parseInt(url.searchParams.get("minImp") || "10", 10) || 10);
+  const maxNew = Math.max(1, Math.min(parseInt(url.searchParams.get("maxNew") || "10", 10) || 10, 20));
+  const maxActions = Math.max(5, Math.min(parseInt(url.searchParams.get("maxActions") || "20", 10) || 20, 40));
+  const perIndustry = Math.max(1, Math.min(parseInt(url.searchParams.get("perIndustry") || "6", 10) || 6, 20));
+  const dry = url.searchParams.get("dry") === "1";
+  const t0 = Date.now();
+  const log = []; const errors = [];
+
+  try {
+    await ensureGrowthSchema(env);
+    const rows = await _winnerCandidates(env, days, minImp, 300);
+    log.push({ stage: "candidates", rows: rows.length, days, minImp });
+    const { plan, capped, covered, industries } = _winnerPlan(rows, perIndustry, maxActions);
+    const byBand = { "winner-rewrite": 0, "winner-enrich": 0, "winner-new": 0 };
+    plan.forEach((p) => { byBand[p.band] = (byBand[p.band] || 0) + 1; });
+    log.push({ stage: "classified", planned: plan.length, ...byBand, capped: capped.length, covered_by_service_page: covered.length });
+
+    const news = plan.filter((p) => p.band === "winner-new").slice(0, maxNew);
+    const stmtsFor = (chunk) => env.DB.batch(chunk);
+
+    // Baca dulu (±1 subrequest): adakah artikel lain yang sudah didedikasikan untuk query
+    // ini, dan apakah keyword-nya sudah ada di keyword_queue (→ promote, bukan duplikat).
+    // Catatan baris keyword_queue: `id` boleh NULL (PRIMARY KEY TEXT tanpa NOT NULL) dan
+    // satu keyword_normalized bisa punya >1 baris → dibaca beberapa baris, dipilih yang
+    // status='pending' (hanya itu yang dilihat buffer generation).
+    const reads = [];
+    for (const it of news) {
+      const toks = it.tokens.length ? it.tokens : [String(it.keyword).toLowerCase().slice(0, 20)];
+      const like = toks.map((t) => `%${t}%`);
+      reads.push({ kind: "post", key: it.keyword, stmt: env.DB.prepare(`SELECT slug FROM posts_meta WHERE ${like.map(() => "slug LIKE ?").join(" AND ")} LIMIT 1`).bind(...like) });
+      reads.push({ kind: "queue", key: it.keyword, stmt: env.DB.prepare("SELECT id, priority_score, status FROM keyword_queue WHERE keyword_normalized=? ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END LIMIT 3").bind(it.norm) });
+    }
+    let readResults = [];
+    // D1 batch() = 1 subrequest untuk sekelompok statement; dipecah 20 supaya aman dari
+    // batas jumlah statement per batch (reads ≤ 20 × 2 = 40 statement tanpa dipecah).
+    // PENTING (dibuktikan live 29 Sep 20:10 UTC): `batch()` mengembalikan ARRAY D1Result
+    //   (bukan `{results}`) — kode lama menulis `(await batch()).results || []` sehingga
+    //   readResults selalu kosong → cabang "promote" dan "dedicated-post-exists" mati dan
+    //   2 dari 10 INSERT hilang diam-diam (INSERT OR IGNORE menabrak UNIQUE(keyword)).
+    for (let i = 0; i < reads.length; i += 20) {
+      try { readResults = readResults.concat(await env.DB.batch(reads.slice(i, i + 20).map((r) => r.stmt))); }
+      catch (e) { errors.push({ stage: "reads", error: String(e).slice(0, 200) }); }
+    }
+    const metaReads = new Map();
+    reads.forEach((r, i) => metaReads.set(`${r.kind}:${r.key}`, readResults[i] || null));
+
+    // Tulis (batch_chunk 20 statement/subrequest): insert OR promote + growth_log.
+    const writes = [];
+    const actions = [];
+    let inserted = 0, promoted = 0, skipped = 0;
+    for (const it of plan) {
+      const detail = { band: it.band, pages: it.pages, tokens: it.tokens, overlap: it.tokenOverlap, industry: it.industry, dry };
+      if (it.band === "winner-new") {
+        const idx = news.indexOf(it);
+        if (idx < 0) { detail.skipped = "maxNew"; skipped++; }
+        else {
+          const norm = it.norm;
+          const normKey = norm.replace(/ /g, "-").slice(0, 70);
+          const queueRows = (metaReads.get(`queue:${it.keyword}`) || {}).results || [];
+          const existingQueue = queueRows.find((q) => q.status === "pending") || null;
+          const dedicated = (metaReads.get(`post:${it.keyword}`) || {}).results?.[0] || null;
+          detail.norm = norm;
+          if (dedicated && dedicated.slug !== it.slug) {
+            detail.skipped = `dedicated-post-exists:${dedicated.slug}`; skipped++;
+          } else if (!existingQueue && queueRows.length) {
+            // Ada barisnya tapi semuanya status 'rejected' → jangan dihidupkan kembali
+            // (penolakan sebelumnya adalah keputusan kurasi, bukan kehilangan).
+            detail.skipped = `queue-rejected:${queueRows.map((q) => q.status).join(",")}`; skipped++;
+          } else if (existingQueue && (existingQueue.priority_score || 0) >= WINNER_PRIORITY) {
+            detail.skipped = "already-top-priority"; skipped++;
+          } else if (existingQueue) {
+            // Sudah ada di antrian generik (prio ≤90) → dinaikkan supaya terpilih di buffer.
+            // UPDATE by id; kalau id NULL (baris lama) → by keyword_normalized.
+            const upd = existingQueue.id
+              ? env.DB.prepare("UPDATE keyword_queue SET priority_score=?, source='winner-engine', intent=COALESCE(intent,'commercial') WHERE id=?").bind(WINNER_PRIORITY, existingQueue.id)
+              : env.DB.prepare("UPDATE keyword_queue SET priority_score=?, source='winner-engine', intent=COALESCE(intent,'commercial') WHERE keyword_normalized=? AND status='pending'").bind(WINNER_PRIORITY, norm);
+            writes.push(upd);
+            detail.promoted = existingQueue.id || `normalized:${norm}`;
+            promoted++;
+          } else {
+            const cls = classifyKeyword(it.keyword);
+            const svc = WINNER_CORE_SERVICES.includes(cls.svc) ? cls.svc : (growthServiceFromQuery(norm) || it.service || "jasa-digital-marketing");
+            const intent = /\b(harga|biaya|paket|murah|order|vendor|kontraktor|supplier|estimasi)\b/i.test(norm) ? "transactional" : "commercial";
+            writes.push(env.DB.prepare(
+              "INSERT OR IGNORE INTO keyword_queue (id, keyword, keyword_normalized, source, seed, discovered_at, status, service, city, priority_score, intent) VALUES (?, ?, ?, 'winner-engine', 0, datetime('now'), 'pending', ?, ?, ?, ?)"
+            ).bind(`win-${normKey}`, it.keyword.slice(0, 200), norm, svc, cls.city || extractCity(norm) || null, WINNER_PRIORITY, intent));
+            detail.inserted = `win-${normKey}`; detail.service = svc; detail.city = cls.city || null;
+            inserted++;
+          }
+        }
+      } else {
+        // Eksekusi AI-nya TIDAK dijalankan di sini (lihat alasan di header §T3). Gate 09:00 UTC
+        // yang sudah ada membaca pool agregat yang sama, diurut `impressions DESC` → kandidat
+        // winner otomatis paling depan. Catatan ambang eksekutor (jujur, bukan asumsi):
+        //   growth-ctr-fix  → juga menuntut CTR ≤ 2% (default maxCtr) dan pos ≤ 30, cooldown 30 hari
+        //   growth-enrich   → band default pos 3–18 (kandidat winner 11–15 selalu masuk), minImp 5, cooldown 21 hari
+        detail.executor = it.band === "winner-rewrite" ? "growth-ctr-fix 09:00 UTC (maxCtr≤ 2%)" : "growth-enrich 09:00 UTC (pos 3-18)";
+        detail.route = it.slug || null;
+      }
+      actions.push({ keyword: it.keyword, band: it.band, pos: Math.round(it.pos * 100) / 100, imps: it.imps, clicks: it.clicks, slug: it.slug || null, ...detail });
+      writes.push(_growthLogStmt(env, {
+        action: it.band, slug: it.slug || null, keyword: it.keyword,
+        position: it.pos, ctr: it.ctr, impressions: it.imps,
+        after_json: JSON.stringify(detail),
+      }));
+    }
+    if (!dry && writes.length) {
+      for (let i = 0; i < writes.length; i += 20) {
+        try { await stmtsFor(writes.slice(i, i + 20)); } catch (e) { errors.push({ stage: "writes", error: String(e).slice(0, 200) }); }
+      }
+    }
+
+    return new Response(JSON.stringify({
+      ok: true, action: "winner-engine", dry, days, minImp, maxNew, maxActions, perIndustry,
+      pool: rows.length, planned: plan.length, by_band: byBand,
+      covered_by_service_page: covered.length,
+      queue_inserted: dry ? 0 : inserted, queue_promoted: dry ? 0 : promoted, skipped,
+      industries, top: actions.slice(0, 12), elapsed_ms: Date.now() - t0, log, errors,
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300), log, errors }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// ── Laporan mingguan (Rabu 10:00 UTC): TOP-50 query winner + aksi 7 hari → email owner ──
+async function handleWinnerWeeklyReport(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  if (token !== env.ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  if (!env.DB) return new Response(JSON.stringify({ ok: false, error: "DB not set" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  const days = Math.max(7, Math.min(parseInt(url.searchParams.get("days") || "28", 10) || 28, 90));
+  const minImp = Math.max(5, parseInt(url.searchParams.get("minImp") || "10", 10) || 10);
+  const t0 = Date.now();
+  try {
+    await ensureGrowthSchema(env);
+    const rows = await _winnerCandidates(env, days, minImp, 300);
+    const { plan, industries } = _winnerPlan(rows, 20, 50);
+    const byBand2 = {};
+    plan.forEach((p) => { byBand2[p.band] = (byBand2[p.band] || 0) + 1; });
+    const acts = await env.DB.prepare(
+      `SELECT keyword, action, COUNT(*) n, MAX(created_at) last FROM growth_log
+       WHERE action LIKE 'winner-%' AND created_at >= datetime('now','-7 days') GROUP BY keyword, action`
+    ).all();
+    const exec = await env.DB.prepare(
+      `SELECT action, COUNT(*) n FROM growth_log WHERE created_at >= datetime('now','-7 days') GROUP BY action`
+    ).all();
+    const qstat = await env.DB.prepare(
+      `SELECT status, COUNT(*) n FROM keyword_queue WHERE source='winner-engine' GROUP BY status`
+    ).all();
+    const actMap = new Map();
+    for (const a of (acts.results || [])) actMap.set(String(a.keyword).toLowerCase(), `${a.action.replace("winner-", "")}×${a.n}`);
+    const top = plan.slice(0, 50);
+    const rowsHtml = top.map((it, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(it.keyword)}</td><td>${it.imps}</td><td>${it.clicks}</td><td>${Math.round(it.pos * 10) / 10}</td><td>${escapeHtml(it.slug || "—")}</td><td>${escapeHtml(actMap.get(it.keyword.toLowerCase()) || "—")}</td></tr>`).join("");
+    const statLine = (exec.results || []).map((r) => `${r.action}:${r.n}`).join(" · ");
+    const qLine = (qstat.results || []).map((r) => `${r.status}:${r.n}`).join(" · ");
+    // Template literal bersarang TIDAK valid di dalam ${...} (node --check menolaknya) →
+    //   hitung string-nya lebih dulu.
+    const bandLine = Object.entries(byBand2).map(([k, n]) => `${k.replace("winner-", "")}:${n}`).join(" · ");
+    const industryLine = industries.map((x) => `${escapeHtml(x.industry)} (${x.n})`).join(", ");
+    const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:20px;max-width:820px;margin:0 auto">
+<div style="background:#0f1e3d;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0"><h2 style="margin:0">🏆 Beriklan.co.id — Winner Keywords mingguan</h2></div>
+<div style="border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;padding:20px">
+<p><strong>${new Date().toISOString().slice(0, 10)}</strong> · jendela data ${days} hari · ambang ${minImp} impresi · pool ${rows.length} baris (keyword×halaman) → ${top.length} query teratas</p>
+<p style="font-size:13px;color:#475569">Industri di TOP: ${escapeHtml(industryLine || "—")}</p>
+<p style="font-size:13px;color:#475569">Aksi per band: ${escapeHtml(bandLine || "—")}</p>
+<p style="font-size:13px;color:#475569">growth_log 7 hari: ${escapeHtml(statLine || "—")}</p>
+<p style="font-size:13px;color:#475569">keyword_queue source=winner-engine: ${escapeHtml(qLine || "—")}</p>
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr style="background:#f7f8fb;text-align:left"><th style="padding:6px">#</th><th>Query</th><th>Imp</th><th>Clicks</th><th>Pos</th><th>Halaman</th><th>Aksi minggu ini</th></tr></thead>
+<tbody>${rowsHtml}</tbody></table>
+<p style="font-size:11px;color:#9ca3af;margin-top:16px">Dikirim otomatis tiap Rabu 10:00 UTC oleh winner-engine. Sumber data: keyword_ranks (GSC, sync tiap 6 jam).</p>
+</div></body></html>`;
+    const mail = await sendEmailViaResend(env, OWNER_EMAIL, `[Beriklan] Winner Keywords mingguan — TOP-${top.length} (${new Date().toISOString().slice(0, 10)})`, html, "winner-weekly-" + Date.now());
+    return new Response(JSON.stringify({
+      ok: !!mail.ok, sent: !!mail.ok, resend_id: mail.id || null, error: mail.error || null,
+      top: top.length, industries, queue: qstat.results || [], elapsed_ms: Date.now() - t0,
+    }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e).slice(0, 300) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -7803,13 +9196,16 @@ async function handleGrowthFreshness(request, env) {
         FROM keyword_ranks kr GROUP BY slug
       ) g ON g.slug = pm.slug
       WHERE pm.iso_date IS NOT NULL
-        AND pm.iso_date < datetime('now', '-${ageDays} days')
         AND (pm.refreshed_at IS NULL OR pm.refreshed_at < datetime('now', '-90 days'))
-      ORDER BY imps DESC, pm.iso_date ASC
+        AND (
+          (COALESCE(g.imps, 0) > 0 AND pm.iso_date < datetime('now', '-${ageDays} days'))
+          OR (COALESCE(g.imps, 0) = 0 AND pm.iso_date BETWEEN datetime('now', '-365 days') AND datetime('now', '-120 days'))
+        )
+      ORDER BY (CASE WHEN COALESCE(g.imps, 0) > 0 THEN 0 ELSE 1 END), imps DESC, pm.iso_date ASC
       LIMIT ?
     `).bind(count).all();
     const rows = cands.results || [];
-    log.push({ stage: "candidates", count: rows.length, ageDays });
+    log.push({ stage: "candidates", count: rows.length, impressed: rows.filter((r) => r.imps > 0).length, zombieFallback: rows.filter((r) => !r.imps).length, ageDays });
     if (!rows.length) {
       return new Response(JSON.stringify({ ok: true, message: "no freshness candidates", refreshed: 0, log, errors }), { headers: { "Content-Type": "application/json" } });
     }
@@ -7851,9 +9247,13 @@ Aturan: bahasa Indonesia formal, "Anda", tanpa overclaim, tanpa menyebut tanggal
 
         await env.DB.prepare("UPDATE posts_content SET content=? WHERE slug=?").bind(newContent, slug).run();
         await env.DB.prepare("UPDATE posts_meta SET refreshed_at=datetime('now') WHERE slug=?").bind(slug).run();
-        await growthLogInsert(env, { action: "freshness", slug, keyword: cand.title, impressions: cand.imps, before_json: JSON.stringify({ iso_date: cand.iso_date }), after_json: JSON.stringify({ callout: j.callout.slice(0, 200), bullets: bullets.length }), ai_model: aiModel });
+        // T2 write-back (2026-09-29): callout "Update 2026" ditulis ke posts_content → R2 harus
+        //   menerima versi yang sama, jika tidak fallback R2 (dan satu-satunya sumber setelah
+        //   T7.5) menyajikan artikel tanpa refresh.
+        const r2syncFresh = await _syncPostToR2(slug, env);
+        await growthLogInsert(env, { action: "freshness", slug, keyword: cand.title, impressions: cand.imps, before_json: JSON.stringify({ iso_date: cand.iso_date }), after_json: JSON.stringify({ callout: j.callout.slice(0, 200), bullets: bullets.length, r2_sync: r2syncFresh }), ai_model: aiModel });
         await growthPing(env, slug, errors);
-        refreshed.push({ slug, title: cand.title, imps: cand.imps, model: aiModel });
+        refreshed.push({ slug, title: cand.title, imps: cand.imps, model: aiModel, r2_sync: r2syncFresh });
         log.push({ stage: "refreshed", slug });
       } catch (e) { errors.push({ slug, error: String(e).slice(0, 200) }); }
     }
@@ -8659,6 +10059,12 @@ async function handleHourlyGenerate(request, env) {
     ];
     let pending = [];
     let queueTotal = 0;
+    // 2026-09-24 (Fase 1.8) hoist `queue` ke function scope agar referensi di line 9190
+    // (queue.find + JSON.stringify saat commit GitHub) tidak ReferenceError ketika ASSETS
+    // fallback tidak ke-trigger. Sebelumnya queue di-declare `const` di dalam if(qr.ok) block
+    // (line 9058), satu-satunya akses ada di block itu — line 9190/9199 di GitHub-commit
+    // jatuh ke scope luar → ±9166 ReferenceError di logs.
+    let queue = [];
     // Slug = keyword-derived (SEO), NOT keyword_queue.id (which is seed-xxx/exp-xxx).
     // Previously item.slug came from r.id → drafts got /blog/seed-.../ URLs and the real
     // keyword slugs (e.g. /blog/jasa-view-live-di-bandung/) never existed → 404s.
@@ -8672,23 +10078,12 @@ async function handleHourlyGenerate(request, env) {
       return s;
     };
     try {
-      // One-time-ish rebalance: demote view-live, boost core×city (idempotent enough each hour)
-      try {
-        await env.DB.prepare(
-          "UPDATE keyword_queue SET priority_score = 25 WHERE status='pending' AND (service LIKE '%view-live%' OR service LIKE '%viewers%' OR service LIKE '%shopee%' OR service LIKE '%tokopedia%') AND COALESCE(priority_score,0) > 30"
-        ).run();
-        await env.DB.prepare(
-          "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND city IS NOT NULL AND city != '' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
-        ).run();
-        // Industri × layanan = commercial-intent niche query (e.g. "jasa iklan untuk restoran") —
-        // sangat konversi-ready (bisnis sudah punya kebutuhan spesifik). Boost ke 90 seperti city+core.
-        await env.DB.prepare(
-          "UPDATE keyword_queue SET priority_score = CASE WHEN COALESCE(priority_score,0) < 90 THEN 90 ELSE priority_score END WHERE status='pending' AND intent IN ('commercial','transactional') AND keyword LIKE '% untuk %' AND service IN ('jasa-iklan-facebook','jasa-iklan-instagram','jasa-iklan-google','jasa-iklan-tiktok','jasa-iklan-youtube','jasa-digital-marketing','jasa-pembuatan-website','jasa-pembuatan-landing-page','jasa-kelola-instagram','jasa-kelola-tiktok')"
-        ).run();
-        log.push({ stage: "priority_rebalance", ok: true });
-      } catch (e) {
-        log.push({ stage: "priority_rebalance", error: String(e.message || e).slice(0, 120) });
-      }
+      // Rebalance prioritas keyword DIHAPUS dari path hourly (2026-09-15).
+      // Alasan: 3 UPDATE di bawah full-scan keyword_queue 391k rows TIAP JAM
+      // (~3M READS/hari + rewrite CASE ratusan ribu rows/hari) → penyebab utama
+      // lock kuota D1 account-wide (co.id + .my + foryoutours ikut mati).
+      // Rebalance tetap jalan via cron harian 03:00 UTC (/api/cron/priority-rebalance).
+      log.push({ stage: "priority_rebalance", skipped: true, note: "hourly dihapus 2026-09-15, pakai cron harian 03:00 UTC" });
 
       const mapRow = (r) => {
         return {
@@ -8703,18 +10098,76 @@ async function handleHourlyGenerate(request, env) {
         };
       };
 
-      // Round-robin: 1 city keyword per core service first, then fill remaining by priority (core only)
+      // Candidate buffer (2026-09-15): JANGAN scan keyword_queue 391k rows tiap jam.
+      // Round-robin lama = 10 query per-service + 2 fallback = full-scan ~342k pending
+      // rows/JAM (~7M–27M READS/hari → lock kuota account-wide). Sekarang: tabel kecil
+      // hourly_candidates (≤1200 rows, indexed) di-refill hanya saat sisa < 60
+      // (≈1×/2 minggu, 72 artikel konsumsi/hari). Pick per jam ≈ puluhan row reads.
+      // Note perilaku: tiebreak length(keyword) dihapus (sort priority DESC, bid);
+      // preferensi city dipertahankan via priority (rebalance harian set city+core=90).
+      try {
+        await env.DB.prepare(`CREATE TABLE IF NOT EXISTS hourly_candidates (
+          bid INTEGER PRIMARY KEY AUTOINCREMENT,
+          service TEXT, keyword TEXT, keyword_normalized TEXT, city TEXT,
+          priority_score INTEGER DEFAULT 0, intent TEXT, article_slug TEXT,
+          picked INTEGER DEFAULT 0, added_at TEXT DEFAULT (datetime('now'))
+        )`).run();
+        await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_hc_pick ON hourly_candidates (picked, service, priority_score)").run();
+      } catch (e) { errors.push({ stage: "buffer_ensure", error: String(e.message || e).slice(0, 100) }); }
+
+      let bufLeft = 0;
+      try {
+        const bl = await env.DB.prepare("SELECT COUNT(*) n FROM hourly_candidates WHERE picked=0").first();
+        bufLeft = bl?.n || 0;
+      } catch {}
+      if (bufLeft < 60) {
+        // Refill: 1 scan per core service (pakai idx_keyword_queue_status_service).
+        // One-shot ≈ 342k reads — vs sebelumnya 342k reads TIAP JAM.
+        log.push({ stage: "buffer_refill", buf_left: bufLeft });
+        try {
+          await env.DB.prepare("DELETE FROM hourly_candidates").run();
+          const ins = [];
+          for (const svc of CORE_SERVICES) {
+            const qr = await env.DB.prepare(
+              `SELECT keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+               FROM keyword_queue
+               WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
+                 AND service=?
+               ORDER BY priority_score DESC LIMIT 120`
+            ).bind(svc).all();
+            for (const r of (qr.results || [])) {
+              ins.push(env.DB.prepare(
+                "INSERT INTO hourly_candidates (service, keyword, keyword_normalized, city, priority_score, intent, article_slug, picked) VALUES (?,?,?,?,?,?,?,0)"
+              ).bind(r.service, r.keyword, r.keyword_normalized, r.city, r.priority_score || 0, r.intent, r.article_slug));
+            }
+            if (ins.length >= 400) { await env.DB.batch(ins.splice(0, ins.length)); }
+          }
+          if (ins.length > 0) { await env.DB.batch(ins); }
+          bufLeft = 120 * CORE_SERVICES.length;
+          // Cache total pending (COUNT 342k cuma saat refill, bukan tiap jam)
+          try {
+            const tc2 = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status='pending'").first();
+            queueTotal = tc2?.n || 0;
+            await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('kw_pending_count', ?, 1, 'Cached pending count (update saat refill)') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(String(queueTotal)).run();
+          } catch {}
+        } catch (e) { errors.push({ stage: "buffer_refill", error: String(e.message || e).slice(0, 150) }); }
+      } else {
+        try {
+          const cc = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='kw_pending_count'").first();
+          queueTotal = parseInt(cc?.cron || "0", 10) || 0;
+        } catch {}
+      }
+
+      // Round-robin pick dari buffer (murah: tabel ≤1200 rows, indexed)
       const picked = [];
       const seenKw = new Set();
       const perCore = Math.max(1, Math.ceil(count / CORE_SERVICES.length));
       for (const svc of CORE_SERVICES) {
         if (picked.length >= count) break;
         const qr = await env.DB.prepare(
-          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
-           FROM keyword_queue
-           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
-             AND service=? AND city IS NOT NULL AND city != ''
-           ORDER BY priority_score DESC, length(keyword) ASC LIMIT ?`
+          `SELECT bid, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+           FROM hourly_candidates WHERE picked=0 AND service=?
+           ORDER BY priority_score DESC, bid LIMIT ?`
         ).bind(svc, perCore).all();
         for (const r of (qr.results || [])) {
           if (picked.length >= count) break;
@@ -8723,34 +10176,14 @@ async function handleHourlyGenerate(request, env) {
           picked.push(mapRow(r));
         }
       }
-      // Fill remainder from any core service (city preferred via priority)
-      if (picked.length < count) {
-        const need = count - picked.length;
-        const placeholders = CORE_SERVICES.map(() => "?").join(",");
-        const qr = await env.DB.prepare(
-          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
-           FROM keyword_queue
-           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
-             AND service IN (${placeholders})
-           ORDER BY CASE WHEN city IS NOT NULL AND city != '' THEN 0 ELSE 1 END, priority_score DESC, length(keyword) ASC
-           LIMIT ?`
-        ).bind(...CORE_SERVICES, need * 3).all();
-        for (const r of (qr.results || [])) {
-          if (picked.length >= count) break;
-          if (seenKw.has(r.keyword)) continue;
-          seenKw.add(r.keyword);
-          picked.push(mapRow(r));
-        }
-      }
-      // Last resort: any pending (including non-core) if core empty
+      // Fill remainder dari buffer (semua service)
       if (picked.length < count) {
         const need = count - picked.length;
         const qr = await env.DB.prepare(
-          `SELECT id, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
-           FROM keyword_queue
-           WHERE status='pending' AND (article_slug IS NULL OR article_slug='')
-           ORDER BY priority_score DESC LIMIT ?`
-        ).bind(need * 2).all();
+          `SELECT bid, keyword, keyword_normalized, service, city, priority_score, intent, article_slug
+           FROM hourly_candidates WHERE picked=0
+           ORDER BY priority_score DESC, bid LIMIT ?`
+        ).bind(need * 3).all();
         for (const r of (qr.results || [])) {
           if (picked.length >= count) break;
           if (seenKw.has(r.keyword)) continue;
@@ -8759,15 +10192,22 @@ async function handleHourlyGenerate(request, env) {
         }
       }
       pending = picked;
-      const tc = await env.DB.prepare("SELECT COUNT(*) as n FROM keyword_queue WHERE status = 'pending'").first();
-      queueTotal = tc?.n || 0;
+      if (picked.length > 0) {
+        // Mark by keyword batch (buffer kecil — IN list, tanpa scan tabel besar)
+        try {
+          const kws = [...new Set(picked.map(p => p.keyword).filter(Boolean))];
+          if (kws.length > 0) {
+            await env.DB.prepare(`UPDATE hourly_candidates SET picked=1 WHERE picked=0 AND keyword IN (${kws.map(() => "?").join(",")})`).bind(...kws).run();
+          }
+        } catch {}
+      }
     } catch (e) {
       errors.push({ stage: "queue_fetch_d1", error: e.message });
       // Fallback ke ASSETS (100 keyword) kalau D1 gagal
       try {
         const qr = await env.ASSETS.fetch(new URL("https://assets/data/keyword-queue.json"));
         if (qr.ok) {
-          const queue = await qr.json();
+          queue = await qr.json();
           pending = queue.filter(q => q.status === "pending" && !q.has_post).sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)).slice(0, count);
           queueTotal = queue.filter(q => q.status === "pending").length;
         }
@@ -9327,21 +10767,37 @@ async function handleGscIndexing(request, env) {
       return new Response(JSON.stringify({ ok: false, error: "auth_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 
-    // 1b. Daily quota gate (GSC Indexing API = 200 URL/day). Auto-reset saat ganti hari WIB.
+    // 1b. Daily quota gate (GSC Indexing API = 200 URL/day). Single source of truth:
+    //     kolom `value` (UTC date). Sinkron dengan submitToGscCore (line 2065) yang sudah
+    //     pakai `value` + UTC. Sebelumnya handleGscIndexing pakai `cron` + WIB → dual-writer
+    //     bug: kedua writer tidak pernah lihat counter lawannya (live: gsc_quota_used
+    //     value=21 & cron=39 = 60 total tapi masing-masing pikir dia punya 200).
+    //     Fix 1.12 (2026-09-24): konsolidasi ke `value`+UTC. Migration: clear `cron`
+    //     placeholder supaya tidak bingung di query ad-hoc.
     const GSC_DAILY_LIMIT = 200;
-    const wibToday = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10); // WIB = UTC+7, no DST
+    const today = new Date().toISOString().slice(0, 10); // UTC, sama dengan submitToGscCore
     let quotaUsed = 0;
     try {
-      const qDate = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='gsc_quota_date'").first();
-      const qUsed = await env.DB.prepare("SELECT cron FROM cron_settings WHERE name='gsc_quota_used'").first();
-      if (qDate?.cron === wibToday) {
-        quotaUsed = parseInt(qUsed?.cron || "0", 10) || 0;
+      const qDate = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_date'").first();
+      const qUsed = await env.DB.prepare("SELECT value FROM cron_settings WHERE name='gsc_quota_used'").first();
+      if (qDate?.value === today) {
+        quotaUsed = parseInt(qUsed?.value || "0", 10) || 0;
       } else {
-        // Hari WIB baru → auto-reset counter
-        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_date', ?, 1, 'GSC quota date (WIB)') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(wibToday).run();
-        await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_used', '0', 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").run();
+        // Hari UTC baru → auto-reset counter (idempotent; submitToGscCore juga akan reset
+        // kalau dia jalan duluan — race kecil: max quota_used undercount 1 submit, no impact)
+        await env.DB.prepare(
+          "INSERT INTO cron_settings (name, cron, value, enabled, label) VALUES ('gsc_quota_date', '1', ?, 1, 'GSC quota date (UTC)') ON CONFLICT(name) DO UPDATE SET value=excluded.value"
+        ).bind(today).run();
+        await env.DB.prepare(
+          "INSERT INTO cron_settings (name, cron, value, enabled, label) VALUES ('gsc_quota_used', '1', '0', 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET value=excluded.value"
+        ).run();
         quotaUsed = 0;
       }
+      // 1b.b Migration (idempotent, sekali jalan): clear `cron` column yang dulu dipakai
+      // handleGscIndexing versi WIB. Sekarang `cron` hanya placeholder ('1') supaya tidak
+      // menyesatkan query ad-hoc / debug. Aman karena kedua row name spesifik.
+      await env.DB.prepare("UPDATE cron_settings SET cron='1' WHERE name='gsc_quota_date' AND cron!='1'").run();
+      await env.DB.prepare("UPDATE cron_settings SET cron='1' WHERE name='gsc_quota_used' AND cron!='1'").run();
     } catch (e) {
       errors.push({ stage: "quota_read", error: String(e).slice(0, 150) });
     }
@@ -9352,7 +10808,7 @@ async function handleGscIndexing(request, env) {
         message: "GSC daily quota (200) exhausted for today",
         quota_used: quotaUsed,
         quota_limit: GSC_DAILY_LIMIT,
-        quota_date_wib: wibToday,
+        quota_date_utc: today,
       }), { headers: { "Content-Type": "application/json" } });
     }
     const effectiveCount = Math.min(count, quotaRemaining);
@@ -9363,19 +10819,47 @@ async function handleGscIndexing(request, env) {
     try {
       // First, ensure column exists (idempotent)
       await env.DB.prepare(`ALTER TABLE pending_indexing ADD COLUMN gsc_submitted_at TEXT`).run().catch(() => {});
-      const r = await env.DB.prepare(
+      // FIX 4.4a (2026-09-29) — GSC QUOTA DIHABISKAN BARIS TUA. Query LAMA: satu daftar
+      //   `status IN (...) AND (gsc_submitted_at IS NULL OR < -1 day) ORDER BY id ASC`.
+      //   id terkecil = baris lawas (dibuat 19 Jul) yang sudah berstatus gsc_submitted, dan
+      //   mereka kembali layak setiap 1 hari → kuota 200/hari SELAMANYA dipakai ulang untuk
+      //   ~274 baris yang sama. Bukti produksi 29 Sep 19:3x UTC (query D1 remote):
+      //     gsc_submitted_at >= -1 day → 200 baris, id MIN=1624 MAX=1897
+      //     padahal MIN(id) tabel=1624 dan MAX(id)=23899; pending=16.955; total gsc_submitted=258
+      //   → 2 artikel terbaru (id ~23.88x, terbit 29 Sep) BELUM PERNAH dikirim ke Indexing API,
+      //   dan 16,7 rb lainnya menunggu ±84 hari (16.900 / 200).
+      //   Antrian baru = 2 tingkat (pola sama dengan handleIndexNowCron Fix A — dua query
+      //   index-perfect, TANPA ORDER BY CASE/temp B-tree):
+      //     Q1: belum PERNAH di-Indexing-API → urutan id DESC (artikel terbaru duluan, sisanya
+      //         backlog dari sisi terbaru). Kapasitas 200/hari vs 15 artikel baru/hari → backlog
+      //         tetap terkurangi ±185/hari. status 'gsc_submitted' ikut di Q1 untuk menangkap
+      //         baris legacy yang statusnya sudah bermigrasi tapi timestamp-nya masih NULL.
+      //     Q2: rotasi submit ulang, HANYA yang sudah >14 hari sejak submit terakhir, urut
+      //         submit tertua (mencegah baris terbaru disubmit ulang tiap hari).
+      const seenG = new Set();
+      const mergedG = [];
+      const rQ1 = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
-         WHERE status IN ('pending','submitted','gsc_submitted','failed')
-           AND (url LIKE 'https://www.beriklan.co.id/%' OR url LIKE 'https://beriklan.co.id/%')
-           AND (gsc_submitted_at IS NULL OR gsc_submitted_at < datetime('now', '-1 day'))
-         ORDER BY CASE WHEN source = 'admin-manual' THEN 0 ELSE 1 END, rowid ASC LIMIT ?`
+         WHERE status IN ('pending','submitted','gsc_submitted','failed') AND gsc_submitted_at IS NULL
+         ORDER BY id DESC LIMIT ?`
       ).bind(effectiveCount).all();
+      for (const row of rQ1.results || []) if (!seenG.has(row.id)) { seenG.add(row.id); mergedG.push(row); }
+      const q1Count = mergedG.length;
+      if (mergedG.length < effectiveCount) {
+        const rQ2 = await env.DB.prepare(
+          `SELECT id, url FROM pending_indexing
+           WHERE gsc_submitted_at IS NOT NULL AND gsc_submitted_at < datetime('now', '-14 days')
+           ORDER BY gsc_submitted_at ASC LIMIT ?`
+        ).bind(effectiveCount - mergedG.length).all();
+        for (const row of rQ2.results || []) if (!seenG.has(row.id)) { seenG.add(row.id); mergedG.push(row); }
+      }
+      const r = { results: mergedG };
       // Normalize URL to apex (canonical) for GSC submission (sc-domain property)
       urls = (r.results || []).map(row => {
         const normalized = row.url.replace("https://www.beriklan.co.id/", "https://beriklan.co.id/");
         return { id: row.id, url: normalized, original: row.url };
       });
-      log.push({ stage: "queue_fetch", picked: urls.length });
+      log.push({ stage: "queue_fetch", picked: urls.length, never_submitted: q1Count, resubmit_rotation: mergedG.length - q1Count });
     } catch (e) {
       errors.push({ stage: "queue_fetch", error: String(e).slice(0, 200) });
       return new Response(JSON.stringify({ ok: false, error: "queue_fetch_failed", errors, log }), { status: 500, headers: { "Content-Type": "application/json" } });
@@ -9416,10 +10900,16 @@ async function handleGscIndexing(request, env) {
       }
     }
 
-    // 3b. Persist quota usage (increment by jumlah yang benar-benar sukses submit)
+    // 3b. Persist quota usage (increment by jumlah yang benar-benar sukses submit).
+    //     Tulis ke kolom `value` (UTC) — sama dengan submitToGscCore:2065-2108.
+    //     Race note: kalau submitToGscCore juga menulis di paralel, ada kemungkinan
+    //     counter undercount (kami timpa counter lawannya dengan nilai lokal). GSC
+    //     API sendiri yang enforce quota 200/hari — server-side 429 jadi pengaman akhir.
     const newQuotaUsed = quotaUsed + submitted.length;
     try {
-      await env.DB.prepare("INSERT INTO cron_settings (name, cron, enabled, label) VALUES ('gsc_quota_used', ?, 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET cron=excluded.cron").bind(String(newQuotaUsed)).run();
+      await env.DB.prepare(
+        "INSERT INTO cron_settings (name, cron, value, enabled, label) VALUES ('gsc_quota_used', '1', ?, 1, 'GSC quota used today') ON CONFLICT(name) DO UPDATE SET value=excluded.value"
+      ).bind(String(newQuotaUsed)).run();
     } catch {}
 
     // 4. Log to cron_logs for dashboard
@@ -9438,7 +10928,7 @@ async function handleGscIndexing(request, env) {
       quota_used: newQuotaUsed,
       quota_limit: GSC_DAILY_LIMIT,
       quota_remaining: Math.max(0, GSC_DAILY_LIMIT - newQuotaUsed),
-      quota_date_wib: wibToday,
+      quota_date_utc: today,
       elapsed_ms: elapsedMs,
       log: debug ? log : undefined,
       errors: errors.length ? errors : undefined,
@@ -9516,12 +11006,17 @@ async function handleIndexVerify(request, env) {
     await env.DB.prepare("ALTER TABLE pending_indexing ADD COLUMN resubmit_count INTEGER DEFAULT 0").run().catch(() => {});
     let rows = [];
     try {
+      // FIX 4.4b (2026-09-29): `rowid ASC` → `id DESC`. Inspeksi URL harus memberi umpan balik
+      //   TERPESAT untuk artikel yang baru terbit (target Fase 4.4: ≤7 hari setelah terbit,
+      //   tidak ada lagi "URL is unknown to Google"). Dengan rowid ASC, 300 inspeksi/hari
+      //   selalu terpakai di pangkal tabel (id 1629-an, baris Juli) sehingga 20 slug terbaru
+      //   tidak pernah di-inspect. Prioritas "belum pernah dicek" (0 sebelum 1) dipertahankan.
       const r = await env.DB.prepare(
         `SELECT id, url FROM pending_indexing
          WHERE status = 'gsc_submitted'
            AND gsc_submitted_at IS NOT NULL AND gsc_submitted_at < datetime('now', '-2 days')
            AND (index_checked_at IS NULL OR index_checked_at < datetime('now', '-3 days'))
-         ORDER BY (index_checked_at IS NOT NULL), rowid ASC LIMIT ?`
+         ORDER BY (index_checked_at IS NOT NULL), id DESC LIMIT ?`
       ).bind(effectiveCount).all();
       rows = r.results || [];
       log.push({ stage: "queue_fetch", picked: rows.length, quota_used: quotaUsed, quota_remaining: quotaRemaining });
@@ -9658,16 +11153,24 @@ Layanan: ${svcName}${city ? ` · Kota: ${city}` : ""}
 
 Struktur artikel (HTML, mulai dari <h2>, jangan <h1>):
 1. Pendahuluan (kenapa topik ini penting, 1 paragraf)
-2. Section utama dengan sub-heading (<h3>) + bullet/list + MINIMAL SATU tabel perbandingan harga/paket/layanan bila relevan (gunakan <table> dengan <thead> dan <tbody>)
-3. Internal link 5-8: sertakan <a href="https://beriklan.co.id/${svc}/">halaman layanan</a> + link ke 2-3 artikel blog ber-kota lain dari layanan yang sama (contoh: /blog/${svc}-bandung/, /blog/${svc}-surabaya/ bila kota bukan kota itu, atau gunakan kota lain yang relevan) dengan anchor text natural seperti "jasa ${svcName.toLowerCase()} di Surabaya"
-4. FAQ WAJIB 5 pertanyaan (<h3> pertanyaan + <p> jawaban 1-2 kalimat), pertanyaan lokal spesifik untuk ${city || "Indonesia"} dan bisnis setempat
-5. CTA WhatsApp dengan placeholder link: <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(svcName)}${city ? `%20di%20${encodeURIComponent(city)}` : ""}">Konsultasi via WhatsApp →</a>
-
+2. QUICK ANSWER (wajib, tepat setelah pendahuluan): 1 paragraf <p> 40–60 kata yang menjawab keyword secara langsung dan mandiri (tanpa perlu konteks lain) — untuk sitasi AI Overviews/ChatGPT yang mengutip 30% pertama konten.
+3. Section utama dengan sub-heading (<h3>) + bullet/list + MINIMAL SATU tabel perbandingan harga/paket/layanan bila relevan (gunakan <table> dengan <thead> dan <tbody>)
+4. DEFINITION LEAD: setiap <h3> WAJIB diawali 1 kalimat definisi mandiri tentang sub-topik itu (1 kalimat lengkap, bisa dipahami tanpa membaca paragraf lain) — untuk ekstraksi AI answer engine.
+5. Internal link 5-8: sertakan <a href="https://beriklan.co.id/${svc}/">halaman layanan</a> + link ke 2-3 artikel blog ber-kota lain dari layanan yang sama (contoh: /blog/${svc}-bandung/, /blog/${svc}-surabaya/ bila kota bukan kota itu, atau gunakan kota lain yang relevan) dengan anchor text natural seperti "jasa ${svcName.toLowerCase()} di Surabaya"
+6. FAQ WAJIB 5 pertanyaan (<h3> pertanyaan + <p> jawaban 1-2 kalimat), pertanyaan lokal spesifik untuk ${city || "Indonesia"} dan bisnis setempat
+7. CTA WhatsApp dengan placeholder link: <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20${encodeURIComponent(svcName)}${city ? `%20di%20${encodeURIComponent(city)}` : ""}">Konsultasi via WhatsApp →</a>
+${/^\s*\d+\s+|\b(terbaik|teratas|rekomendasi|pilihan|top\b|best\b)/i.test(kw || "") ? `
+FORMAT LISTICLE (keyword ini meminta ranking/perbandingan — WAJIB ikuti):
+- Susun sebagai "Top N" bernomor: tiap item = <h3>N. Nama</h3> + 1 kalimat definisi + 2-3 bullet kelebihan + estimasi harga/nilai.
+- DAHULUKAN tabel perbandingan semua item tepat setelah quick answer (kolom: Peringkat | Nama | Best For | Mulai Dari).
+- Urutan harus jelas terbaik→terbaik-kesekian dengan alasan spesifik per peringkat (bukan generik).
+` : ``}
 Aturan copy:
 - Tone profesional, terukur, percaya diri. Pakai "Anda" (kecuali hero moment).
 - Jangan pakai: bikin, gak, nggak, pasti untung, garansi 100%, dalam dunia.
 - Panjang: 1000-1400 kata.
 - Pakai data konkret (%, Rp, contoh spesifik) bila relevan.
+- EVIDENCE RULE: setiap angka/statistik/klaim perbandingan WAJIB disertai sumber (tautan <a> atau nama studi/tahun). Jangan tulis angka tanpa atribusi.
 - Brand voice: senior performance marketing partner, bukan sales.
 - Sebutkan kota "${city || "lokasi Anda"}" secara natural minimal 5 kali di dalam artikel.
 - Selalu sisipkan angka/estimasi biaya yang masuk akal (contoh: mulai dari Rp 1,5 juta/bulan) di bagian harga — jangan klaim garansi.
@@ -10530,7 +12033,9 @@ async function handleGscPullCron(request, env) {
         const sha = getResp.ok ? (await getResp.json()).sha : undefined;
         const body = JSON.stringify({
           message: `chore(gsc): pull stats ${fmt(endDate)}`,
-          content: b64u(JSON.stringify(stats, null, 2)),
+          // GitHub Contents API mewajibkan base64 STANDAR ( alphabet +/ dan padding = );
+          // b64u() menghasilkan URL-safe (-/_ tanpa padding) → PUT ditolak 422.
+          content: b64std(JSON.stringify(stats, null, 2)),
           branch: "main",
           ...(sha ? { sha } : {}),
         });
@@ -10540,6 +12045,7 @@ async function handleGscPullCron(request, env) {
           body,
         });
         github = { pushed: putResp.ok, status: putResp.status };
+        if (!putResp.ok) github.body = (await putResp.text().catch(() => "")).slice(0, 200);
       } catch (e) { github = { pushed: false, error: e.message }; }
     }
 
@@ -10592,6 +12098,14 @@ async function getGoogleAccessToken(sa, scope = null) {
 function b64u(s) {
   const b64 = typeof s === "string" ? btoa(s) : buf2b64url(new Uint8Array(s));
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// Base64 STANDAR (bukan URL-safe) — WAJIB untuk GitHub Contents API (PUT content: 422 kalau salah).
+function b64std(s) {
+  const bytes = new TextEncoder().encode(s);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
 }
 
 function buf2b64url(bytes) {
@@ -11399,10 +12913,38 @@ async function handleEmailDashboard(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   if (token !== env.ADMIN_TOKEN) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  // D1 quota guard (2026-09-05): dashboard = read-heavy. Edge-cache 5 menit per tab
+  // supaya refresh berulang / monitor eksternal tidak bakar quota tiap hit.
+  try {
+    const cache = caches.default;
+    const ck = new Request("https://beriklan.co.id/internal-cache/email-dash/" + (url.searchParams.get("tab") || "overview"));
+    const hit = await cache.match(ck);
+    if (hit) {
+      const r2 = new Response(hit.body, hit);
+      r2.headers.set("X-Dash-Cache", "HIT");
+      return r2;
+    }
+    const dashRes = await renderEmailDashboardInner(request, env, url);
+    try {
+      if (dashRes.ok) {
+        const cl = dashRes.clone();
+        cl.headers.set("Cache-Control", "public, max-age=300");
+        await cache.put(ck, cl);
+      }
+    } catch {}
+    dashRes.headers.set("X-Dash-Cache", "MISS");
+    return dashRes;
+  } catch (e) {
+    return await renderEmailDashboardInner(request, env, url);
+  }
+}
+
+async function renderEmailDashboardInner(request, env, url) {
   if (!env.DB) return new Response("DB not available", { status: 503 });
 
   const tab = url.searchParams.get("tab") || "overview";
   const viewId = url.searchParams.get("id");
+  const token = url.searchParams.get("token");
 
   // Detail page untuk 1 campaign
   if (viewId) {
@@ -11411,18 +12953,32 @@ async function handleEmailDashboard(request, env) {
 
   try {
     // Fetch semua data yang dibutuhkan
+    // D1 quota fix (2026-09-05): query lama pakai 5 correlated subquery COUNT(*) —
+    // email_queue tanpa index campaign_id → scan ~20k rows × 5 × per campaign = ~100k
+    // reads/panggilan. Dashboard dipanggil tiap jam → burn jutaan/hari. Sekarang:
+    // pre-aggregate 1× GROUP BY (dengan index campaign_id) lalu LEFT JOIN.
+    const aggRows = await env.DB.prepare(`
+      SELECT campaign_id,
+        SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending_count,
+        SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as db_sent,
+        SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed_count,
+        SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as open_count,
+        SUM(CASE WHEN clicked_at IS NOT NULL THEN 1 ELSE 0 END) as click_count
+      FROM email_queue GROUP BY campaign_id
+    `).all();
+    const aggMap = new Map();
+    for (const a of (aggRows.results || [])) aggMap.set(a.campaign_id, a);
     const campaigns = await env.DB.prepare(`
-      SELECT c.*, t.name as template_name, l.name as list_name,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') as pending_count,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='sent') as db_sent,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='failed') as failed_count,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND opened_at IS NOT NULL) as open_count,
-        (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND clicked_at IS NOT NULL) as click_count
+      SELECT c.*, t.name as template_name, l.name as list_name
       FROM campaigns c
       LEFT JOIN email_templates t ON c.template_id=t.id
       LEFT JOIN lead_lists l ON c.list_id=l.id
       ORDER BY c.id DESC LIMIT 50
     `).all();
+    campaigns.results = (campaigns.results || []).map(c => {
+      const a = aggMap.get(c.id) || { pending_count: 0, db_sent: 0, failed_count: 0, open_count: 0, click_count: 0 };
+      return { ...c, ...a };
+    });
 
     const templates = await env.DB.prepare("SELECT id, name, subject, category FROM email_templates ORDER BY id").all();
     const lists = await env.DB.prepare("SELECT id, name, source, total FROM lead_lists WHERE total > 0 ORDER BY total DESC LIMIT 30").all();
@@ -12413,9 +13969,22 @@ async function handleCronSendEmail(request, env) {
     //       kuota harian, campaign lain (#9 Auto Pipeline 3500) tidak pernah terkirim.
     // Baru: round-robin antar active campaign, ambil ≤ remainingToday batchSize,
     //       proporsional ke pending count tiap campaign (tidak饿死 campaign kecil).
-    const activeCampaigns = (await env.DB.prepare(
-      "SELECT id, name, (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') AS pending FROM campaigns c WHERE c.status IN ('sending','draft') AND (SELECT COUNT(*) FROM email_queue WHERE campaign_id=c.id AND status='pending') > 0 ORDER BY (SELECT MIN(id) FROM email_queue WHERE campaign_id=c.id AND status='pending') ASC"
+    // ─── D1 quota fix (2026-09-05): query lama = 3 correlated subquery COUNT/MIN per
+    //    campaign (full scan email_queue ~20k rows × 3 × N campaign) × 96 runs/hari
+    //    = burn jutaan reads/hari → D1 lock berulang. Ini pembakar quota utama.
+    //    Rewrite: 1× pre-aggregate GROUP BY pakai idx_email_queue_status (SEARCH),
+    //    join campaigns di JS. Murah: hanya baca count per campaign.
+    const pendAgg = (await env.DB.prepare(
+      "SELECT campaign_id, COUNT(*) AS pending, MIN(id) AS oldest_id FROM email_queue WHERE status='pending' GROUP BY campaign_id"
     ).all()).results || [];
+    const campRows = (await env.DB.prepare(
+      "SELECT id, name FROM campaigns WHERE status IN ('sending','draft')"
+    ).all()).results || [];
+    const campMap = new Map(campRows.map(c => [c.id, c]));
+    const activeCampaigns = pendAgg
+      .filter(a => campMap.has(a.campaign_id) && a.pending > 0)
+      .sort((a, b) => (a.oldest_id || 0) - (b.oldest_id || 0))
+      .map(a => ({ id: a.campaign_id, name: campMap.get(a.campaign_id).name, pending: a.pending }));
     if (activeCampaigns.length === 0) {
       return new Response(JSON.stringify({ ok: true, sent: 0, daily_sent: dailySent, reason: "No active campaign with pending emails" }), { headers: { "Content-Type": "application/json" } });
     }
@@ -12435,6 +14004,8 @@ async function handleCronSendEmail(request, env) {
       const rows = (await env.DB.prepare(
         "SELECT q.*, c.name as campaign_name FROM email_queue q LEFT JOIN campaigns c ON q.campaign_id=c.id WHERE q.status='pending' AND q.campaign_id=? ORDER BY q.id ASC LIMIT ?"
       ).bind(camp.id, take).all()).results || [];
+      // NOTE: index idx_email_queue_status (status) + filter campaign_id + LIMIT kecil
+      // (≤25) → SEARCH, bukan scan. Sudah lean setelah rewrite aggregate di atas.
       batch.push(...rows);
     }
 
@@ -13563,7 +15134,7 @@ body{background:#f7f8fb;color:#0b1426;}
 <a href="/signup" class="btn btn-primary">Mulai Trial →</a>
 </div></div>
 <div class="footer">
-<a href="https://beriklan.co.id">Beriklan.co.id</a> · Performance Marketing Partner · Bandung · <a href="/admin?token=beriklan-admin-2026">admin</a>
+<a href="https://beriklan.co.id">Beriklan.co.id</a> · Performance Marketing Partner · Bandung · <a href="/admin?token=" + TOKEN>admin</a>
 </div>
 </body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
@@ -13772,7 +15343,7 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
 
 async function renderScrapeAdmin(request, env) {
   const url = new URL(request.url);
-  if (url.searchParams.get("token") !== "beriklan-admin-2026") return new Response("Unauthorized", { status: 401 });
+  if (url.searchParams.get("token") !== env.ADMIN_TOKEN) return new Response("Unauthorized", { status: 401 });
   const users = await env.DB.prepare("SELECT id, name, email, whatsapp, search_count, created_at, last_active FROM scrape_users ORDER BY id DESC LIMIT 100").all();
   const totalSearches = await env.DB.prepare("SELECT COUNT(*) as c FROM scrape_searches").first();
   const totalResults = await env.DB.prepare("SELECT COUNT(*) as c FROM scrape_results").first();
@@ -13811,14 +15382,40 @@ async function handlePostsIndex(request, env, ctx) {
     }
   } catch {}
   try {
+    // 2026-09-25 BlogFilter fix: posts_meta.category is service-slug (e.g. 'jasa-iklan-tiktok'),
+    // BlogFilter.svelte categories[] uses generic ids ('tiktok', 'meta', etc.). Map service-slug
+    // → BlogFilter id here so BlogFilter.find() resolves label + filter works.
+    const SVC_TO_CAT = {
+      'jasa-iklan-facebook': 'meta', 'jasa-iklan-instagram': 'meta', 'jasa-kelola-instagram': 'meta',
+      'jasa-iklan-tiktok': 'tiktok', 'jasa-kelola-tiktok': 'tiktok',
+      'jasa-iklan-google': 'google', 'jasa-iklan-youtube': 'youtube',
+      'jasa-pembuatan-website': 'strategy', 'jasa-pembuatan-landing-page': 'strategy',
+      'jasa-digital-marketing': 'strategy',
+      'jasa-view-live': 'strategy', 'jasa-view-live-tiktok': 'strategy',
+      'jasa-view-live-youtube': 'strategy', 'jasa-view-live-instagram': 'strategy',
+      'jasa-view-live-shopee': 'strategy', 'jasa-view-live-twitch': 'strategy',
+      'jasa-buzzer': 'strategy', 'jasa-buzzer-tiktok': 'strategy',
+      'jasa-buzzer-youtube': 'strategy', 'jasa-buzzer-instagram': 'strategy',
+      'jasa-buzzer-shopee': 'strategy', 'jasa-buzzer-twitch': 'strategy',
+      'jasa-viewers-youtube': 'strategy', 'jasa-viewers-instagram': 'strategy',
+      'jasa-viewers-shopee': 'strategy', 'jasa-viewers-tiktok': 'strategy',
+      'jasa-viewers-twitch': 'strategy',
+    };
+    // 2026-09-24 (Fase 1.4d): BlogFilter.svelte line 70 — `data.slice(0, 24)`, hanya butuh 24
+    // most-recent posts. Sebelumnya full-scan 16.686 posts_meta + 14.877 generated_drafts
+    // tanpa LIMIT = 8.390.496 B JSON response. LIMIT 50 memberi BlogFilter 26 post headroom
+    // untuk filter kategori + featured. Cache HIT 1 jam (TTL 3600) melindungi dari churn.
     const existing = await env.DB.prepare(
-      "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, featured FROM posts_meta ORDER BY iso_date DESC"
+      "SELECT slug, title, excerpt, date, iso_date, category, readTime, tags, featured FROM posts_meta ORDER BY iso_date DESC LIMIT 50"
     ).all();
     const committed = await env.DB.prepare(
-      "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE status='committed'"
+      "SELECT slug, title, content, service, city, committed_at FROM generated_drafts WHERE status='committed' ORDER BY committed_at DESC LIMIT 50"
     ).all();
     const map = new Map();
-    for (const p of (existing.results || [])) map.set(p.slug, p);
+    for (const p of (existing.results || [])) {
+      if (p.category && SVC_TO_CAT[p.category]) p.category = SVC_TO_CAT[p.category];
+      map.set(p.slug, p);
+    }
     for (const d of (committed.results || [])) {
       if (!map.has(d.slug)) {
         const content = d.content || '';
@@ -13829,7 +15426,7 @@ async function handlePostsIndex(request, env, ctx) {
           excerpt: excerpt,
           date: d.committed_at ? d.committed_at.slice(0, 10) : '',
           iso_date: d.committed_at || '',
-          category: 'trending',
+          category: SVC_TO_CAT[d.service || ''] || 'strategy',
           readTime: Math.max(1, Math.round(content.split(/\s+/).length / 200)) + ' min',
           tags: [d.service, d.city].filter(Boolean),
           featured: 0,
@@ -13913,12 +15510,17 @@ ${urls.map(u => `  <url>
 }
 
 // ─── News Sitemap (Google News + Bing News) ──────────────────────────────
-// /news.xml — kirim 10 artikel terbaru/hari untuk fresh-news discovery.
-// BUKAN Google News (butuh original reporting), tapi submit ke Bing News
-// + IndexNow + GSC sitemap ping. ArticleNews schema sudah ada.
+// /news.xml — top 1000 freshest artikel, filter 48 jam (cap Google News per file).
+// 2026-09-24 (Fase 1.9) — sebelumnya `LIMIT 10`/`'-36 hours'` terlalu kecil (Bing News
+// crawl butuh lebih banyak URL untuk visibilitas). Sekarang `LIMIT 1000` (cap Google
+// News per sitemap file) + filter 48 jam (~500 post live sekarang). Query EXPLAIN =
+// SEARCH USING INDEX idx_posts_meta_iso_date → sub-ms, aman dari D1 quota burn.
+// BUKAN Google News (butuh original reporting) tapi submit ke Bing News + IndexNow + GSC
+// sitemap ping. ArticleNews schema sudah ada.
 async function handleNewsSitemap(request, env, ctx) {
   if (!env.DB) return new Response("DB unavailable", { status: 503 });
-  // Edge cache TTL 30 menit — query iso_date 36 jam tidak dilayani index mana pun (full scan).
+  // Edge cache TTL 30 menit — query pakai idx_posts_meta_iso_date (verified EXPLAIN, sub-ms),
+  // tapi cache tetap pakai HTTP layer (anti spike saat Bing News crawl).
   // Empty urlset TIDAK di-cache supaya artikel baru langsung keluar saat crawl berikutnya.
   const cache = caches.default;
   const cacheKey = new Request("https://beriklan.co.id/news.xml", request);
@@ -13932,13 +15534,13 @@ async function handleNewsSitemap(request, env, ctx) {
     }
   } catch {}
   try {
-    // 10 artikel terbaru yang dipublish 24 jam terakhir (WIB aware)
+    // 1000 artikel terbaru yang dipublish 48 jam terakhir (WIB aware). Cap Google News/file = 1000.
     const articles = await env.DB.prepare(`
       SELECT slug, title, excerpt, iso_date, service, city
       FROM posts_meta
-      WHERE iso_date >= datetime('now', '-36 hours')
+      WHERE iso_date >= datetime('now', '-48 hours')
       ORDER BY iso_date DESC
-      LIMIT 10
+      LIMIT 1000
     `).all();
     const rows = articles.results || [];
     if (rows.length === 0) {
@@ -14071,6 +15673,32 @@ function _injectPageExtras(prefix, islands, bodyPre) {
     const tail = (bodyPre || '') + '\n' + (islands || '');
     p = p.replace(/<body[^>]*>/, (m) => m + '\n' + tail);
   }
+  // §T5.3 koreksi data entitas pada shell Astro yang dipakai SEMUA artikel hasil
+  // render worker. Build output (src/pages/index.astro + Layout.astro) punya 2 bug
+  // data yang terbawa ke setiap halaman:
+  //   • ProfessionalService telephone "+62-22-XXXXXXX"  → placeholder dummy
+  //   • LocalBusiness telephone "+62-811-9193-328"     → 10 digit, yang benar 9
+  // Perbaikan di jalur render (bukan di file .astro) karena menyentuh file UI +
+  // rebuild asset adalah keputusan terpisah (SOP #1). source/replace literal: hindari
+  // regex dan hanya mengubah string JSON-LD, jadi markup & CSS tidak tersentuh.
+  p = p.split('"+62-22-XXXXXXX"').join('"+62811919328"');
+  p = p.split('"+62-811-9193-328"').join('"+62-811-919-328"');
+  // sameAs profil sosial lengkap + terverifikasi (live di footer): LinkedIn & TikTok
+  // belum ada di build lama. Node pelengkap (tanpa telephone) supaya tidak bentrok.
+  if (!p.includes('linkedin.com/company/beriklan')) {
+    const orgSupp = JSON.stringify({
+      "@context": "https://schema.org", "@type": "Organization", "@id": "https://beriklan.co.id/#organization",
+      "name": "Beriklan.co.id", "url": "https://beriklan.co.id/",
+      "logo": "https://beriklan.co.id/logoweb.webp", "foundingDate": "2016",
+      "sameAs": [
+        "https://www.instagram.com/beriklan.co.id",
+        "https://www.facebook.com/beriklan.co.id",
+        "https://www.linkedin.com/company/beriklan",
+        "https://www.tiktok.com/@beriklan.co.id",
+      ],
+    });
+    p = p.replace('</head>', `<script type="application/ld+json">${orgSupp}</script>\n</head>`);
+  }
   return p;
 }
 
@@ -14115,6 +15743,28 @@ function _buildFaqSchema(faqItems) {
   })}</script>`;
 }
 
+// ItemList schema untuk artikel listicle (Top-N) — deterministic dari <h3> headings.
+// Riset 2026: format ranking/listicle = probabilitas sitasi AI tertinggi (~21% sitasi).
+// Emit hanya bila judul berpola listicle & ada ≥3 item (skip heading FAQ/kesimpulan).
+function _isListicleTitle(title) {
+  return /^\s*\d+\s+|\b(terbaik|teratas|rekomendasi|pilihan|top\b|best\b)/i.test(title || "");
+}
+function _buildItemListSchema(bodyHtml, canonical) {
+  try {
+    const items = [];
+    const re = /<h3[^>]*>([\s\S]*?)<\/h3>/gi;
+    let m;
+    while ((m = re.exec(bodyHtml || "")) && items.length < 10) {
+      const name = m[1].replace(/<[^>]+>/g, "").replace(/^\s*\d+[\.\)\-:]\s*/, "").trim().slice(0, 110);
+      if (name.length < 4) continue;
+      if (/pertanyaan|faq|kesimpulan|penutup|kesimpulan/i.test(name)) continue;
+      items.push({ "@type": "ListItem", position: items.length + 1, name, url: canonical + "#item-" + (items.length + 1) });
+    }
+    if (items.length < 3) return "";
+    return `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", itemListElement: items })}</script>`;
+  } catch { return ""; }
+}
+
 // Internal-link mesh block: anchor text ke halaman layanan + article kota tetangga.
 function _buildInternalLinksHtml(svc, city, relatedRows) {
   const parts = [];
@@ -14137,6 +15787,47 @@ function _buildInternalLinksHtml(svc, city, relatedRows) {
   <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent mb-3">${head}</p>
   <ul class="space-y-2 text-sm">${parts.join("")}</ul>
 </div>`;
+}
+
+// ─── §T5.3 Entity schema — about / mentions per artikel (Fase 7.5) ─────────
+// Hanya entitas yang URL-nya benar-benar ada (halaman layanan live). Kota & tag
+// dipakai tanpa @id/url supaya tidak mengarang halaman yang belum terbit.
+const ARTICLE_SERVICE_ENTITY = {
+  "jasa-digital-marketing": ["Jasa Digital Marketing", "https://beriklan.co.id/jasa-digital-marketing/"],
+  "jasa-iklan-facebook": ["Jasa Iklan Facebook Ads", "https://beriklan.co.id/jasa-iklan-facebook/"],
+  "jasa-iklan-instagram": ["Jasa Iklan Instagram", "https://beriklan.co.id/jasa-iklan-instagram/"],
+  "jasa-iklan-tiktok": ["Jasa Iklan TikTok Ads", "https://beriklan.co.id/jasa-iklan-tiktok/"],
+  "jasa-iklan-google": ["Jasa Iklan Google Ads", "https://beriklan.co.id/jasa-iklan-google/"],
+  "jasa-iklan-youtube": ["Jasa Iklan YouTube", "https://beriklan.co.id/jasa-iklan-youtube/"],
+  "jasa-kelola-instagram": ["Jasa Kelola Instagram", "https://beriklan.co.id/jasa-kelola-instagram/"],
+  "jasa-kelola-tiktok": ["Jasa Kelola TikTok", "https://beriklan.co.id/jasa-kelola-tiktok/"],
+  "jasa-pembuatan-website": ["Jasa Pembuatan Website", "https://beriklan.co.id/jasa-pembuatan-website/"],
+  "jasa-pembuatan-landing-page": ["Jasa Pembuatan Landing Page", "https://beriklan.co.id/jasa-pembuatan-landing-page/"],
+  "jasa-view-live": ["Jasa View Live TikTok", "https://beriklan.co.id/jasa-view-live/"],
+};
+
+function _articleEntities(meta) {
+  const about = [];
+  const svcList = String(meta.service || "").split(/[;,]/).map(s => s.trim()).filter(Boolean).slice(0, 2);
+  for (const raw of svcList) {
+    const key = raw.replace(/^\//, "").replace(/\/$/, "");
+    const hit = ARTICLE_SERVICE_ENTITY[key];
+    if (hit) about.push({ "@type": "Service", name: hit[0], url: hit[1], "@id": hit[1] });
+  }
+  const city = String(meta.city || "").trim();
+  if (city && city.length <= 40 && /^[A-Za-z .-]+$/.test(city)) {
+    about.push({ "@type": "City", name: city, containedInPlace: { "@type": "Country", name: "Indonesia" } });
+  }
+  let tags = [];
+  try { tags = JSON.parse(meta.tags || "[]"); } catch {}
+  const mentions = tags.map(t => String(t).trim()).filter(t => t && t.length <= 60).slice(0, 8)
+    .map(t => ({ "@type": "Thing", name: t }));
+  const cat = String(meta.category || "").trim();
+  if (cat) mentions.push({ "@type": "Thing", name: cat });
+  const wrap = (items) => items.length
+    ? { "@type": "ItemList", itemListElement: items.map((it, i) => ({ "@type": "ListItem", position: i + 1, item: it })) }
+    : null;
+  return { about: wrap(about), mentions: wrap(mentions) };
 }
 
 function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
@@ -14166,6 +15857,7 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
     body = body.trimEnd() + "\n" + enrichedBlocks;
   }
 
+  const ent = _articleEntities(meta);
   const articleSchema = `<script type="application/ld+json">${JSON.stringify({
     "@context":"https://schema.org","@type":"Article",headline:meta.title||slug,
     description:meta.excerpt||'',datePublished:meta.iso_date||null,dateModified:(meta.refreshed_at ? String(meta.refreshed_at).replace(' ', 'T') : meta.iso_date)||null,
@@ -14177,10 +15869,14 @@ function _buildArticleBody(slug, meta, content, relatedRows, faqItems) {
       "logo":{"@type":"ImageObject","url":"https://beriklan.co.id/logoweb.webp"}},
     mainEntityOfPage:{"@type":"WebPage","@id":canonical},articleSection:cat,
     keywords:tags.slice(0,5).join(', '),
+    // §T5.3 about = topik utama (layanan/kota), mentions = tag + kategori.
+    about: ent.about || undefined,
+    mentions: ent.mentions || undefined,
     inLanguage:"id-ID",isAccessibleForFree:true,
     speakable:{"@type":"SpeakableSpecification",cssSelector:["h1",".prose > p:first-of-type"]}
   })}</script>`
-    + _buildFaqSchema(faqItemsForPage);
+    + _buildFaqSchema(faqItemsForPage)
+    + (_isListicleTitle(meta.title) ? _buildItemListSchema(body, canonical) : "");
 
   const breadcrumb = `<nav class="text-xs text-muted mb-6 flex items-center gap-1.5 anim-fade-in">
   <a href="/" class="hover:text-accent transition">Beranda</a>
@@ -14497,14 +16193,19 @@ async function renderBlogPost(slug, env) {
       if (related?.results?.length) relatedRows = related.results;
     } catch (e) {}
 
-    // Cross-link mesh: tambah artikel service LAIN di kota sama (bila ada) supaya
-    // tiap halaman punya internal links ke pillar + neighbor kota + lintas layanan.
+    // Cross-link mesh: tambah artikel kota sama (bila ada) supaya tiap halaman
+    // punya internal links ke pillar + neighbor kota + lintas layanan.
+    // D1 quota fix (2026-09-10): filter OR (service IS NULL OR service != ?) di bawah
+    // MEMBUNUH index — SQLite scan ~195 rows/kota/request (144k reads/hari) untuk
+    // cari 3 baris. Filter service dibuang: dedupe by slug di bawah sudah menangani
+    // overlap dengan relatedRows, dan link se-layanan justru bagus untuk SEO.
+    // Query kini murni range scan idx_posts_meta_city_iso → ~3 rows/request.
     let citySiblingRows = [];
     if (meta.city) {
       try {
         const sib = await env.DB.prepare(
-          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? AND city = ? AND (service IS NULL OR service != ?) ORDER BY iso_date DESC LIMIT 3"
-        ).bind(slug, meta.city, meta.service || "").all();
+          "SELECT slug, title, date, readTime, excerpt, service, city FROM posts_meta WHERE slug != ? AND city = ? ORDER BY iso_date DESC LIMIT 3"
+        ).bind(slug, meta.city).all();
         if (sib?.results?.length) citySiblingRows = sib.results;
       } catch (e) {}
     }
@@ -14554,11 +16255,121 @@ async function renderBlogPost(slug, env) {
   }
 }
 
+// ─── Fase 3.4: Render blog post from R2 (when D1 unavailable/missing) ───
+async function _renderBlogFromR2(slug, env) {
+  if (!env.QUEUE) return null;
+  try {
+    const obj = await env.QUEUE.get(`coid/blog/${slug}.json`);
+    if (!obj) return null;
+    const data = JSON.parse(await obj.text());
+    const title = String(data.title || slug).slice(0, 200);
+    const excerpt = String(data.excerpt || (data.content || "").replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 160);
+    const canonical = `https://beriklan.co.id/blog/${slug}/`;
+    const meta = data.meta || {};
+    // T2 (2026-09-29) PARITAS SERP dengan jalur D1 (renderBlogPost:15253-15258): memakai
+    //   override posts_meta.seo_title/seo_description hasil growth-ctr-fix. Tanpa ini, objek R2
+    //   yang fresh tetap menyajikan snippet lama saat D1 sedang miss (dan permanen setelah
+    //   T7.5 menghapus posts_content dari D1). H1 tetap judul asli — hanya <title>/og/description.
+    const serpTitle = escHtml(String(meta.seo_title || "").trim() || title);
+    const serpDesc = escHtml(String(meta.seo_description || "").trim() || excerpt);
+    const dateStr = String(meta.iso_date || "").slice(0, 10);
+    const readTime = String(meta.readTime || "");
+    const content = String(data.content || "<p>Konten tidak tersedia untuk artikel ini.</p>");
+    const breadcrumb = `<nav class="text-sm text-muted mb-6"><a href="/" class="hover:text-accent">Beranda</a> › <a href="/blog/" class="hover:text-accent">Blog</a> › <span>${escHtml(title)}</span></nav>`;
+    const articleJson = JSON.stringify({
+      "@context":"https://schema.org","@type":"Article",
+      "headline": title, "datePublished": meta.iso_date || data.synced_at || "",
+      "dateModified": data.synced_at || meta.iso_date || "",
+      "author":{"@type":"Organization","name":"Beriklan.co.id"},
+      "publisher":{"@type":"Organization","name":"Beriklan.co.id","logo":{"@type":"ImageObject","url":"https://beriklan.co.id/logoweb.webp"}},
+      "mainEntityOfPage": canonical,
+    });
+    const body = `<main class="container mx-auto px-6 py-12 max-w-3xl">${breadcrumb}
+      <article class="prose prose-lg max-w-none">
+        <h1 class="font-display font-extrabold text-3xl md:text-4xl text-primary mb-3">${escHtml(title)}</h1>
+        ${dateStr ? `<p class="text-sm text-muted mb-6">${dateStr}${readTime ? ' · ' + escHtml(readTime) : ''}</p>` : ''}
+        ${content}
+      </article>
+      <aside class="mt-12 p-6 rounded-2xl bg-soft border border-gray-200">
+        <p class="text-sm text-muted mb-2">Butuh strategi iklan terukur untuk bisnis Anda?</p>
+        <a href="https://wa.me/62811919328?text=Halo%20Beriklan%2C%20saya%20tertarik%20dengan%20konsultasi%20iklan." class="inline-flex items-center gap-2 px-5 py-3 bg-accent text-white font-bold rounded-full hover:opacity-90">Diskusi via WhatsApp →</a>
+      </aside>
+      <p class="mt-8 text-xs text-muted">Disajikan dari cache R2 · <a href="/blog/${escHtml(slug)}/" class="hover:text-accent">permalink</a></p>
+    </main>`;
+    const html = _fallbackPrefix(canonical, serpTitle, serpDesc, serpTitle + " — Blog Beriklan.co.id", "https://beriklan.co.id/og-image.png")
+      + `<script type="application/ld+json">${articleJson}</script>`
+      + body
+      + _fallbackSuffix();
+    return new Response(html, {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "CDN-Cache-Control": "public, max-age=3600",
+      }
+    });
+  } catch (e) {
+    console.error('_renderBlogFromR2 error:', e);
+    return null;
+  }
+}
+
+// ─── T2 (2026-09-29): write-back R2 setelah growth update ───────────────────────
+// BUG yang ditutup: growth-freshness (UPDATE posts_content), growth-enrich (UPDATE
+// posts_content) dan growth-ctr-fix (UPDATE posts_meta.seo_title/seo_description) menulis
+// HANYA ke D1. Objek R2 `coid/blog/<slug>.json` tetap versi lama → (a) fallback R2 saat D1
+// miss menyajikan konten basi, (b) setelah T7.5 (posts_content dihapus dari D1) seluruh
+// update 2026 hilang permanen. Helper ini memakai BENTUK PAYLOAD SAMA persis dengan
+// /api/admin/r2/backfill (worker-entry.js:3001-3035) supaya tidak ada cabang format baru:
+//   key `coid/blog/<slug>.json`, httpMetadata.contentType=json,
+//   customMetadata={domain:'coid', slug, version:'3.0'}, field synced_at ISO.
+// Dipanggil SETELAH UPDATE sukses; kegagalan R2 TIDAK boleh membatalkan request growth
+// (makanya mengembalikan status string, bukan melempar).
+async function _syncPostToR2(slug, env) {
+  if (!env.QUEUE || !slug) return 'skipped';
+  try {
+    const meta = await env.DB.prepare(
+      "SELECT slug,title,excerpt,service,city,category,iso_date,readTime,tags,featured,seo_title,seo_description FROM posts_meta WHERE slug=?"
+    ).bind(slug).first();
+    const cont = await env.DB.prepare("SELECT content FROM posts_content WHERE slug=?").bind(slug).first();
+    if (!meta || !cont) return 'missing';
+    let tags = [];
+    try { tags = typeof meta.tags === "string" ? JSON.parse(meta.tags) : (meta.tags || []); } catch { tags = []; }
+    const payload = {
+      slug: meta.slug,
+      title: meta.title || "",
+      content: cont.content || "",
+      excerpt: meta.excerpt || "",
+      meta: {
+        service: meta.service || "",
+        city: meta.city || "",
+        category: meta.category || "",
+        iso_date: meta.iso_date || "",
+        readTime: meta.readTime || "",
+        tags: Array.isArray(tags) ? tags : [],
+        featured: !!meta.featured,
+        // T2: kolom growth ikut dikirim agar _renderBlogFromR2 bisa paritas SERP dengan D1.
+        seo_title: meta.seo_title || "",
+        seo_description: meta.seo_description || "",
+      },
+      synced_at: new Date().toISOString(),
+    };
+    await env.QUEUE.put(`coid/blog/${slug}.json`, JSON.stringify(payload), {
+      httpMetadata: { contentType: "application/json" },
+      customMetadata: { domain: "coid", slug, version: "3.0" },
+    });
+    return 'ok';
+  } catch (e) {
+    console.error('[ _syncPostToR2 ]', slug, String(e).slice(0, 150));
+    return 'fail';
+  }
+}
+
 // ─── Fallback prefix/suffix when ASSETS fetch fails ───
 function _fallbackPrefix(canonical, ogTitle, excerpt, title, featImgAbs) {
   const ogImg = featImgAbs || "https://beriklan.co.id/og-image.png";
-  const orgJson = JSON.stringify({"@context":"https://schema.org","@type":"ProfessionalService","name":"Beriklan.co.id","description":"Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","image":"https://beriklan.co.id/logoweb.webp","priceRange":"Rp 2.500.000 - Rp 10.000.000","telephone":"+62-22-XXXXXXX","address":{"@type":"PostalAddress","addressCountry":"ID","addressLocality":"Bandung","addressRegion":"Jawa Barat"},"areaServed":{"@type":"Country","name":"Indonesia"},"openingHours":"Mo-Sa 09:00-18:00","knowsAbout":["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]});
-  const org2Json = JSON.stringify({"@context":"https://schema.org","@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","description":"Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.","foundingDate":"2016","sameAs":["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id"]});
+  const orgJson = JSON.stringify({"@context":"https://schema.org","@type":"ProfessionalService","name":"Beriklan.co.id","description":"Agency digital marketing Indonesia — Facebook Ads, Google Ads, TikTok Ads, Landing Page, dan social media management.","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","image":"https://beriklan.co.id/logoweb.webp","priceRange":"Rp 2.500.000 - Rp 10.000.000","telephone":"+62811919328","address":{"@type":"PostalAddress","streetAddress":"Jl. Arcamanik Endah No.76","addressCountry":"ID","addressLocality":"Bandung","addressRegion":"Jawa Barat","postalCode":"40195"},"sameAs":["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id","https://www.linkedin.com/company/beriklan","https://www.tiktok.com/@beriklan.co.id"],"areaServed":{"@type":"Country","name":"Indonesia"},"openingHours":"Mo-Sa 09:00-18:00","knowsAbout":["Facebook Ads","Google Ads","TikTok Ads","Performance Marketing","Landing Page","Conversion Optimization"]});
+  const org2Json = JSON.stringify({"@context":"https://schema.org","@type":"Organization","name":"Beriklan.co.id","url":"https://beriklan.co.id","logo":"https://beriklan.co.id/logoweb.webp","description":"Agency performance marketing Indonesia berbasis di Bandung — mengelola campaign sejak 2016.","foundingDate":"2016","sameAs":["https://www.instagram.com/beriklan.co.id","https://www.facebook.com/beriklan.co.id","https://www.linkedin.com/company/beriklan","https://www.tiktok.com/@beriklan.co.id"]});
   const gtm = '(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=\'https://www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);})(window,document,\'script\',\'dataLayer\',\'GTM-MJXSNCSD\');';
   return `<!DOCTYPE html><html lang="id" class="scroll-smooth"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} — Blog Beriklan.co.id</title><meta name="description" content="${excerpt}"><meta name="robots" content="index,follow"><link rel="canonical" href="${canonical}"><meta property="og:type" content="website"><meta property="og:url" content="${canonical}"><meta property="og:title" content="${ogTitle}"><meta property="og:description" content="${excerpt}"><meta property="og:image" content="${ogImg}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="${canonical}"><meta name="twitter:title" content="${ogTitle}"><meta name="twitter:description" content="${excerpt}"><meta name="twitter:image" content="${ogImg}"><link rel="stylesheet" href="/fonts/fonts.css"><script type="application/ld+json">${orgJson}</script><script type="application/ld+json">${org2Json}</script><script>${gtm}</script></head><body class="font-sans text-primary bg-white antialiased"><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJXSNCSD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
 }

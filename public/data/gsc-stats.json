@@ -1,55 +1,55 @@
 {
-  "generated_at": "2026-11-19T08:00:07.323Z",
+  "generated_at": "2026-11-20T08:00:07.422Z",
   "period_days": 28,
   "site_url": "sc-domain:beriklan.co.id",
   "totals": {
-    "clicks": 91,
-    "impressions": 15279,
-    "ctr": 0.006,
-    "position": 29.223509391975913
+    "clicks": 83,
+    "impressions": 14702,
+    "ctr": 0.0056,
+    "position": 29.11039314378996
   },
   "top_pages": [
     {
       "url": "https://id.beriklan.co.id/",
-      "clicks": 18,
-      "impressions": 418,
-      "ctr": 0.0431,
-      "position": 22.6
+      "clicks": 15,
+      "impressions": 377,
+      "ctr": 0.0398,
+      "position": 23.8
     },
     {
       "url": "https://beriklan.co.id/jasa-view-live",
-      "clicks": 12,
-      "impressions": 223,
-      "ctr": 0.0538,
-      "position": 8.7
+      "clicks": 10,
+      "impressions": 215,
+      "ctr": 0.0465,
+      "position": 8.6
     },
     {
       "url": "https://beriklan.co.id/",
       "clicks": 4,
-      "impressions": 172,
-      "ctr": 0.0233,
-      "position": 18.5
-    },
-    {
-      "url": "https://beriklan.co.id/jasa-view-live/shopee/",
-      "clicks": 4,
-      "impressions": 24,
-      "ctr": 0.1667,
-      "position": 39.3
+      "impressions": 168,
+      "ctr": 0.0238,
+      "position": 18.8
     },
     {
       "url": "https://id.beriklan.co.id/tag/pasang-iklan-baris-gratis-langsung-tayang-di-google-urutan-teratas",
       "clicks": 4,
-      "impressions": 245,
-      "ctr": 0.0163,
-      "position": 17.8
+      "impressions": 243,
+      "ctr": 0.0165,
+      "position": 17.9
+    },
+    {
+      "url": "https://beriklan.co.id/jasa-view-live/shopee/",
+      "clicks": 3,
+      "impressions": 22,
+      "ctr": 0.1364,
+      "position": 40.3
     },
     {
       "url": "https://beriklan.co.id/blog/paket-jasa-digital-marketing-untuk-kuliner-di-surabaya/",
       "clicks": 2,
-      "impressions": 32,
-      "ctr": 0.0625,
-      "position": 12.3
+      "impressions": 31,
+      "ctr": 0.0645,
+      "position": 12.6
     },
     {
       "url": "https://beriklan.co.id/blog/paket-jasa-digital-marketing-untuk-perawatan-di-medan/",
@@ -61,16 +61,9 @@
     {
       "url": "https://beriklan.co.id/jasa-iklan-google/",
       "clicks": 2,
-      "impressions": 549,
-      "ctr": 0.0036,
-      "position": 81.2
-    },
-    {
-      "url": "https://id.beriklan.co.id/ad-kategori/mobil/mobil-baru-bekas",
-      "clicks": 2,
-      "impressions": 4,
-      "ctr": 0.5,
-      "position": 37.3
+      "impressions": 505,
+      "ctr": 0.004,
+      "position": 80.6
     },
     {
       "url": "https://beriklan.co.id/blog/agency-digital-yogyakarta/",
@@ -131,16 +124,16 @@
     {
       "url": "https://beriklan.co.id/blog/biaya-sem-in-digital-marketing/",
       "clicks": 1,
-      "impressions": 11,
-      "ctr": 0.0909,
-      "position": 2.2
+      "impressions": 10,
+      "ctr": 0.1,
+      "position": 1.6
     },
     {
       "url": "https://beriklan.co.id/blog/harga-freelance-digital-marketing/",
       "clicks": 1,
-      "impressions": 17,
-      "ctr": 0.0588,
-      "position": 6.3
+      "impressions": 16,
+      "ctr": 0.0625,
+      "position": 6
     },
     {
       "url": "https://beriklan.co.id/blog/harga-jasa-iklan-facebook-jasa-profesional-di-manado/",
@@ -155,13 +148,6 @@
       "impressions": 1,
       "ctr": 1,
       "position": 5
-    },
-    {
-      "url": "https://beriklan.co.id/blog/harga-jasa-pembuatan-website-company-profile/",
-      "clicks": 1,
-      "impressions": 2,
-      "ctr": 0.5,
-      "position": 27.5
     },
     {
       "url": "https://beriklan.co.id/blog/iklan-facebook-terpercaya-di-semarang/",
@@ -183,36 +169,36 @@
       "impressions": 1,
       "ctr": 1,
       "position": 1
+    },
+    {
+      "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-di-semarang/",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 1,
+      "position": 10
+    },
+    {
+      "url": "https://beriklan.co.id/blog/jasa-iklan-google-vs-shopee/",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 0.1667,
+      "position": 7.5
     }
   ],
   "top_queries": [
     {
       "query": "pasang iklan gratis",
-      "clicks": 8,
-      "impressions": 99,
-      "ctr": 0.0808,
-      "position": 19.4
+      "clicks": 7,
+      "impressions": 93,
+      "ctr": 0.0753,
+      "position": 20.4
     },
     {
       "query": "beriklan",
       "clicks": 3,
-      "impressions": 105,
-      "ctr": 0.0286,
-      "position": 2
-    },
-    {
-      "query": "iklan gratis",
-      "clicks": 3,
-      "impressions": 36,
-      "ctr": 0.0833,
-      "position": 29.3
-    },
-    {
-      "query": "iklan jual mobil bekas gratis",
-      "clicks": 2,
-      "impressions": 2,
-      "ctr": 1,
-      "position": 59.5
+      "impressions": 100,
+      "ctr": 0.03,
+      "position": 2.1
     },
     {
       "query": "boost view live tiktok",
@@ -236,11 +222,25 @@
       "position": 52
     },
     {
+      "query": "iklan gratis",
+      "clicks": 1,
+      "impressions": 32,
+      "ctr": 0.0313,
+      "position": 31.6
+    },
+    {
+      "query": "iklan jual mobil bekas gratis",
+      "clicks": 1,
+      "impressions": 1,
+      "ctr": 1,
+      "position": 63
+    },
+    {
       "query": "jasa digital marketing medan",
       "clicks": 1,
-      "impressions": 34,
-      "ctr": 0.0294,
-      "position": 16.8
+      "impressions": 33,
+      "ctr": 0.0303,
+      "position": 17
     },
     {
       "query": "jasa pemasaran digital medan",
@@ -365,28 +365,23 @@
   "by_country": [
     {
       "country": "idn",
-      "clicks": 90,
-      "impressions": 14796
+      "clicks": 82,
+      "impressions": 14256
     },
     {
       "country": "usa",
       "clicks": 1,
-      "impressions": 97
+      "impressions": 94
     },
     {
       "country": "are",
       "clicks": 0,
-      "impressions": 7
-    },
-    {
-      "country": "arg",
-      "clicks": 0,
-      "impressions": 2
+      "impressions": 5
     },
     {
       "country": "aus",
       "clicks": 0,
-      "impressions": 10
+      "impressions": 9
     },
     {
       "country": "aut",
@@ -404,41 +399,39 @@
       "impressions": 6
     },
     {
-      "country": "blr",
-      "clicks": 0,
-      "impressions": 2
-    },
-    {
       "country": "bra",
       "clicks": 0,
-      "impressions": 22
+      "impressions": 21
+    },
+    {
+      "country": "can",
+      "clicks": 0,
+      "impressions": 5
+    },
+    {
+      "country": "che",
+      "clicks": 0,
+      "impressions": 2
     }
   ],
   "by_device": [
     {
       "device": "MOBILE",
-      "clicks": 51,
-      "impressions": 5654
+      "clicks": 47,
+      "impressions": 5458
     },
     {
       "device": "DESKTOP",
-      "clicks": 38,
-      "impressions": 9373
+      "clicks": 34,
+      "impressions": 8997
     },
     {
       "device": "TABLET",
       "clicks": 2,
-      "impressions": 252
+      "impressions": 247
     }
   ],
   "daily": [
-    {
-      "date": "2026-10-22",
-      "clicks": 8,
-      "impressions": 577,
-      "ctr": 0.0139,
-      "position": 32.1
-    },
     {
       "date": "2026-10-23",
       "clicks": 2,

@@ -1,41 +1,41 @@
 {
-  "generated_at": "2026-11-25T08:00:07.193Z",
+  "generated_at": "2026-11-26T08:00:05.493Z",
   "period_days": 28,
   "site_url": "sc-domain:beriklan.co.id",
   "totals": {
-    "clicks": 102,
-    "impressions": 16130,
-    "ctr": 0.0063,
-    "position": 28.308555486670798
+    "clicks": 104,
+    "impressions": 16181,
+    "ctr": 0.0064,
+    "position": 28.366726407514985
   },
   "top_pages": [
     {
       "url": "https://id.beriklan.co.id/",
-      "clicks": 26,
-      "impressions": 580,
-      "ctr": 0.0448,
-      "position": 24
+      "clicks": 29,
+      "impressions": 610,
+      "ctr": 0.0475,
+      "position": 23.4
     },
     {
       "url": "https://beriklan.co.id/jasa-view-live",
       "clicks": 9,
-      "impressions": 227,
-      "ctr": 0.0396,
-      "position": 8.5
-    },
-    {
-      "url": "https://id.beriklan.co.id/tag/pasang-iklan-baris-gratis-langsung-tayang-di-google-urutan-teratas",
-      "clicks": 5,
-      "impressions": 360,
-      "ctr": 0.0139,
-      "position": 12.6
+      "impressions": 222,
+      "ctr": 0.0405,
+      "position": 8.8
     },
     {
       "url": "https://beriklan.co.id/",
       "clicks": 4,
-      "impressions": 172,
-      "ctr": 0.0233,
-      "position": 22.1
+      "impressions": 168,
+      "ctr": 0.0238,
+      "position": 22.8
+    },
+    {
+      "url": "https://id.beriklan.co.id/tag/pasang-iklan-baris-gratis-langsung-tayang-di-google-urutan-teratas",
+      "clicks": 4,
+      "impressions": 373,
+      "ctr": 0.0107,
+      "position": 11.5
     },
     {
       "url": "https://beriklan.co.id/blog/jasa-iklan-facebook-untuk-real-estate-murah-di-surabaya/",
@@ -47,30 +47,30 @@
     {
       "url": "https://beriklan.co.id/blog/paket-jasa-digital-marketing-untuk-perawatan-di-medan/",
       "clicks": 2,
-      "impressions": 52,
-      "ctr": 0.0385,
-      "position": 15.2
+      "impressions": 50,
+      "ctr": 0.04,
+      "position": 15.3
     },
     {
       "url": "https://beriklan.co.id/jasa-digital-marketing/",
       "clicks": 2,
-      "impressions": 638,
+      "impressions": 635,
       "ctr": 0.0031,
       "position": 74.6
     },
     {
       "url": "https://beriklan.co.id/jasa-view-live/instagram/",
       "clicks": 2,
-      "impressions": 44,
-      "ctr": 0.0455,
-      "position": 29.4
+      "impressions": 42,
+      "ctr": 0.0476,
+      "position": 31
     },
     {
       "url": "https://beriklan.co.id/jasa-view-live/shopee/",
       "clicks": 2,
-      "impressions": 18,
-      "ctr": 0.1111,
-      "position": 44.4
+      "impressions": 17,
+      "ctr": 0.1176,
+      "position": 39.1
     },
     {
       "url": "https://beriklan.co.id/jasa-view-live/shopee/cimahi/",
@@ -89,9 +89,9 @@
     {
       "url": "https://beriklan.co.id/blog/berapa-biaya-iklan-facebook-di-semarang/",
       "clicks": 1,
-      "impressions": 5,
-      "ctr": 0.2,
-      "position": 12.6
+      "impressions": 3,
+      "ctr": 0.3333,
+      "position": 14.7
     },
     {
       "url": "https://beriklan.co.id/blog/berapa-biaya-jasa-digital-marketing-di-jakarta/",
@@ -117,9 +117,9 @@
     {
       "url": "https://beriklan.co.id/blog/biaya-jasa-digital-marketing-untuk-dealer-di-jakarta/",
       "clicks": 1,
-      "impressions": 70,
-      "ctr": 0.0143,
-      "position": 15.6
+      "impressions": 64,
+      "ctr": 0.0156,
+      "position": 15.7
     },
     {
       "url": "https://beriklan.co.id/blog/biaya-jasa-iklan-google-untuk-travel/",
@@ -138,9 +138,9 @@
     {
       "url": "https://beriklan.co.id/blog/biaya-jasa-iklan-instagram-untuk-makanan-di-semarang/",
       "clicks": 1,
-      "impressions": 3,
-      "ctr": 0.3333,
-      "position": 7
+      "impressions": 2,
+      "ctr": 0.5,
+      "position": 7.5
     },
     {
       "url": "https://beriklan.co.id/blog/biaya-jasa-kelola-instagram-untuk-jasa-profesional-di-jakarta/",
@@ -159,9 +159,9 @@
     {
       "url": "https://beriklan.co.id/blog/harga-freelance-digital-marketing/",
       "clicks": 1,
-      "impressions": 11,
-      "ctr": 0.0909,
-      "position": 5.9
+      "impressions": 9,
+      "ctr": 0.1111,
+      "position": 5.6
     },
     {
       "url": "https://beriklan.co.id/blog/harga-iklan-tiktok-di-jakarta-2027/",
@@ -180,32 +180,32 @@
     {
       "url": "https://beriklan.co.id/blog/iklan-facebook-terpercaya-di-semarang/",
       "clicks": 1,
-      "impressions": 12,
-      "ctr": 0.0833,
-      "position": 21.8
+      "impressions": 11,
+      "ctr": 0.0909,
+      "position": 17.3
     }
   ],
   "top_queries": [
     {
       "query": "pasang iklan gratis",
       "clicks": 10,
-      "impressions": 117,
-      "ctr": 0.0855,
-      "position": 17.8
+      "impressions": 125,
+      "ctr": 0.08,
+      "position": 17.2
+    },
+    {
+      "query": "iklan gratis",
+      "clicks": 3,
+      "impressions": 49,
+      "ctr": 0.0612,
+      "position": 22.1
     },
     {
       "query": "beriklan",
       "clicks": 2,
-      "impressions": 95,
-      "ctr": 0.0211,
+      "impressions": 92,
+      "ctr": 0.0217,
       "position": 2
-    },
-    {
-      "query": "iklan gratis",
-      "clicks": 2,
-      "impressions": 49,
-      "ctr": 0.0408,
-      "position": 22.3
     },
     {
       "query": "boost view ig",
@@ -238,9 +238,9 @@
     {
       "query": "jasa digital marketing medan",
       "clicks": 1,
-      "impressions": 31,
-      "ctr": 0.0323,
-      "position": 15.1
+      "impressions": 29,
+      "ctr": 0.0345,
+      "position": 15.3
     },
     {
       "query": "jasa pemasaran digital medan",
@@ -252,9 +252,9 @@
     {
       "query": "jasa view live tiktok",
       "clicks": 1,
-      "impressions": 21,
-      "ctr": 0.0476,
-      "position": 7.6
+      "impressions": 16,
+      "ctr": 0.0625,
+      "position": 7.1
     },
     {
       "query": "kalkulator roas tiktok",
@@ -266,9 +266,9 @@
     {
       "query": "kursus digital marketing jogja",
       "clicks": 1,
-      "impressions": 42,
-      "ctr": 0.0238,
-      "position": 15.3
+      "impressions": 44,
+      "ctr": 0.0227,
+      "position": 15.2
     },
     {
       "query": "sebar iklan gratis online",
@@ -287,9 +287,9 @@
     {
       "query": "ads budget",
       "clicks": 0,
-      "impressions": 14,
+      "impressions": 16,
       "ctr": 0,
-      "position": 20.2
+      "position": 21
     },
     {
       "query": "advertising agency facebook",
@@ -315,9 +315,9 @@
     {
       "query": "agency batam",
       "clicks": 0,
-      "impressions": 3,
+      "impressions": 5,
       "ctr": 0,
-      "position": 11.7
+      "position": 11.6
     },
     {
       "query": "agency digital bandung",
@@ -329,9 +329,9 @@
     {
       "query": "agency digital marketing yogyakarta",
       "clicks": 0,
-      "impressions": 5,
+      "impressions": 7,
       "ctr": 0,
-      "position": 24.2
+      "position": 22.7
     },
     {
       "query": "agency facebook ads",
@@ -365,8 +365,8 @@
   "by_country": [
     {
       "country": "idn",
-      "clicks": 101,
-      "impressions": 15605
+      "clicks": 103,
+      "impressions": 15652
     },
     {
       "country": "sau",
@@ -386,7 +386,7 @@
     {
       "country": "aus",
       "clicks": 0,
-      "impressions": 12
+      "impressions": 11
     },
     {
       "country": "aze",
@@ -406,7 +406,7 @@
     {
       "country": "bgd",
       "clicks": 0,
-      "impressions": 14
+      "impressions": 15
     },
     {
       "country": "bgr",
@@ -417,28 +417,21 @@
   "by_device": [
     {
       "device": "MOBILE",
-      "clicks": 54,
-      "impressions": 5830
+      "clicks": 52,
+      "impressions": 5833
     },
     {
       "device": "DESKTOP",
-      "clicks": 46,
-      "impressions": 10010
+      "clicks": 50,
+      "impressions": 10052
     },
     {
       "device": "TABLET",
       "clicks": 2,
-      "impressions": 290
+      "impressions": 296
     }
   ],
   "daily": [
-    {
-      "date": "2026-10-28",
-      "clicks": 3,
-      "impressions": 452,
-      "ctr": 0.0066,
-      "position": 24.5
-    },
     {
       "date": "2026-10-29",
       "clicks": 3,
@@ -620,6 +613,13 @@
       "impressions": 947,
       "ctr": 0.0084,
       "position": 35.7
+    },
+    {
+      "date": "2026-11-24",
+      "clicks": 5,
+      "impressions": 503,
+      "ctr": 0.0099,
+      "position": 26.7
     }
   ],
   "freshness_alerts": []
